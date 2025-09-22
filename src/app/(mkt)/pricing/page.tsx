@@ -12,14 +12,107 @@ export default function Pricing() {
     return 'monthly';
   });
   const [welcome, setWelcome] = useState(false);
+  const [authed, setAuthed] = useState(false);
+  const [planStatus, setPlanStatus] = useState<'loading' | 'none' | string>('loading');
+  const [isPro, setIsPro] = useState(false);
   useEffect(() => {
     try { setWelcome(new URL(window.location.href).searchParams.get('welcome') === '1'); } catch {}
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const applyStatus = (status: string | null | undefined) => {
+      const normalized = (status || '').toLowerCase();
+      const finalStatus = normalized || 'none';
+      if (cancelled) return;
+      setPlanStatus(finalStatus);
+      setIsPro(normalized === 'active' || normalized === 'trialing');
+    };
+
+    const fallbackToEntitlements = async (headers: Record<string, string>) => {
+      try {
+        let r = await fetch('/api/entitlements', { cache: 'no-store', credentials: 'include', headers });
+        if (!r.ok) r = await fetch('/api/entitlements', { cache: 'no-store', headers });
+        if (!r.ok) return;
+        const j = (await r.json().catch(() => null)) as { pro?: boolean } | null;
+        applyStatus(j?.pro ? 'active' : 'none');
+      } catch {}
+    };
+
+    const refresh = async () => {
+      let token = '';
+      try { token = localStorage.getItem('idToken') || ''; } catch {}
+      let nextAuthed = Boolean(token);
+      try {
+        let authRes = await fetch('/api/auth/me', { cache: 'no-store', credentials: 'include' });
+        if (!authRes.ok && token) {
+          authRes = await fetch('/api/auth/me', { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } });
+        }
+        if (authRes.ok) {
+          nextAuthed = true;
+        }
+      } catch {}
+      if (!cancelled) setAuthed(nextAuthed);
+      if (!nextAuthed) {
+        applyStatus('none');
+        return;
+      }
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      let resolved = false;
+      try {
+        let planRes = await fetch('/api/plan/status', { cache: 'no-store', credentials: 'include', headers });
+        if (!planRes.ok) {
+          planRes = await fetch('/api/plan/status', { cache: 'no-store', headers });
+        }
+        if (planRes.ok) {
+          const data = (await planRes.json().catch(() => null)) as { status?: string } | null;
+          const status = typeof data?.status === 'string' ? data.status : 'none';
+          applyStatus(status);
+          resolved = true;
+        }
+      } catch {}
+      if (!resolved) {
+        await fallbackToEntitlements(headers);
+      }
+    };
+
+    void refresh();
+    const handleChange = () => { void refresh(); };
+    try {
+      window.addEventListener('focus', handleChange);
+      window.addEventListener('idtoken:changed', handleChange as EventListener);
+    } catch {}
+    return () => {
+      cancelled = true;
+      try {
+        window.removeEventListener('focus', handleChange);
+        window.removeEventListener('idtoken:changed', handleChange as EventListener);
+      } catch {}
+    };
   }, []);
 
   async function handleSubscribeWithPlan(plan: 'monthly' | 'yearly') {
     try {
       setError(null);
       setLoading(true);
+      // Require verified email before starting checkout
+      try {
+        const idTok = (() => { try { return localStorage.getItem('idToken') || ''; } catch { return ''; } })();
+        // Try cookie path first
+        let r = await fetch('/api/auth/me', { cache:'no-store', credentials:'include' });
+        // Fallback to bearer if no cookie session
+        if (!r.ok && idTok) {
+          r = await fetch('/api/auth/me', { cache:'no-store', headers: { Authorization: `Bearer ${idTok}` } });
+        }
+        if (r.ok) {
+          const j = await r.json();
+          if (!j?.emailVerified) {
+            window.location.href = '/verify-email?next=/pricing';
+            return;
+          }
+        }
+      } catch {}
       // If signed in, server will derive uid/email from cookie; otherwise prompt email
       const hasToken = (() => { try { return Boolean(localStorage.getItem('idToken')); } catch { return false; } })();
       const payload: { plan: 'monthly'|'yearly'; uid?: string; email?: string } = { plan };
@@ -34,13 +127,18 @@ export default function Pricing() {
         payload.uid = 'anon';
         payload.email = email;
       }
+      const idTok2 = (() => { try { return localStorage.getItem('idToken') || ''; } catch { return ''; } })();
+      const headers: Record<string,string> = { "Content-Type": "application/json" };
+      if (idTok2) headers.Authorization = `Bearer ${idTok2}`;
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(await res.text());
       const j = await res.json();
+      try { if (j?.id) localStorage.setItem('stripe:lastSessionId', String(j.id)); } catch {}
+      try { if (j?.mode) localStorage.setItem('stripe:lastMode', String(j.mode)); } catch {}
       if (j?.url) window.location.href = j.url;
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Checkout failed";
@@ -50,8 +148,62 @@ export default function Pricing() {
     }
   }
 
+  async function openBillingPortal() {
+    try {
+      setError(null);
+      setLoading(true);
+      let modeParam = '';
+      try {
+        const lastMode = (localStorage.getItem('stripe:lastMode') || '').toLowerCase();
+        if (lastMode === 'test') modeParam = '?mode=test';
+      } catch {}
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      try {
+        const token = localStorage.getItem('idToken') || '';
+        if (token) headers.Authorization = `Bearer ${token}`;
+      } catch {}
+      const res = await fetch(`/api/stripe/portal${modeParam}`, {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const j = await res.json();
+      if (j?.url) {
+        window.location.href = j.url;
+        return;
+      }
+      throw new Error('Unable to open billing portal');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Unable to open billing portal';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleProCta() {
+    if (loading) return;
+    if (authed && planStatus === 'loading') return;
+    if (isPro) {
+      await openBillingPortal();
+    } else {
+      await handleSubscribeWithPlan(billing);
+    }
+  }
+
   const starterPriceText = 'Free';
   const proPrice = billing === 'monthly' ? 49.99 : 499.0;
+  const planChecking = authed && planStatus === 'loading';
+  const starterCtaLabel = planChecking ? 'Checking plan...' : authed ? 'Go to Dashboard' : 'Get Started Free';
+  const starterCtaHref = authed ? '/dashboard' : '/register';
+  const proCtaLabel = planChecking
+    ? 'Checking plan...'
+    : isPro
+      ? 'Manage Billing'
+      : billing === 'monthly'
+        ? 'Upgrade to Pro (Monthly)'
+        : 'Upgrade to Pro (Yearly)';
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 mesh-bg">
       {welcome && (
@@ -94,6 +246,7 @@ export default function Pricing() {
           {billing === 'yearly' && (
             <div className="mt-2 text-sm text-gray-600">≈ $41.58/mo when billed yearly</div>
           )}
+          {/* Test checkout toggle (local only) */}
         </div>
       </section>
 
@@ -156,10 +309,10 @@ export default function Pricing() {
               </ul>
               
               <Link 
-                href="/onboarding/business" 
+                href={starterCtaHref} 
                 className="w-full inline-flex items-center justify-center bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
-                Get Started Free
+                {starterCtaLabel}
               </Link>
               
               {error && (
@@ -225,11 +378,11 @@ export default function Pricing() {
             </ul>
               
               <button 
-                onClick={() => handleSubscribeWithPlan(billing)} 
-                disabled={loading}
+                onClick={handleProCta} 
+                disabled={loading || planChecking}
                 className="w-full bg-gray-900 text-white font-semibold py-3 px-6 rounded-xl hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50"
               >
-                {loading ? "Processing..." : billing === 'monthly' ? 'Upgrade to Pro (Monthly)' : 'Upgrade to Pro (Yearly)'}
+                {loading ? "Processing..." : proCtaLabel}
             </button>
             </div>
 
@@ -382,17 +535,17 @@ export default function Pricing() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
-              onClick={() => handleSubscribeWithPlan(billing)}
-              disabled={loading}
+              onClick={handleProCta}
+              disabled={loading || planChecking}
               className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50"
             >
-              {loading ? 'Processing...' : (billing === 'monthly' ? 'Upgrade to Pro (Monthly)' : 'Upgrade to Pro (Yearly)')}
+              {loading ? 'Processing...' : proCtaLabel}
             </button>
             <Link 
-              href="/onboarding/business" 
+              href={starterCtaHref}
               className="inline-flex items-center justify-center px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-200"
             >
-              Get Started Free
+              {starterCtaLabel}
             </Link>
           </div>
           <p className="text-blue-200 text-sm mt-6">No credit card required • Starter is free</p>

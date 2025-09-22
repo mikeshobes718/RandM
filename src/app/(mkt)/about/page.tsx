@@ -54,7 +54,7 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Ready to see it in action?</h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/onboarding/business" className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:bg-gray-100 transition-all">Get Started Free</Link>
+            <Link href="/register" className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:bg-gray-100 transition-all">Get Started Free</Link>
             <Link href="/contact" className="inline-flex items-center justify-center px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10">Talk to Sales</Link>
           </div>
         </div>
@@ -62,4 +62,3 @@ export default function AboutPage() {
     </main>
   );
 }
-
