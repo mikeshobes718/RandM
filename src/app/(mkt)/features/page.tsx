@@ -3,127 +3,187 @@ export const dynamic = 'force-static';
 import Link from "next/link";
 import { FeatureTabs } from "@/components/FeatureTabs";
 
+const METRICS = [
+  { value: '4x', label: 'Faster review growth', tone: 'from-indigo-500/80 to-violet-500/90' },
+  { value: '24 hrs', label: 'Average time to launch', tone: 'from-emerald-400/80 to-emerald-500/90' },
+  { value: '<15 min', label: 'Team onboarding', tone: 'from-sky-400/80 to-blue-500/90' },
+];
+
+const PILLARS = [
+  {
+    iconBg: 'from-blue-500 to-indigo-500',
+    title: 'Smart share links',
+    copy: 'One-tap landing experiences that open the exact Google review screen, branded to match your voice and trackable by campaign.',
+  },
+  {
+    iconBg: 'from-purple-500 to-fuchsia-500',
+    title: 'QR automations',
+    copy: 'Dynamic QR packs for tabletops, receipts, and signage. Print-ready at 300 DPI with localized instructions and incentive messaging.',
+  },
+  {
+    iconBg: 'from-emerald-500 to-teal-500',
+    title: 'Reputation analytics',
+    copy: 'Realtime dashboards that tie scans, clicks, and review conversions to the team member or campaign responsible.',
+  },
+];
+
+const PLAYBOOKS = [
+  {
+    title: 'Automation that nudges politely',
+    bullets: [
+      'Sequenced follow-ups with quiet hours and timezone awareness',
+      'Personalized templates that stay on-brand and human',
+      'Automatic suppression for anyone contacted in the last 90 days',
+    ],
+  },
+  {
+    title: 'Design that feels like your brand',
+    bullets: [
+      'Custom colors, typography, and tone for each location',
+      'Host review journeys on your own domain or subdomain',
+      'Print-ready QR assets with layered design files included',
+    ],
+  },
+];
+
 export default function FeaturesPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 mesh-bg">
-      {/* Header comes from RootLayout */}
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-white via-indigo-50 to-white">
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute inset-x-0 top-[-300px] h-[520px] rounded-full bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.2),transparent_60%)] blur-3xl" />
+        <div className="absolute left-[-220px] top-1/3 h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.22),transparent_70%)] blur-3xl" />
+        <div className="absolute right-[-180px] bottom-[-120px] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,rgba(236,72,153,0.18),transparent_75%)] blur-3xl" />
+      </div>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden pt-20 pb-12">
-        <div className="pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(60%_50%_at_50%_0%,black,transparent)] bg-gradient-to-b from-blue-100/70 via-transparent to-transparent" />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              Everything you need to grow 5★ reviews
-            </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              A focused toolkit to capture more Google reviews with less effort: share links,
-              QR codes, automation, and clean analytics.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register" className="neon-button inline-flex items-center justify-center px-6 py-3 rounded-xl font-medium">
+      <section className="relative px-4 pt-24 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-600 shadow-sm shadow-slate-900/5 backdrop-blur">
+            Platform tour
+          </span>
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
+            The modern stack for ⭐⭐⭐⭐⭐ growth
+          </h1>
+          <p className="mt-5 text-lg text-slate-600 md:text-xl">
+            Reviews & Marketing unifies share links, QR automations, and live analytics so every happy customer turns into public proof.
+          </p>
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link
+              href="/register"
+              className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5"
+            >
               Get Started Free
+              <svg className="ml-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
+              </svg>
             </Link>
-              <Link href="/contact" className="inline-flex items-center justify-center px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-50">
-                Talk to Sales
-              </Link>
-            </div>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-2xl border border-slate-200/80 bg-white/80 px-7 py-3 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition hover:border-slate-300 hover:bg-white"
+            >
+              Talk to Sales
+            </Link>
+          </div>
+          <div className="mt-12 grid gap-4 sm:grid-cols-3">
+            {METRICS.map((metric) => (
+              <div key={metric.label} className="rounded-2xl border border-white/70 bg-white/80 p-5 text-left shadow-lg shadow-slate-900/10 backdrop-blur">
+                <div className={`inline-flex items-center rounded-full bg-gradient-to-r ${metric.tone} px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-white`}>{metric.label}</div>
+                <div className="mt-3 text-3xl font-semibold text-slate-900">{metric.value}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Product Pillars */}
-      <section className="py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-3 gap-6">
-            <div className="rounded-2xl p-8 bg-white border border-gray-100 shadow-sm hover:shadow-lg transition">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white grid place-content-center mb-5">
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+      <section className="px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-3">
+          {PILLARS.map((pillar) => (
+            <div
+              key={pillar.title}
+              className="group rounded-3xl border border-white/70 bg-white/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl"
+            >
+              <div className={`mb-6 grid h-12 w-12 place-content-center rounded-xl bg-gradient-to-br ${pillar.iconBg} text-white`}> 
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M4 12h10M4 17h7" />
+                </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Smart Share Links</h3>
-              <p className="text-gray-600 leading-relaxed">One-tap links that route customers directly to your Google review form. Branded, trackable, and dead-simple to share.</p>
+              <h2 className="text-xl font-semibold text-slate-900 capitalize">{pillar.title}</h2>
+              <p className="mt-3 text-sm text-slate-600 leading-relaxed">{pillar.copy}</p>
             </div>
-            <div className="rounded-2xl p-8 bg-white border border-gray-100 shadow-sm hover:shadow-lg transition">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white grid place-content-center mb-5">
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V6a1 1 0 00-1-1H5a1 1 0 00-1 1v1a1 1 0 001 1zm12 0h2a1 1 0 001-1V6a1 1 0 00-1-1h-2a1 1 0 00-1 1v1a1 1 0 001 1zM5 20h2a1 1 0 001-1v-1a1 1 0 00-1-1H5a1 1 0 00-1 1v1a1 1 0 001 1z"/></svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Printable QR Codes</h3>
-              <p className="text-gray-600 leading-relaxed">Instant QR posters and table tents. Customers scan and leave a review in under 30 seconds.</p>
-            </div>
-            <div className="rounded-2xl p-8 bg-white border border-gray-100 shadow-sm hover:shadow-lg transition">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white grid place-content-center mb-5">
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Clean Analytics</h3>
-              <p className="text-gray-600 leading-relaxed">See scans, clicks, and reviews over time. Attribute what’s working and double down.</p>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* Deep Feature Groups */}
-      <section className="py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="rounded-2xl p-8 bg-white border border-gray-100 shadow-sm">
-              <h3 className="text-2xl font-semibold mb-4">Automation that nudges politely</h3>
-              <p className="text-gray-600 leading-relaxed mb-6">Send review requests after visits and follow up automatically. Personalization tokens keep it human, not spammy.</p>
-              <ul className="space-y-3 text-gray-700">
-                <li>• Scheduled follow-ups with quiet hours</li>
-                <li>• Opt-out links and bounce handling</li>
-                <li>• Templates that match your brand voice</li>
-              </ul>
-            </div>
-            <div className="rounded-2xl p-8 bg-white border border-gray-100 shadow-sm">
-              <h3 className="text-2xl font-semibold mb-4">Design that feels like your brand</h3>
-              <p className="text-gray-600 leading-relaxed mb-6">Customize colors, logos, and landing copy. Use your domain so the experience feels trustworthy end-to-end.</p>
-              <ul className="space-y-3 text-gray-700">
-                <li>• Brand colors and typography</li>
-                <li>• Custom domains and link slugs</li>
-                <li>• Upload-ready QR print assets</li>
-              </ul>
-            </div>
+      <section className="px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-8 md:grid-cols-2">
+            {PLAYBOOKS.map((playbook) => (
+              <div key={playbook.title} className="rounded-3xl border border-white/70 bg-white/80 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
+                <h3 className="text-2xl font-semibold text-slate-900">{playbook.title}</h3>
+                <p className="mt-4 text-sm text-slate-600">
+                  Reviews & Marketing keeps your outreach thoughtful and on-brand. Automate the heavy lifting while your customers feel personal attention.
+                </p>
+                <ul className="mt-6 space-y-3 text-sm text-slate-600">
+                  {playbook.bullets.map((bullet) => (
+                    <li key={bullet} className="flex items-start gap-2">
+                      <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
 
-          <div className="mt-10">
+          <div className="mt-12 rounded-3xl border border-white/70 bg-white/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
             <FeatureTabs />
           </div>
         </div>
       </section>
 
-      {/* Compare Plans strip */}
-      <section className="py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-2xl bg-white/80 backdrop-blur-sm border border-gray-100 shadow-sm p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h3 className="text-2xl font-semibold text-gray-900">Compare plans</h3>
-              <p className="text-gray-600">See which plan fits your growth stage.</p>
+      <section className="px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl rounded-3xl border border-white/70 bg-white/80 p-6 shadow-xl shadow-slate-900/10 backdrop-blur md:flex md:items-center md:justify-between md:gap-10 md:p-8">
+          <div>
+            <h3 className="text-2xl font-semibold text-slate-900">Compare plans</h3>
+            <p className="mt-2 text-sm text-slate-600">See which package pairs best with your growth stage—each plan includes live onboarding.</p>
+          </div>
+          <div className="mt-6 flex items-center gap-3 md:mt-0">
+            <div className="hidden items-center gap-3 rounded-full border border-slate-200/80 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-500 md:flex">
+              <span>Starter</span>
+              <span>•</span>
+              <span>Pro</span>
+              <span>•</span>
+              <span>Enterprise</span>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="hidden md:flex items-center gap-3 text-gray-700">
-                <span className="px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200">Starter</span>
-                <span className="px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200">Pro</span>
-                <span className="px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200">Enterprise</span>
-              </div>
-              <Link href="/pricing" className="neon-button inline-flex items-center justify-center px-5 py-3 rounded-xl font-medium">Go to Pricing</Link>
-            </div>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5"
+            >
+              Go to Pricing
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">See it in action</h2>
-          <p className="text-blue-100 text-lg mb-8">Start free and collect your first reviews this week.</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register" className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:bg-gray-100 transition-all">Get Started Free</Link>
-            <Link href="/dashboard" className="inline-flex items-center justify-center px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10">View Dashboard</Link>
+      <section className="px-4 pb-20 pt-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 p-10 text-center shadow-2xl shadow-indigo-900/30">
+          <h2 className="text-3xl font-bold text-white sm:text-4xl">See it in action</h2>
+          <p className="mt-3 text-base text-indigo-100 sm:text-lg">Start free and collect your first reviews this week with branded share links and QR kits.</p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link
+              href="/register"
+              className="inline-flex items-center justify-center rounded-2xl bg-white px-8 py-4 text-sm font-semibold text-indigo-600 shadow-lg shadow-slate-900/25 transition hover:-translate-y-0.5 hover:bg-slate-50"
+            >
+              Get Started Free
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-2xl border border-white/60 px-8 py-4 text-sm font-semibold text-white/90 transition hover:bg-white/10"
+            >
+              Talk to Sales
+            </Link>
           </div>
         </div>
       </section>
-
-      {/* Footer from RootLayout */}
     </main>
   );
 }
