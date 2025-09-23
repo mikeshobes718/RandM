@@ -5,7 +5,7 @@ const FAQS = [
   },
   {
     q: "QR codes aren’t scanning on older phones—what should I change?",
-    a: "Increase contrast using the dark mode option and print at least 4" wide at 300 DPI. Table tent templates inside the QR library already meet those specs.",
+    a: "Increase contrast using the dark mode option and print at least four inches wide at 300 DPI. Table tent templates inside the QR library already meet those specs.",
   },
   {
     q: "Stripe checkout isn’t redirecting back to the app.",

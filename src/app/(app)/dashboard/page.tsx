@@ -1,5 +1,6 @@
 "use client";
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatPhone } from '@/lib/phone';
 
@@ -375,6 +376,13 @@ export default function Dashboard() {
     return 'inline-flex items-center gap-2 rounded-full border border-slate-200/70 bg-white/60 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 backdrop-blur';
   }, [planBadge]);
 
+  const isProPlan = useMemo(() => {
+    if (!planStatus || planStatus === 'loading') return false;
+    const normalized = planStatus.toLowerCase();
+    return normalized === 'active' || normalized === 'trialing';
+  }, [planStatus]);
+  const planStatusKnown = planStatus != null && planStatus !== 'loading';
+
   const metrics = useMemo(() => ([
     {
       key: 'rating' as const,
@@ -435,7 +443,19 @@ export default function Dashboard() {
     return () => window.clearTimeout(timer);
   }, [copyState]);
 
-  const showUpgradePrompt = planStatus && planStatus !== 'loading' && planStatus !== 'active' && planStatus !== 'trialing';
+  const showUpgradePrompt = Boolean(
+    planStatus && planStatus !== 'loading' && !['active', 'trialing', 'starter'].includes(planStatus)
+  );
+
+  useEffect(() => {
+    if (!planStatus || planStatus === 'loading') return;
+    if (showUpgradePrompt) {
+      const search = new URLSearchParams();
+      search.set('welcome', '1');
+      search.set('from', 'dashboard');
+      window.location.replace(`/pricing?${search.toString()}`);
+    }
+  }, [planStatus, showUpgradePrompt]);
 
   return (
     <>
@@ -466,7 +486,7 @@ export default function Dashboard() {
               <div className="flex w-full flex-col gap-3 sm:flex-row md:w-auto md:items-center">
                 {business ? (
                   <>
-                    <a
+                    <Link
                       href="/settings"
                       className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-900/10"
                     >
@@ -475,8 +495,8 @@ export default function Dashboard() {
                         <circle cx="12" cy="12" r="3" />
                       </svg>
                       Settings
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                       href="/onboarding/business?edit=1"
                       className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-slate-900/95 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 hover:bg-slate-900"
                     >
@@ -484,7 +504,7 @@ export default function Dashboard() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 21v-12.75a.75.75 0 01.75-.75H8.25a.75.75 0 01.75.75V21m6 0V5.25a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-12-6h3m6 0h3" />
                       </svg>
                       Manage business
-                    </a>
+                    </Link>
                   </>
                 ) : (
                   <a
@@ -536,10 +556,11 @@ export default function Dashboard() {
           {business ? (
             <section className="mt-8 space-y-8">
               <div>
-                {square?.connected ? (
-                  <div className="relative overflow-hidden rounded-3xl border border-indigo-200/70 bg-gradient-to-r from-indigo-500/10 via-white to-white px-6 py-6 shadow-lg shadow-indigo-200/60">
-                    <div className="pointer-events-none absolute inset-y-0 right-0 h-full w-40 bg-gradient-to-l from-indigo-100/70 to-transparent" />
-                    <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                {isProPlan ? (
+                  square?.connected ? (
+                    <div className="relative overflow-hidden rounded-3xl border border-indigo-200/70 bg-gradient-to-r from-indigo-500/10 via-white to-white px-6 py-6 shadow-lg shadow-indigo-200/60">
+                      <div className="pointer-events-none absolute inset-y-0 right-0 h-full w-40 bg-gradient-to-l from-indigo-100/70 to-transparent" />
+                      <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                       <div className="space-y-3 text-slate-900">
                         <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-indigo-700">
                           Square connected
@@ -577,28 +598,52 @@ export default function Dashboard() {
                           Preview first
                         </button>
                       </div>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 px-6 py-6 shadow-lg shadow-slate-900/5">
-                    <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-slate-100 via-transparent to-indigo-100" />
+                  ) : (
+                    <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 px-6 py-6 shadow-lg shadow-slate-900/5">
+                      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-br from-slate-100 via-transparent to-indigo-100" />
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="space-y-2 text-slate-900">
+                          <h2 className="text-lg font-semibold">Connect Square to backfill past customers</h2>
+                          <p className="max-w-2xl text-sm text-slate-600">Import your Square customers and invite them to leave a review in a few clicks.</p>
+                        </div>
+                        <a
+                          href="/integrations/square"
+                          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900/95 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/30 transition hover:-translate-y-0.5 hover:bg-slate-900"
+                        >
+                          Connect Square
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  )
+                ) : planStatusKnown ? (
+                  <div className="relative overflow-hidden rounded-3xl border border-amber-200/70 bg-gradient-to-r from-amber-50 via-white to-amber-50 px-6 py-6 shadow-lg shadow-amber-200/60">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="space-y-2 text-slate-900">
-                        <h2 className="text-lg font-semibold">Connect Square to backfill past customers</h2>
-                        <p className="max-w-2xl text-sm text-slate-600">Import your Square customers and invite them to leave a review in a few clicks.</p>
+                      <div className="space-y-2 text-amber-900">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-amber-700">
+                          Pro feature
+                        </div>
+                        <h2 className="text-lg font-semibold">Unlock Square automations with Pro</h2>
+                        <p className="max-w-2xl text-sm text-amber-800">
+                          Upgrade to the Pro plan to connect Square, backfill recent customers, and trigger automated review requests.
+                        </p>
                       </div>
                       <a
-                        href="/integrations/square"
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900/95 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/30 transition hover:-translate-y-0.5 hover:bg-slate-900"
+                        href="/pricing?from=dashboard&welcome=1"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/40 transition hover:-translate-y-0.5 hover:bg-amber-400"
                       >
-                        Connect Square
+                        View Pro plans
                         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
                         </svg>
                       </a>
                     </div>
                   </div>
-                )}
+                ) : null}
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -637,7 +682,7 @@ export default function Dashboard() {
                   <p className="mt-4 text-sm text-slate-600">
                     Update your business profile any time to refresh your share pages, QR download, and automated emails.
                   </p>
-                  <a
+                  <Link
                     href="/settings"
                     className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500"
                   >
@@ -645,7 +690,7 @@ export default function Dashboard() {
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
                     </svg>
-                  </a>
+                  </Link>
                 </div>
 
                 {landingUrl && (
@@ -718,12 +763,12 @@ export default function Dashboard() {
                     <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Latest feedback</div>
                     <p className="mt-2 text-sm text-slate-600">Private submissions from your review landing. Only your team can see these.</p>
                   </div>
-                  <a href="/feedback" className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500">
+                  <Link href="/feedback" className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500">
                     View all
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
                     </svg>
-                  </a>
+                  </Link>
                 </div>
                 {recentFeedback.length === 0 ? (
                   <div className="mt-5 rounded-2xl border border-dashed border-slate-200/80 bg-slate-50/60 px-5 py-6 text-sm text-slate-600">

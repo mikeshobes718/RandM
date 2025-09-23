@@ -2,25 +2,29 @@ import { getSupabaseAdmin } from './supabaseAdmin';
 import { getEnv } from './env';
 import { getStripeClient } from './stripe';
 
+function isProPlanId(planId: string | null | undefined): boolean {
+  if (!planId) return false;
+  const normalized = planId.trim().toLowerCase();
+  if (!normalized || normalized === 'starter' || normalized.startsWith('starter-')) return false;
+  return true;
+}
+
 export async function hasActivePro(uid: string): Promise<boolean> {
-  // Prefer local mirror in Supabase (subscriptions table)
   try {
     const supa = getSupabaseAdmin();
     const { data } = await supa
       .from('subscriptions')
-      .select('status')
+      .select('status, plan_id')
       .eq('uid', uid)
       .in('status', ['active', 'trialing'])
+      .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (data) return true;
+    if (data && isProPlanId(data.plan_id as string | null | undefined)) {
+      return true;
+    }
   } catch {}
-  // Fallback to Stripe lookup if needed (best-effort)
-  try {
-    const stripe = getStripeClient();
-    const customers = await stripe.customers.list({ email: undefined, limit: 1 });
-    void customers; // left as placeholder; production would map uid->customer
-  } catch {}
+
   return false;
 }
 
@@ -49,4 +53,3 @@ export async function getActiveSubscribersAndMRR(): Promise<{ active: number; mr
   }
   return { active, mrrUSD: Math.round(mrrUSD * 100) / 100 };
 }
-
