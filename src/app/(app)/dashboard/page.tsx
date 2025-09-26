@@ -353,7 +353,7 @@ export default function Dashboard() {
     if (['past_due', 'unpaid', 'canceled', 'incomplete_expired', 'incomplete'].includes(normalized)) {
       return { label: 'Plan needs attention', tone: 'warn' as const, pending: false };
     }
-    if (normalized === 'none') return { label: 'Starter plan', tone: 'neutral' as const, pending: false };
+    if (normalized === 'none' || normalized === 'starter') return { label: 'Starter plan', tone: 'neutral' as const, pending: false };
     return { label: `${planStatus} plan`, tone: 'neutral' as const, pending: false };
   }, [planStatus]);
   const planBadgeClass = useMemo(() => {
@@ -437,12 +437,14 @@ export default function Dashboard() {
   }, [copyState]);
 
   const showUpgradePrompt = Boolean(
-    planStatus && planStatus !== 'loading' && !['active', 'trialing', 'starter'].includes(planStatus)
+    planStatus && planStatus !== 'loading' && !['active', 'trialing', 'starter', 'none'].includes(planStatus.toLowerCase())
   );
 
+  // Only redirect to pricing if we have a definitive plan status that requires upgrade
+  // Don't redirect if planStatus is still loading or if it's a valid starter plan
   useEffect(() => {
     if (!planStatus || planStatus === 'loading') return;
-    if (showUpgradePrompt) {
+    if (showUpgradePrompt && planStatus !== 'none') {
       const search = new URLSearchParams();
       search.set('welcome', '1');
       search.set('from', 'dashboard');
