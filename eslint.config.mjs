@@ -15,10 +15,23 @@ const eslintConfig = [
     ignores: [
       "node_modules/**",
       ".next/**",
+      ".next*/**",
+      ".vercel/**",
       "out/**",
       "build/**",
+      "desktop-transcriber/**",
       "next-env.d.ts",
+      "test-app.js",
     ],
+  },
+  {
+    files: [
+      "scripts/patchFsTimeouts.js",
+      "scripts/run-eslint.js",
+    ],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
   },
 ];
 

@@ -124,19 +124,12 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    // Require verified email
+    // Do not redirect users from the dashboard based on email verification.
+    // Verification is surfaced in-app via banner instead to avoid loops.
     (async () => {
       try {
-        let r = await fetch('/api/auth/me', { cache: 'no-store', credentials: 'include' });
-        if (!r.ok) {
-          try { const tok = localStorage.getItem('idToken'); if (tok) r = await fetch('/api/auth/me', { cache: 'no-store', headers: { Authorization: `Bearer ${tok}` } }); } catch {}
-        }
-        if (!r.ok) { window.location.href = '/verify-email?next=/dashboard'; return; }
-        const j = await r.json();
-        if (!j?.emailVerified) { window.location.href = '/verify-email?next=/dashboard'; return; }
-      } catch {
-        window.location.href = '/verify-email?next=/dashboard';
-      }
+        await fetch('/api/auth/me', { cache: 'no-store', credentials: 'include' });
+      } catch {}
     })();
     (async () => {
       setLoading(true);
@@ -703,25 +696,38 @@ export default function Dashboard() {
                         </p>
                       </div>
                       <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:w-[360px]">
-                        <div className="flex w-full items-center overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-inner">
-                          <input
-                            className="flex-1 bg-transparent px-3 py-3 text-sm text-slate-700"
-                            readOnly
-                            value={landingUrl}
-                          />
-                          <button
-                            type="button"
-                            onClick={handleCopyLanding}
-                            className="h-full px-4 py-2 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50"
+                        <div className="flex w-full flex-col gap-2">
+                          <div className="flex items-stretch overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-inner">
+                            <input
+                              className="flex-1 bg-transparent px-3 py-3 text-sm text-slate-700"
+                              readOnly
+                              value={landingUrl}
+                            />
+                            <button
+                              type="button"
+                              onClick={handleCopyLanding}
+                              className="h-full px-4 py-2 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50"
+                            >
+                              {copyState === 'copied' ? 'Copied!' : copyState === 'error' ? 'Copy failed' : 'Copy link'}
+                            </button>
+                          </div>
+                          <span
+                            className={`text-xs ${copyState === 'copied' ? 'text-emerald-600' : copyState === 'error' ? 'text-rose-600' : 'text-slate-500'}`}
+                            aria-live="polite"
                           >
-                            {copyState === 'copied' ? 'Copied!' : copyState === 'error' ? 'Copy failed' : 'Copy link'}
-                          </button>
+                            {copyState === 'copied'
+                              ? 'Review landing link copied to clipboard'
+                              : copyState === 'error'
+                                ? 'Unable to copy link — try again'
+                                : ' '}
+                          </span>
                         </div>
                         <a
                           className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                           target="_blank"
                           href={landingUrl}
-                          rel="noreferrer"
+                          rel="noopener"
+                          referrerPolicy="no-referrer"
                         >
                           Open
                         </a>

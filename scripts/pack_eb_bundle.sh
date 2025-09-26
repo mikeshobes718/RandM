@@ -10,7 +10,12 @@ ZIP_NAME=${1:-${APP_NAME}-$(date +%Y%m%d-%H%M%S).zip}
 echo "[1/3] Cleaning previous build..."
 rm -rf "$OUT_DIR"
 
-echo "[2/3] Building Next.js (standalone)..."
+echo "[2/3] Installing dependencies and building Next.js (standalone)..."
+if [ -f package-lock.json ]; then
+  npm ci
+else
+  npm install
+fi
 npm run build
 
 # Ensure Next static assets are available relative to the standalone server.

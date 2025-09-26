@@ -10,12 +10,42 @@ export default function ForgotPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
-    e.preventDefault(); setError(null); setLoading(true);
+    e.preventDefault();
+    setError(null);
+    setSent(false);
+    const trimmed = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setError('Enter a valid email');
+      return;
+    }
+    setLoading(true);
     try {
-      await sendPasswordResetEmail(clientAuth, email);
-      setSent(true);
-    } catch (e) { setError(e instanceof Error ? e.message : 'Failed to send reset email'); }
-    finally { setLoading(false); }
+      let delivered = false;
+      try {
+        const r = await fetch('/api/auth/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: trimmed, type: 'reset' }),
+        });
+        if (!r.ok) throw new Error(await r.text().catch(() => 'Failed to queue email'));
+        delivered = true;
+      } catch (postmarkErr) {
+        try {
+          await sendPasswordResetEmail(clientAuth, trimmed);
+          delivered = true;
+        } catch (firebaseErr) {
+          const message = firebaseErr instanceof Error ? firebaseErr.message : String(firebaseErr);
+          throw new Error(postmarkErr instanceof Error ? `${postmarkErr.message}. ${message}` : message);
+        }
+      }
+      if (delivered) {
+        setSent(true);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to send reset email');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

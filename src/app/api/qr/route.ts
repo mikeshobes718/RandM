@@ -22,8 +22,19 @@ export async function GET(req: Request) {
     const pro = await hasActivePro(uid);
     if (!pro) {
       const supa = getSupabaseAdmin();
-      const { data: biz } = await supa.from('businesses').select('review_link').eq('owner_uid', uid);
-      const allowed = new Set(((biz || []) as { review_link: string | null }[]).map((b) => b.review_link).filter(Boolean) as string[]);
+      const { data: biz } = await supa.from('businesses').select('id, review_link').eq('owner_uid', uid);
+      const allowed = new Set<string>();
+      (biz || []).forEach((b: { id: string; review_link: string | null }) => {
+        if (b.review_link) allowed.add(b.review_link);
+        try {
+          // Allow landing URL on both APP_URL base and current request origin (apex/www)
+          const base = new URL(process.env.APP_URL || '');
+          allowed.add(new URL(`/r/${b.id}`, base).toString());
+          const reqUrl = new URL(req.url);
+          const currentOrigin = `${reqUrl.protocol}//${reqUrl.host}`;
+          allowed.add(new URL(`/r/${b.id}`, currentOrigin).toString());
+        } catch {}
+      });
       if (!allowed.has(data)) {
         return new NextResponse('Starter plan allows QR only for your saved review link.', { status: 403 });
       }

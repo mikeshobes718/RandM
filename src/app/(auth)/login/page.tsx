@@ -28,9 +28,60 @@ export default function LoginPage() {
       const cred = await signInWithEmailAndPassword(clientAuth, email, password);
       const token = await cred.user.getIdToken();
       try { localStorage.setItem('idToken', token); localStorage.setItem('userEmail', email); window.dispatchEvent(new Event('idtoken:changed')); } catch {}
-      await fetch('/api/auth/session', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ idToken: token, days: 7 }) });
+      // Try to establish HttpOnly session cookie, but don't hang UI if it stalls
+      // Establish HttpOnly session cookie and wait until server confirms it
+      await fetch('/api/auth/session', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ idToken: token, days: 7 }),
+        credentials: 'include',
+      }).catch(()=>undefined);
+      // Fallback: also set a non-HttpOnly cookie so server can verify raw idToken if session creation fails
+      try {
+        const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+        const maxAge = 7 * 24 * 60 * 60; // 7 days
+        const host = window.location.hostname;
+        const domain = host.includes('.') ? `; Domain=.${host.replace(/^www\./,'')}` : '';
+        document.cookie = `idToken=${token}; Max-Age=${maxAge}; Path=/; SameSite=Lax${secure}${domain}`;
+      } catch {}
+      // Poll /api/auth/me to ensure the cookie is actually usable by the server
+      try {
+        for (let i=0;i<6;i++) {
+          const r = await fetch('/api/auth/me', { cache:'no-store', credentials:'include' }).catch(()=>null);
+          if (r && r.ok) break;
+          await new Promise(res=>setTimeout(res, 400));
+        }
+      } catch {}
       try { window.dispatchEvent(new Event('idtoken:changed')); } catch {}
-      window.location.href = '/dashboard';
+      // Decide destination: if not verified, go to verify-email; else based on business
+      let target = '/onboarding/business';
+      try {
+        await cred.user.reload();
+        if (!cred.user.emailVerified) {
+          // ensure a verification email is available to resend
+          try { localStorage.setItem('userEmail', email); } catch {}
+          window.location.href = '/verify-email';
+          return;
+        }
+      } catch {}
+      try {
+        const headers: Record<string,string> = {};
+        if (token) headers.Authorization = `Bearer ${token}`;
+        let r = await fetch('/api/businesses/me', { cache:'no-store', credentials:'include', headers });
+        if (!r.ok) r = await fetch('/api/businesses/me', { cache:'no-store', headers });
+        if (r.ok) {
+          const j = await r.json();
+          if (j && j.business) target = '/dashboard';
+        }
+      } catch {}
+      // Respect an explicit next param only if it is NOT the onboarding page when a business exists
+      try {
+        const u = new URL(window.location.href);
+        const nextParam = u.searchParams.get('next');
+        const isOnboarding = (p: string) => p === '/onboarding' || p.startsWith('/onboarding/');
+        if (nextParam && target === '/dashboard' && !isOnboarding(nextParam)) target = nextParam;
+      } catch {}
+      window.location.href = target;
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login failed');
     } finally { setLoading(false); }

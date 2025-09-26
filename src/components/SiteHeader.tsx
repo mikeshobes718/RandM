@@ -46,7 +46,7 @@ function HeaderInner() {
 
   const handleDashboardClick = (ev: React.MouseEvent<HTMLAnchorElement>) => {
     try {
-      if (emailVerified !== true) {
+      if (emailVerified === false) {
         ev.preventDefault();
         window.location.href = '/verify-email?next=/dashboard';
       }
@@ -135,45 +135,97 @@ function HeaderInner() {
     return () => {};
   }, [menuOpen]);
 
+  const planChip = useMemo(() => {
+    if (!authed) return null;
+    const status = (planStatus || '').toLowerCase();
+    if (pro === true || status === 'active' || status === 'trialing') {
+      return {
+        label: 'Pro',
+        className: 'border-emerald-500/40 bg-emerald-50 text-emerald-600',
+      };
+    }
+    if (status === 'starter') {
+      return {
+        label: 'Starter',
+        className: 'border-slate-300/70 bg-white/70 text-slate-600',
+      };
+    }
+    if (status && status !== 'none') {
+      return {
+        label: status.replace(/_/g, ' '),
+        className: 'border-amber-400/60 bg-amber-50 text-amber-700',
+      };
+    }
+    return null;
+  }, [authed, planStatus, pro]);
+
   const desktopCta = useMemo(() => {
+    const signOutButton = (
+      <button
+        type="button"
+        onClick={() => { void logout(); }}
+        className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition hover:-translate-y-0.5 hover:bg-slate-50"
+      >
+        Log out
+      </button>
+    );
+
     if (!authed) {
       return (
         <div className="flex items-center gap-3">
-          <Link href="/login" className="text-sm font-medium text-slate-200 hover:text-white transition">Sign in</Link>
-          <Link href="/register" className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm shadow-white/40 hover:bg-white/90 transition">Create account</Link>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm shadow-slate-900/5 transition hover:-translate-y-0.5 hover:bg-slate-50"
+          >
+            Sign in
+          </Link>
+          <Link
+            href="/register"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5 hover:from-indigo-400 hover:to-purple-400"
+          >
+            Create account
+          </Link>
         </div>
       );
     }
-    if (authed && (pro === true || hasBusiness)) {
+    if (authed && (pro === true || hasBusiness || planStatus === 'starter')) {
       return (
-        <Link
-          href="/dashboard"
-          onClick={handleDashboardClick}
-          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 hover:from-violet-400 hover:to-indigo-400"
-        >
-          Dashboard
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            onClick={handleDashboardClick}
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5 hover:from-violet-400 hover:to-indigo-400"
+          >
+            Dashboard
+          </Link>
+          {signOutButton}
+        </div>
       );
     }
     if (authed && !hasBusiness && pro === false) {
-      if (planStatus === 'none') {
-        return (
-          <Link href="/pricing" className="rounded-full border border-white/40 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10">
-            Choose a plan
-          </Link>
-        );
-      }
       return (
-        <button
-          onClick={() => void startCheckout('monthly', setCtaLoading)}
-          disabled={ctaLoading}
-          className="rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg shadow-amber-400/40 disabled:opacity-60"
-        >
-          {ctaLoading ? 'Processing…' : 'Upgrade to Pro'}
-        </button>
+        <div className="flex items-center gap-3">
+          {planStatus === 'none' ? (
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm shadow-slate-900/5 transition hover:-translate-y-0.5 hover:bg-slate-50"
+            >
+              Choose a plan
+            </Link>
+          ) : (
+            <button
+              onClick={() => void startCheckout('monthly', setCtaLoading)}
+              disabled={ctaLoading}
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-4 py-2 text-sm font-semibold text-slate-900 shadow-lg shadow-amber-400/40 transition hover:-translate-y-0.5 disabled:opacity-60"
+            >
+              {ctaLoading ? 'Processing…' : 'Upgrade to Pro'}
+            </button>
+          )}
+          {signOutButton}
+        </div>
       );
     }
-    return null;
+    return signOutButton;
   }, [authed, pro, hasBusiness, planStatus, ctaLoading]);
 
   return (
@@ -191,9 +243,9 @@ function HeaderInner() {
             <span className="text-base font-semibold tracking-tight text-slate-900 sm:text-lg">Reviews & Marketing</span>
             <span className="text-[10px] font-medium uppercase tracking-[0.28em] text-slate-500">Reputation Toolkit</span>
           </div>
-          {pro === true && (
-            <span className="ml-2 hidden items-center rounded-full border border-emerald-500/40 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600 md:inline-flex">
-              Pro
+          {planChip && (
+            <span className={`ml-2 hidden items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide md:inline-flex ${planChip.className}`}>
+              {planChip.label}
             </span>
           )}
         </Link>
@@ -214,6 +266,17 @@ function HeaderInner() {
         </nav>
 
         <div className="hidden md:flex md:items-center md:gap-3">
+          {authed && email && (
+            <span
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-sm shadow-slate-900/5"
+              title={email}
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-[10px] font-bold text-white">
+                {email.slice(0, 1).toUpperCase()}
+              </span>
+              {email}
+            </span>
+          )}
           {desktopCta}
         </div>
 
@@ -266,14 +329,14 @@ function HeaderInner() {
                     <Link
                       href="/login"
                       onClick={() => setMenuOpen(false)}
-                      className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-4 py-3 text-base font-medium text-white/90 hover:bg-white/10 transition"
+                      className="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white px-4 py-3 text-base font-semibold text-slate-900 shadow-lg shadow-slate-900/40 transition hover:-translate-y-0.5 hover:bg-slate-100"
                     >
                       Sign in
                     </Link>
                     <Link
                       href="/register"
                       onClick={() => setMenuOpen(false)}
-                      className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-4 py-3 text-base font-semibold text-white shadow-lg shadow-indigo-500/40"
+                      className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-4 py-3 text-base font-semibold text-white shadow-lg shadow-indigo-500/40 transition hover:-translate-y-0.5"
                     >
                       Create account
                     </Link>
@@ -321,9 +384,9 @@ function HeaderInner() {
                       setMenuOpen(false);
                       void logout();
                     }}
-                    className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-4 py-3 text-base font-medium text-white/70 hover:bg-white/10 transition"
+                    className="inline-flex items-center justify-center rounded-2xl border border-white/20 px-4 py-3 text-base font-semibold text-white shadow-lg shadow-slate-900/50 transition hover:-translate-y-0.5 hover:bg-white/10"
                   >
-                    Logout
+                    Log out
                   </button>
                 )}
               </div>
@@ -375,7 +438,7 @@ async function startCheckout(plan: 'monthly' | 'yearly', setLoading: (v: boolean
   try {
     setLoading(true);
     const chosen = plan || getBillingPref();
-    let payload: { plan: 'monthly' | 'yearly'; uid?: string; email?: string; mode?: 'test' | 'live' } = { plan: chosen };
+    let payload: { plan: 'monthly' | 'yearly'; uid?: string; email?: string } = { plan: chosen };
     try {
       const hasToken = Boolean(localStorage.getItem('idToken'));
       if (!hasToken) {
@@ -387,12 +450,6 @@ async function startCheckout(plan: 'monthly' | 'yearly', setLoading: (v: boolean
         }
         payload = { plan: chosen, uid: 'anon', email: em };
       }
-      const search = new URL(window.location.href).searchParams;
-      const envForce = (process.env.NEXT_PUBLIC_STRIPE_FORCE_TEST_MODE || '').toLowerCase();
-      const qs = (search.get('stripe') || search.get('mode') || search.get('test')) || '';
-      if (qs.toLowerCase() === 'test' || qs === '1' || envForce === '1' || envForce === 'true') {
-        payload.mode = 'test';
-      }
     } catch {}
     const res = await fetch('/api/stripe/checkout', {
       method: 'POST',
@@ -402,7 +459,6 @@ async function startCheckout(plan: 'monthly' | 'yearly', setLoading: (v: boolean
     if (!res.ok) throw new Error(await res.text());
     const j = await res.json();
     try { if (j?.id) localStorage.setItem('stripe:lastSessionId', String(j.id)); } catch {}
-    try { if (j?.mode) localStorage.setItem('stripe:lastMode', String(j.mode)); } catch {}
     if (j?.url) {
       window.location.href = j.url;
     } else {

@@ -1,86 +1,44 @@
-name: Deploy to Elastic Beanstalk
+name: Deploy to Elastic Beanstalk (prod)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
+
+concurrency:
+  group: eb-deploy-prod
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      APP_NAME: Reviews and Marketing
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Configure AWS Credentials
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Package Next.js standalone bundle
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and pack EB bundle
         run: bash scripts/pack_eb_bundle.sh
 
-      - name: Upload bundle and deploy
+      - name: Deploy to EB
         env:
-          EB_APP_NAME: Reviews and Marketing
-          EB_ENV_NAME: reviewsandmarketing-standalone
-        run: |
-          ZIP_FILE=$(ls -t reviewsandmarketing-*.zip | head -n1)
-          BUCKET="reviewsandmarketing-eb-${{ secrets.AWS_REGION || 'us-east-1' }}-${{ secrets.AWS_ACCOUNT_ID }}"
-          aws s3 cp "$ZIP_FILE" "s3://$BUCKET/bundles/$ZIP_FILE"
-          LABEL="gha-${{ github.run_id }}-${{ github.run_number }}"
-          PREV=$(aws elasticbeanstalk describe-environments --environment-names "$EB_ENV_NAME" --query 'Environments[0].VersionLabel' --output text || echo '')
-          aws elasticbeanstalk create-application-version \
-            --application-name "$EB_APP_NAME" \
-            --version-label "$LABEL" \
-            --source-bundle S3Bucket="$BUCKET",S3Key="bundles/$ZIP_FILE" --process
-          aws elasticbeanstalk update-environment \
-            --environment-name "$EB_ENV_NAME" \
-            --version-label "$LABEL"
-          echo "Waiting for environment to become Ready…"
-          for i in {1..60}; do
-            STATUS=$(aws elasticbeanstalk describe-environments --environment-names "$EB_ENV_NAME" --query 'Environments[0].{S:Status,H:Health}' --output text)
-            echo "[$(date +%H:%M:%S)] $STATUS"
-            if echo "$STATUS" | grep -q "Ready" && echo "$STATUS" | grep -q "Green"; then break; fi
-            sleep 10
-          done
-          FINAL=$(aws elasticbeanstalk describe-environments --environment-names "$EB_ENV_NAME" --query 'Environments[0].{Status:Status,Health:Health}' --output text)
-          echo "Final: $FINAL"
-          if ! (echo "$FINAL" | grep -q "Ready" && echo "$FINAL" | grep -q "Green"); then
-            echo "Rolling back to $PREV"
-            aws elasticbeanstalk update-environment --environment-name "$EB_ENV_NAME" --version-label "$PREV"
-            exit 1
-          fi
+          ENV_NAME: ${{ secrets.EB_ENV_NAME }}
+        run: bash scripts/deploy_eb.sh "$ENV_NAME"
 
-      - name: Smoke check (/, CSS, health)
-        run: |
-          set -euo pipefail
-          curl -sS -I https://reviewsandmarketing.com | head -n1 | grep "200"
-          CSS=$(curl -sS https://reviewsandmarketing.com | grep -oE "_next/static/css/[a-z0-9]+\.css" | head -n1)
-          echo "CSS=$CSS"
-          curl -sS -I "https://reviewsandmarketing.com/$CSS" | head -n1 | grep "200"
-          curl -sS https://reviewsandmarketing.com/api/health | grep '"status":"ok"'
-      - name: Prewarm auth and dashboard
-        run: |
-          set -euo pipefail
-          # Expect 200 or a redirect for protected pages
-          curl -sS -I https://reviewsandmarketing.com/login | head -n1 | egrep "200|302|307"
-          curl -sS -I https://reviewsandmarketing.com/dashboard | head -n1 | egrep "200|302|307"
-      - name: Run one-time migrations (optional)
-        if: ${{ secrets.MIGRATIONS_ONCE_TOKEN != '' }}
-        env:
-          TOKEN: ${{ secrets.MIGRATIONS_ONCE_TOKEN }}
-        run: |
-          set -euo pipefail
-          curl -sS -X POST "https://reviewsandmarketing.com/api/admin/migrate" -H "x-admin-token: $TOKEN" | jq -r '.' || true

@@ -79,6 +79,34 @@ export function resetEmailTemplate(link: string): { subject: string; html: strin
   return { subject, html, text };
 }
 
+export function starterWelcomeEmail(appUrl: string): { subject: string; html: string; text: string } {
+  const subject = 'Welcome to Reviews & Marketing Starter';
+  const intro = 'Your Starter workspace is ready. Connect your business and launch your first review request today.';
+  const html = brandedHtml({
+    title: 'You’re on the Starter plan',
+    intro,
+    ctaText: 'Set up your review link',
+    ctaUrl: appUrl,
+    footerNote: 'Starter includes five review requests each month plus your shared QR code. Upgrade to Pro anytime for more volume and team access.',
+  });
+  const text = `${intro} Visit your workspace: ${appUrl}`;
+  return { subject, html, text };
+}
+
+export function proUpgradeEmail(appUrl: string): { subject: string; html: string; text: string } {
+  const subject = 'Thanks for upgrading to Pro';
+  const intro = 'Your Pro subscription is active. Multi-location routing, advanced analytics, and priority support are unlocked.';
+  const html = brandedHtml({
+    title: 'Pro plan activated',
+    intro,
+    ctaText: 'Open the dashboard',
+    ctaUrl: appUrl,
+    footerNote: 'Need help getting the most from Pro? Reply to this email and our team will walk you through best practices.',
+  });
+  const text = `${intro} Open the dashboard: ${appUrl}`;
+  return { subject, html, text };
+}
+
 function escapeHtml(s: string) {
   return s
     .replace(/&/g, '&amp;')
@@ -87,4 +115,3 @@ function escapeHtml(s: string) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
-

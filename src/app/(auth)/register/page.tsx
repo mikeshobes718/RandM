@@ -2,15 +2,19 @@
 import { useEffect, useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { clientAuth } from '@/lib/firebaseClient';
+import { formatPhone, normalizePhone } from '@/lib/phone';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [businessPhone, setBusinessPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [show, setShow] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [businessError, setBusinessError] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [criteria, setCriteria] = useState({
     length: false,
@@ -43,6 +47,24 @@ export default function RegisterPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true); setError(null);
+    const trimmedBusiness = businessName.trim();
+    const rawDigits = normalizePhone(businessPhone);
+    if (rawDigits.length > 10) {
+      setBusinessError('Enter a 10-digit phone number');
+      return;
+    }
+    const phoneDigits = rawDigits.slice(0, 10);
+    if (!trimmedBusiness) {
+      setBusinessError('Enter your business name');
+      return;
+    }
+    if (phoneDigits.length < 10) {
+      setBusinessError('Enter a valid phone number so we can help you onboard.');
+      return;
+    }
+    setBusinessError(null);
+    setBusinessPhone(formatPhone(phoneDigits));
+
     try {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setEmailError('Enter a valid email'); return; } else setEmailError(null);
       // baseline password policy: min 8 and at least 3 of 4 types
@@ -54,10 +76,43 @@ export default function RegisterPage() {
       const cred = await createUserWithEmailAndPassword(clientAuth, email, password);
       const token = await cred.user.getIdToken();
       try { localStorage.setItem('idToken', token); localStorage.setItem('userEmail', email); window.dispatchEvent(new Event('idtoken:changed')); } catch {}
-      await fetch('/api/auth/session', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ idToken: token, days: 7 }) });
+      await fetch('/api/auth/session', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ idToken: token, days: 7 }), credentials:'include' });
+      // Poll server auth to ensure cookie is live
+      try {
+        for (let i=0;i<6;i++) {
+          const r = await fetch('/api/auth/me', { cache:'no-store', credentials:'include' }).catch(()=>null);
+          if (r && r.ok) break;
+          await new Promise(res=>setTimeout(res, 400));
+        }
+      } catch {}
       try { window.dispatchEvent(new Event('idtoken:changed')); } catch {}
-      // Send branded verification email via Postmark-backed route
-      await fetch('/api/auth/email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, type: 'verify' }) });
+      // Seed initial business record so dashboard is ready immediately
+      try {
+        const res = await fetch('/api/businesses/upsert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: trimmedBusiness,
+            contact_phone: phoneDigits,
+          }),
+          credentials: 'include',
+        });
+        if (!res.ok) {
+          console.error('business upsert failed', await res.text().catch(() => ''));
+        }
+      } catch (bizErr) {
+        console.error('business upsert error', bizErr);
+      }
+      // Send branded verification email via Postmark-backed route; fall back to Firebase if provider fails
+      const emailRes = await fetch('/api/auth/email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, type: 'verify' }) });
+      if (!emailRes.ok) {
+        if (!clientAuth.currentUser) {
+          throw new Error(await emailRes.text().catch(() => 'Verification email failed to send'));
+        }
+        await import('firebase/auth').then(({ sendEmailVerification }) =>
+          sendEmailVerification(clientAuth.currentUser!, { url: `${window.location.origin}/verify-email` })
+        );
+      }
       window.location.href = '/verify-email';
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Registration failed');
@@ -108,6 +163,38 @@ export default function RegisterPage() {
                 </div>
               </div>
             </label>
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">Business name</span>
+              <input
+                aria-label="Business name"
+                className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="text"
+                placeholder="Acme Dental"
+                value={businessName}
+                onChange={(e) => {
+                  setBusinessName(e.target.value);
+                  setBusinessError(null);
+                }}
+                required
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm font-medium text-gray-700">Business phone</span>
+              <input
+                aria-label="Business phone"
+                className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                type="tel"
+                placeholder="(555) 123-4567"
+                value={businessPhone}
+                onChange={(e) => {
+                  const digits = normalizePhone(e.target.value).slice(0, 10);
+                  setBusinessPhone(formatPhone(digits));
+                  setBusinessError(null);
+                }}
+                required
+              />
+            </label>
+            {businessError && <div role="alert" className="text-red-600 text-sm">{businessError}</div>}
             <button type="submit" disabled={loading} className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 font-medium shadow hover:from-blue-700 hover:to-purple-700 transition">{loading?'Creating…':'Create account'}</button>
             {error && <div role="alert" className="text-red-600 text-sm">{error}</div>}
           </form>

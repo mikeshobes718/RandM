@@ -1,451 +1,446 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
-import { clientAuth } from '@/lib/firebaseClient';
 
 type Suggestion = { placeId: string; mainText: string; secondaryText: string };
+type Details = {
+  id: string;
+  displayName?: string;
+  formattedAddress?: string;
+  rating?: number;
+  userRatingCount?: number;
+  googleMapsUri?: string;
+  writeAReviewUri?: string;
+  lat?: number;
+  lng?: number;
+};
 
-function newSessionToken() {
-  return crypto.randomUUID();
-}
+type ExistingBusiness = {
+  name?: string | null;
+  google_place_id?: string | null;
+  google_maps_place_uri?: string | null;
+  google_maps_write_review_uri?: string | null;
+  review_link?: string | null;
+  address?: string | null;
+  google_rating?: number | null;
+};
+
+function newSessionToken() { return crypto.randomUUID(); }
 
 export default function ConnectBusiness() {
-  const [verified, setVerified] = useState<boolean | null>(null);
-  const [resendCooldown, setResendCooldown] = useState<number>(0);
-  const [toast, setToast] = useState<string>('');
+  const [sessionToken, setSessionToken] = useState<string>(() => newSessionToken());
   const [input, setInput] = useState('');
   const [region, setRegion] = useState<string>('auto');
   const [coords, setCoords] = useState<{lat:number;lng:number}|null>(null);
-  const [sessionToken, setSessionToken] = useState<string>(() => newSessionToken());
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [selected, setSelected] = useState<Details | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activeIndex, setActiveIndex] = useState<number>(-1);
-  const [selected, setSelected] = useState<{
-    id: string;
-    displayName?: string;
-    formattedAddress?: string;
-    rating?: number;
-    userRatingCount?: number;
-    googleMapsUri?: string;
-    writeAReviewUri?: string;
-    lat?: number;
-    lng?: number;
-  } | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [useLocation, setUseLocation] = useState<boolean>(true);
-  const [mapFailed, setMapFailed] = useState<boolean>(false);
-  const [isPro, setIsPro] = useState<boolean>(false);
-  const [saved, setSaved] = useState<boolean>(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [planAllowed, setPlanAllowed] = useState<boolean>(true);
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
+  const copyTimerRef = useRef<number | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
-
-  // Restore last query on mount
-  useEffect(() => {
-    try {
-      const last = localStorage.getItem('onboarding:lastQuery') || '';
-      if (last) setInput(last);
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    // Best-effort geolocation bias
-    if (useLocation && navigator && 'geolocation' in navigator) {
-      try { navigator.geolocation.getCurrentPosition((pos)=>setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })); } catch {}
-    }
-    const ctrl = new AbortController();
-    if (!input.trim()) {
-      setSuggestions([]);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    const t = setTimeout(async () => {
-      try {
-        const res = await fetch('/api/places/autocomplete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            input,
-            sessionToken,
-            includedRegionCodes: region !== 'auto' ? region : undefined,
-            lat: coords?.lat,
-            lng: coords?.lng,
-            language: (navigator.languages?.[0]||navigator.language||'').split('-')[0] || undefined,
-          }),
-          signal: ctrl.signal,
-        });
-        const data = await res.json();
-        const items: Suggestion[] = data.items || [];
-        setSuggestions(items);
-        setActiveIndex(items.length ? 0 : -1);
-      } catch (e) {
-        // Ignore expected aborts from in-flight request when typing quickly
-        if (e instanceof DOMException && e.name === 'AbortError') {
-          return;
-        }
-        const msg = e instanceof Error ? e.message : 'Autocomplete failed';
-        if (msg.toLowerCase().includes('abort')) return;
-        setError(msg);
-      } finally {
-        setLoading(false);
-      }
-    }, 200);
-    return () => {
-      ctrl.abort();
-      clearTimeout(t);
-    };
-  }, [input, sessionToken, region, useLocation]);
-
-  useEffect(() => {
-    // Check email verification status periodically
-    const check = async () => {
-      try {
-        if (clientAuth.currentUser) {
-          await clientAuth.currentUser.reload();
-          setVerified(clientAuth.currentUser.emailVerified);
-        }
-      } catch {}
-    };
-    check();
-    const id = setInterval(check, 5000);
-    return () => clearInterval(id);
-  }, []);
-
-  // Fetch entitlement status to decide QR visibility for Starter
+  // If a business is already connected, send user to the dashboard immediately (unless editing)
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch('/api/entitlements', { cache: 'no-store' });
+        const params = new URLSearchParams(window.location.search);
+        const editing = params.get('edit') === '1';
+        if (editing) return;
+        const tok = typeof window !== 'undefined' ? localStorage.getItem('idToken') : null;
+        const headers: Record<string,string> = tok ? { Authorization: `Bearer ${tok}` } : {};
+        let r = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers });
+        if (!r.ok) r = await fetch('/api/businesses/me', { cache: 'no-store', headers });
         if (r.ok) {
           const j = await r.json();
-          setIsPro(Boolean(j?.pro));
+          if (j && j.business) {
+            window.location.replace('/dashboard');
+            return;
+          }
         }
       } catch {}
     })();
   }, []);
 
   useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const t = setTimeout(() => setResendCooldown((s) => Math.max(0, s - 1)), 1000);
-    return () => clearTimeout(t);
-  }, [resendCooldown]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('edit') !== '1') return;
+        const tok = typeof window !== 'undefined' ? localStorage.getItem('idToken') : null;
+        const headers: Record<string, string> = tok ? { Authorization: `Bearer ${tok}` } : {};
+        let r = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers });
+        if (!r.ok) r = await fetch('/api/businesses/me', { cache: 'no-store', headers });
+        if (!r.ok) return;
+        const data = await r.json().catch(() => null) as { business?: ExistingBusiness | null } | null;
+        const biz = data?.business;
+        if (!biz || !biz.name) return;
+        if (!cancelled) setInput(biz.name);
+        let details: Details | null = null;
+        if (biz.google_place_id) {
+          details = await getDetails(biz.google_place_id);
+        }
+        if (cancelled) return;
+        if (details) {
+          details = {
+            ...details,
+            googleMapsUri: details.googleMapsUri || biz.google_maps_place_uri || undefined,
+            writeAReviewUri: details.writeAReviewUri || biz.google_maps_write_review_uri || biz.review_link || undefined,
+          };
+        } else {
+          details = {
+            id: biz.google_place_id || biz.name || 'existing-business',
+            displayName: biz.name || undefined,
+            formattedAddress: biz.address || undefined,
+            googleMapsUri: biz.google_maps_place_uri || undefined,
+            writeAReviewUri: biz.google_maps_write_review_uri || biz.review_link || undefined,
+            rating: typeof biz.google_rating === 'number' ? biz.google_rating : undefined,
+          };
+        }
+        if (!cancelled && details) {
+          setSelected(details);
+          setSuggestions([]);
+          setSessionToken(newSessionToken());
+          setToast('Loaded your current business details. Save to confirm any changes.');
+          if (typeof window !== 'undefined') {
+            window.setTimeout(() => setToast((current) => (current === 'Loaded your current business details. Save to confirm any changes.' ? null : current)), 4000);
+          }
+        }
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
-  function getResendQuotaOk(): boolean {
-    try {
-      const now = Date.now();
-      const start = Number(localStorage.getItem('verifyCountStart') || '0');
-      const count = Number(localStorage.getItem('verifyCount') || '0');
-      const windowMs = 60 * 60 * 1000; // 1h
-      if (!start || now - start > windowMs) return true;
-      return count < 3;
-    } catch { return true; }
-  }
+  useEffect(() => {
+    let cancelled = false;
+    const enforcePlan = async () => {
+      try {
+        const tok = typeof window !== 'undefined' ? localStorage.getItem('idToken') : null;
+        const headers: Record<string, string> = tok ? { Authorization: `Bearer ${tok}` } : {};
+        let res = await fetch('/api/plan/status', { cache: 'no-store', credentials: 'include', headers });
+        if (!res.ok) res = await fetch('/api/plan/status', { cache: 'no-store', headers });
+        if (res.status === 401) {
+          return;
+        }
+        if (!res.ok) return;
+        const data = await res.json().catch(() => null) as { status?: string } | null;
+        const normalized = (data?.status || '').toLowerCase();
+        const allowed = normalized === 'starter' || normalized === 'active' || normalized === 'trialing';
+        if (!cancelled) setPlanAllowed(allowed);
+        if (!allowed && !cancelled) {
+          setError('Choose a plan to keep building your workspace. Redirecting…');
+          setTimeout(() => {
+            const next = encodeURIComponent(window.location.pathname + window.location.search || '');
+            window.location.replace(`/pricing?welcome=1&next=${next}`);
+          }, 600);
+        }
+      } catch {}
+    };
+    void enforcePlan();
+    return () => { cancelled = true; };
+  }, []);
 
-  function recordResend() {
-    try {
-      const now = Date.now();
-      const start = Number(localStorage.getItem('verifyCountStart') || '0');
-      const windowMs = 60 * 60 * 1000; // 1h
-      if (!start || now - start > windowMs) {
-        localStorage.setItem('verifyCountStart', String(now));
-        localStorage.setItem('verifyCount', '1');
-      } else {
-        const count = Number(localStorage.getItem('verifyCount') || '0') + 1;
-        localStorage.setItem('verifyCount', String(count));
-      }
-    } catch {}
-  }
+  // Premium gradient halo
+  const Halo = () => (
+    <div aria-hidden className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-[700px] h-[220px] blur-2xl"
+      style={{ background: 'radial-gradient(50% 60% at 50% 50%, rgba(99,102,241,.25), rgba(168,85,247,.15) 60%, transparent)' }} />
+  );
 
-  async function resendVerify() {
-    if (resendCooldown > 0) return;
-    if (!getResendQuotaOk()) { setToast('Too many verification emails sent. Try again later.'); setTimeout(()=>setToast(''),3000); return; }
-    try {
-      const targetEmail = (typeof window !== 'undefined' ? localStorage.getItem('userEmail') : '') || '';
-      if (!targetEmail) throw new Error('Sign in to resend verification');
-      await fetch('/api/auth/email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email: targetEmail, type: 'verify' }) });
-      setToast('Verification email sent.');
-      setResendCooldown(30);
-      recordResend();
-    } catch (e) {
-      setToast(e instanceof Error ? e.message : 'Failed to send verification email');
-    } finally {
-      setTimeout(() => setToast(''), 3000);
-    }
-  }
+  useEffect(() => {
+    // soft geolocation to bias autocomplete
+    try { navigator.geolocation.getCurrentPosition(p=>setCoords({ lat: p.coords.latitude, lng: p.coords.longitude })); } catch {}
+  }, []);
 
-  async function select(placeId: string) {
-    setLoading(true);
-    setError(null);
+  // Autocomplete with debounce
+  useEffect(() => {
+    if (!input.trim()) { setSuggestions([]); return; }
+    setLoading(true); setError(null);
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      try {
+        const body: Record<string, unknown> = {
+          input,
+          sessionToken,
+          includedRegionCodes: region !== 'auto' ? region : undefined,
+          lat: coords?.lat,
+          lng: coords?.lng,
+          language: (navigator.languages?.[0]||navigator.language||'').split('-')[0] || undefined,
+        };
+        const res = await fetch('/api/places/autocomplete', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
+        const data = await res.json();
+        const items: Suggestion[] = (data.items || []).slice(0, 8);
+        setSuggestions(items);
+      } catch (e) {
+        if (!(e instanceof DOMException && e.name==='AbortError')) setError('Autocomplete failed');
+      } finally { setLoading(false); }
+    }, 220);
+    return () => { clearTimeout(t); ctrl.abort(); };
+  }, [input, sessionToken, region, coords?.lat, coords?.lng]);
+
+  async function getDetails(placeId: string): Promise<Details | null> {
     try {
       const url = `/api/places/details?placeId=${encodeURIComponent(placeId)}&sessionToken=${encodeURIComponent(sessionToken)}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      setSelected(data);
-      setSessionToken(newSessionToken());
-      setSuggestions([]);
-      setActiveIndex(-1);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to fetch place details');
-    } finally {
-      setLoading(false);
-    }
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) return null;
+      const j = await r.json();
+      return {
+        id: j.id,
+        displayName: j.displayName,
+        formattedAddress: j.formattedAddress,
+        rating: j.rating,
+        userRatingCount: j.userRatingCount,
+        googleMapsUri: j.googleMapsUri,
+        writeAReviewUri: j.writeAReviewUri,
+        lat: j.lat,
+        lng: j.lng,
+      };
+    } catch { return null; }
   }
 
-  async function saveBusiness() {
-    if (!selected) return;
-    setSaving(true);
-    setError(null);
+  const mapSrc = useMemo(() => {
+    if (!selected?.lat || !selected?.lng) return null;
+    const u = new URL('/api/maps/static', window.location.origin);
+    u.searchParams.set('lat', String(selected.lat));
+    u.searchParams.set('lng', String(selected.lng));
+    u.searchParams.set('w', '720');
+    u.searchParams.set('h', '200');
+    u.searchParams.set('zoom', '15');
+    return u.toString();
+  }, [selected?.lat, selected?.lng]);
+
+  const reviewUrl = selected?.writeAReviewUri || '';
+  const qrReview = reviewUrl ? `/api/qr?data=${encodeURIComponent(reviewUrl)}&format=png&scale=8` : null;
+
+  const resetCopyState = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (copyTimerRef.current) {
+      window.clearTimeout(copyTimerRef.current);
+    }
+    copyTimerRef.current = window.setTimeout(() => {
+      setCopyState('idle');
+      copyTimerRef.current = null;
+    }, 2400);
+  }, []);
+
+  const handleCopyReview = useCallback(async () => {
+    if (!reviewUrl) return;
     try {
-      // Authorization header with Firebase ID token as required by API
-      let idToken = '';
-      try { idToken = (typeof window !== 'undefined' ? localStorage.getItem('idToken') : '') || ''; } catch {}
-      const r = await fetch('/api/businesses/upsert', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}) },
-        body: JSON.stringify({
-          name: selected.displayName,
-          google_place_id: selected.id,
-          google_maps_place_uri: selected.googleMapsUri,
-          google_maps_write_review_uri: selected.writeAReviewUri,
-          review_link: selected.writeAReviewUri,
-          google_rating: selected.rating ?? null,
-          address: selected.formattedAddress ?? null,
-        }),
-      });
-      if (!r.ok) throw new Error(await r.text());
-      setSaved(true);
-      setToast('Saved — opening your dashboard…');
-      try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
-      setTimeout(() => { window.location.href = '/dashboard'; }, 900);
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(reviewUrl);
+        setCopyState('copied');
+        resetCopyState();
+        return;
+      }
+      throw new Error('Clipboard unavailable');
+    } catch {
+      try {
+        if (typeof document !== 'undefined') {
+          const textarea = document.createElement('textarea');
+          textarea.value = reviewUrl;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'absolute';
+          textarea.style.left = '-9999px';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          setCopyState('copied');
+          resetCopyState();
+          return;
+        }
+        throw new Error('Clipboard unavailable');
+      } catch {
+        setCopyState('error');
+        resetCopyState();
+      }
+    }
+  }, [reviewUrl, resetCopyState]);
+
+  useEffect(() => () => {
+    if (typeof window !== 'undefined' && copyTimerRef.current) {
+      window.clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = null;
+    }
+  }, []);
+
+  async function save() {
+    if (!selected?.displayName) return;
+    if (!planAllowed) {
+      setError('Choose a plan to keep building your workspace. Redirecting…');
+      setTimeout(() => window.location.replace('/pricing?welcome=1'), 400);
+      return;
+    }
+    setSaving(true); setError(null);
+    try {
+      const tok = typeof window !== 'undefined' ? localStorage.getItem('idToken') : null;
+      const headers: Record<string,string> = { 'Content-Type':'application/json' };
+      if (tok) headers.Authorization = `Bearer ${tok}`;
+      const payload = {
+        name: selected.displayName,
+        google_place_id: selected.id,
+        google_maps_place_uri: selected.googleMapsUri || null,
+        google_maps_write_review_uri: reviewUrl || null,
+        review_link: reviewUrl || null,
+        address: selected.formattedAddress || null,
+        google_rating: typeof selected.rating === 'number' ? selected.rating : null,
+        // Include idToken so the server can authenticate even if the cookie is missing
+        idToken: tok || undefined,
+      };
+      // Attempt 1: JSON POST with cookie + bearer
+      let ok = false;
+      let lastErr = '';
+      try {
+        const r = await fetch('/api/businesses/upsert', { method:'POST', headers, credentials:'include', body: JSON.stringify(payload) });
+        ok = r.ok;
+        if (!ok) {
+          const txt = await r.text().catch(()=>String(r.status));
+          lastErr = txt || '';
+          if (txt) console.warn('upsert json failed:', txt);
+        }
+      } catch (e) {
+        console.warn('upsert json error', e);
+      }
+      // Attempt 2: form-encoded (server also accepts /form)
+      if (!ok) {
+        try {
+          const form = new URLSearchParams();
+          form.set('name', payload.name);
+          if (payload.google_place_id) form.set('google_place_id', payload.google_place_id);
+          if (payload.google_maps_place_uri) form.set('google_maps_place_uri', String(payload.google_maps_place_uri));
+          if (payload.google_maps_write_review_uri) form.set('google_maps_write_review_uri', String(payload.google_maps_write_review_uri));
+          if (payload.review_link) form.set('review_link', String(payload.review_link));
+          if (payload.address) form.set('address', String(payload.address));
+          if (typeof payload.google_rating === 'number') form.set('google_rating', String(payload.google_rating));
+          if (tok) form.set('idToken', tok);
+          const r2 = await fetch('/api/businesses/upsert/form', { method:'POST', body: form, credentials:'include' });
+          ok = r2.ok;
+          if (!ok) {
+            const txt = await r2.text().catch(()=>String(r2.status));
+            lastErr = txt || lastErr;
+          }
+        } catch (e) {
+          console.warn('upsert form error', e);
+        }
+      }
+      // Remove sendBeacon path to avoid silent failures
+      if (!ok) throw new Error(lastErr || 'Save failed');
+      setToast('Saved — redirecting to your dashboard…');
+      setTimeout(()=>{ window.location.href = '/dashboard?from=onboarding'; }, 900);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Save failed');
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   }
 
-  const reviewUrl = selected?.writeAReviewUri as string | undefined;
-  const qrPng = useMemo(() => (reviewUrl ? `/api/qr?data=${encodeURIComponent(reviewUrl)}&format=png&scale=8` : null), [reviewUrl]);
-  const qrSvg = useMemo(() => (reviewUrl ? `/api/qr?data=${encodeURIComponent(reviewUrl)}&format=svg&scale=8` : null), [reviewUrl]);
-
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 py-10">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900">Connect your business</h1>
-            <p className="text-gray-600">Follow the steps below to get your Google review link and QR code.</p>
-          </div>
-          {verified === true && (
-            <span className="inline-flex items-center gap-2 rounded-full bg-green-50 text-green-700 border border-green-200 px-3 py-1 text-sm">
-              <svg aria-hidden className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20Zm-1 14l-4-4 1.41-1.41L11 12.17l4.59-4.58L17 9l-6 7Z"/></svg>
-              Email verified
-            </span>
-          )}
-          {verified === false && (
-            <button onClick={resendVerify} className="inline-flex items-center gap-2 rounded-full bg-yellow-50 text-yellow-800 border border-yellow-200 px-3 py-1 text-sm" disabled={resendCooldown>0}>
-              <svg aria-hidden className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20Zm-1 5h2v6h-2V7Zm0 8h2v2h-2v-2Z"/></svg>
-              {resendCooldown>0 ? `Resend in ${resendCooldown}s` : 'Resend verify' }
-            </button>
-          )}
+    <main className="relative min-h-screen bg-gradient-to-b from-white via-indigo-50 to-white py-10">
+      <Halo />
+      <div className="max-w-3xl mx-auto px-4">
+        <div className="mb-6">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">Connect your business</h1>
+          <p className="mt-2 text-gray-600">Search your place via Google, preview the map, and we’ll generate your review link and QR instantly.</p>
         </div>
 
-        {toast && <div className="rounded-xl border border-blue-200 bg-blue-50 text-blue-800 p-3">{toast}</div>}
+        {toast && <div className="mb-4 rounded-2xl border border-blue-200 bg-blue-50 text-blue-800 p-3 shadow-sm">{toast}</div>}
+        {error && <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 text-red-700 p-3 shadow-sm">{error}</div>}
 
-        <div className="relative">
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input
-            className="w-full rounded-xl border border-gray-200 px-4 py-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Step 1 — Search your business by name"
-            value={input}
-            onChange={(e) => { setInput(e.target.value); try { localStorage.setItem('onboarding:lastQuery', e.target.value); } catch {} }}
-            ref={searchRef}
-            onKeyDown={(e) => {
-              if (!suggestions.length) return;
-              if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIndex((i)=> (i+1) % suggestions.length); }
-              else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIndex((i)=> (i-1+suggestions.length) % suggestions.length); }
-              else if (e.key === 'Enter') { e.preventDefault(); const sel = suggestions[activeIndex] || suggestions[0]; if (sel) void select(sel.placeId); }
-              else if (e.key === 'Escape') { setSuggestions([]); setActiveIndex(-1); }
-            }}
-          />
-          {(() => {
-            const countries: { code: string; name: string }[] = [
-              { code: 'US', name: 'United States' },
-              { code: 'CA', name: 'Canada' },
-              { code: 'MX', name: 'Mexico' },
-              { code: 'AR', name: 'Argentina' },
-              { code: 'BR', name: 'Brazil' },
-              { code: 'CL', name: 'Chile' },
-              { code: 'PE', name: 'Peru' },
-              { code: 'CO', name: 'Colombia' },
-              { code: 'GB', name: 'United Kingdom' },
-              { code: 'IE', name: 'Ireland' },
-              { code: 'ES', name: 'Spain' },
-              { code: 'PT', name: 'Portugal' },
-              { code: 'FR', name: 'France' },
-              { code: 'DE', name: 'Germany' },
-              { code: 'IT', name: 'Italy' },
-              { code: 'NL', name: 'Netherlands' },
-              { code: 'SE', name: 'Sweden' },
-              { code: 'DK', name: 'Denmark' },
-              { code: 'NO', name: 'Norway' },
-              { code: 'FI', name: 'Finland' },
-              { code: 'CH', name: 'Switzerland' },
-              { code: 'AT', name: 'Austria' },
-              { code: 'BE', name: 'Belgium' },
-              { code: 'PL', name: 'Poland' },
-              { code: 'CZ', name: 'Czech Republic' },
-              { code: 'AU', name: 'Australia' },
-              { code: 'NZ', name: 'New Zealand' },
-              { code: 'JP', name: 'Japan' },
-              { code: 'KR', name: 'South Korea' },
-              { code: 'SG', name: 'Singapore' },
-              { code: 'HK', name: 'Hong Kong' },
-              { code: 'MY', name: 'Malaysia' },
-              { code: 'TH', name: 'Thailand' },
-              { code: 'VN', name: 'Vietnam' },
-              { code: 'PH', name: 'Philippines' },
-              { code: 'IN', name: 'India' },
-              { code: 'AE', name: 'United Arab Emirates' },
-              { code: 'SA', name: 'Saudi Arabia' },
-              { code: 'ZA', name: 'South Africa' },
-              { code: 'NG', name: 'Nigeria' },
-              { code: 'KE', name: 'Kenya' },
-            ];
-            const others = countries.filter(c => c.code !== 'US').sort((a,b)=> a.name.localeCompare(b.name));
-            const ordered = [{ code: 'US', name: 'United States' }, ...others];
-            return (
-              <select
-                aria-label="Search region"
-                className="sm:w-64 rounded-xl border border-gray-200 px-3 py-3 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={region}
-                onChange={(e)=>setRegion(e.target.value)}
-                title="Bias search to a country"
-              >
-                <option value="auto">All countries</option>
-                {ordered.map(c => (
-                  <option key={c.code} value={c.code}>{c.name}</option>
-                ))}
+        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl ring-1 ring-black/5">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-800">Search</label>
+              <input ref={searchRef} value={input} onChange={e=>{ setInput(e.target.value); setSelected(null); }} placeholder="e.g., Smart Fit Miami" className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <div className="w-full sm:w-56">
+              <label className="block text-sm font-medium text-gray-800">Region</label>
+              <select value={region} onChange={e=>setRegion(e.target.value)} className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 bg-white">
+                <option value="auto">Auto (IP/geo)</option>
+                <option value="US">United States</option>
+                <option value="CA">Canada</option>
+                <option value="MX">Mexico</option>
+                <option value="GB">United Kingdom</option>
+                <option value="ES">Spain</option>
+                <option value="BR">Brazil</option>
+                <option value="AR">Argentina</option>
+                <option value="CO">Colombia</option>
+                <option value="FR">France</option>
+                <option value="DE">Germany</option>
+                <option value="PT">Portugal</option>
+                <option value="JP">Japan</option>
+                <option value="AU">Australia</option>
               </select>
-            );
-          })()}
-          <label className="inline-flex items-center gap-2 text-sm text-gray-700 select-none">
-            <input type="checkbox" checked={useLocation} onChange={(e)=>{ setUseLocation(e.target.checked); if (!e.target.checked) setCoords(null); else if (navigator?.geolocation) { try { navigator.geolocation.getCurrentPosition((pos)=>setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude })); } catch {} } }} />
-            Use my location
-          </label>
-        </div>
-        {loading && <div className="absolute right-3 top-3 text-sm text-gray-500">Searching…</div>}
-        {Boolean(suggestions.length) && (
-          <div className="mt-2 rounded-xl border border-gray-200 bg-white shadow-md" role="listbox" aria-label="Business suggestions">
-            <ul className="max-h-72 overflow-auto">
-              {suggestions.map((s) => (
-                <li
-                  key={s.placeId}
-                  className={`px-4 py-3 cursor-pointer flex items-start justify-between ${activeIndex>=0 && suggestions[activeIndex]?.placeId===s.placeId ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
-                  onMouseEnter={()=> setActiveIndex(suggestions.findIndex(x=>x.placeId===s.placeId))}
-                  onMouseDown={(e)=> e.preventDefault()}
-                  onClick={() => select(s.placeId)}
-                >
-                  <div>
-                    <div className="font-medium">{s.mainText}</div>
-                    <div className="text-sm text-gray-600">{s.secondaryText}</div>
-                  </div>
-                  <span className="ml-4 text-xs text-blue-600">Use this</span>
-                </li>
-              ))}
-            </ul>
-            <div className="border-t px-3 py-2 text-xs text-gray-500 flex items-center gap-2">
-              <span>Powered by Google</span>
             </div>
           </div>
-        )}
-        </div>
 
-        {selected && (
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="text-xl font-semibold">{selected.displayName}</div>
-              <div className="text-gray-700">{selected.formattedAddress}</div>
-              <div className="text-gray-700">
-                {selected.rating ? `Rating ${selected.rating} • ` : ''}{selected.userRatingCount ? `${selected.userRatingCount} reviews` : ''}
-              </div>
-            </div>
-            {selected.googleMapsUri && (
-              <a className="text-sm text-blue-600 underline" href={selected.googleMapsUri} target="_blank" rel="noreferrer">Open in Google Maps</a>
-            )}
-          </div>
-
-          {selected && selected.lat && selected.lng && (
-            <div className="rounded-xl border border-gray-200 overflow-hidden">
-              {!mapFailed ? (
-                <img
-                  alt="Map preview"
-                  className="w-full h-48 object-cover"
-                  src={`/api/maps/static?lat=${encodeURIComponent(String(selected.lat))}&lng=${encodeURIComponent(String(selected.lng))}&w=800&h=220&zoom=15`}
-                  onError={() => setMapFailed(true)}
-                />
-              ) : (
-                <iframe
-                  title="Map preview"
-                  className="w-full h-48"
-                  src={`https://www.google.com/maps?q=${encodeURIComponent(String(selected.lat))},${encodeURIComponent(String(selected.lng))}&z=15&output=embed`}
-                />
-              )}
-            </div>
-          )}
-
-          {reviewUrl && (isPro || saved) && (
-            <div className="space-y-3">
-              <label className="text-sm font-medium text-gray-800">Step 2 — Your Google review link</label>
-              <div className="flex gap-2">
-                <input className="w-full rounded-xl border border-gray-200 px-3 py-2 focus:outline-none" readOnly value={reviewUrl} />
-                <button
-                  className="rounded-xl px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium hover:from-blue-700 hover:to-purple-700 transition"
-                  onClick={async () => { await navigator.clipboard.writeText(reviewUrl as string); setToast('Copied review link'); setTimeout(()=>setToast(''),2000); }}
-                >
-                  Copy
+          {Boolean(suggestions.length) && !selected && (
+            <div className="mt-3 rounded-2xl border border-gray-100 bg-white shadow-lg divide-y">
+              {suggestions.map(s => (
+                <button key={s.placeId} type="button" onClick={async ()=>{ const d = await getDetails(s.placeId); if (d){ setSelected(d); setSessionToken(newSessionToken()); setSuggestions([]);} }} className="w-full text-left px-4 py-3 hover:bg-gray-50">
+                  <div className="font-medium text-gray-900">{s.mainText}</div>
+                  <div className="text-sm text-gray-600">{s.secondaryText}</div>
                 </button>
-                <a aria-label="Open review link" className="rounded-xl px-4 py-2 border border-gray-200 hover:bg-gray-50 transition" target="_blank" href={reviewUrl} rel="noreferrer">
-                  Open
-                </a>
-              </div>
+              ))}
+            </div>
+          )}
 
+          {selected && (
+            <div className="mt-5 space-y-4">
+              {mapSrc ? (
+                <img src={mapSrc} alt="Map preview" className="w-full h-48 object-cover rounded-xl border border-gray-200" />
+              ) : (
+                <div className="w-full h-48 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center text-sm text-gray-500">Map unavailable</div>
+              )}
+              <div className="rounded-xl bg-gray-50 border border-gray-200 p-4">
+                <div className="text-lg font-semibold text-gray-900">{selected.displayName}</div>
+                <div className="text-sm text-gray-600">{selected.formattedAddress || 'Address unavailable'}</div>
+              </div>
               <div>
-                <div className="text-sm font-medium text-gray-800 mb-2">Step 3 — QR code (share or print)</div>
-                <div className="flex items-center gap-4">
-                  {qrPng && <Image src={qrPng} alt="QR code" width={140} height={140} className="h-36 w-36 border rounded" unoptimized />}
-                  <div className="flex flex-col gap-2">
-                    {qrPng && <a className="underline text-blue-600" href={qrPng} download>Download QR (PNG)</a>}
-                    {qrSvg && <a className="underline text-blue-600" href={qrSvg} download>Download QR (SVG)</a>}
-                    <div className="text-xs text-gray-500">Tip: print it or add it to receipts to get more reviews.</div>
+                <div className="text-sm font-medium text-gray-800 mb-1">Google review link</div>
+                <div className="flex flex-wrap gap-2">
+                  <input readOnly value={reviewUrl} className="flex-1 min-w-[220px] rounded-xl border border-gray-200 px-3 py-2" />
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="rounded-xl bg-gray-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800"
+                      onClick={handleCopyReview}
+                    >
+                      {copyState === 'copied' ? 'Copied!' : copyState === 'error' ? 'Copy failed' : 'Copy'}
+                    </button>
+                    <span
+                      className={`text-xs ${copyState === 'copied' ? 'text-emerald-600' : copyState === 'error' ? 'text-rose-600' : 'text-gray-500'}`}
+                      aria-live="polite"
+                    >
+                      {copyState === 'copied' ? 'Link copied to clipboard' : copyState === 'error' ? 'Unable to copy' : '\u00A0'}
+                    </span>
                   </div>
+                  {reviewUrl && (
+                    <a
+                      target="_blank"
+                      rel="noopener"
+                      referrerPolicy="no-referrer"
+                      href={reviewUrl}
+                      className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-100"
+                    >
+                      Open
+                    </a>
+                  )}
                 </div>
+                {qrReview && (
+                  <div className="mt-3 flex items-center gap-4">
+                    <Image src={qrReview} alt="QR to review link" width={120} height={120} className="h-28 w-28 rounded-xl border" unoptimized />
+                    <a className="text-blue-600 underline" href={qrReview} download>Download QR (PNG)</a>
+                  </div>
+                )}
+              </div>
+              <div className="pt-2">
+                <button onClick={save} disabled={saving} className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-3 shadow disabled:opacity-50">{saving ? 'Saving…' : 'Save and continue'}</button>
+                <button onClick={()=>{ setSelected(null); setSessionToken(newSessionToken()); setTimeout(()=>searchRef.current?.focus(), 0); }} className="ml-3 px-4 py-3 rounded-xl border border-gray-200">Back to search</button>
               </div>
             </div>
           )}
-          {!isPro && !saved && (
-            <div className="text-xs text-gray-500">QR will appear after you save (Pro sees it immediately).</div>
-          )}
-
-          <div className="flex items-center justify-between pt-1">
-            <button className="text-gray-700 underline" onClick={()=>{ setSelected(null); setActiveIndex(-1); setMapFailed(false); setSessionToken(newSessionToken()); setTimeout(()=>searchRef.current?.focus(), 0); }}>Back to search</button>
-            <button
-              disabled={saving}
-              className="rounded-xl px-5 py-3 bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50 transition"
-              onClick={saveBusiness}
-            >
-              {saving ? 'Saving…' : 'Save and continue'}
-            </button>
-          </div>
-        </div>
-      )}
-
-        {error && <div className="text-red-600 text-sm">{error}</div>}
-        {!selected && (
-          <div className="text-xs text-gray-500">Don’t see your business? <a className="underline" href="https://www.google.com/business/" target="_blank" rel="noreferrer">Add it on Google</a>.</div>
-        )}
+        </section>
       </div>
     </main>
   );

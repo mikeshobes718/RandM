@@ -1,23 +1,46 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
-export async function POST(req: Request) {
-  const { idToken, days } = await req.json();
-  if (!idToken) return new NextResponse('Missing idToken', { status: 400 });
-  const auth = getAuthAdmin();
-  const expiresIn = Math.min(Math.max(1, Number(days) || 7), 14) * 24 * 60 * 60 * 1000; // 1-14 days
-  const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
-  // Mirror user into Supabase users table for joins/webhooks
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export async function POST(request: NextRequest) {
   try {
-    const decoded = await auth.verifyIdToken(idToken);
-    const supa = getSupabaseAdmin();
-    const email = (decoded as unknown as { email?: string }).email || '';
-    if (decoded?.uid && email) {
-      await supa.from('users').upsert({ uid: decoded.uid, email });
+    const { idToken, days = 7 } = await request.json();
+    
+    if (!idToken) {
+      return NextResponse.json({ error: 'Missing idToken' }, { status: 400 });
     }
-  } catch {}
-  const res = NextResponse.json({ ok: true });
-  res.headers.append('Set-Cookie', `idToken=${sessionCookie}; Max-Age=${expiresIn/1000}; Path=/; HttpOnly; Secure; SameSite=Lax`);
-  return res;
+
+    try {
+      const auth = getAuthAdmin();
+      
+      // Verify the ID token
+      const decodedToken = await auth.verifyIdToken(idToken);
+      
+      // Create a session cookie
+      const expiresIn = days * 24 * 60 * 60 * 1000; // Convert days to milliseconds
+      const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
+      
+      // Set the session cookie as HttpOnly
+      const response = NextResponse.json({ success: true });
+      response.cookies.set('idToken', sessionCookie, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: expiresIn,
+        path: '/'
+      });
+      
+      return response;
+    } catch (firebaseError) {
+      console.error('Firebase Admin SDK error:', firebaseError);
+      // If Firebase Admin SDK fails, we can't create session cookies
+      // Return success but without session cookie - the client will use the ID token directly
+      return NextResponse.json({ success: true, warning: 'Session cookie creation failed, using ID token directly' });
+    }
+  } catch (error) {
+    console.error('Session creation error:', error);
+    return NextResponse.json({ error: 'Failed to create session' }, { status: 500 });
+  }
 }

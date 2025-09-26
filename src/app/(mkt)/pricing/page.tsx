@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function Pricing() {
-  const [loading, setLoading] = useState(false);
+  const [starterLoading, setStarterLoading] = useState(false);
+  const [proLoading, setProLoading] = useState(false);
+  const [hasPlan, setHasPlan] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [billing, setBilling] = useState<'monthly' | 'yearly'>(() => {
     if (typeof window === 'undefined') return 'monthly';
@@ -20,6 +22,10 @@ export default function Pricing() {
   }, []);
 
   useEffect(() => {
+    if (hasPlan) setWelcome(false);
+  }, [hasPlan]);
+
+  useEffect(() => {
     let cancelled = false;
 
     const applyStatus = (status: string | null | undefined) => {
@@ -28,16 +34,22 @@ export default function Pricing() {
       if (cancelled) return;
       setPlanStatus(finalStatus);
       setIsPro(normalized === 'active' || normalized === 'trialing');
+      setHasPlan(normalized === 'starter' || normalized === 'active' || normalized === 'trialing');
     };
 
     const fallbackToEntitlements = async (headers: Record<string, string>) => {
       try {
         let r = await fetch('/api/entitlements', { cache: 'no-store', credentials: 'include', headers });
         if (!r.ok) r = await fetch('/api/entitlements', { cache: 'no-store', headers });
-        if (!r.ok) return;
+        if (!r.ok) {
+          applyStatus('none');
+          return;
+        }
         const j = (await r.json().catch(() => null)) as { pro?: boolean } | null;
         applyStatus(j?.pro ? 'active' : 'none');
-      } catch {}
+      } catch {
+        applyStatus('none');
+      }
     };
 
     const refresh = async () => {
@@ -95,7 +107,7 @@ export default function Pricing() {
   async function handleSubscribeWithPlan(plan: 'monthly' | 'yearly') {
     try {
       setError(null);
-      setLoading(true);
+      setProLoading(true);
       // Require verified email before starting checkout
       try {
         const idTok = (() => { try { return localStorage.getItem('idToken') || ''; } catch { return ''; } })();
@@ -138,31 +150,25 @@ export default function Pricing() {
       if (!res.ok) throw new Error(await res.text());
       const j = await res.json();
       try { if (j?.id) localStorage.setItem('stripe:lastSessionId', String(j.id)); } catch {}
-      try { if (j?.mode) localStorage.setItem('stripe:lastMode', String(j.mode)); } catch {}
       if (j?.url) window.location.href = j.url;
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Checkout failed";
       setError(message);
     } finally {
-      setLoading(false);
+      setProLoading(false);
     }
   }
 
   async function openBillingPortal() {
     try {
       setError(null);
-      setLoading(true);
-      let modeParam = '';
-      try {
-        const lastMode = (localStorage.getItem('stripe:lastMode') || '').toLowerCase();
-        if (lastMode === 'test') modeParam = '?mode=test';
-      } catch {}
+      setProLoading(true);
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       try {
         const token = localStorage.getItem('idToken') || '';
         if (token) headers.Authorization = `Bearer ${token}`;
       } catch {}
-      const res = await fetch(`/api/stripe/portal${modeParam}`, {
+      const res = await fetch('/api/stripe/portal', {
         method: 'POST',
         headers,
         credentials: 'include',
@@ -178,12 +184,12 @@ export default function Pricing() {
       const message = e instanceof Error ? e.message : 'Unable to open billing portal';
       setError(message);
     } finally {
-      setLoading(false);
+      setProLoading(false);
     }
   }
 
   async function handleProCta() {
-    if (loading) return;
+    if (proLoading) return;
     if (authed && planStatus === 'loading') return;
     if (isPro) {
       await openBillingPortal();
@@ -192,18 +198,128 @@ export default function Pricing() {
     }
   }
 
+  async function handleStarterCta() {
+    if (!authed) {
+      window.location.href = '/register';
+      return;
+    }
+    if (planStatus === 'starter') {
+      window.location.href = '/dashboard';
+      return;
+    }
+    if (isPro) {
+      window.location.href = '/dashboard';
+      return;
+    }
+    if (planStatus === 'loading' || starterLoading) return;
+    try {
+      setError(null);
+      setStarterLoading(true);
+      const headers: Record<string, string> = {};
+      try {
+        const token = localStorage.getItem('idToken');
+        if (token) headers.Authorization = `Bearer ${token}`;
+      } catch {}
+      const res = await fetch('/api/plan/start', {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+      });
+      if (res.status === 401) {
+        setStarterLoading(false);
+        const next = encodeURIComponent('/pricing');
+        window.location.href = `/login?next=${next}`;
+        return;
+      }
+      if (!res.ok) {
+        const text = await res.text().catch(() => 'Activation failed');
+        throw new Error(text);
+      }
+      setPlanStatus('starter');
+      setHasPlan(true);
+      setIsPro(false);
+
+      let redirectTarget = '/onboarding/business';
+      const idTokenValue = headers.Authorization?.replace(/^Bearer\s+/i, '').trim();
+      const decodedClaims = (() => {
+        if (!idTokenValue) return null;
+        try {
+          const [, payloadB64] = idTokenValue.split('.');
+          if (!payloadB64) return null;
+          const normalized = payloadB64.replace(/-/g, '+').replace(/_/g, '/');
+          const json = typeof atob === 'function' ? atob(normalized) : Buffer.from(normalized, 'base64').toString('utf8');
+          return JSON.parse(json) as { email_verified?: boolean };
+        } catch {
+          return null;
+        }
+      })();
+      try {
+        const headersAuth: Record<string, string> = {};
+        if (headers.Authorization) headersAuth.Authorization = headers.Authorization;
+        let me = await fetch('/api/auth/me', { cache: 'no-store', credentials: 'include' });
+        if (!me.ok && headersAuth.Authorization) {
+          me = await fetch('/api/auth/me', { cache: 'no-store', headers: headersAuth });
+        }
+        if (me.ok) {
+          const payload = await me.json().catch(() => null) as { emailVerified?: boolean } | null;
+          const verified = payload?.emailVerified;
+          if (verified === false) {
+            redirectTarget = '/verify-email?next=%2Fonboarding%2Fbusiness';
+          } else {
+            try {
+              let bizRes = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include' });
+              if (!bizRes.ok && headersAuth.Authorization) {
+                bizRes = await fetch('/api/businesses/me', { cache: 'no-store', headers: headersAuth });
+              }
+              if (bizRes.ok) {
+                const bizPayload = await bizRes.json().catch(() => null) as { business?: unknown } | null;
+                if (bizPayload && (bizPayload as { business?: unknown }).business) {
+                  redirectTarget = '/dashboard';
+                }
+              }
+            } catch {
+              // ignore and keep onboarding target
+            }
+          }
+        }
+      } catch {}
+
+      setStarterLoading(false);
+      setTimeout(() => {
+        window.location.href = redirectTarget;
+      }, redirectTarget === '/dashboard' ? 400 : 0);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Unable to activate Starter';
+      setError(message);
+      setStarterLoading(false);
+    }
+  }
+
   const starterPriceText = 'Free';
   const proPrice = billing === 'monthly' ? 49.99 : 499.0;
   const planChecking = authed && planStatus === 'loading';
-  const starterCtaLabel = planChecking ? 'Checking plan...' : authed ? 'Go to Dashboard' : 'Get Started Free';
-  const starterCtaHref = authed ? '/dashboard' : '/register';
+  const starterActive = planStatus === 'starter';
+  const starterButtonLabel = planChecking
+    ? 'Checking plan...'
+    : starterLoading
+      ? 'Activating Starter...'
+      : starterActive
+        ? 'Continue setup'
+        : isPro
+          ? 'Go to Dashboard'
+          : authed
+            ? 'Activate Starter'
+            : 'Get Started Free';
+  const starterDisabled = planChecking || starterLoading;
   const proCtaLabel = planChecking
     ? 'Checking plan...'
-    : isPro
-      ? 'Manage Billing'
-      : billing === 'monthly'
-        ? 'Upgrade to Pro (Monthly)'
-        : 'Upgrade to Pro (Yearly)';
+    : proLoading
+      ? 'Processing...'
+      : isPro
+        ? 'Manage Billing'
+        : billing === 'monthly'
+          ? 'Upgrade to Pro (Monthly)'
+          : 'Upgrade to Pro (Yearly)';
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-white via-indigo-50 to-white">
       <div className="pointer-events-none absolute inset-0 -z-10">
@@ -317,13 +433,22 @@ export default function Pricing() {
                   <span className="text-slate-600">Email support</span>
                 </li>
               </ul>
-              
-              <Link 
-                href={starterCtaHref} 
-                className="w-full inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5"
-              >
-                {starterCtaLabel}
-              </Link>
+              {authed ? (
+                <button
+                  onClick={handleStarterCta}
+                  disabled={starterDisabled}
+                  className="w-full inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {starterButtonLabel}
+                </button>
+              ) : (
+                <Link
+                  href="/register"
+                  className="w-full inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5"
+                >
+                  {starterButtonLabel}
+                </Link>
+              )}
               
               {error && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -364,7 +489,7 @@ export default function Pricing() {
                   <svg className="w-5 h-5 text-indigo-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span>Custom domains & branding</span>
+                  <span>Multi-location dashboards & routing</span>
                 </li>
                 <li className="flex items-start">
                   <svg className="w-5 h-5 text-indigo-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -389,10 +514,10 @@ export default function Pricing() {
               
               <button 
                 onClick={handleProCta} 
-                disabled={loading || planChecking}
+                disabled={proLoading || planChecking}
                 className="w-full rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loading ? "Processing…" : proCtaLabel}
+                {proLoading ? "Processing…" : proCtaLabel}
             </button>
             </div>
 
@@ -436,7 +561,7 @@ export default function Pricing() {
                   <svg className="w-5 h-5 text-purple-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-slate-600">On-premise options</span>
+                  <span className="text-slate-600">Custom domains & branding</span>
                 </li>
             </ul>
               
@@ -465,7 +590,7 @@ export default function Pricing() {
               <div className="py-2 text-slate-600">One QR code (shared)</div>
               <div className="py-2 text-center">✓</div>
               <div className="py-2 text-center">✓</div>
-              <div className="py-2 text-slate-600">Custom branding</div>
+              <div className="py-2 text-slate-600">Multi-location dashboards</div>
               <div className="py-2 text-center">–</div>
               <div className="py-2 text-center">✓</div>
               <div className="py-2 text-slate-600">Advanced analytics</div>
@@ -546,17 +671,27 @@ export default function Pricing() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
               onClick={handleProCta}
-              disabled={loading || planChecking}
-              className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50"
+              disabled={proLoading || planChecking}
+              className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Processing...' : proCtaLabel}
+              {proLoading ? 'Processing...' : proCtaLabel}
             </button>
-            <Link 
-              href={starterCtaHref}
-              className="inline-flex items-center justify-center px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-200"
-            >
-              {starterCtaLabel}
-            </Link>
+            {authed ? (
+              <button
+                onClick={handleStarterCta}
+                disabled={starterDisabled}
+                className="inline-flex items-center justify-center px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {starterButtonLabel}
+              </button>
+            ) : (
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-xl hover:bg-white/10 transition-all duration-200"
+              >
+                {starterButtonLabel}
+              </Link>
+            )}
           </div>
           <p className="text-blue-200 text-sm mt-6">No credit card required • Starter is free</p>
       </div>

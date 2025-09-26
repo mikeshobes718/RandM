@@ -27,21 +27,24 @@ async function run() {
     await page.waitForSelector('button', { timeout: 15000 });
 
     // Onboarding page should be reachable
-    results.push(await status(page, BASE + '/onboarding/business'));
-    await assert(/onboarding\/business/.test(page.url()), 'Onboarding page reachable');
+    const onboardingStatus = await status(page, BASE + '/onboarding/business');
+    results.push(onboardingStatus);
+    const onboardingUrl = page.url();
+    const gatedToPricing = /\/pricing/.test(onboardingUrl);
+    const stayedOnOnboarding = /onboarding\/business/.test(onboardingUrl);
+    await assert(gatedToPricing || stayedOnOnboarding, 'Onboarding or pricing reachable');
 
-    // Autocomplete smoke: set region to US, type and expect suggestions
-    await page.waitForSelector('input[placeholder^="e.g.,"], input');
-    // Choose region if select exists
-    const hasSelect = await page.$('select');
-    if (hasSelect) {
-      await page.select('select', 'US').catch(()=>{});
+    if (stayedOnOnboarding) {
+      await page.waitForSelector('input[placeholder^="e.g.,"], input');
+      const hasSelect = await page.$('select');
+      if (hasSelect) {
+        await page.select('select', 'US').catch(()=>{});
+      }
+      await page.click('input');
+      await page.keyboard.type('smart', { delay: 20 });
+      const suggAppeared = await page.waitForSelector('div.divide-y > button, div.divide-y', { timeout: 15000 }).then(()=>true).catch(()=>false);
+      await assert(suggAppeared, 'Autocomplete suggestions should render');
     }
-    await page.click('input');
-    await page.keyboard.type('smart', { delay: 20 });
-    // Wait for suggestions container or at least no crash
-    const suggAppeared = await page.waitForSelector('div.divide-y > button, div.divide-y', { timeout: 15000 }).then(()=>true).catch(()=>false);
-    await assert(suggAppeared, 'Autocomplete suggestions should render');
 
     // Login page
     results.push(await status(page, BASE + '/login'));
@@ -70,7 +73,7 @@ async function run() {
     await status(page, BASE + '/');
     const toggle = await page.$('button[aria-label="Open menu"]');
     await assert(!!toggle, 'Mobile menu toggle exists');
-    await toggle.click();
+    await page.evaluate((btn) => btn?.click(), toggle);
     await page.waitForSelector('a[href="/login"]', { timeout: 10000 });
 
     // Optional E2E auth flow

@@ -24,6 +24,7 @@ function SquareIntegrationInner() {
   const [sandbox, setSandbox] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [planStatus, setPlanStatus] = useState<string>('loading');
+  const [redirecting, setRedirecting] = useState(false);
   const isPro = useMemo(() => {
     if (!planStatus || planStatus === 'loading') return false;
     const normalized = planStatus.toLowerCase();
@@ -67,6 +68,13 @@ function SquareIntegrationInner() {
           if (!cancelled) {
             setStatus(null);
             setError(null);
+            setRedirecting(true);
+          }
+          if (typeof window !== 'undefined') {
+            const params = new URLSearchParams();
+            params.set('welcome', '1');
+            params.set('from', 'square');
+            window.location.replace(`/pricing?${params.toString()}`);
           }
           return;
         }
@@ -179,6 +187,11 @@ function SquareIntegrationInner() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 py-10">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        {redirecting && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Square automations are available on Pro. Redirecting you to pricing…
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Square integration</h1>

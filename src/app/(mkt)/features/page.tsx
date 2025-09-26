@@ -4,44 +4,52 @@ import Link from "next/link";
 import { FeatureTabs } from "@/components/FeatureTabs";
 
 const METRICS = [
-  { value: '4x', label: 'Faster review growth', tone: 'from-indigo-500/80 to-violet-500/90' },
-  { value: '24 hrs', label: 'Average time to launch', tone: 'from-emerald-400/80 to-emerald-500/90' },
-  { value: '<15 min', label: 'Team onboarding', tone: 'from-sky-400/80 to-blue-500/90' },
+  { value: '5/mo', label: 'Starter review requests', tone: 'from-indigo-500/80 to-violet-500/90' },
+  { value: '1 QR kit', label: 'Included on every plan', tone: 'from-emerald-400/80 to-emerald-500/90' },
+  { value: 'Multi-location', label: 'Routing on Pro', tone: 'from-sky-400/80 to-blue-500/90' },
 ];
 
 const PILLARS = [
   {
     iconBg: 'from-blue-500 to-indigo-500',
-    title: 'Smart share links',
-    copy: 'One-tap landing experiences that open the exact Google review screen, branded to match your voice and trackable by campaign.',
+    title: 'Review request templates',
+    copy: 'Send branded email requests in minutes. Starter covers five asks each month, and Pro unlocks more volume with the same polished tone.',
   },
   {
     iconBg: 'from-purple-500 to-fuchsia-500',
-    title: 'QR automations',
-    copy: 'Dynamic QR packs for tabletops, receipts, and signage. Print-ready at 300 DPI with localized instructions and incentive messaging.',
+    title: 'QR code builder',
+    copy: 'Generate table-tent and receipt-ready QR codes that launch guests directly into your Google review flow.',
   },
   {
     iconBg: 'from-emerald-500 to-teal-500',
-    title: 'Reputation analytics',
-    copy: 'Realtime dashboards that tie scans, clicks, and review conversions to the team member or campaign responsible.',
+    title: 'Live performance dashboard',
+    copy: 'Track scans, clicks, and new reviews across every location from a single workspace.',
   },
 ];
 
-const PLAYBOOKS = [
+const HIGHLIGHTS = [
   {
-    title: 'Automation that nudges politely',
+    title: 'Everything you need to launch asks',
     bullets: [
-      'Sequenced follow-ups with quiet hours and timezone awareness',
-      'Personalized templates that stay on-brand and human',
-      'Automatic suppression for anyone contacted in the last 90 days',
+      'Starter plan: five branded review requests per month',
+      'Email templates validated on real operators',
+      'Pro plan adds higher volume and priority support when you scale',
     ],
   },
   {
-    title: 'Design that feels like your brand',
+    title: 'Stay coordinated as your locations grow',
     bullets: [
-      'Custom colors, typography, and tone for each location',
-      'Host review journeys on your own domain or subdomain',
-      'Print-ready QR assets with layered design files included',
+      'Route guests to the right review destination per location',
+      'Invite teammates on Pro to assign follow-ups and keep tabs on private feedback',
+      'Monitor average rating, scans, and clicks from the dashboard view',
+    ],
+  },
+  {
+    title: 'Ready-to-share QR kits',
+    bullets: [
+      'Download high-resolution QR codes with your colors and logo',
+      'Use the included landing page for kiosks, receipts, and packaging',
+      'Swap destinations without reprinting—links stay updated automatically',
     ],
   },
 ];
@@ -64,7 +72,7 @@ export default function FeaturesPage() {
             The modern stack for ⭐⭐⭐⭐⭐ growth
           </h1>
           <p className="mt-5 text-lg text-slate-600 md:text-xl">
-            Reviews & Marketing unifies share links, QR automations, and live analytics so every happy customer turns into public proof.
+            Reviews & Marketing brings share links, QR kits, and live analytics together so every happy customer can leave a public review.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
@@ -116,14 +124,11 @@ export default function FeaturesPage() {
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-8 md:grid-cols-2">
-            {PLAYBOOKS.map((playbook) => (
-              <div key={playbook.title} className="rounded-3xl border border-white/70 bg-white/80 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
-                <h3 className="text-2xl font-semibold text-slate-900">{playbook.title}</h3>
-                <p className="mt-4 text-sm text-slate-600">
-                  Reviews & Marketing keeps your outreach thoughtful and on-brand. Automate the heavy lifting while your customers feel personal attention.
-                </p>
+            {HIGHLIGHTS.map((section) => (
+              <div key={section.title} className="rounded-3xl border border-white/70 bg-white/80 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
+                <h3 className="text-2xl font-semibold text-slate-900">{section.title}</h3>
                 <ul className="mt-6 space-y-3 text-sm text-slate-600">
-                  {playbook.bullets.map((bullet) => (
+                  {section.bullets.map((bullet) => (
                     <li key={bullet} className="flex items-start gap-2">
                       <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-indigo-500" />
                       <span>{bullet}</span>

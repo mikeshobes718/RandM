@@ -2,7 +2,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-export default function HomeCtaButtons() {
+type Alignment = "center" | "start";
+
+interface HomeCtaButtonsProps {
+  align?: Alignment;
+}
+
+export default function HomeCtaButtons({ align = "center" }: HomeCtaButtonsProps) {
   const [authed, setAuthed] = useState(false);
   const [pro, setPro] = useState<boolean | null>(null);
   useEffect(() => {
@@ -13,9 +19,13 @@ export default function HomeCtaButtons() {
       .catch(() => setPro(null));
   }, []);
 
+  const alignmentClass = align === "start"
+    ? "justify-center sm:justify-start"
+    : "justify-center";
+
   return (
     <>
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      <div className={`flex flex-col sm:flex-row gap-4 ${alignmentClass}`}>
         <Link
           href={authed ? '/dashboard' : '/register'}
           className="inline-flex items-center justify-center px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 shadow-lg"

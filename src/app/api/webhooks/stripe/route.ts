@@ -3,6 +3,8 @@ import { headers } from 'next/headers';
 import { getStripeClient } from '@/lib/stripe';
 import { getEnv } from '@/lib/env';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getPostmarkClient } from '@/lib/postmark';
+import { proUpgradeEmail } from '@/lib/emailTemplates';
 import type Stripe from 'stripe';
 
 export const runtime = 'nodejs';
@@ -12,12 +14,12 @@ export async function POST(req: Request) {
   const sig = (await headers()).get('stripe-signature') || '';
   const raw = await req.text();
 
+  const env = getEnv();
   const stripe = getStripeClient();
-  const { STRIPE_WEBHOOK_SECRET } = getEnv();
-
+  const postmark = getPostmarkClient();
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(raw, sig, STRIPE_WEBHOOK_SECRET);
+    event = stripe.webhooks.constructEvent(raw, sig, env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return new NextResponse(`Webhook Error: ${message}`, { status: 400 });
@@ -60,6 +62,41 @@ export async function POST(req: Request) {
               status: sub.status,
               current_period_end: new Date((((sub as unknown) as { current_period_end?: number }).current_period_end || 0) * 1000).toISOString(),
             }, { onConflict: 'stripe_subscription_id' });
+          // Mark any Starter placeholders as upgraded
+          try {
+            await supabaseAdmin
+              .from('subscriptions')
+              .delete()
+              .eq('uid', uid)
+              .eq('plan_id', 'starter');
+          } catch {}
+          // Send upgrade email
+          try {
+            const { data } = await supabaseAdmin.from('users').select('email').eq('uid', uid).maybeSingle();
+            const email = data?.email || '';
+            if (email) {
+              const tpl = proUpgradeEmail(`${env.APP_URL}/dashboard`);
+              const response = await postmark.sendEmail({
+                From: env.EMAIL_FROM,
+                To: email,
+                Subject: tpl.subject,
+                HtmlBody: tpl.html,
+                TextBody: tpl.text,
+                MessageStream: 'outbound',
+              });
+              const messageId = (response as unknown as { MessageID?: string }).MessageID || null;
+              await supabaseAdmin.from('email_log').insert({
+                provider: 'postmark',
+                to_email: email,
+                template: 'pro_upgrade',
+                status: 'sent',
+                provider_message_id: messageId,
+                payload: { subject: tpl.subject },
+              });
+            }
+          } catch (emailErr) {
+            console.error('pro upgrade email failed', emailErr);
+          }
         } catch {}
       }
       break;
@@ -105,6 +142,13 @@ export async function POST(req: Request) {
             status: sub.status,
             current_period_end: new Date((((sub as unknown) as { current_period_end?: number }).current_period_end || 0) * 1000).toISOString(),
           }, { onConflict: 'stripe_subscription_id' });
+        try {
+          await supabaseAdmin
+            .from('subscriptions')
+            .delete()
+            .eq('uid', uid)
+            .eq('plan_id', 'starter');
+        } catch {}
       }
       break;
     }
