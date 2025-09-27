@@ -152,7 +152,9 @@ export default function Dashboard() {
         if (!j.business) {
           const params = new URLSearchParams(window.location.search);
           const cameFromOnboarding = params.get('from') === 'onboarding';
-          if (cameFromOnboarding) {
+          // Also check for onboarding_complete cookie
+          const onboardingComplete = typeof document !== 'undefined' && document.cookie.includes('onboarding_complete=1');
+          if (cameFromOnboarding || onboardingComplete) {
             setFinalizing(true);
             for (let i = 0; i < 12; i++) { // ~6s total
               await new Promise(res => setTimeout(res, 500));
@@ -176,7 +178,11 @@ export default function Dashboard() {
           }
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to load');
+        // Don't show error if it's just a 401 - this might be a temporary auth issue
+        const errorMessage = e instanceof Error ? e.message : 'Failed to load';
+        if (!errorMessage.includes('401') && !errorMessage.includes('Unauthorized')) {
+          setError(errorMessage);
+        }
         setBusiness(null);
         setStats({ reviewsThisMonth: 0, shareLinkScans: 0, averageRating: null });
         setRecentFeedback([]);

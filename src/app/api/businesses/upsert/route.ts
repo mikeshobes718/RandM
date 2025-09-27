@@ -225,6 +225,8 @@ export async function POST(req: Request) {
          values (${placeholders.join(',')})
          on conflict (owner_uid) do update set ${updates.join(', ')}`;
       await pool.query(sql, values);
+      // Clear the error since fallback succeeded
+      error = null;
     } catch (e) {
       const msg = (e instanceof Error ? e.message : String(e)) || (error?.message || 'failed');
       return new NextResponse(`pg fallback failed: ${msg}`, { status: 500 });
