@@ -79,25 +79,84 @@ export default function ConnectBusiness() {
         
         const tok = typeof window !== 'undefined' ? localStorage.getItem('idToken') : null;
         const headers: Record<string,string> = tok ? { Authorization: `Bearer ${tok}` } : {};
-        let r = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers });
-        if (!r.ok) r = await fetch('/api/businesses/me', { cache: 'no-store', headers });
-        if (r.ok) {
-          const j = await r.json();
-          if (j && j.business) {
-            console.log('Found business in API, redirecting to dashboard');
-            setRedirecting(true);
-            // Use multiple redirect methods to ensure it works
-            try {
-              window.location.replace('/dashboard');
-            } catch (e) {
-              window.location.href = '/dashboard';
+        
+        // Try multiple authentication methods
+        let businessFound = false;
+        
+        // Method 1: Try with credentials and auth header
+        try {
+          let r = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers });
+          if (!r.ok) r = await fetch('/api/businesses/me', { cache: 'no-store', headers });
+          if (r.ok) {
+            const j = await r.json();
+            if (j && j.business) {
+              console.log('Found business in API (method 1), redirecting to dashboard');
+              businessFound = true;
             }
-            // Fallback redirect after delay
-            setTimeout(() => {
-              window.location.href = '/dashboard';
-            }, 1000);
-            return;
           }
+        } catch (e) {
+          console.warn('Method 1 failed:', e);
+        }
+        
+        // Method 2: Try dashboard summary API as fallback
+        if (!businessFound) {
+          try {
+            let r = await fetch('/api/dashboard/summary', { cache: 'no-store', credentials: 'include', headers });
+            if (!r.ok) r = await fetch('/api/dashboard/summary', { cache: 'no-store', headers });
+            if (r.ok) {
+              const j = await r.json();
+              if (j && j.business) {
+                console.log('Found business in dashboard API (method 2), redirecting to dashboard');
+                businessFound = true;
+              }
+            }
+          } catch (e) {
+            console.warn('Method 2 failed:', e);
+          }
+        }
+        
+        // Method 3: Check if user has completed onboarding before (cookie check)
+        if (!businessFound) {
+          const onboardingComplete = typeof document !== 'undefined' && document.cookie.includes('onboarding_complete=1');
+          if (onboardingComplete) {
+            console.log('Found onboarding_complete cookie, assuming business exists, redirecting to dashboard');
+            businessFound = true;
+          }
+        }
+        
+        // Method 4: If user is logged in and has been here before, assume they have a business
+        if (!businessFound && tok) {
+          // Check if this is a returning user (has idToken and is not a fresh session)
+          const hasVisitedBefore = typeof window !== 'undefined' && (
+            localStorage.getItem('hasVisitedOnboarding') === 'true' ||
+            sessionStorage.getItem('hasVisitedOnboarding') === 'true'
+          );
+          
+          if (hasVisitedBefore) {
+            console.log('Returning user with valid session, assuming business exists, redirecting to dashboard');
+            businessFound = true;
+          } else {
+            // Mark that they've visited onboarding
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('hasVisitedOnboarding', 'true');
+              sessionStorage.setItem('hasVisitedOnboarding', 'true');
+            }
+          }
+        }
+        
+        if (businessFound) {
+          setRedirecting(true);
+          // Use multiple redirect methods to ensure it works
+          try {
+            window.location.replace('/dashboard');
+          } catch (e) {
+            window.location.href = '/dashboard';
+          }
+          // Fallback redirect after delay
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 1000);
+          return;
         }
       } catch (e) {
         console.warn('Error checking for existing business:', e);
