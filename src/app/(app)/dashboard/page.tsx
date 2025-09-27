@@ -134,22 +134,38 @@ export default function Dashboard() {
     (async () => {
       setLoading(true);
       try {
+        // Check for business data in localStorage first (from recent onboarding)
+        let businessFromStorage: Business | null = null;
+        try {
+          const stored = typeof window !== 'undefined' ? localStorage.getItem('businessData') : null;
+          if (stored) {
+            businessFromStorage = JSON.parse(stored);
+            // Clear it after use to avoid stale data
+            localStorage.removeItem('businessData');
+          }
+        } catch (e) {
+          console.warn('Could not parse stored business data:', e);
+        }
+        
         const tok = typeof window !== 'undefined' ? localStorage.getItem('idToken') : null;
         const headers: Record<string, string> = tok ? { Authorization: `Bearer ${tok}` } : {};
         let r = await fetch('/api/dashboard/summary', { cache: 'no-store', credentials: 'include', headers });
         if (!r.ok) r = await fetch('/api/dashboard/summary', { cache: 'no-store', headers });
         if (!r.ok) throw new Error(await r.text().catch(()=>String(r.status)));
         const j = await r.json() as { business: Business | null; stats?: Stats | null; recentFeedback?: FeedbackItem[] | null; squareConnection?: SquareConnectionInfo };
-        setBusiness(j.business);
+        
+        // Use business data from storage if available, otherwise from API
+        const businessData = businessFromStorage || j.business;
+        setBusiness(businessData);
         setStats(j.stats ?? { reviewsThisMonth: 0, shareLinkScans: 0, averageRating: null });
         setRecentFeedback(Array.isArray(j.recentFeedback) ? j.recentFeedback : []);
         setSquare(j.squareConnection ?? null);
-        if ((!j.recentFeedback || j.recentFeedback.length === 0) && j.business) {
+        if ((!j.recentFeedback || j.recentFeedback.length === 0) && businessData) {
           await loadRecentFeedback(headers);
         }
         setError(null);
         // If coming directly from onboarding and the record hasn't propagated yet, poll briefly
-        if (!j.business) {
+        if (!businessData) {
           const params = new URLSearchParams(window.location.search);
           const cameFromOnboarding = params.get('from') === 'onboarding';
           // Also check for onboarding_complete cookie

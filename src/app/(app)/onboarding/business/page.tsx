@@ -328,6 +328,31 @@ export default function ConnectBusiness() {
       }
       // Remove sendBeacon path to avoid silent failures
       if (!ok) throw new Error(lastErr || 'Save failed');
+      
+      // Try to get business data from the response
+      let businessData = null;
+      try {
+        // We need to make another request to get the business data since we don't have the response
+        const tok = typeof window !== 'undefined' ? localStorage.getItem('idToken') : null;
+        const headers: Record<string, string> = tok ? { Authorization: `Bearer ${tok}` } : {};
+        const businessResponse = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers });
+        if (businessResponse.ok) {
+          const businessJson = await businessResponse.json();
+          businessData = businessJson.business;
+        }
+      } catch (e) {
+        console.warn('Could not fetch business data:', e);
+      }
+      
+      // Store business data in localStorage for immediate use
+      if (businessData) {
+        try {
+          localStorage.setItem('businessData', JSON.stringify(businessData));
+        } catch (e) {
+          console.warn('Could not store business data in localStorage:', e);
+        }
+      }
+      
       setToast('Saved — redirecting to your dashboard…');
       setTimeout(()=>{ window.location.href = '/dashboard?from=onboarding'; }, 900);
     } catch (e) {

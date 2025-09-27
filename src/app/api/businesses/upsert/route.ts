@@ -232,7 +232,27 @@ export async function POST(req: Request) {
       return new NextResponse(`pg fallback failed: ${msg}`, { status: 500 });
     }
   }
-  const res = NextResponse.json({ ok: true });
+  // Fetch the business data we just created/updated to return it
+  let businessData = null;
+  try {
+    const { data: business, error: fetchError } = await supabaseAdmin
+      .from('businesses')
+      .select('id,name,review_link,google_maps_write_review_uri,contact_phone,google_rating,google_place_id')
+      .eq('owner_uid', uid!)
+      .maybeSingle();
+    
+    if (!fetchError && business) {
+      businessData = business;
+    }
+  } catch (e) {
+    console.error('Failed to fetch business after upsert:', e);
+  }
+
+  const res = NextResponse.json({ 
+    ok: true, 
+    business: businessData 
+  });
+  
   // Mark onboarding complete for fast client/header gating
   try {
     const host = (() => { try { return new URL(process.env.APP_URL || '').hostname; } catch { try { return new URL(req.url).hostname; } catch { return ''; } } })();
