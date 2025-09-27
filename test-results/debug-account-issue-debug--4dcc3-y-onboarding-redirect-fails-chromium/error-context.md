@@ -1,0 +1,109 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e4]:
+      - link "Reviews & Marketing Reputation Toolkit" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img [ref=e8] [cursor=pointer]
+        - generic [ref=e10] [cursor=pointer]:
+          - generic [ref=e11] [cursor=pointer]: Reviews & Marketing
+          - generic [ref=e12] [cursor=pointer]: Reputation Toolkit
+      - navigation [ref=e13]:
+        - link "Features" [ref=e14] [cursor=pointer]:
+          - /url: /features
+        - link "Pricing" [ref=e15] [cursor=pointer]:
+          - /url: /pricing
+        - link "Contact" [ref=e16] [cursor=pointer]:
+          - /url: /contact
+      - generic [ref=e17]:
+        - generic "lolugik370@veb37.com" [ref=e18]:
+          - generic [ref=e19]: L
+          - text: lolugik370@veb37.com
+        - button "Log out" [ref=e20]
+  - main [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - generic [ref=e26]: Checking plan…
+          - generic [ref=e27]:
+            - heading "Your reputation command center" [level=1] [ref=e28]
+            - paragraph [ref=e29]: Keep a pulse on reviews, share links, and automations from an adaptive dashboard built for modern operators.
+        - link "Complete setup" [ref=e31] [cursor=pointer]:
+          - /url: /onboarding/business
+          - text: Complete setup
+          - img [ref=e32] [cursor=pointer]
+      - generic [ref=e34]:
+        - generic [ref=e35]: Confirming your subscription…
+        - generic [ref=e36]:
+          - text: This should only take a moment. Having trouble?
+          - button "Refresh" [ref=e37]
+          - text: or
+          - link "choose a plan" [ref=e38] [cursor=pointer]:
+            - /url: /pricing
+          - text: .
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]: Step 1
+          - heading "Connect your business profile" [level=2] [ref=e43]
+          - paragraph [ref=e44]: Enter your business details and an optional Google review link. We’ll generate your branded landing page and QR instantly.
+        - generic [ref=e45]:
+          - generic [ref=e46]:
+            - text: Business name
+            - textbox "Business name" [ref=e47]
+          - generic [ref=e48]:
+            - text: Google review link
+            - generic [ref=e49]: (optional)
+            - textbox "Google review link (optional)" [ref=e50]
+          - button "Saving…" [disabled] [ref=e51]
+  - contentinfo [ref=e52]:
+    - generic [ref=e53]:
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - img [ref=e58]
+            - generic [ref=e60]: Reviews & Marketing
+          - paragraph [ref=e61]: The complete toolkit for growing your business through customer reviews and reputation management.
+        - generic [ref=e62]:
+          - heading "Product" [level=3] [ref=e63]
+          - list [ref=e64]:
+            - listitem [ref=e65]:
+              - link "Features" [ref=e66] [cursor=pointer]:
+                - /url: /features
+            - listitem [ref=e67]:
+              - link "Pricing" [ref=e68] [cursor=pointer]:
+                - /url: /pricing
+            - listitem [ref=e69]:
+              - link "Dashboard" [ref=e70] [cursor=pointer]:
+                - /url: /dashboard
+        - generic [ref=e71]:
+          - heading "Company" [level=3] [ref=e72]
+          - list [ref=e73]:
+            - listitem [ref=e74]:
+              - link "About" [ref=e75] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e76]:
+              - link "Blog" [ref=e77] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e78]:
+              - link "Support" [ref=e79] [cursor=pointer]:
+                - /url: /support
+            - listitem [ref=e80]:
+              - link "Contact" [ref=e81] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e82]:
+          - heading "Legal" [level=3] [ref=e83]
+          - list [ref=e84]:
+            - listitem [ref=e85]:
+              - link "Privacy" [ref=e86] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e87]:
+              - link "Terms" [ref=e88] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e89]:
+              - link "Security" [ref=e90] [cursor=pointer]:
+                - /url: /security
+      - generic [ref=e92]: © 2025 Reviews & Marketing. All rights reserved.
+  - alert [ref=e93]
+```

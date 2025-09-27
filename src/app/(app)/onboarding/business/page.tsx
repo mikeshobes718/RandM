@@ -41,6 +41,7 @@ export default function ConnectBusiness() {
   const [toast, setToast] = useState<string | null>(null);
   const [planAllowed, setPlanAllowed] = useState<boolean>(true);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
+  const [redirecting, setRedirecting] = useState<boolean>(false);
   const copyTimerRef = useRef<number | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
   // If a business is already connected, send user to the dashboard immediately (unless editing)
@@ -50,6 +51,32 @@ export default function ConnectBusiness() {
         const params = new URLSearchParams(window.location.search);
         const editing = params.get('edit') === '1';
         if (editing) return;
+        
+        // Check for business data in localStorage first (from recent setup)
+        const storedBusiness = typeof window !== 'undefined' ? localStorage.getItem('businessData') : null;
+        if (storedBusiness) {
+          try {
+            const business = JSON.parse(storedBusiness);
+            if (business && business.id) {
+              console.log('Found business in localStorage, redirecting to dashboard');
+              setRedirecting(true);
+              // Use multiple redirect methods to ensure it works
+              try {
+                window.location.replace('/dashboard');
+              } catch (e) {
+                window.location.href = '/dashboard';
+              }
+              // Fallback redirect after delay
+              setTimeout(() => {
+                window.location.href = '/dashboard';
+              }, 1000);
+              return;
+            }
+          } catch (e) {
+            console.warn('Could not parse stored business data:', e);
+          }
+        }
+        
         const tok = typeof window !== 'undefined' ? localStorage.getItem('idToken') : null;
         const headers: Record<string,string> = tok ? { Authorization: `Bearer ${tok}` } : {};
         let r = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers });
@@ -57,11 +84,24 @@ export default function ConnectBusiness() {
         if (r.ok) {
           const j = await r.json();
           if (j && j.business) {
-            window.location.replace('/dashboard');
+            console.log('Found business in API, redirecting to dashboard');
+            setRedirecting(true);
+            // Use multiple redirect methods to ensure it works
+            try {
+              window.location.replace('/dashboard');
+            } catch (e) {
+              window.location.href = '/dashboard';
+            }
+            // Fallback redirect after delay
+            setTimeout(() => {
+              window.location.href = '/dashboard';
+            }, 1000);
             return;
           }
         }
-      } catch {}
+      } catch (e) {
+        console.warn('Error checking for existing business:', e);
+      }
     })();
   }, []);
 
@@ -371,6 +411,7 @@ export default function ConnectBusiness() {
 
         {toast && <div className="mb-4 rounded-2xl border border-blue-200 bg-blue-50 text-blue-800 p-3 shadow-sm">{toast}</div>}
         {error && <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 text-red-700 p-3 shadow-sm">{error}</div>}
+        {redirecting && <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 text-green-800 p-3 shadow-sm">✅ Business already connected! Redirecting to dashboard...</div>}
 
         <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl ring-1 ring-black/5">
           <div className="flex flex-col sm:flex-row gap-3">
