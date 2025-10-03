@@ -115,35 +115,49 @@ export default function VerifyEmailPage() {
           setStatus('verified');
           setMessage('Email verified! Redirecting…');
           const token = await clientAuth.currentUser.getIdToken(true);
+          // Set the session cookie FIRST
           await fetch('/api/auth/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken: token, days: 7 }) });
           try { window.dispatchEvent(new Event('idtoken:changed')); } catch {}
-          const planStatus = await fetchPlanStatus(token);
-          if (!hasPaidPlan(planStatus)) {
-            setTimeout(() => { window.location.href = '/pricing?welcome=1'; }, 800);
-            return;
+          // Ensure /api/users/ensure is called to create/update the user record
+          try {
+            await fetch('/api/users/ensure', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+          } catch {}
+          
+          // IMPORTANT: If user is coming from pricing page after clicking "Activate Starter",
+          // they already have a plan or are in the process of choosing one.
+          // Don't redirect back to pricing in an infinite loop!
+          const urlParams = new URLSearchParams(window.location.search);
+          const fromPricing = urlParams.get('welcome') === '1' || urlParams.get('next')?.includes('pricing');
+          const nextParam = urlParams.get('next');
+          
+          // If user has a 'next' parameter (e.g., from "Activate Starter"), skip the pricing check
+          // and let them continue to their intended destination
+          if (!nextParam || nextParam === '/pricing') {
+            const planStatus = await fetchPlanStatus(token);
+            if (!hasPaidPlan(planStatus) && !fromPricing) {
+              setTimeout(() => { window.location.href = '/pricing?welcome=1'; }, 800);
+              return;
+            }
           }
-          // Decide destination based on whether a business exists
+          // Decide destination based on 'next' parameter or business status
           let target = '/onboarding/business';
-          try {
-            const headers: Record<string,string> = { Authorization: `Bearer ${token}` };
-            let r = await fetch('/api/businesses/me', { cache:'no-store', credentials:'include', headers });
-            if (!r.ok) r = await fetch('/api/businesses/me', { cache:'no-store', headers });
-            if (r.ok) {
-              const j = await r.json();
-              if (j && j.business) target = '/dashboard';
-            }
-          } catch {}
-          // Avoid being forced back to onboarding via next param if business exists
-          try {
-            if (target === '/dashboard') {
-              const href = new URL(window.location.href);
-              const nextParam = href.searchParams.get('next');
-              const isOnboarding = (p: string) => p === '/onboarding' || p.startsWith('/onboarding/');
-              if (nextParam && !isOnboarding(nextParam)) {
-                target = nextParam;
+          
+          // Priority 1: Respect the 'next' parameter if it exists
+          if (nextParam && nextParam !== '/pricing') {
+            target = decodeURIComponent(nextParam);
+          } else {
+            // Priority 2: Check if business exists, redirect to dashboard if so
+            try {
+              const headers: Record<string,string> = { Authorization: `Bearer ${token}` };
+              let r = await fetch('/api/businesses/me', { cache:'no-store', credentials:'include', headers });
+              if (!r.ok) r = await fetch('/api/businesses/me', { cache:'no-store', headers });
+              if (r.ok) {
+                const j = await r.json();
+                if (j && j.business) target = '/dashboard';
               }
-            }
-          } catch {}
+            } catch {}
+          }
+          
           setTimeout(() => { window.location.href = target; }, 800);
           return;
         }
