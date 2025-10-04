@@ -27,7 +27,7 @@ const POLICY_SECTIONS = [
 
 export default function PrivacyPage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-white via-indigo-50 to-white">
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-x-0 top-[-260px] h-[460px] rounded-full bg-[radial-gradient(circle_at_top,rgba(79,70,229,0.2),transparent_60%)] blur-3xl" />
         <div className="absolute right-[-180px] bottom-[-140px] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.2),transparent_70%)] blur-3xl" />

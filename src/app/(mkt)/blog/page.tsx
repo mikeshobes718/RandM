@@ -20,7 +20,7 @@ const POSTS = [
 
 export default function BlogPage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-white via-indigo-50 to-white">
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-x-0 top-[-260px] h-[480px] rounded-full bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.18),transparent_60%)] blur-3xl" />
         <div className="absolute left-[-160px] bottom-[-140px] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,rgba(236,72,153,0.18),transparent_75%)] blur-3xl" />

@@ -15,7 +15,7 @@ const FAQS = [
 
 export default function SupportPage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-white via-indigo-50 to-white">
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-x-0 top-[-260px] h-[480px] rounded-full bg-[radial-gradient(circle_at_top,rgba(79,70,229,0.2),transparent_60%)] blur-3xl" />
         <div className="absolute right-[-180px] bottom-[-120px] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.2),transparent_70%)] blur-3xl" />
@@ -46,7 +46,7 @@ export default function SupportPage() {
                 <p className="text-xs text-slate-500">Mon–Fri, 9a–6p ET • Same-day responses</p>
               </div>
             </div>
-            <div className="mt-6 rounded-2xl border border-indigo-200/70 bg-gradient-to-br from-indigo-500/15 via-indigo-500/5 to-transparent p-5 text-sm text-slate-700 shadow-lg shadow-indigo-500/20">
+            <div className="mt-6 rounded-2xl border border-indigo-200/70 bg-gradient-to-br from-indigo-500/15 via-indigo-500/5 to-transparent p-5 text-sm text-slate-200 shadow-lg shadow-indigo-500/20">
               <div className="text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">Live demo</div>
               <p className="mt-2">Want a walkthrough tailored to your industry? We’ll assemble the right onboarding specialist.</p>
               <a href="mailto:sales@reviewsandmarketing.com?subject=Demo%20request" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500">
