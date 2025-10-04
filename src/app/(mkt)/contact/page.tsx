@@ -45,16 +45,16 @@ export default function ContactPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-white via-indigo-50 to-white py-20">
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-20">
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-x-0 top-[-320px] h-[480px] rounded-full bg-[radial-gradient(circle_at_top,rgba(79,70,229,0.18),transparent_60%)] blur-3xl" />
-        <div className="absolute inset-y-0 right-[-200px] w-[460px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.22),transparent_70%)] blur-3xl" />
+        <div className="absolute inset-x-0 top-[-320px] h-[480px] rounded-full bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.35),transparent_60%)] blur-3xl animate-float-blob" />
+        <div className="absolute inset-y-0 right-[-200px] w-[460px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.28),transparent_70%)] blur-3xl animate-float-blob" style={{ animationDelay: '2s' }} />
       </div>
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-slate-300 shadow-sm shadow-slate-900/5 backdrop-blur">Say hello</span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">Let’s build your review engine together</h1>
-          <p className="mt-4 text-lg text-slate-300 md:text-xl">Reach the team directly—our specialists typically respond within one business day.</p>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white/90 shadow-lg backdrop-blur">Say hello</span>
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">Let's build your review engine together</h1>
+          <p className="mt-4 text-lg text-slate-200 md:text-xl">Reach the team directly—our specialists typically respond within one business day.</p>
         </div>
 
         <div className="mt-16 grid gap-8 lg:grid-cols-[minmax(0,1.4fr),minmax(0,1fr)]">
