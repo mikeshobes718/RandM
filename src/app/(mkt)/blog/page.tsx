@@ -28,9 +28,9 @@ export default function BlogPage() {
 
       <section className="relative px-4 pt-24 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-600 shadow-sm shadow-slate-900/5 backdrop-blur">Insights</span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Playbooks for consistent 5★ reviews</h1>
-          <p className="mt-4 text-lg text-slate-600 md:text-xl">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-slate-900/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-300 shadow-sm shadow-slate-900/5 backdrop-blur">Insights</span>
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl">Playbooks for consistent 5★ reviews</h1>
+          <p className="mt-4 text-lg text-slate-300 md:text-xl">
             Practical guides to spark high-intent feedback, recover less-than-perfect experiences, and grow trust at scale.
           </p>
         </div>
@@ -39,12 +39,12 @@ export default function BlogPage() {
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
           {POSTS.map((post) => (
-            <article key={post.title} className="group flex h-full flex-col overflow-hidden rounded-3xl border border-white/70 bg-white/85 p-6 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl">
+            <article key={post.title} className="group flex h-full flex-col overflow-hidden rounded-3xl border border-white/70 bg-slate-900/85 p-6 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl">
               <div className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-indigo-600">
                 {post.date}
               </div>
-              <h2 className="mt-4 text-xl font-semibold text-slate-900 group-hover:text-indigo-600">{post.title}</h2>
-              <p className="mt-3 text-sm text-slate-600 leading-relaxed flex-1">{post.excerpt}</p>
+              <h2 className="mt-4 text-xl font-semibold text-white group-hover:text-indigo-600">{post.title}</h2>
+              <p className="mt-3 text-sm text-slate-300 leading-relaxed flex-1">{post.excerpt}</p>
               <Link href="#" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500">
                 Read more
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6l6 6-6 6" /></svg>

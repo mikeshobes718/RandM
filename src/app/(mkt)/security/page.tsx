@@ -23,22 +23,22 @@ export default function SecurityPage() {
 
       <section className="relative px-4 pt-24 pb-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-600 shadow-sm shadow-slate-900/5 backdrop-blur">Security</span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Security at Reviews & Marketing</h1>
-          <p className="mt-4 text-lg text-slate-600">Our platform powers reputations, so we treat every customer record like mission-critical infrastructure.</p>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-slate-900/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-300 shadow-sm shadow-slate-900/5 backdrop-blur">Security</span>
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl">Security at Reviews & Marketing</h1>
+          <p className="mt-4 text-lg text-slate-300">Our platform powers reputations, so we treat every customer record like mission-critical infrastructure.</p>
         </div>
       </section>
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
           {CONTROLS.map((control) => (
-            <div key={control.title} className="rounded-3xl border border-white/70 bg-white/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
-              <h2 className="text-lg font-semibold text-slate-900">{control.title}</h2>
-              <p className="mt-3 text-sm text-slate-600 leading-relaxed">{control.body}</p>
+            <div key={control.title} className="rounded-3xl border border-white/70 bg-slate-900/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
+              <h2 className="text-lg font-semibold text-white">{control.title}</h2>
+              <p className="mt-3 text-sm text-slate-300 leading-relaxed">{control.body}</p>
             </div>
           ))}
         </div>
-        <div className="mt-10 max-w-4xl rounded-3xl border border-white/70 bg-white/85 p-8 text-sm text-slate-600 shadow-lg shadow-slate-900/10 backdrop-blur">
+        <div className="mt-10 max-w-4xl rounded-3xl border border-white/70 bg-slate-900/85 p-8 text-sm text-slate-300 shadow-lg shadow-slate-900/10 backdrop-blur">
           <p>
             See something concerning? Email <a href="mailto:security@reviewsandmarketing.com" className="font-semibold text-indigo-600 hover:underline">security@reviewsandmarketing.com</a>. We respond within one business day and coordinate disclosures responsibly.
           </p>

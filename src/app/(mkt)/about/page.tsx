@@ -38,9 +38,9 @@ export default function AboutPage() {
 
       <section className="relative px-4 pt-24 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-600 shadow-sm shadow-slate-900/5 backdrop-blur">Our story</span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">We help local operators turn delight into proof</h1>
-          <p className="mt-5 text-lg text-slate-600 md:text-xl">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-slate-900/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-300 shadow-sm shadow-slate-900/5 backdrop-blur">Our story</span>
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">We help local operators turn delight into proof</h1>
+          <p className="mt-5 text-lg text-slate-300 md:text-xl">
             Reviews & Marketing was born inside busy service businesses that needed polished tech without the enterprise bloat. Today we power reputational flywheels for thousands of locations.
           </p>
         </div>
@@ -49,9 +49,9 @@ export default function AboutPage() {
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-5xl gap-6 sm:grid-cols-3">
           {HIGHLIGHTS.map((item) => (
-            <div key={item.label} className="rounded-3xl border border-white/70 bg-white/85 p-8 text-center shadow-lg shadow-slate-900/10 backdrop-blur">
-              <div className="text-3xl font-semibold text-slate-900 sm:text-4xl">{item.value}</div>
-              <p className="mt-2 text-sm text-slate-600 leading-relaxed">{item.label}</p>
+            <div key={item.label} className="rounded-3xl border border-white/70 bg-slate-900/85 p-8 text-center shadow-lg shadow-slate-900/10 backdrop-blur">
+              <div className="text-3xl font-semibold text-white sm:text-4xl">{item.value}</div>
+              <p className="mt-2 text-sm text-slate-300 leading-relaxed">{item.label}</p>
             </div>
           ))}
         </div>
@@ -59,19 +59,19 @@ export default function AboutPage() {
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl grid gap-8 md:grid-cols-2">
-          <div className="rounded-3xl border border-white/70 bg-white/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
-            <h2 className="text-2xl font-semibold text-slate-900">Why we built it</h2>
-            <p className="mt-4 text-sm text-slate-600 leading-relaxed">
+          <div className="rounded-3xl border border-white/70 bg-slate-900/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
+            <h2 className="text-2xl font-semibold text-white">Why we built it</h2>
+            <p className="mt-4 text-sm text-slate-300 leading-relaxed">
               Our founders spent a decade in hospitality and home services chasing reviews manually. We designed a platform that blends premium branding with deep automation, letting teams focus on the guest experience while the software handles the follow-through.
             </p>
           </div>
-          <div className="rounded-3xl border border-white/70 bg-white/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
-            <h2 className="text-2xl font-semibold text-slate-900">What guides us</h2>
+          <div className="rounded-3xl border border-white/70 bg-slate-900/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
+            <h2 className="text-2xl font-semibold text-white">What guides us</h2>
             <div className="mt-4 space-y-4">
               {VALUES.map((value) => (
-                <div key={value.title} className="rounded-2xl bg-white/80 p-4 shadow-inner">
-                  <div className="text-sm font-semibold text-slate-900">{value.title}</div>
-                  <p className="mt-1 text-sm text-slate-600 leading-relaxed">{value.copy}</p>
+                <div key={value.title} className="rounded-2xl bg-slate-900/80 p-4 shadow-inner">
+                  <div className="text-sm font-semibold text-white">{value.title}</div>
+                  <p className="mt-1 text-sm text-slate-300 leading-relaxed">{value.copy}</p>
                 </div>
               ))}
             </div>
@@ -80,15 +80,15 @@ export default function AboutPage() {
       </section>
 
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl rounded-3xl border border-white/70 bg-white/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
-          <h2 className="text-2xl font-semibold text-slate-900">Milestones</h2>
+        <div className="mx-auto max-w-4xl rounded-3xl border border-white/70 bg-slate-900/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
+          <h2 className="text-2xl font-semibold text-white">Milestones</h2>
           <div className="mt-6 space-y-6">
             {MILESTONES.map((milestone) => (
               <div key={milestone.year} className="flex items-start gap-4">
                 <div className="rounded-full border border-indigo-200/80 bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">
                   {milestone.year}
                 </div>
-                <p className="flex-1 text-sm text-slate-600 leading-relaxed">{milestone.text}</p>
+                <p className="flex-1 text-sm text-slate-300 leading-relaxed">{milestone.text}</p>
               </div>
             ))}
           </div>
@@ -101,10 +101,10 @@ export default function AboutPage() {
             <h2 className="text-3xl font-bold sm:text-4xl">Ready to see it in action?</h2>
             <p className="mt-3 text-base text-indigo-100 sm:text-lg">Start free and collect your first reviews this week—our team will walk you through onboarding.</p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/register" className="inline-flex items-center justify-center rounded-2xl bg-white px-8 py-4 text-sm font-semibold text-indigo-600 shadow-lg shadow-slate-900/25 transition hover:-translate-y-0.5 hover:bg-slate-50">
+              <Link href="/register" className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-8 py-4 text-sm font-semibold text-indigo-600 shadow-lg shadow-slate-900/25 transition hover:-translate-y-0.5 hover:bg-slate-50">
                 Get Started Free
               </Link>
-              <Link href="/contact" className="inline-flex items-center justify-center rounded-2xl border border-white/60 px-8 py-4 text-sm font-semibold text-white/90 transition hover:bg-white/10">
+              <Link href="/contact" className="inline-flex items-center justify-center rounded-2xl border border-white/60 px-8 py-4 text-sm font-semibold text-white/90 transition hover:bg-slate-900/10">
                 Talk to Sales
               </Link>
             </div>

@@ -52,9 +52,9 @@ export default function ContactPage() {
       </div>
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-slate-600 shadow-sm shadow-slate-900/5 backdrop-blur">Say hello</span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">Let’s build your review engine together</h1>
-          <p className="mt-4 text-lg text-slate-600 md:text-xl">Reach the team directly—our specialists typically respond within one business day.</p>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-slate-300 shadow-sm shadow-slate-900/5 backdrop-blur">Say hello</span>
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">Let’s build your review engine together</h1>
+          <p className="mt-4 text-lg text-slate-300 md:text-xl">Reach the team directly—our specialists typically respond within one business day.</p>
         </div>
 
         <div className="mt-16 grid gap-8 lg:grid-cols-[minmax(0,1.4fr),minmax(0,1fr)]">
@@ -83,19 +83,19 @@ export default function ContactPage() {
             </form>
           </div>
           <div className="space-y-5 rounded-3xl border border-white/60 bg-white/80 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
-            <h2 className="text-lg font-semibold text-slate-900">Connect with a specialist</h2>
-            <p className="text-sm text-slate-600">Prefer email? Reach us at
+            <h2 className="text-lg font-semibold text-white">Connect with a specialist</h2>
+            <p className="text-sm text-slate-300">Prefer email? Reach us at
               <a href="mailto:support@reviewsandmarketing.com" className="mt-1 block font-semibold text-indigo-600 hover:underline break-all whitespace-normal">support@reviewsandmarketing.com</a>
             </p>
-            <div className="grid gap-4 rounded-2xl border border-slate-200/80 bg-white/80 p-4 text-sm text-slate-600 shadow-inner">
+            <div className="grid gap-4 rounded-2xl border border-slate-200/80 bg-white/80 p-4 text-sm text-slate-300 shadow-inner">
               <div>
                 <div className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Sales</div>
-                <a href="mailto:sales@reviewsandmarketing.com" className="mt-1 block font-medium text-slate-900 hover:text-indigo-600">sales@reviewsandmarketing.com</a>
+                <a href="mailto:sales@reviewsandmarketing.com" className="mt-1 block font-medium text-white hover:text-indigo-600">sales@reviewsandmarketing.com</a>
                 <p className="text-xs text-slate-500">Strategy consults, pricing, custom onboarding</p>
               </div>
               <div className="border-t border-slate-100 pt-4">
                 <div className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Support</div>
-                <a href="mailto:support@reviewsandmarketing.com" className="mt-1 block font-medium text-slate-900 hover:text-indigo-600">support@reviewsandmarketing.com</a>
+                <a href="mailto:support@reviewsandmarketing.com" className="mt-1 block font-medium text-white hover:text-indigo-600">support@reviewsandmarketing.com</a>
                 <p className="text-xs text-slate-500">Response within one business day, Mon–Fri 9a–6p ET</p>
               </div>
             </div>
@@ -108,7 +108,7 @@ export default function ContactPage() {
               </a>
             </div>
             <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4 text-xs text-slate-500 shadow-inner">
-              <div className="font-semibold text-slate-600">Status</div>
+              <div className="font-semibold text-slate-300">Status</div>
               <p className="mt-1">All systems operational. Check <a href="https://status.reviewsandmarketing.com" className="text-indigo-600 hover:underline">status.reviewsandmarketing.com</a> for live updates.</p>
             </div>
           </div>
