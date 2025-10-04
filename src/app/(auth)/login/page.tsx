@@ -91,34 +91,43 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-12">
+    <main className="relative min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-12 overflow-hidden">
+      {/* Premium background effects */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-float-blob" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float-blob" style={{ animationDelay: '2s' }} />
+      </div>
+      
       <div className="max-w-md mx-auto px-4">
-        <div className="rounded-2xl border border-gray-200 bg-white/90 backdrop-blur-sm shadow-xl p-6">
-          <div className="mb-4 text-center">
-            <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center mb-3">
-              <svg aria-hidden className="w-6 h-6 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" /></svg>
+        <div className="relative rounded-3xl border border-white/10 bg-white/95 backdrop-blur-xl shadow-2xl p-8 glow-soft">
+          {/* Subtle gradient overlay */}
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/60 via-white/40 to-transparent pointer-events-none" />
+          
+          <div className="relative mb-6 text-center">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/50 glow-soft">
+              <svg aria-hidden className="w-8 h-8 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" /></svg>
             </div>
-            <h1 className="text-2xl font-bold">Welcome back</h1>
-            <p className="text-sm text-gray-600">Sign in to access your dashboard</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">Welcome back</h1>
+            <p className="text-sm text-slate-600 mt-2">Sign in to access your dashboard</p>
           </div>
-          <form onSubmit={submit} className="space-y-4" noValidate>
+          <form onSubmit={submit} className="relative space-y-5" noValidate>
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Email</span>
-              <input aria-label="Email" className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onBlur={()=>{ if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) setEmailError('Enter a valid email'); else setEmailError(null); }} required />
-              {emailError && <div role="alert" className="text-red-600 text-xs mt-1">{emailError}</div>}
+              <span className="text-sm font-semibold text-slate-700">Email</span>
+              <input aria-label="Email" className="mt-2 w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white/50" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onBlur={()=>{ if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) setEmailError('Enter a valid email'); else setEmailError(null); }} required />
+              {emailError && <div role="alert" className="text-red-600 text-xs mt-1 font-medium">{emailError}</div>}
             </label>
             <label className="block">
-              <span className="text-sm font-medium text-gray-700">Password</span>
-              <div className="mt-1 relative">
-                <input aria-label="Password" className="w-full border rounded-xl px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" type={show?'text':'password'} placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} onBlur={()=>{ if (password.length<6) setPasswordError('Password must be at least 6 characters'); else setPasswordError(null); }} required />
-                <button type="button" aria-label={show? 'Hide password':'Show password'} onClick={()=>setShow(s=>!s)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100">
-                  <svg aria-hidden className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0Z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"/></svg>
+              <span className="text-sm font-semibold text-slate-700">Password</span>
+              <div className="mt-2 relative">
+                <input aria-label="Password" className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white/50" type={show?'text':'password'} placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} onBlur={()=>{ if (password.length<6) setPasswordError('Password must be at least 6 characters'); else setPasswordError(null); }} required />
+                <button type="button" aria-label={show? 'Hide password':'Show password'} onClick={()=>setShow(s=>!s)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg hover:bg-slate-100 transition-colors">
+                  <svg aria-hidden className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0Z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"/></svg>
                 </button>
               </div>
-              {passwordError && <div role="alert" className="text-red-600 text-xs mt-1">{passwordError}</div>}
+              {passwordError && <div role="alert" className="text-red-600 text-xs mt-1 font-medium">{passwordError}</div>}
             </label>
-            <button type="submit" disabled={loading} className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 font-medium shadow hover:from-blue-700 hover:to-purple-700 transition">{loading?'Signing in…':'Sign in'}</button>
-            {error && <div role="alert" className={error.includes('verify') ? 'text-orange-600 text-sm font-medium' : 'text-red-600 text-sm'}>{error}</div>}
+            <button type="submit" disabled={loading} className="w-full rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-3.5 font-semibold shadow-lg hover:shadow-xl hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">{loading?'Signing in…':'Sign in'}</button>
+            {error && <div role="alert" className={error.includes('verify') ? 'text-orange-600 text-sm font-medium bg-orange-50 p-3 rounded-lg' : 'text-red-600 text-sm bg-red-50 p-3 rounded-lg font-medium'}>{error}</div>}
           </form>
           <div className="mt-4 text-sm flex items-center justify-between">
             <a className="underline text-blue-600" href="/forgot">Forgot password?</a>
