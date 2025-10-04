@@ -59,7 +59,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(url);
       }
     } catch {}
-    // Allow explicit edit mode to reach onboarding
+    // Allow explicit edit mode to reach onboarding - this is the key fix
     if (req.nextUrl.searchParams.get('edit') === '1') {
       return NextResponse.next();
     }

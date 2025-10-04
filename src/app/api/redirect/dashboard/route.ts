@@ -26,10 +26,15 @@ export async function GET(req: Request) {
       }
     }
   } catch {}
-  return NextResponse.redirect(new URL('/onboarding/business', process.env.APP_URL || 'https://reviewsandmarketing.com'));
+  // If no business is connected (or unauthenticated), send to onboarding with a
+  // single-run guard to avoid client loops (`sr=1` = server-redirected once)
+  return NextResponse.redirect(new URL('/onboarding/business?sr=1', process.env.APP_URL || 'https://reviewsandmarketing.com'));
 }
 
 export const dynamic = 'force-dynamic';
+
+
+
 
 
 

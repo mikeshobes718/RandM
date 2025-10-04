@@ -46,3 +46,6 @@ test('debug dashboard redirect issue', async ({ page, baseURL }) => {
   // Take a screenshot for debugging
   await page.screenshot({ path: 'debug-dashboard.png', fullPage: true });
 });
+
+
+

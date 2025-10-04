@@ -74,3 +74,6 @@ test('debug account issue - check why onboarding redirect fails', async ({ page,
   
   console.log('=== END DEBUG ===');
 });
+
+
+

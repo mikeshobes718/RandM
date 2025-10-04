@@ -124,17 +124,22 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-12">
+    <main className="relative min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-12 overflow-hidden">
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-float-blob" />
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float-blob" style={{ animationDelay: '2s' }} />
+      </div>
       <div className="max-w-md mx-auto px-4">
-        <div className="rounded-2xl border border-gray-200 bg-white/90 backdrop-blur-sm shadow-xl p-6">
-          <div className="mb-4 text-center">
-            <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center mb-3">
-              <svg aria-hidden className="w-6 h-6 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" /></svg>
+        <div className="relative rounded-3xl border border-white/10 bg-white/95 backdrop-blur-xl shadow-2xl p-8 glow-soft">
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/60 via-white/40 to-transparent pointer-events-none" />
+          <div className="relative mb-6 text-center">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/50 glow-soft">
+              <svg aria-hidden className="w-8 h-8 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" /></svg>
             </div>
-            <h1 className="text-2xl font-bold">Create your account</h1>
-            <p className="text-sm text-gray-600">Start collecting reviews in minutes</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">Create your account</h1>
+            <p className="text-sm text-slate-600 mt-2">Start collecting reviews in minutes</p>
           </div>
-          <form onSubmit={submit} className="space-y-4" noValidate>
+          <form onSubmit={submit} className="relative space-y-5" noValidate>
             <label className="block">
               <span className="text-sm font-medium text-gray-700">Email</span>
               <input aria-label="Email" className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onBlur={()=>{ if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) setEmailError('Enter a valid email'); else setEmailError(null); }} required />

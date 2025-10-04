@@ -124,3 +124,6 @@ test('fresh session test - simulate new user experience', async ({ page, baseURL
   await page.screenshot({ path: 'fresh-session-final.png', fullPage: true });
   console.log('Final screenshot saved as fresh-session-final.png');
 });
+
+
+

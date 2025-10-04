@@ -78,3 +78,6 @@ test('dashboard should not redirect after business connection', async ({ page, b
   
   console.log('SUCCESS: Dashboard loads correctly without redirects');
 });
+
+
+
