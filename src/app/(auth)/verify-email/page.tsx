@@ -113,7 +113,7 @@ export default function VerifyEmailPage() {
         await clientAuth.currentUser.reload();
         if (clientAuth.currentUser.emailVerified) {
           setStatus('verified');
-          setMessage('Email verified! Redirecting…');
+          setMessage('✅ Email verified! Setting up your account…');
           const token = await clientAuth.currentUser.getIdToken(true);
           // Set the session cookie FIRST
           await fetch('/api/auth/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken: token, days: 7 }) });
@@ -162,8 +162,8 @@ export default function VerifyEmailPage() {
           return;
         }
         if (!skipMessageReset) {
-          setStatus('idle');
-          setMessage('Not verified yet. Click “I verified” after confirming your email.');
+          setStatus('error');
+          setMessage('⚠️ Email not verified yet. Please check your inbox and click the verification link, then return here and click "I verified".');
         }
         return;
       }

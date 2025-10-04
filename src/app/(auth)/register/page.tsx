@@ -104,6 +104,7 @@ export default function RegisterPage() {
         console.error('business upsert error', bizErr);
       }
       // Send branded verification email via Postmark-backed route; fall back to Firebase if provider fails
+      setError('✅ Account created! Sending verification email...');
       const emailRes = await fetch('/api/auth/email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, type: 'verify' }) });
       if (!emailRes.ok) {
         if (!clientAuth.currentUser) {
@@ -113,7 +114,10 @@ export default function RegisterPage() {
           sendEmailVerification(clientAuth.currentUser!, { url: `${window.location.origin}/verify-email` })
         );
       }
-      window.location.href = '/verify-email';
+      setError('✅ Verification email sent! Redirecting...');
+      setTimeout(() => {
+        window.location.href = '/verify-email';
+      }, 1000);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Registration failed');
     } finally { setLoading(false); }
@@ -196,7 +200,7 @@ export default function RegisterPage() {
             </label>
             {businessError && <div role="alert" className="text-red-600 text-sm">{businessError}</div>}
             <button type="submit" disabled={loading} className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 font-medium shadow hover:from-blue-700 hover:to-purple-700 transition">{loading?'Creating…':'Create account'}</button>
-            {error && <div role="alert" className="text-red-600 text-sm">{error}</div>}
+            {error && <div role="alert" className={error.startsWith('✅') ? 'text-green-600 text-sm font-medium' : 'text-red-600 text-sm'}>{error}</div>}
           </form>
           <div className="mt-4 text-sm flex items-center justify-between">
             <a className="text-gray-600 hover:text-gray-900" href="/login">Have an account? Sign in</a>

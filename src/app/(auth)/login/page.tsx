@@ -60,7 +60,10 @@ export default function LoginPage() {
         if (!cred.user.emailVerified) {
           // ensure a verification email is available to resend
           try { localStorage.setItem('userEmail', email); } catch {}
-          window.location.href = '/verify-email';
+          setError('Please verify your email first. Redirecting to verification page...');
+          setTimeout(() => {
+            window.location.href = '/verify-email';
+          }, 1500);
           return;
         }
       } catch {}
@@ -115,7 +118,7 @@ export default function LoginPage() {
               {passwordError && <div role="alert" className="text-red-600 text-xs mt-1">{passwordError}</div>}
             </label>
             <button type="submit" disabled={loading} className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 font-medium shadow hover:from-blue-700 hover:to-purple-700 transition">{loading?'Signing in…':'Sign in'}</button>
-            {error && <div role="alert" className="text-red-600 text-sm">{error}</div>}
+            {error && <div role="alert" className={error.includes('verify') ? 'text-orange-600 text-sm font-medium' : 'text-red-600 text-sm'}>{error}</div>}
           </form>
           <div className="mt-4 text-sm flex items-center justify-between">
             <a className="underline text-blue-600" href="/forgot">Forgot password?</a>
