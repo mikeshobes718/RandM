@@ -150,25 +150,20 @@ export async function POST(req: Request) {
   if (error) return new NextResponse(error.message, { status: 500 });
   
   // Fetch the business data we just created/updated to return it
-  let businessData = null;
-  try {
-    const { data: business, error: fetchError } = await supabase
-      .from('businesses')
-      .select('id,name,review_link,google_maps_write_review_uri,contact_phone,google_rating,google_place_id')
-      .eq('owner_uid', uid!)
-      .maybeSingle();
-    
-    if (!fetchError && business) {
-      businessData = business;
-    }
-  } catch (e) {
-    console.error('Failed to fetch business after upsert:', e);
+  const { data: business, error: fetchError } = await supabase
+    .from('businesses')
+    .select('id,name,review_link,google_maps_write_review_uri,contact_phone,google_rating,google_place_id')
+    .eq('owner_uid', uid!)
+    .maybeSingle();
+  
+  if (fetchError) {
+    console.error('[upsert/form] Failed to fetch business after save:', fetchError);
   }
   
   const ct = req.headers.get('content-type') || '';
   const res = (ct.includes('application/x-www-form-urlencoded') || ct.includes('multipart/form-data'))                                                          
     ? NextResponse.redirect(new URL('/dashboard', req.url), 303)
-    : NextResponse.json({ ok: true, business: businessData });
+    : NextResponse.json({ ok: true, business: business || null });
   try {
     const host = (() => { try { return new URL(process.env.APP_URL || '').hostname; } catch { try { return new URL(req.url).hostname; } catch { return ''; } } })();                                                                            
     const domain = host.includes('.') ? `; Domain=.${host.replace(/^www\./,'')}` : '';                                                                          
