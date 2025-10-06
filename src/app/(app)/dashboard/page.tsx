@@ -134,20 +134,20 @@ export default function Dashboard() {
     })();
     (async () => {
       setLoading(true);
+      // Check for business data in localStorage first (from recent onboarding)
+      let businessFromStorage: Business | null = null;
       try {
-        // Check for business data in localStorage first (from recent onboarding)
-        let businessFromStorage: Business | null = null;
-        try {
-          const stored = typeof window !== 'undefined' ? localStorage.getItem('businessData') : null;
-          if (stored) {
-            businessFromStorage = JSON.parse(stored);
-            // Clear it after use to avoid stale data
-            localStorage.removeItem('businessData');
-          }
-        } catch (e) {
-          console.warn('Could not parse stored business data:', e);
+        const stored = typeof window !== 'undefined' ? localStorage.getItem('businessData') : null;
+        if (stored) {
+          businessFromStorage = JSON.parse(stored);
+          // Clear it after use to avoid stale data
+          localStorage.removeItem('businessData');
         }
-        
+      } catch (e) {
+        console.warn('Could not parse stored business data:', e);
+      }
+      
+      try {
         const tok = typeof window !== 'undefined' ? localStorage.getItem('idToken') : null;
         const headers: Record<string, string> = tok ? { Authorization: `Bearer ${tok}` } : {};
         let r = await fetch('/api/dashboard/summary', { cache: 'no-store', credentials: 'include', headers });
@@ -200,7 +200,10 @@ export default function Dashboard() {
         if (!errorMessage.includes('401') && !errorMessage.includes('Unauthorized')) {
           setError(errorMessage);
         }
-        setBusiness(null);
+        // If API failed but we have data from localStorage, use it
+        if (businessFromStorage) {
+          setBusiness(businessFromStorage);
+        }
         setStats({ reviewsThisMonth: 0, shareLinkScans: 0, averageRating: null });
         setRecentFeedback([]);
         setSquare(null);
