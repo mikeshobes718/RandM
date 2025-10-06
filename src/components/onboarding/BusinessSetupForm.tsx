@@ -171,10 +171,14 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
         document.cookie = 'onboarding_complete=1; path=/; max-age=3600; samesite=lax';                                                                          
         
         // Wait a bit for the database to commit
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Redirect with from=onboarding parameter to trigger polling
-        window.location.href = '/dashboard?from=onboarding&t=' + Date.now();
+        // Call onSuccess callback if provided, otherwise redirect
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          window.location.href = '/dashboard?from=onboarding&t=' + Date.now();
+        }
       } else {
         const errorText = await response.text().catch(() => 'Failed to save');
         
