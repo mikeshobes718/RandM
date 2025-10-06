@@ -252,9 +252,9 @@ export default function Home() {
       </section>
 
       {/* Journey Spotlight */}
-      <section className="relative overflow-hidden border-y border-white/5 bg-gradient-to-b from-slate-950 via-slate-950/90 to-slate-900 py-24 sm:py-32">
-        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-32 bg-gradient-to-b from-white/10 via-white/0" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-indigo-900/40 via-transparent" />
+      <section className="relative overflow-hidden border-y border-indigo-100 bg-white py-24 sm:py-32">
+        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-32 bg-gradient-to-b from-indigo-50/50 via-white/0" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-purple-50/40 via-transparent" />
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,520px)] lg:items-center">
             <div className="space-y-8">
@@ -364,20 +364,20 @@ export default function Home() {
       </section>
 
       {/* Live feed */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-24 sm:py-32">
-        <div className="pointer-events-none absolute inset-y-0 left-0 -z-10 w-1/2 bg-[radial-gradient(circle_at_left,rgba(14,165,233,0.22),transparent_70%)]" />
+      <section className="relative overflow-hidden bg-white py-24 sm:py-32">
+        <div className="pointer-events-none absolute inset-y-0 left-0 -z-10 w-1/2 bg-[radial-gradient(circle_at_left,rgba(99,102,241,0.12),transparent_70%)]" />
         <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)] lg:items-start lg:px-8">
           <div className="space-y-6">
-            <p className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white/70">
+            <p className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-indigo-700">
               Command pulse
             </p>
-            <h2 className="text-3xl font-semibold sm:text-4xl">Stay on top of activity as it happens.</h2>
-            <p className="text-lg text-slate-300">
+            <h2 className="text-3xl font-semibold text-slate-900 sm:text-4xl">Stay on top of activity as it happens.</h2>
+            <p className="text-lg text-slate-700">
               Monitor new reviews, QR scans, and private feedback from the live timeline. Filter by location or teammate in a click.
             </p>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="inline-flex items-center gap-2 rounded-full border border-indigo-300 bg-white px-6 py-3 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50"
             >
               Peek inside the dashboard
               <svg aria-hidden className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
@@ -386,30 +386,30 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="relative overflow-hidden rounded-[32px] border border-white/15 bg-white/5 p-8 shadow-[0_50px_140px_rgba(15,23,42,0.55)] backdrop-blur">
+          <div className="relative overflow-hidden rounded-[32px] border border-slate-200 bg-white/95 p-8 shadow-[0_50px_140px_rgba(99,102,241,0.25)] backdrop-blur">
             <ol className="space-y-6">
               {timelineEntries.map((entry) => (
-                <li key={entry.title} className="rounded-3xl border border-white/10 bg-white/5 p-5">
-                  <div className="flex items-center justify-between text-xs uppercase tracking-[0.35em] text-white/60">
+                <li key={entry.title} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="flex items-center justify-between text-xs uppercase tracking-[0.35em] text-slate-500">
                     <span>{entry.time}</span>
                     <span>{entry.metric}</span>
                   </div>
-                  <p className="mt-3 text-base font-semibold text-white">{entry.title}</p>
-                  <p className="mt-2 text-sm text-slate-300">{entry.description}</p>
+                  <p className="mt-3 text-base font-semibold text-slate-900">{entry.title}</p>
+                  <p className="mt-2 text-sm text-slate-700">{entry.description}</p>
                 </li>
               ))}
             </ol>
 
-            <div className="mt-8 grid gap-4 text-sm text-white sm:grid-cols-2">
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-                <div className="text-xs uppercase tracking-[0.35em] text-white/60">Today</div>
+            <div className="mt-8 grid gap-4 text-sm text-slate-900 sm:grid-cols-2">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                <div className="text-xs uppercase tracking-[0.35em] text-slate-500">Today</div>
                 <p className="mt-3 text-2xl font-semibold">14 responses</p>
-                <p className="mt-1 text-xs text-slate-300">Email sends + QR scans recorded so far</p>
+                <p className="mt-1 text-xs text-slate-600">Email sends + QR scans recorded so far</p>
               </div>
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
-                <div className="text-xs uppercase tracking-[0.35em] text-white/60">Next follow-up</div>
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                <div className="text-xs uppercase tracking-[0.35em] text-slate-500">Next follow-up</div>
                 <p className="mt-3 text-2xl font-semibold">In 2h</p>
-                <p className="mt-1 text-xs text-slate-300">Reminder set for pending private feedback</p>
+                <p className="mt-1 text-xs text-slate-600">Reminder set for pending private feedback</p>
               </div>
             </div>
           </div>
@@ -417,15 +417,15 @@ export default function Home() {
       </section>
 
       {/* Integrations */}
-      <section className="border-y border-white/5 bg-slate-950 py-20">
+      <section className="border-y border-indigo-100 bg-white py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-xs uppercase tracking-[0.35em] text-white/60">Connect your essentials</p>
-            <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">Built to work with the tools you already use.</h2>
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Connect your essentials</p>
+            <h2 className="mt-4 text-3xl font-semibold text-slate-900 sm:text-4xl">Built to work with the tools you already use.</h2>
           </div>
-          <div className="mt-12 grid gap-4 text-center text-sm text-slate-300 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-4 text-center text-sm text-slate-700 sm:grid-cols-2 lg:grid-cols-4">
             {integrationLogos.map((logo) => (
-              <div key={logo} className="rounded-full border border-white/10 bg-white/5 px-5 py-3 font-semibold tracking-wide text-white/80 shadow-lg shadow-slate-900/30">
+              <div key={logo} className="rounded-full border border-slate-200 bg-slate-50 px-5 py-3 font-semibold tracking-wide text-slate-800 shadow-lg shadow-slate-900/5">
                 {logo}
               </div>
             ))}
@@ -434,28 +434,28 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-24 sm:py-32">
+      <section className="bg-gradient-to-b from-indigo-50 via-white to-purple-50 py-24 sm:py-32">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-4xl font-semibold sm:text-5xl">Operators who lead with experience trust Reviews & Marketing.</h2>
-            <p className="mt-6 text-lg text-slate-300">
+            <h2 className="text-4xl font-semibold text-slate-900 sm:text-5xl">Operators who lead with experience trust Reviews & Marketing.</h2>
+            <p className="mt-6 text-lg text-slate-700">
               Hospitality, healthcare, and boutique fitness teams rely on our dashboard to collect reviews and stay in sync.
             </p>
           </div>
 
           <div className="mt-16 grid gap-8 lg:grid-cols-3">
             {testimonials.map((testimonial) => (
-              <article key={testimonial.name} className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-xl shadow-slate-900/40 backdrop-blur">
-                <div className="flex items-center gap-3 text-amber-300">
+              <article key={testimonial.name} className="rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-xl shadow-slate-900/10 backdrop-blur">
+                <div className="flex items-center gap-3 text-amber-500">
                   {Array.from({ length: 5 }).map((_, idx) => (
                     <svg key={idx} aria-hidden className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.08 3.33a1 1 0 00.96.7h3.4c.96 0 1.36 1.23.58 1.79l-2.75 1.99a1 1 0 00-.36 1.11l1.08 3.33c.3.92-.76 1.68-1.54 1.11l-2.75-1.99a1 1 0 00-1.18 0l-2.75 1.99c-.78.57-1.84-.19-1.54-1.11l1.08-3.33a1 1 0 00-.36-1.11L2.99 8.78c-.78-.56-.38-1.79.58-1.79h3.4a1 1 0 00.96-.7l1.08-3.33z" />
                     </svg>
                   ))}
                 </div>
-                <p className="mt-6 text-slate-100">“{testimonial.quote}”</p>
-                <footer className="mt-8 text-sm text-slate-300">
-                  <p className="font-semibold text-white">{testimonial.name}</p>
+                <p className="mt-6 text-slate-900">"{testimonial.quote}"</p>
+                <footer className="mt-8 text-sm text-slate-700">
+                  <p className="font-semibold text-slate-900">{testimonial.name}</p>
                   <p>{testimonial.role}</p>
                 </footer>
               </article>
