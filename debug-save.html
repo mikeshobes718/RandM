@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head><title>Debug Business Save</title></head>
+<body>
+<h1>Testing Business Save Flow</h1>
+<pre id="output"></pre>
+<script>
+const output = document.getElementById('output');
+const log = (msg) => { output.textContent += msg + '\n'; console.log(msg); };
+
+const TEST_EMAIL = 'bibiyo2509@sicmg.com';
+const TEST_PASSWORD = 'T@st1234';
+const FIREBASE_API_KEY = 'AIzaSyAbvy5lC1yczSa8HMmicpEYFFZz0tbHZ5s';
+
+async function test() {
+  log('=== Testing Business Save Flow ===\n');
+  
+  try {
+    // Step 1: Login
+    log('1. Logging in...');
+    const loginRes = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: TEST_EMAIL, password: TEST_PASSWORD, returnSecureToken: true })
+    });
+    
+    if (!loginRes.ok) {
+      log('   ❌ Login failed: ' + loginRes.status);
+      return;
+    }
+    
+    const loginData = await loginRes.json();
+    const idToken = loginData.idToken;
+    log('   ✅ Logged in\n');
+    
+    // Step 2: Save business
+    log('2. Saving business...');
+    const saveRes = await fetch('https://reviewsandmarketing.com/api/businesses/upsert/form', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${idToken}`
+      },
+      body: JSON.stringify({
+        name: 'Debug Test Business ' + Date.now(),
+        idToken: idToken
+      })
+    });
+    
+    log('   Response status: ' + saveRes.status);
+    
+    if (!saveRes.ok) {
+      const errorText = await saveRes.text();
+      log('   ❌ Save failed: ' + errorText);
+      return;
+    }
+    
+    const saveData = await saveRes.json();
+    log('   Response: ' + JSON.stringify(saveData, null, 2));
+    
+    if (!saveData.business) {
+      log('   ❌ API did not return business data!');
+      return;
+    }
+    
+    log('   ✅ Business saved: ' + saveData.business.name + '\n');
+    
+    // Step 3: Verify dashboard can see it
+    log('3. Checking dashboard API...');
+    const dashRes = await fetch('https://reviewsandmarketing.com/api/dashboard/summary', {
+      headers: { 'Authorization': `Bearer ${idToken}` }
+    });
+    
+    if (!dashRes.ok) {
+      log('   ❌ Dashboard API failed: ' + dashRes.status);
+      return;
+    }
+    
+    const dashData = await dashRes.json();
+    log('   Dashboard response:');
+    log('   - Has business: ' + (dashData.business ? 'YES' : 'NO'));
+    if (dashData.business) {
+      log('   - Business name: ' + dashData.business.name);
+      log('   - Business ID: ' + dashData.business.id);
+    }
+    
+    log('\n✅ All tests passed!');
+    
+  } catch (error) {
+    log('❌ Error: ' + error.message);
+  }
+}
+
+test();
+</script>
+</body>
+</html>

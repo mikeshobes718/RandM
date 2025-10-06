@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
-import { requireUid } from '@/lib/authServer';
+import { NextRequest, NextResponse } from 'next/server';
+import { requireUid, verifyIdTokenViaRest } from '@/lib/authServer';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { formatPhone } from '@/lib/phone';
+import { getAuthAdmin } from '@/lib/firebaseAdmin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,8 +13,27 @@ function startOfCurrentMonthUTC(): string {
   return utc.toISOString();
 }
 
-export async function GET() {
-  const uid = await requireUid().catch(() => null);
+export async function GET(req: NextRequest) {
+  // Try cookie-based auth first, then fallback to Authorization header
+  let uid = await requireUid().catch(() => null);
+  
+  if (!uid) {
+    const authHeader = req.headers.get('authorization') || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : '';
+    if (token) {
+      try {
+        const auth = getAuthAdmin();
+        const decoded = await auth.verifyIdToken(token);
+        uid = decoded.uid;
+      } catch {
+        try {
+          const verified = await verifyIdTokenViaRest(token);
+          uid = verified.uid;
+        } catch {}
+      }
+    }
+  }
+  
   if (!uid) return new NextResponse('Unauthorized', { status: 401 });
 
   const supa = getSupabaseAdmin();
