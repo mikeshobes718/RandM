@@ -854,7 +854,7 @@ export default function Dashboard() {
                     Enter your business details and an optional Google review link. We’ll generate your branded landing page and QR instantly.
                   </p>
                 </div>
-                <BusinessSetupForm onSuccess={async () => { await new Promise(r => setTimeout(r, 500)); window.location.href = "/dashboard?refresh=" + Date.now(); }} />
+                <BusinessSetupForm onSuccess={async () => { await new Promise(r => setTimeout(r, 500)); window.location.href = "/dashboard?from=onboarding&t=" + Date.now(); }} />
               </div>
             </section>
           )}
