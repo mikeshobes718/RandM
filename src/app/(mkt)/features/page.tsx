@@ -65,13 +65,13 @@ export default function FeaturesPage() {
 
       <section className="relative px-4 pt-24 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-slate-900/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-300 shadow-sm shadow-slate-900/5 backdrop-blur">
+          <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-indigo-700 shadow-sm shadow-slate-900/5 backdrop-blur">
             Platform tour
           </span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
             The modern stack for ⭐⭐⭐⭐⭐ growth
           </h1>
-          <p className="mt-5 text-lg text-slate-300 md:text-xl">
+          <p className="mt-5 text-lg text-slate-700 md:text-xl">
             Reviews & Marketing brings share links, QR kits, and live analytics together so every happy customer can leave a public review.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -86,16 +86,16 @@ export default function FeaturesPage() {
             </Link>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-900/80 px-7 py-3 text-sm font-semibold text-slate-700 shadow-sm shadow-slate-900/5 transition hover:border-slate-300 hover:bg-slate-900"
+              className="inline-flex items-center justify-center rounded-2xl border border-indigo-200 bg-white px-7 py-3 text-sm font-semibold text-indigo-700 shadow-sm shadow-slate-900/5 transition hover:border-indigo-300 hover:bg-indigo-50"
             >
               Talk to Sales
             </Link>
           </div>
           <div className="mt-12 grid gap-4 sm:grid-cols-3">
             {METRICS.map((metric) => (
-              <div key={metric.label} className="rounded-2xl border border-white/70 bg-slate-900/80 p-5 text-left shadow-lg shadow-slate-900/10 backdrop-blur">
+              <div key={metric.label} className="rounded-2xl border border-slate-200 bg-white/90 p-5 text-left shadow-lg shadow-slate-900/10 backdrop-blur">
                 <div className={`inline-flex items-center rounded-full bg-gradient-to-r ${metric.tone} px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-white`}>{metric.label}</div>
-                <div className="mt-3 text-3xl font-semibold text-white">{metric.value}</div>
+                <div className="mt-3 text-3xl font-semibold text-slate-900">{metric.value}</div>
               </div>
             ))}
           </div>
@@ -107,15 +107,15 @@ export default function FeaturesPage() {
           {PILLARS.map((pillar) => (
             <div
               key={pillar.title}
-              className="group rounded-3xl border border-white/70 bg-slate-900/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl"
+              className="group rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl"
             >
               <div className={`mb-6 grid h-12 w-12 place-content-center rounded-xl bg-gradient-to-br ${pillar.iconBg} text-white`}> 
                 <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M4 12h10M4 17h7" />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold text-white capitalize">{pillar.title}</h2>
-              <p className="mt-3 text-sm text-slate-300 leading-relaxed">{pillar.copy}</p>
+              <h2 className="text-xl font-semibold text-slate-900 capitalize">{pillar.title}</h2>
+              <p className="mt-3 text-sm text-slate-700 leading-relaxed">{pillar.copy}</p>
             </div>
           ))}
         </div>
@@ -125,9 +125,9 @@ export default function FeaturesPage() {
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-8 md:grid-cols-2">
             {HIGHLIGHTS.map((section) => (
-              <div key={section.title} className="rounded-3xl border border-white/70 bg-slate-900/80 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
-                <h3 className="text-2xl font-semibold text-white">{section.title}</h3>
-                <ul className="mt-6 space-y-3 text-sm text-slate-300">
+              <div key={section.title} className="rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
+                <h3 className="text-2xl font-semibold text-slate-900">{section.title}</h3>
+                <ul className="mt-6 space-y-3 text-sm text-slate-700">
                   {section.bullets.map((bullet) => (
                     <li key={bullet} className="flex items-start gap-2">
                       <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-indigo-500" />
@@ -139,17 +139,17 @@ export default function FeaturesPage() {
             ))}
           </div>
 
-          <div className="mt-12 rounded-3xl border border-white/70 bg-slate-900/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
+          <div className="mt-12 rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
             <FeatureTabs />
           </div>
         </div>
       </section>
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl rounded-3xl border border-white/70 bg-slate-900/80 p-6 shadow-xl shadow-slate-900/10 backdrop-blur md:flex md:items-center md:justify-between md:gap-10 md:p-8">
+        <div className="mx-auto max-w-6xl rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-xl shadow-slate-900/10 backdrop-blur md:flex md:items-center md:justify-between md:gap-10 md:p-8">
           <div>
-            <h3 className="text-2xl font-semibold text-white">Compare plans</h3>
-            <p className="mt-2 text-sm text-slate-300">See which package pairs best with your growth stage—each plan includes live onboarding.</p>
+            <h3 className="text-2xl font-semibold text-slate-900">Compare plans</h3>
+            <p className="mt-2 text-sm text-slate-700">See which package pairs best with your growth stage—each plan includes live onboarding.</p>
           </div>
           <div className="mt-6 flex items-center gap-3 md:mt-0">
             <div className="hidden items-center gap-3 rounded-full border border-slate-200/80 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-500 md:flex">
