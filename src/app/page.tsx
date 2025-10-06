@@ -137,7 +137,7 @@ const testimonials = [
 
 export default function Home() {
   return (
-    <main className="relative overflow-hidden bg-slate-950 text-slate-100">
+    <main className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-slate-900">
       <div className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.25),transparent_55%)]" />
       <div className="pointer-events-none absolute inset-x-0 top-1/3 -z-20 h-[540px] bg-[radial-gradient(circle_at_center,rgba(129,140,248,0.18),transparent_65%)]" />
 
@@ -150,9 +150,9 @@ export default function Home() {
 
         <div className="relative mx-auto grid max-w-7xl gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:items-center">
           <div className="space-y-12">
-            <div className="inline-flex items-center rounded-full border border-white/25 bg-white/15 px-5 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white/80">
+            <div className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-100 px-5 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-indigo-700">
               Premium release
-              <span className="ml-3 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white/90">
+              <span className="ml-3 rounded-full bg-indigo-200 px-2 py-0.5 text-[10px] font-bold text-indigo-800">
                 Glow Suite
               </span>
             </div>
@@ -164,14 +164,14 @@ export default function Home() {
                   Your links, QR codes, and feedback in one place.
                 </span>
               </h1>
-              <p className="max-w-2xl text-lg text-slate-200 sm:text-xl">
+              <p className="max-w-2xl text-lg text-slate-700 sm:text-xl">
                 Connect your Google review link, send proven email requests, print QR codes, and keep an eye on every location’s results from a single dashboard.
               </p>
             </header>
 
             <div className="space-y-6">
               <HomeCtaButtons align="start" />
-              <p className="text-sm text-slate-100/80">
+              <p className="text-sm text-slate-600">
                 Starter is free, and you can upgrade to Pro whenever you’re ready.
               </p>
             </div>
@@ -258,19 +258,19 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,520px)] lg:items-center">
             <div className="space-y-8">
-              <span className="inline-flex items-center rounded-full border border-white/25 bg-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white">
+              <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-indigo-700">
                 Customer journey
               </span>
               <div className="space-y-6">
                 <h2 className="text-3xl font-semibold sm:text-4xl lg:text-5xl">
                   A simple flow from invite to review.
                 </h2>
-                <p className="text-lg text-slate-100/85">
+                <p className="text-lg text-slate-700">
                   Send a branded email, post a QR code, and track responses in real time—no extra tools or complex setup required.
                 </p>
               </div>
 
-              <ul className="grid gap-5 text-sm text-slate-200">
+              <ul className="grid gap-5 text-sm text-slate-700">
                 {journeyHighlights.map((item) => (
                   <li key={item.title} className="flex gap-4 rounded-2xl border border-slate-200/70 bg-white/90 p-5 text-slate-700 shadow-[0_18px_50px_rgba(15,23,42,0.25)]">
                     <span className="mt-1 flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white" />
@@ -285,7 +285,7 @@ export default function Home() {
               <div className="pt-2">
                 <Link
                   href="/features"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                  className="inline-flex items-center gap-2 rounded-full border border-indigo-300 bg-white px-6 py-3 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50"
                 >
                   Explore the product features
                   <svg aria-hidden className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
