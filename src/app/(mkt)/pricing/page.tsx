@@ -321,7 +321,7 @@ export default function Pricing() {
           ? 'Upgrade to Pro (Monthly)'
           : 'Upgrade to Pro (Yearly)';
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900">
+    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-x-0 top-[-280px] h-[500px] rounded-full bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.35),transparent_60%)] blur-3xl animate-float-blob" />
         <div className="absolute left-[-200px] bottom-[-160px] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.25),transparent_70%)] blur-3xl animate-float-blob" style={{ animationDelay: '2s' }} />
@@ -339,11 +339,11 @@ export default function Pricing() {
       {/* Pricing Header */}
       <section className="relative px-4 pt-24 pb-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-white/90 shadow-lg backdrop-blur">Starter is free • Upgrade anytime</span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
+          <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-indigo-700 shadow-lg">Starter is free • Upgrade anytime</span>
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
             Simple, transparent pricing
           </h1>
-          <p className="mt-4 text-lg text-slate-300 md:text-xl">
+          <p className="mt-4 text-lg text-slate-600 md:text-xl">
             Everything you need to collect more reviews, nurture customer trust, and measure the impact.
           </p>
           <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-white/80 bg-white/85 p-1 shadow-sm shadow-slate-900/10 backdrop-blur">
