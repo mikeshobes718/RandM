@@ -164,7 +164,7 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
         
         // Store the business data in localStorage for immediate use by dashboard
         if (data.business) {
-          localStorage.setItem('business', JSON.stringify(data.business));
+          localStorage.setItem('businessData', JSON.stringify(data.business));
         }
         
         // Set onboarding_complete cookie so dashboard knows to poll
