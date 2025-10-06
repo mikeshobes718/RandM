@@ -1,108 +1,328 @@
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
-import { getAuthAdmin } from '@/lib/firebaseAdmin';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+"use client";
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
+type PlaceSuggestion = {
+  placeId: string;
+  mainText: string;
+  secondaryText: string;
+};
 
-async function getUidAndEmailFromCookies(): Promise<{ uid: string | null; email: string | null }> {
-  try {
-    const c = await cookies();
-    const token = c.get('idToken')?.value || '';
-    if (!token) return { uid: null, email: null };
-    const auth = getAuthAdmin();
+type PlaceDetails = {
+  id: string;
+  displayName?: string;
+  formattedAddress?: string;
+  rating?: number;
+  writeAReviewUri?: string;
+  googleMapsUri?: string;
+  lat?: number;
+  lng?: number;
+};
+
+function generateSessionToken(): string {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+}
+
+export default function OnboardingBusinessPage() {
+  const router = useRouter();
+  const [businessName, setBusinessName] = useState('');
+  const [reviewLink, setReviewLink] = useState('');
+  const [address, setAddress] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  // Autocomplete state
+  const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState<PlaceDetails | null>(null);
+  const sessionTokenRef = useRef(generateSessionToken());
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const searchPlaces = async (input: string) => {
+    if (!input.trim() || input.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    setSearching(true);
     try {
-      const decoded = await auth.verifySessionCookie(token, true);
-      const u = await auth.getUser(decoded.uid as string);
-      return { uid: decoded.uid as string, email: u.email || null };
-      } catch {}
+      const response = await fetch('/api/places/autocomplete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          input,
+          sessionToken: sessionTokenRef.current,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data.items || []);
+        setShowSuggestions(true);
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleBusinessNameChange = (value: string) => {
+    setBusinessName(value);
+    
+    // Clear selected place when user edits manually
+    if (selectedPlace && value !== selectedPlace.displayName) {
+      setSelectedPlace(null);
+    }
+    
+    // Clear debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Debounce the search
+    debounceTimerRef.current = setTimeout(() => {
+      searchPlaces(value);
+    }, 300);
+  };
+
+  const selectPlace = async (suggestion: PlaceSuggestion) => {
+    setBusinessName(suggestion.mainText);
+    setShowSuggestions(false);
+    setSearching(true);
+
     try {
-      const decoded = await auth.verifyIdToken(token);
-      const u = await auth.getUser(decoded.uid as string);
-      return { uid: decoded.uid as string, email: u.email || null };
-    } catch {}
-    return { uid: null, email: null };
-  } catch {
-    return { uid: null, email: null };
-  }
-}
+      // Get place details including review link
+      const response = await fetch(
+        `/api/places/details?placeId=${encodeURIComponent(suggestion.placeId)}&sessionToken=${encodeURIComponent(sessionTokenRef.current)}`
+      );
 
-async function ensureNoExistingBusinessOrRedirect(uid: string) {
-  const supa = getSupabaseAdmin();
-  const { data } = await supa
-    .from('businesses')
-    .select('id')
-    .eq('owner_uid', uid)
-    .limit(1);
-  if (Array.isArray(data) && data[0]?.id) {
-    redirect('/dashboard');
-  }
-}
+      if (response.ok) {
+        const details: PlaceDetails = await response.json();
+        setSelectedPlace(details);
+        
+        // Auto-populate fields
+        if (details.writeAReviewUri) {
+          setReviewLink(details.writeAReviewUri);
+        }
+        if (details.formattedAddress) {
+          setAddress(details.formattedAddress);
+        }
 
-async function serverSaveBusiness(formData: FormData) {
-  'use server';
-  const name = String(formData.get('name') || '').trim();
-  const reviewLink = String(formData.get('review_link') || '').trim() || null;
-  const address = String(formData.get('address') || '').trim() || null;
+        // Generate new session token for next search
+        sessionTokenRef.current = generateSessionToken();
+      }
+    } catch (err) {
+      console.error('Error fetching place details:', err);
+    } finally {
+      setSearching(false);
+    }
+  };
 
-  const { uid, email } = await getUidAndEmailFromCookies();
-  if (!uid || !name) {
-    redirect('/login?next=/onboarding/business');
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
 
-  const supa = getSupabaseAdmin();
+    if (!businessName.trim()) {
+      setError('Please enter your business name');
+      return;
+    }
 
-  // Best-effort ensure users row exists to satisfy FK
-  try {
-    await supa.from('users').upsert({ uid, email: email || `${uid}@user.local` });
-  } catch {}
+    setLoading(true);
 
-  const now = new Date().toISOString();
-  await supa
-    .from('businesses')
-    .upsert({ owner_uid: uid, name, review_link: reviewLink, address, updated_at: now }, { onConflict: 'owner_uid' });
+    try {
+      // Save business via API
+      const response = await fetch('/api/businesses/upsert/form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: businessName.trim(),
+          review_link: reviewLink.trim() || null,
+          address: address.trim() || null,
+          google_place_id: selectedPlace?.id || null,
+          google_maps_place_uri: selectedPlace?.googleMapsUri || null,
+          google_maps_write_review_uri: selectedPlace?.writeAReviewUri || null,
+          google_rating: selectedPlace?.rating || null,
+        }),
+        credentials: 'include',
+      });
 
-  try {
-    const c = await cookies();
-    const host = (() => { try { return new URL(process.env.APP_URL || 'https://reviewsandmarketing.com').hostname; } catch { return ''; } })();
-    const domain = host.includes('.') ? `.${host.replace(/^www\./,'')}` : undefined;
-    c.set('onboarding_complete', '1', { path: '/', maxAge: 60*60*24*365, sameSite: 'lax', domain });
-  } catch {}
+      if (!response.ok) {
+        throw new Error('Failed to save business');
+      }
 
-  redirect('/dashboard');
-}
-
-export default async function OnboardingBusinessPage() {
-  const { uid } = await getUidAndEmailFromCookies();
-  if (!uid) {
-    redirect('/login?next=/onboarding/business');
-  }
-  await ensureNoExistingBusinessOrRedirect(uid!);
+      // Redirect to dashboard
+      router.push('/dashboard?from=onboarding');
+    } catch (err: any) {
+      setError(err.message || 'Failed to save business. Please try again.');
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="relative min-h-screen bg-gradient-to-b from-white via-indigo-50 to-white py-10">
       <div className="max-w-2xl mx-auto px-4">
         <div className="mb-6">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">Connect your business</h1>
-          <p className="mt-2 text-gray-600">Enter your business name and optional Google review link. You can refine details later in settings.</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+            Connect your business
+          </h1>
+          <p className="mt-2 text-gray-600">
+            Search for your business on Google to automatically load your review link and details.
+          </p>
         </div>
 
-        <form action={serverSaveBusiness} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl ring-1 ring-black/5 space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-800">Business name</label>
-            <input name="name" required placeholder="Acme Bakery" className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl ring-1 ring-black/5 space-y-5">
+          {/* Error Message */}
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* Selected Place Info */}
+          {selectedPlace && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-green-900">
+                    ✨ Found on Google Places!
+                  </p>
+                  <p className="text-sm text-green-700 mt-1">
+                    {selectedPlace.formattedAddress}
+                    {selectedPlace.rating && (
+                      <span className="ml-2">⭐ {selectedPlace.rating}</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Business Name with Autocomplete */}
+          <div ref={wrapperRef} className="relative">
+            <label className="block text-sm font-medium text-gray-800 mb-1">
+              Business name
+            </label>
+            <input
+              type="text"
+              value={businessName}
+              onChange={(e) => handleBusinessNameChange(e.target.value)}
+              onFocus={() => {
+                if (suggestions.length > 0) setShowSuggestions(true);
+              }}
+              placeholder="Start typing your business name..."
+              required
+              className="w-full rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            
+            {/* Autocomplete Dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.placeId}
+                    type="button"
+                    onClick={() => selectPlace(suggestion)}
+                    className="w-full text-left px-4 py-3 hover:bg-indigo-50 focus:bg-indigo-50 focus:outline-none border-b border-gray-100 last:border-b-0 transition-colors"
+                  >
+                    <div className="flex items-start gap-2">
+                      <svg className="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-900 truncate">
+                          {suggestion.mainText}
+                        </div>
+                        <div className="text-sm text-gray-600 truncate">
+                          {suggestion.secondaryText}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Searching indicator */}
+            {searching && (
+              <div className="absolute right-3 top-9 text-gray-400">
+                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              </div>
+            )}
           </div>
+
+          {/* Google Review Link */}
           <div>
-            <label className="block text-sm font-medium text-gray-800">Google review link (optional)</label>
-            <input name="review_link" placeholder="https://search.google.com/local/writereview?..." className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2" />
-              </div>
-              <div>
-            <label className="block text-sm font-medium text-gray-800">Address (optional)</label>
-            <input name="address" placeholder="123 Main St" className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2" />
-              </div>
-              <div className="pt-2">
-            <button type="submit" className="w-full rounded-xl bg-gray-900 text-white py-3 font-semibold shadow-md hover:bg-gray-800">Save and continue</button>
-              </div>
+            <label className="block text-sm font-medium text-gray-800 mb-1">
+              Google review link
+              <span className="text-gray-500 text-xs ml-2">(auto-filled when you select from dropdown)</span>
+            </label>
+            <input
+              type="url"
+              value={reviewLink}
+              onChange={(e) => setReviewLink(e.target.value)}
+              placeholder="https://search.google.com/local/writereview?..."
+              className="w-full rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              💡 Tip: Start typing your business name above and select it from the dropdown to auto-fill this link
+            </p>
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className="block text-sm font-medium text-gray-800 mb-1">
+              Address
+              <span className="text-gray-500 text-xs ml-2">(optional)</span>
+            </label>
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="123 Main St, City, State"
+              className="w-full rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-xl bg-gray-900 text-white py-3 font-semibold shadow-md hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                'Save and continue'
+              )}
+            </button>
+          </div>
         </form>
       </div>
     </main>

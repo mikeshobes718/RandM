@@ -2,75 +2,132 @@
 import { useState } from 'react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { clientAuth } from '@/lib/firebaseClient';
+import Link from 'next/link';
 
-export default function ForgotPage() {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
-  async function submit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSent(false);
-    const trimmed = email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setError('Enter a valid email');
+    setError('');
+    setLoading(true);
+    setSuccess(false);
+
+    if (!email) {
+      setError('Please enter your email address');
+      setLoading(false);
       return;
     }
-    setLoading(true);
+
     try {
-      let delivered = false;
-      try {
-        const r = await fetch('/api/auth/email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: trimmed, type: 'reset' }),
-        });
-        if (!r.ok) throw new Error(await r.text().catch(() => 'Failed to queue email'));
-        delivered = true;
-      } catch (postmarkErr) {
-        try {
-          await sendPasswordResetEmail(clientAuth, trimmed);
-          delivered = true;
-        } catch (firebaseErr) {
-          const message = firebaseErr instanceof Error ? firebaseErr.message : String(firebaseErr);
-          throw new Error(postmarkErr instanceof Error ? `${postmarkErr.message}. ${message}` : message);
-        }
+      await sendPasswordResetEmail(clientAuth, email, {
+        url: `${window.location.origin}/login`,
+      });
+
+      setSuccess(true);
+    } catch (err: any) {
+      console.error('Password reset error:', err);
+
+      if (err.code === 'auth/user-not-found') {
+        // Don't reveal if user exists or not for security
+        setSuccess(true);
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Please enter a valid email address');
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('Too many requests. Please try again later.');
+      } else {
+        setError(err.message || 'Failed to send reset email. Please try again.');
       }
-      if (delivered) {
-        setSent(true);
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to send reset email');
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-12">
-      <div className="max-w-md mx-auto px-4">
-        <div className="rounded-2xl border border-gray-200 bg-white/90 backdrop-blur-sm shadow-xl p-6">
-          <div className="mb-4 text-center">
-            <div className="mx-auto w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center mb-3">
-              <svg aria-hidden className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4Zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z"/></svg>
+    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg">
+              <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path fillRule="evenodd" d="M12 1.586l-4 4v3.414l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a2 2 0 002 2h4a2 2 0 002-2V4a1 1 0 00-.293-.707l-6-6a1 1 0 00-1.414 0zM17 6a1 1 0 011-1h2a1 1 0 011 1v7h-4V6zm-1 7h-.5a2.5 2.5 0 000 5H16v1a1 1 0 11-2 0v-1h-.5a4.5 4.5 0 110-9H14v-1a1 1 0 112 0v1h.5a2.5 2.5 0 010 5H16v7a3 3 0 11-6 0v-7h-.5a4.5 4.5 0 010-9H10V6a3 3 0 016 0v1h.5a4.5 4.5 0 110 9H16v-3z" clipRule="evenodd" />
+              </svg>
             </div>
-            <h1 className="text-2xl font-bold">Reset your password</h1>
-            <p className="text-sm text-gray-600">We’ll send you a secure link</p>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Reset your password</h1>
+            <p className="text-slate-600">We'll send you a link to reset your password</p>
           </div>
-          <form onSubmit={submit} className="space-y-4" noValidate>
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Email</span>
-              <input aria-label="Email" className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onBlur={()=>{ if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) setError('Enter a valid email'); else setError(null); }} required />
-            </label>
-            <button type="submit" disabled={loading} className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 font-medium shadow hover:from-blue-700 hover:to-purple-700 transition">{loading?'Sending…':'Send reset link'}</button>
-            {error && <div role="alert" className="text-red-600 text-sm">{error}</div>}
-            {sent && <div className="text-green-700 text-sm">Check your email for a reset link.</div>}
-          </form>
-          <div className="mt-4 text-sm text-center">
-            <a className="text-gray-600 hover:text-gray-900" href="/login">Back to sign in</a>
-          </div>
+
+          {/* Success Message */}
+          {success ? (
+            <div className="space-y-6">
+              <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <svg className="w-6 h-6 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-green-900">Check your email</p>
+                    <p className="text-sm text-green-700 mt-1">
+                      If an account exists for {email}, you'll receive a password reset link shortly.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                href="/login"
+                className="block w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all text-center"
+              >
+                Back to sign in
+              </Link>
+            </div>
+          ) : (
+            <>
+              {/* Error Message */}
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="you@example.com"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Sending...' : 'Send reset link'}
+                </button>
+              </form>
+
+              {/* Footer */}
+              <div className="mt-6 text-center text-sm text-gray-600">
+                Remember your password?{' '}
+                <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                  Sign in
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </main>

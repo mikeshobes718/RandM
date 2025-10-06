@@ -3,7 +3,7 @@ import { getAuth } from 'firebase/auth';
 
 const config = {
   apiKey: 'AIzaSyAbvy5lC1yczSa8HMmicpEYFFZz0tbHZ5s',
-  authDomain: 'reviewpilot2.firebaseapp.com',
+  authDomain: 'reviewsandmarketing.com',
   projectId: 'reviewpilot2',
   storageBucket: 'reviewpilot2.firebasestorage.app',
   messagingSenderId: '577051575061',
@@ -13,4 +13,3 @@ const config = {
 
 const app = getApps().length ? getApps()[0]! : initializeApp(config);
 export const clientAuth = getAuth(app);
-

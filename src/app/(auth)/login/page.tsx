@@ -2,136 +2,170 @@
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { clientAuth } from '@/lib/firebaseClient';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [show, setShow] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
-  async function submit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true); setError(null);
+    setError('');
+    setLoading(true);
+
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      setLoading(false);
+      return;
+    }
+
     try {
-      // simple client validation
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        setEmailError('Enter a valid email');
+      const userCredential = await signInWithEmailAndPassword(clientAuth, email, password);
+      const user = userCredential.user;
+
+      // Check if email is verified
+      if (!user.emailVerified) {
+        setError('Please verify your email before signing in. Check your inbox for the verification link.');
+        setLoading(false);
+        
+        // Store email and redirect to verification page
+        localStorage.setItem('userEmail', email);
+        setTimeout(() => {
+          window.location.href = '/verify-email';
+        }, 2000);
         return;
-      } else { setEmailError(null); }
-      if (password.length < 6) {
-        setPasswordError('Password must be at least 6 characters');
-        return;
-      } else { setPasswordError(null); }
-      const cred = await signInWithEmailAndPassword(clientAuth, email, password);
-      const token = await cred.user.getIdToken();
-      try { localStorage.setItem('idToken', token); localStorage.setItem('userEmail', email); window.dispatchEvent(new Event('idtoken:changed')); } catch {}
-      // Try to establish HttpOnly session cookie, but don't hang UI if it stalls
-      // Establish HttpOnly session cookie and wait until server confirms it
+      }
+
+      // Get auth token
+      const token = await user.getIdToken();
+
+      // Store token
+      localStorage.setItem('idToken', token);
+      localStorage.setItem('userEmail', email);
+
+      // Set session cookie
       await fetch('/api/auth/session', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken: token, days: 7 }),
         credentials: 'include',
-      }).catch(()=>undefined);
-      // Fallback: also set a non-HttpOnly cookie so server can verify raw idToken if session creation fails
-      try {
-        const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-        const maxAge = 7 * 24 * 60 * 60; // 7 days
-        const host = window.location.hostname;
-        const domain = host.includes('.') ? `; Domain=.${host.replace(/^www\./,'')}` : '';
-        document.cookie = `idToken=${token}; Max-Age=${maxAge}; Path=/; SameSite=Lax${secure}${domain}`;
-      } catch {}
-      // Poll /api/auth/me to ensure the cookie is actually usable by the server
-      try {
-        for (let i=0;i<6;i++) {
-          const r = await fetch('/api/auth/me', { cache:'no-store', credentials:'include' }).catch(()=>null);
-          if (r && r.ok) break;
-          await new Promise(res=>setTimeout(res, 400));
-        }
-      } catch {}
-      try { window.dispatchEvent(new Event('idtoken:changed')); } catch {}
-      // Decide destination: if not verified, go to verify-email; else based on business
-      let target = '/onboarding/business';
-      try {
-        await cred.user.reload();
-        if (!cred.user.emailVerified) {
-          // ensure a verification email is available to resend
-          try { localStorage.setItem('userEmail', email); } catch {}
-          setError('Please verify your email first. Redirecting to verification page...');
-          setTimeout(() => {
-            window.location.href = '/verify-email';
-          }, 1500);
-          return;
-        }
-      } catch {}
-      try {
-        const headers: Record<string,string> = {};
-        if (token) headers.Authorization = `Bearer ${token}`;
-        let r = await fetch('/api/businesses/me', { cache:'no-store', credentials:'include', headers });
-        if (!r.ok) r = await fetch('/api/businesses/me', { cache:'no-store', headers });
-        if (r.ok) {
-          const j = await r.json();
-          if (j && j.business) target = '/dashboard';
-        }
-      } catch {}
-      // Respect an explicit next param only if it is NOT the onboarding page when a business exists
-      try {
-        const u = new URL(window.location.href);
-        const nextParam = u.searchParams.get('next');
-        const isOnboarding = (p: string) => p === '/onboarding' || p.startsWith('/onboarding/');
-        if (nextParam && target === '/dashboard' && !isOnboarding(nextParam)) target = nextParam;
-      } catch {}
-      window.location.href = target;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Login failed');
-    } finally { setLoading(false); }
-  }
+      });
+
+      // Redirect to dashboard
+      window.location.href = '/dashboard';
+    } catch (err: any) {
+      console.error('Login error:', err);
+
+      // Handle specific Firebase errors
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        setError('Invalid email or password');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Please enter a valid email address');
+      } else if (err.code === 'auth/user-disabled') {
+        setError('This account has been disabled');
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('Too many failed login attempts. Please try again later.');
+      } else {
+        setError(err.message || 'Failed to sign in. Please try again.');
+      }
+      setLoading(false);
+    }
+  };
 
   return (
-    <main className="relative min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-12 overflow-hidden">
-      {/* Premium background effects */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-float-blob" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float-blob" style={{ animationDelay: '2s' }} />
-      </div>
-      
-      <div className="max-w-md mx-auto px-4">
-        <div className="relative rounded-3xl border border-white/10 bg-white/95 backdrop-blur-xl shadow-2xl p-8 glow-soft">
-          {/* Subtle gradient overlay */}
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/60 via-white/40 to-transparent pointer-events-none" />
-          
-          <div className="relative mb-6 text-center">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/50 glow-soft">
-              <svg aria-hidden className="w-8 h-8 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" /></svg>
+    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg">
+              <svg className="w-8 h-8 text-white" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
+              </svg>
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">Welcome back</h1>
-            <p className="text-sm text-slate-600 mt-2">Sign in to access your dashboard</p>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back</h1>
+            <p className="text-slate-600">Sign in to your account</p>
           </div>
-          <form onSubmit={submit} className="relative space-y-5" noValidate>
-            <label className="block">
-              <span className="text-sm font-semibold text-slate-700">Email</span>
-              <input aria-label="Email" className="mt-2 w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white/50" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onBlur={()=>{ if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) setEmailError('Enter a valid email'); else setEmailError(null); }} required />
-              {emailError && <div role="alert" className="text-red-600 text-xs mt-1 font-medium">{emailError}</div>}
-            </label>
-            <label className="block">
-              <span className="text-sm font-semibold text-slate-700">Password</span>
-              <div className="mt-2 relative">
-                <input aria-label="Password" className="w-full border-2 border-slate-200 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white/50" type={show?'text':'password'} placeholder="••••••••" value={password} onChange={e=>setPassword(e.target.value)} onBlur={()=>{ if (password.length<6) setPasswordError('Password must be at least 6 characters'); else setPasswordError(null); }} required />
-                <button type="button" aria-label={show? 'Hide password':'Show password'} onClick={()=>setShow(s=>!s)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg hover:bg-slate-100 transition-colors">
-                  <svg aria-hidden className="w-5 h-5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0Z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"/></svg>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
+                  placeholder="Enter your password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
                 </button>
               </div>
-              {passwordError && <div role="alert" className="text-red-600 text-xs mt-1 font-medium">{passwordError}</div>}
-            </label>
-            <button type="submit" disabled={loading} className="w-full rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-3.5 font-semibold shadow-lg hover:shadow-xl hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">{loading?'Signing in…':'Sign in'}</button>
-            {error && <div role="alert" className={error.includes('verify') ? 'text-orange-600 text-sm font-medium bg-orange-50 p-3 rounded-lg' : 'text-red-600 text-sm bg-red-50 p-3 rounded-lg font-medium'}>{error}</div>}
+            </div>
+
+            <div className="flex items-center justify-between text-sm">
+              <Link href="/forgot" className="text-blue-600 hover:text-blue-700 font-medium">
+                Forgot password?
+              </Link>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
           </form>
-          <div className="mt-4 text-sm flex items-center justify-between">
-            <a className="underline text-blue-600" href="/forgot">Forgot password?</a>
-            <a className="text-gray-600 hover:text-gray-900" href="/register">Create account</a>
+
+          {/* Footer */}
+          <div className="mt-6 text-center text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+              Create one
+            </Link>
           </div>
         </div>
       </div>

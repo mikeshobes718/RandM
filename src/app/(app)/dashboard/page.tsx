@@ -1,4 +1,5 @@
 "use client";
+import BusinessSetupForm from "@/components/onboarding/BusinessSetupForm";
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -853,32 +854,7 @@ export default function Dashboard() {
                     Enter your business details and an optional Google review link. We’ll generate your branded landing page and QR instantly.
                   </p>
                 </div>
-                <form onSubmit={saveSimple} className="space-y-4 rounded-2xl border border-slate-200/80 bg-white/95 p-5 shadow-inner">
-                  <label className="block text-sm font-medium text-slate-700">
-                    Business name
-                    <input
-                      name="name"
-                      required
-                      className="mt-2 w-full rounded-xl border border-slate-200/80 px-3 py-2 text-sm shadow-inner focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                      placeholder="Acme Bakery"
-                    />
-                  </label>
-                  <label className="block text-sm font-medium text-slate-700">
-                    Google review link <span className="font-normal text-slate-400">(optional)</span>
-                    <input
-                      name="review_link"
-                      className="mt-2 w-full rounded-xl border border-slate-200/80 px-3 py-2 text-sm shadow-inner focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                      placeholder="https://search.google.com/local/writereview?..."
-                    />
-                  </label>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900/95 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {loading ? 'Saving…' : 'Save and continue'}
-                  </button>
-                </form>
+                <BusinessSetupForm onSuccess={async () => { await new Promise(r => setTimeout(r, 500)); window.location.href = "/dashboard?refresh=" + Date.now(); }} />
               </div>
             </section>
           )}

@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { clientAuth } from '@/lib/firebaseClient';
-import { formatPhone, normalizePhone } from '@/lib/phone';
+import Link from 'next/link';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -10,224 +10,210 @@ export default function RegisterPage() {
   const [businessName, setBusinessName] = useState('');
   const [businessPhone, setBusinessPhone] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [show, setShow] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [businessError, setBusinessError] = useState<string | null>(null);
-  const [score, setScore] = useState(0);
-  const [criteria, setCriteria] = useState({
-    length: false,
-    upper: false,
-    lower: false,
-    digit: false,
-    special: false,
-    noEmail: true,
-  });
+  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
-  function assess(pw: string, em: string) {
-    const length = pw.length >= 8;
-    const upper = /[A-Z]/.test(pw);
-    const lower = /[a-z]/.test(pw);
-    const digit = /\d/.test(pw);
-    const special = /[^A-Za-z0-9]/.test(pw);
-    const noEmail = em ? !pw.toLowerCase().includes(em.split('@')[0]?.toLowerCase() || '') : true;
-    const groups = [upper, lower, digit, special].filter(Boolean).length;
-    let s = 0;
-    if (length) s++;
-    if (groups >= 2) s++;
-    if (groups >= 3) s++;
-    if (groups >= 4 && length && pw.length >= 12) s++;
-    setCriteria({ length, upper, lower, digit, special, noEmail });
-    setScore(s);
-  }
-
-  useEffect(() => { assess(password, email); }, [password, email]);
-
-  async function submit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true); setError(null);
-    const trimmedBusiness = businessName.trim();
-    const rawDigits = normalizePhone(businessPhone);
-    if (rawDigits.length > 10) {
-      setBusinessError('Enter a 10-digit phone number');
+    setError('');
+    setLoading(true);
+
+    // Basic validation
+    if (!email || !password || !businessName || !businessPhone) {
+      setError('Please fill in all fields');
+      setLoading(false);
       return;
     }
-    const phoneDigits = rawDigits.slice(0, 10);
-    if (!trimmedBusiness) {
-      setBusinessError('Enter your business name');
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
       return;
     }
-    if (phoneDigits.length < 10) {
-      setBusinessError('Enter a valid phone number so we can help you onboard.');
+
+    const phoneDigits = businessPhone.replace(/\D/g, '');
+    if (phoneDigits.length !== 10) {
+      setError('Please enter a valid 10-digit phone number');
+      setLoading(false);
       return;
     }
-    setBusinessError(null);
-    setBusinessPhone(formatPhone(phoneDigits));
 
     try {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setEmailError('Enter a valid email'); return; } else setEmailError(null);
-      // baseline password policy: min 8 and at least 3 of 4 types
-      const groups = [criteria.upper, criteria.lower, criteria.digit, criteria.special].filter(Boolean).length;
-      if (!(criteria.length && groups >= 3 && criteria.noEmail)) {
-        setPasswordError('Use at least 8 characters and 3 of: uppercase, lowercase, number, symbol. Avoid using your email.');
-        return;
-      } else setPasswordError(null);
-      const cred = await createUserWithEmailAndPassword(clientAuth, email, password);
-      const token = await cred.user.getIdToken();
-      try { localStorage.setItem('idToken', token); localStorage.setItem('userEmail', email); window.dispatchEvent(new Event('idtoken:changed')); } catch {}
-      await fetch('/api/auth/session', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ idToken: token, days: 7 }), credentials:'include' });
-      // Poll server auth to ensure cookie is live
-      try {
-        for (let i=0;i<6;i++) {
-          const r = await fetch('/api/auth/me', { cache:'no-store', credentials:'include' }).catch(()=>null);
-          if (r && r.ok) break;
-          await new Promise(res=>setTimeout(res, 400));
-        }
-      } catch {}
-      try { window.dispatchEvent(new Event('idtoken:changed')); } catch {}
-      // Seed initial business record so dashboard is ready immediately
-      try {
-        const res = await fetch('/api/businesses/upsert', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: trimmedBusiness,
-            contact_phone: phoneDigits,
-          }),
-          credentials: 'include',
-        });
-        if (!res.ok) {
-          console.error('business upsert failed', await res.text().catch(() => ''));
-        }
-      } catch (bizErr) {
-        console.error('business upsert error', bizErr);
+      // Create Firebase account
+      const userCredential = await createUserWithEmailAndPassword(clientAuth, email, password);
+      const user = userCredential.user;
+
+      // Get auth token
+      const token = await user.getIdToken();
+      
+      // Set session cookie
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: token, days: 7 }),
+        credentials: 'include',
+      });
+
+      // Create business record
+      await fetch('/api/businesses/upsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: businessName.trim(),
+          contact_phone: phoneDigits,
+        }),
+        credentials: 'include',
+      });
+
+      // Store email for verification page
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('idToken', token);
+
+      // Don't try to send verification email here - let the verify-email page handle it
+      // This prevents the registration from failing if email sending fails
+      // Redirect to verification page immediately
+      window.location.href = '/verify-email?autoSend=1';
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      
+      // Handle specific Firebase errors
+      if (err.code === 'auth/email-already-in-use') {
+        setError('This email is already registered. Please sign in instead.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Please enter a valid email address');
+      } else if (err.code === 'auth/weak-password') {
+        setError('Password is too weak. Please use a stronger password.');
+      } else {
+        setError(err.message || 'Failed to create account. Please try again.');
       }
-      // Send branded verification email via Postmark-backed route; fall back to Firebase if provider fails
-      setError('✅ Account created! Sending verification email...');
-      const emailRes = await fetch('/api/auth/email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, type: 'verify' }) });
-      if (!emailRes.ok) {
-        if (!clientAuth.currentUser) {
-          throw new Error(await emailRes.text().catch(() => 'Verification email failed to send'));
-        }
-        await import('firebase/auth').then(({ sendEmailVerification }) =>
-          sendEmailVerification(clientAuth.currentUser!, { url: `${window.location.origin}/verify-email` })
-        );
-      }
-      setError('✅ Verification email sent! Redirecting...');
-      setTimeout(() => {
-        window.location.href = '/verify-email';
-      }, 1000);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Registration failed');
-    } finally { setLoading(false); }
-  }
+      setLoading(false);
+    }
+  };
+
+  const formatPhoneNumber = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 10);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
 
   return (
-    <main className="relative min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 py-12 overflow-hidden">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-float-blob" />
-        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float-blob" style={{ animationDelay: '2s' }} />
-      </div>
-      <div className="max-w-md mx-auto px-4">
-        <div className="relative rounded-3xl border border-white/10 bg-white/95 backdrop-blur-xl shadow-2xl p-8 glow-soft">
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/60 via-white/40 to-transparent pointer-events-none" />
-          <div className="relative mb-6 text-center">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/50 glow-soft">
-              <svg aria-hidden className="w-8 h-8 text-white" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" /></svg>
+    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg">
+              <svg className="w-8 h-8 text-white" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
+              </svg>
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 bg-clip-text text-transparent">Create your account</h1>
-            <p className="text-sm text-slate-600 mt-2">Start collecting reviews in minutes</p>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Create your account</h1>
+            <p className="text-slate-600">Start collecting reviews in minutes</p>
           </div>
-          <form onSubmit={submit} className="relative space-y-5" noValidate>
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Email</span>
-              <input aria-label="Email" className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} onBlur={()=>{ if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) setEmailError('Enter a valid email'); else setEmailError(null); }} required />
-              {emailError && <div role="alert" className="text-red-600 text-xs mt-1">{emailError}</div>}
-            </label>
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Password</span>
-              <div className="mt-1 relative">
-                <input aria-label="Password" className="w-full border rounded-xl px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500" type={show?'text':'password'} placeholder="Create a strong password" value={password} onChange={e=>setPassword(e.target.value)} onBlur={()=>{ if (password.length<6) setPasswordError('Password must be at least 6 characters'); else setPasswordError(null); }} required />
-                <button type="button" aria-label={show? 'Hide password':'Show password'} onClick={()=>setShow(s=>!s)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100">
-                  <svg aria-hidden className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0Z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z"/></svg>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
+                  placeholder="At least 6 characters"
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
                 </button>
               </div>
-              {passwordError && <div role="alert" className="text-red-600 text-xs mt-1">{passwordError}</div>}
-              {/* Strength meter */}
-              <div className="mt-2">
-                <div className="flex h-2 overflow-hidden rounded bg-gray-100">
-                  <div className={`${score>0?'bg-red-400':'bg-transparent'} flex-1 transition-all`} />
-                  <div className={`${score>1?'bg-yellow-400':'bg-transparent'} flex-1 transition-all`} />
-                  <div className={`${score>2?'bg-green-400':'bg-transparent'} flex-1 transition-all`} />
-                  <div className={`${score>3?'bg-emerald-500':'bg-transparent'} flex-1 transition-all`} />
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-700">
-                  <StrengthItem ok={criteria.length} label="8+ characters" />
-                  <StrengthItem ok={criteria.upper} label="Uppercase" />
-                  <StrengthItem ok={criteria.lower} label="Lowercase" />
-                  <StrengthItem ok={criteria.digit} label="Number" />
-                  <StrengthItem ok={criteria.special} label="Symbol" />
-                  <StrengthItem ok={criteria.noEmail} label="Not similar to email" />
-                </div>
-              </div>
-            </label>
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Business name</span>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Business Name
+              </label>
               <input
-                aria-label="Business name"
-                className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 type="text"
-                placeholder="Acme Dental"
                 value={businessName}
-                onChange={(e) => {
-                  setBusinessName(e.target.value);
-                  setBusinessError(null);
-                }}
+                onChange={(e) => setBusinessName(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Acme Dental"
                 required
               />
-            </label>
-            <label className="block">
-              <span className="text-sm font-medium text-gray-700">Business phone</span>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Business Phone
+              </label>
               <input
-                aria-label="Business phone"
-                className="mt-1 w-full border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 type="tel"
-                placeholder="(555) 123-4567"
                 value={businessPhone}
-                onChange={(e) => {
-                  const digits = normalizePhone(e.target.value).slice(0, 10);
-                  setBusinessPhone(formatPhone(digits));
-                  setBusinessError(null);
-                }}
+                onChange={(e) => setBusinessPhone(formatPhoneNumber(e.target.value))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="(555) 123-4567"
                 required
               />
-            </label>
-            {businessError && <div role="alert" className="text-red-600 text-sm">{businessError}</div>}
-            <button type="submit" disabled={loading} className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 font-medium shadow hover:from-blue-700 hover:to-purple-700 transition">{loading?'Creating…':'Create account'}</button>
-            {error && <div role="alert" className={error.startsWith('✅') ? 'text-green-600 text-sm font-medium' : 'text-red-600 text-sm'}>{error}</div>}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Creating account...' : 'Create account'}
+            </button>
           </form>
-          <div className="mt-4 text-sm flex items-center justify-between">
-            <a className="text-gray-600 hover:text-gray-900" href="/login">Have an account? Sign in</a>
-            <a className="underline text-blue-600" href="/forgot">Forgot password</a>
+
+          {/* Footer */}
+          <div className="mt-6 text-center text-sm text-gray-600">
+            Already have an account?{' '}
+            <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+              Sign in
+            </Link>
           </div>
         </div>
       </div>
     </main>
-  );
-}
-
-function StrengthItem({ ok, label }: { ok: boolean; label: string }) {
-  return (
-    <div className={`inline-flex items-center gap-1 ${ok ? 'text-green-700' : 'text-gray-500'}`}>
-      <svg aria-hidden className={`w-3.5 h-3.5 ${ok ? 'text-green-600' : 'text-gray-400'}`} viewBox="0 0 24 24" fill="currentColor">
-        {ok ? (
-          <path d="M12 2a10 10 0 100 20 10 10 0 000-20Zm-1 14l-4-4 1.41-1.41L11 12.17l4.59-4.58L17 9l-6 7Z"/>
-        ) : (
-          <path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10Zm0-2a8 8 0 100-16 8 8 0 000 16Z"/>
-        )}
-      </svg>
-      <span>{label}</span>
-    </div>
   );
 }
