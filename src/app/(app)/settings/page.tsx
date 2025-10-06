@@ -38,13 +38,13 @@ export default function SettingsPage() {
       try {
         // Fetch entitlements
         try {
-          const ent = await fetch('/api/entitlements', { cache: 'no-store' });
+          const ent = await fetch('/api/entitlements', { cache: 'no-store', credentials: 'include' });
           if (ent.ok) { const ej = await ent.json(); setPro(Boolean(ej?.pro)); }
         } catch {}
 
         // Fetch user info
         try {
-          const userRes = await fetch('/api/auth/me', { headers: bearer() });
+          const userRes = await fetch('/api/auth/me', { headers: bearer(), cache: 'no-store', credentials: 'include' });
           if (userRes.ok) {
             const userData = await userRes.json();
             setEmail(userData.email || '');
@@ -53,29 +53,40 @@ export default function SettingsPage() {
         } catch {}
 
         // Fetch business info
-        const biz = await fetch('/api/businesses/me', { headers: bearer() });
-        const j = await biz.json();
-        const bizData = j?.business;
-        const id = bizData?.id || '';
-        setBusinessId(id);
-        setBusiness(bizData);
-        if (bizData) {
-          setBusinessName(bizData.name || '');
-          setContactPhone(bizData.contact_phone || '');
-          setReviewLink(bizData.review_link || '');
-        }
+        const biz = await fetch('/api/businesses/me', { headers: bearer(), cache: 'no-store', credentials: 'include' });
+        if (!biz.ok) {
+          console.warn('Failed to fetch business:', biz.status);
+        } else {
+          const j = await biz.json();
+          const bizData = j?.business;
+          const id = bizData?.id || '';
+          setBusinessId(id);
+          setBusiness(bizData);
+          if (bizData) {
+            setBusinessName(bizData.name || '');
+            setContactPhone(bizData.contact_phone || '');
+            setReviewLink(bizData.review_link || '');
+          }
 
-        // Fetch members if business exists
-        if (id) {
-          const r = await fetch(`/api/members/list?businessId=${id}`, { cache: 'no-store', headers: bearer() });
-          const data = await r.json();
-          setMembers(data.members || []);
-          setInvites(data.invites || []);
-          setCanManage(Boolean(data.canManage));
-          setRole(data.role || '');
+          // Fetch members if business exists
+          if (id) {
+            try {
+              const r = await fetch(`/api/members/list?businessId=${id}`, { cache: 'no-store', headers: bearer(), credentials: 'include' });
+              if (r.ok) {
+                const data = await r.json();
+                setMembers(data.members || []);
+                setInvites(data.invites || []);
+                setCanManage(Boolean(data.canManage));
+                setRole(data.role || '');
+              }
+            } catch (e) {
+              console.warn('Failed to fetch members:', e);
+            }
+          }
         }
       } catch (e) {
-        setError('Failed to load settings');
+        console.error('Settings load error:', e);
+        // Don't show error banner for auth failures - page still functions
       } finally {
         setLoading(false);
       }

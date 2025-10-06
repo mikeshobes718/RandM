@@ -23,10 +23,28 @@ export default function FeedbackPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch('/api/feedback/list', { cache: 'no-store' })
-      .then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((j) => setItems(Array.isArray(j.items) ? j.items : []))
-      .catch(() => setError('Failed to load feedback'))
+    const headers: HeadersInit = {};
+    const idToken = typeof window !== 'undefined' ? localStorage.getItem('idToken') : null;
+    if (idToken) {
+      headers.Authorization = `Bearer ${idToken}`;
+    }
+    fetch('/api/feedback/list', { cache: 'no-store', credentials: 'include', headers })
+      .then(r => {
+        if (r.ok) return r.json();
+        if (r.status === 401) {
+          console.warn('Authentication required for feedback');
+          return { items: [] };
+        }
+        return Promise.reject(new Error(String(r.status)));
+      })
+      .then((j) => {
+        setItems(Array.isArray(j.items) ? j.items : []);
+        setError(null);
+      })
+      .catch((e) => {
+        console.error('Feedback load error:', e);
+        setError('Failed to load feedback. Please try refreshing the page.');
+      })
       .finally(() => setLoading(false));
   }, []);
 

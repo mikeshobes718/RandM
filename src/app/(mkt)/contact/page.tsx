@@ -62,15 +62,15 @@ export default function ContactPage() {
             <form onSubmit={submit} className="space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Name</label>
-                <input aria-label="Name" className={`w-full rounded-2xl border px-4 py-3 text-sm shadow-inner transition focus:outline-none focus:ring-2 ${valid.name ? 'border-slate-200 focus:ring-indigo-400' : 'border-rose-300 focus:ring-rose-400'}`} value={name} onChange={(e) => setName(e.target.value)} required minLength={2} placeholder="Jordan Smith" />
+                <input aria-label="Name" className={`w-full rounded-2xl border px-4 py-3 text-sm shadow-inner transition focus:outline-none focus:ring-2 placeholder:text-slate-400 ${valid.name ? 'border-slate-200 focus:ring-indigo-400' : 'border-rose-300 focus:ring-rose-400'}`} value={name} onChange={(e) => setName(e.target.value)} required minLength={2} placeholder="Your full name" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Email</label>
-                <input aria-label="Email" type="email" className={`w-full rounded-2xl border px-4 py-3 text-sm shadow-inner transition focus:outline-none focus:ring-2 ${valid.email ? 'border-slate-200 focus:ring-indigo-400' : 'border-rose-300 focus:ring-rose-400'}`} value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@company.com" />
+                <input aria-label="Email" type="email" className={`w-full rounded-2xl border px-4 py-3 text-sm shadow-inner transition focus:outline-none focus:ring-2 placeholder:text-slate-400 ${valid.email ? 'border-slate-200 focus:ring-indigo-400' : 'border-rose-300 focus:ring-rose-400'}`} value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="your.email@example.com" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Message</label>
-                <textarea aria-label="Message" className={`h-44 w-full rounded-2xl border px-4 py-3 text-sm leading-relaxed shadow-inner transition focus:outline-none focus:ring-2 ${valid.message ? 'border-slate-200 focus:ring-indigo-400' : 'border-rose-300 focus:ring-rose-400'}`} value={message} onChange={(e) => setMessage(e.target.value)} required minLength={10} placeholder="Tell us about your goals or questions." />
+                <textarea aria-label="Message" className={`h-44 w-full rounded-2xl border px-4 py-3 text-sm leading-relaxed shadow-inner transition focus:outline-none focus:ring-2 placeholder:text-slate-400 ${valid.message ? 'border-slate-200 focus:ring-indigo-400' : 'border-rose-300 focus:ring-rose-400'}`} value={message} onChange={(e) => setMessage(e.target.value)} required minLength={10} placeholder="Tell us about your business and what you'd like to achieve..." />
               </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <button disabled={status === "sending"} className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/40 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60">

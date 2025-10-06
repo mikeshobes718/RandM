@@ -1,0 +1,15 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "reviewsandmarketing.com"
+        }
+      ],
+      "destination": "https://www.reviewsandmarketing.com/:path*",
+      "permanent": true
+    }
+  ]
+}
