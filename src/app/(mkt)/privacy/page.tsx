@@ -38,7 +38,7 @@ export default function PrivacyPage() {
           <span className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white/95 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-700 shadow-sm shadow-slate-900/5 backdrop-blur">
             Privacy
           </span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl">Privacy Policy</h1>
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Privacy Policy</h1>
           <p className="mt-4 text-lg text-slate-700">Last updated: {new Date().toLocaleDateString()}</p>
         </div>
       </section>
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
           <div className="grid gap-8 md:grid-cols-3">
             {POLICY_SECTIONS.map((section) => (
               <div key={section.title} className="rounded-3xl border border-indigo-100 bg-white/95 p-7 shadow-lg shadow-slate-900/10 backdrop-blur">
-                <h2 className="text-lg font-semibold text-white">{section.title}</h2>
+                <h2 className="text-lg font-semibold text-slate-900">{section.title}</h2>
                 <ul className="mt-4 space-y-2 text-sm text-slate-700 leading-relaxed">
                   {section.items.map((item) => (
                     <li key={item} className="flex items-start gap-2">
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
           </div>
 
           <div className="rounded-3xl border border-indigo-100 bg-white/95 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
-            <h2 className="text-lg font-semibold text-white">Questions or requests</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Questions or requests</h2>
             <p className="mt-3 text-sm text-slate-700 leading-relaxed">
               You can reach our data protection team at <a className="font-semibold text-indigo-600 hover:underline" href="mailto:privacy@reviewsandmarketing.com">privacy@reviewsandmarketing.com</a>. We honor verified requests to access, correct, or delete personal data within applicable regulations.
             </p>

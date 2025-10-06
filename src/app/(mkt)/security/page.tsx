@@ -24,7 +24,7 @@ export default function SecurityPage() {
       <section className="relative px-4 pt-24 pb-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-white/95 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-700 shadow-sm shadow-slate-900/5 backdrop-blur">Security</span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl">Security at Reviews & Marketing</h1>
+          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Security at Reviews & Marketing</h1>
           <p className="mt-4 text-lg text-slate-700">Our platform powers reputations, so we treat every customer record like mission-critical infrastructure.</p>
         </div>
       </section>
@@ -33,7 +33,7 @@ export default function SecurityPage() {
         <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
           {CONTROLS.map((control) => (
             <div key={control.title} className="rounded-3xl border border-indigo-100 bg-white/95 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
-              <h2 className="text-lg font-semibold text-white">{control.title}</h2>
+              <h2 className="text-lg font-semibold text-slate-900">{control.title}</h2>
               <p className="mt-3 text-sm text-slate-700 leading-relaxed">{control.body}</p>
             </div>
           ))}
