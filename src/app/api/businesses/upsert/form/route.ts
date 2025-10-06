@@ -161,6 +161,10 @@ export async function POST(req: Request) {
   }
   
   const ct = req.headers.get('content-type') || '';
+  
+  // Log for debugging
+  console.log('[upsert/form] Returning business data:', business ? `${business.name} (id: ${business.id})` : 'null');
+  
   const res = (ct.includes('application/x-www-form-urlencoded') || ct.includes('multipart/form-data'))                                                          
     ? NextResponse.redirect(new URL('/dashboard', req.url), 303)
     : NextResponse.json({ ok: true, business: business || null });
