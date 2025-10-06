@@ -176,13 +176,13 @@ export default function FeaturesPage() {
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href="/register"
-              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-8 py-4 text-sm font-semibold text-indigo-600 shadow-lg shadow-slate-900/25 transition hover:-translate-y-0.5 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-2xl bg-white px-8 py-4 text-sm font-semibold text-indigo-600 shadow-lg shadow-slate-900/25 transition hover:-translate-y-0.5 hover:bg-indigo-50"
             >
               Get Started Free
             </Link>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center rounded-2xl border border-white/60 px-8 py-4 text-sm font-semibold text-white/90 transition hover:bg-slate-900/10"
+              className="inline-flex items-center justify-center rounded-2xl border-2 border-white/80 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
             >
               Talk to Sales
             </Link>
