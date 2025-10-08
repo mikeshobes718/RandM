@@ -31,6 +31,7 @@ export default function OnboardingBusinessPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | null>(null);
+  const [isAutosaving, setIsAutosaving] = useState(false);
   
   // Autocomplete state
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
@@ -40,6 +41,76 @@ export default function OnboardingBusinessPage() {
   const sessionTokenRef = useRef(generateSessionToken());
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  
+  // Autosave state
+  const autosaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const AUTOSAVE_KEY = 'onboarding_form_data';
+
+  // Autosave functions
+  const saveFormData = () => {
+    const formData = {
+      businessName,
+      reviewLink,
+      address,
+      selectedPlace: selectedPlace ? {
+        id: selectedPlace.id,
+        displayName: selectedPlace.displayName,
+        formattedAddress: selectedPlace.formattedAddress,
+        rating: selectedPlace.rating,
+        writeAReviewUri: selectedPlace.writeAReviewUri,
+        googleMapsUri: selectedPlace.googleMapsUri,
+        lat: selectedPlace.lat,
+        lng: selectedPlace.lng,
+      } : null,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(formData));
+  };
+
+  const loadFormData = () => {
+    try {
+      const saved = localStorage.getItem(AUTOSAVE_KEY);
+      if (saved) {
+        const formData = JSON.parse(saved);
+        // Only load if data is less than 24 hours old
+        if (Date.now() - formData.timestamp < 24 * 60 * 60 * 1000) {
+          setBusinessName(formData.businessName || '');
+          setReviewLink(formData.reviewLink || '');
+          setAddress(formData.address || '');
+          if (formData.selectedPlace) {
+            setSelectedPlace(formData.selectedPlace);
+          }
+          return true;
+        } else {
+          // Clear old data
+          localStorage.removeItem(AUTOSAVE_KEY);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load saved form data:', error);
+      localStorage.removeItem(AUTOSAVE_KEY);
+    }
+    return false;
+  };
+
+  const debouncedSave = () => {
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+    }
+    setIsAutosaving(true);
+    autosaveTimerRef.current = setTimeout(() => {
+      saveFormData();
+      setIsAutosaving(false);
+    }, 1000);
+  };
+
+  // Load saved form data on mount
+  useEffect(() => {
+    const hasLoadedData = loadFormData();
+    if (hasLoadedData) {
+      console.log('📝 Loaded saved form data from previous session');
+    }
+  }, []);
 
   // Get selected plan from localStorage or URL params
   useEffect(() => {
@@ -59,6 +130,20 @@ export default function OnboardingBusinessPage() {
         setSelectedPlan('starter');
       }
     }
+  }, []);
+
+  // Autosave on form field changes
+  useEffect(() => {
+    debouncedSave();
+  }, [businessName, reviewLink, address, selectedPlace]);
+
+  // Cleanup autosave timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autosaveTimerRef.current) {
+        clearTimeout(autosaveTimerRef.current);
+      }
+    };
   }, []);
 
   // Close suggestions when clicking outside
@@ -206,8 +291,9 @@ export default function OnboardingBusinessPage() {
         }
       }
 
-      // Clear selected plan from localStorage
+      // Clear selected plan and form data from localStorage
       localStorage.removeItem('selectedPlan');
+      localStorage.removeItem(AUTOSAVE_KEY);
 
       // Redirect to dashboard
       router.push('/dashboard?from=onboarding');
@@ -227,11 +313,22 @@ export default function OnboardingBusinessPage() {
           <p className="mt-2 text-gray-600">
             Search for your business on Google to automatically load your review link and details.
           </p>
-          {selectedPlan && (
-            <div className="mt-4 inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800">
-              {selectedPlan === 'pro' ? '✨ Pro Plan' : '🚀 Starter Plan'} Selected
-            </div>
-          )}
+          <div className="mt-4 flex items-center gap-3">
+            {selectedPlan && (
+              <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800">
+                {selectedPlan === 'pro' ? '✨ Pro Plan' : '🚀 Starter Plan'} Selected
+              </div>
+            )}
+            {isAutosaving && (
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                <svg className="animate-spin h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Saving...
+              </div>
+            )}
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl ring-1 ring-black/5 space-y-5">
