@@ -45,10 +45,10 @@ export default function BlogPage() {
               </div>
               <h2 className="mt-4 text-xl font-semibold text-slate-900 group-hover:text-indigo-600">{post.title}</h2>
               <p className="mt-3 text-sm text-slate-700 leading-relaxed flex-1">{post.excerpt}</p>
-              <Link href="#" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500">
-                Read more
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6l6 6-6 6" /></svg>
-              </Link>
+              <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-400">
+                Coming soon
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
             </article>
           ))}
         </div>

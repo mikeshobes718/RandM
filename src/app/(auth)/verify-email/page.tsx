@@ -85,11 +85,35 @@ export default function VerifyEmailPage() {
   // Handle verification link from email
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const mode = params.get('mode');
-    const oobCode = params.get('oobCode');
+    const verified = params.get('verified');
+    const error = params.get('error');
 
-    if (mode === 'verifyEmail' && oobCode) {
-      handleVerificationCode(oobCode);
+    if (verified === 'true') {
+      setMessage('✅ Email verified successfully! Redirecting...');
+      setMessageType('success');
+      
+      // Check if user needs onboarding or can go to dashboard
+      getPostVerificationRedirect().then((redirectUrl) => {
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 1500);
+      });
+    } else if (error) {
+      let errorMessage = 'Verification failed. Please try again.';
+      if (error === 'expired') {
+        errorMessage = 'Verification link has expired. Please request a new one below.';
+      } else if (error === 'invalid') {
+        errorMessage = 'Invalid verification link. Please request a new one below.';
+      } else if (error === 'invalid-link') {
+        errorMessage = 'Invalid verification link format. Please request a new one below.';
+      } else if (error === 'invalid-mode') {
+        errorMessage = 'Invalid verification mode. Please request a new one below.';
+      } else if (error === 'verification-failed') {
+        errorMessage = 'Email verification failed. Please request a new one below.';
+      }
+      
+      setMessage(errorMessage);
+      setMessageType('error');
     }
   }, []);
 

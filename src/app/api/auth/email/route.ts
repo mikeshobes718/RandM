@@ -1,47 +1,128 @@
 import { NextResponse } from 'next/server';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
-import { getPostmarkClient } from '@/lib/postmark';
 import { getEnv } from '@/lib/env';
 import { resetEmailTemplate, verifyEmailTemplate } from '@/lib/emailTemplates';
+import { simpleResetEmailTemplate, simpleVerifyEmailTemplate } from '@/lib/emailTemplatesSimple';
+import { sendEmailWithFallback } from '@/lib/emailService';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30; // Increase timeout to 30 seconds
 
 export async function POST(req: Request) {
 	const { email, type } = await req.json();
-	const { EMAIL_FROM, APP_URL } = getEnv();
+	const { APP_URL } = getEnv();
 	const auth = getAuthAdmin();
-	const postmark = getPostmarkClient();
 
+	console.log(`[AUTH_EMAIL] Processing ${type} request for:`, email);
+
+	// Try to get user's display name for personalization
+	let userName: string | undefined;
+	try {
+		const userRecord = await auth.getUserByEmail(email);
+		userName = userRecord.displayName || undefined;
+	} catch {
+		// User might not exist yet or email not found, that's okay
+		userName = undefined;
+	}
+
+	// Generate custom verification/reset links using our domain
 	let link: string;
 	try {
-		link =
-			type === 'verify'
-				? await auth.generateEmailVerificationLink(email, { url: `${APP_URL}/verify-email` })
-				: await auth.generatePasswordResetLink(email, { url: `${APP_URL}/login` });
+		if (type === 'verify') {
+			// Generate Firebase action code
+			const actionCodeSettings = {
+				url: `${APP_URL}/verify-email`,
+				handleCodeInApp: false
+			};
+			const actionCode = await auth.generateEmailVerificationLink(email, actionCodeSettings);
+			
+			// Extract the oobCode from Firebase link and create our custom link
+			const url = new URL(actionCode);
+			const oobCode = url.searchParams.get('oobCode');
+			if (!oobCode) {
+				throw new Error('Failed to extract oobCode from Firebase link');
+			}
+			
+			link = `${APP_URL}/api/auth/verify?mode=verifyEmail&oobCode=${oobCode}`;
+		} else {
+			// Generate Firebase action code for password reset
+			const actionCodeSettings = {
+				url: `${APP_URL}/login`,
+				handleCodeInApp: false
+			};
+			const actionCode = await auth.generatePasswordResetLink(email, actionCodeSettings);
+			
+			// Extract the oobCode from Firebase link and create our custom link
+			const url = new URL(actionCode);
+			const oobCode = url.searchParams.get('oobCode');
+			if (!oobCode) {
+				throw new Error('Failed to extract oobCode from Firebase link');
+			}
+			
+			link = `${APP_URL}/api/auth/verify?mode=resetPassword&oobCode=${oobCode}`;
+		}
+		console.log(`[AUTH_EMAIL] ✅ ${type} link generated: ${link}`);
 	} catch (e) {
 		const msg = `Link generation failed: ${e instanceof Error ? e.message : String(e)}`;
-		console.error(msg);
+		console.error('[AUTH_EMAIL] ❌', msg);
 		return new NextResponse(msg, { status: 400 });
 	}
 
-	const tpl = type === 'verify' ? verifyEmailTemplate(link) : resetEmailTemplate(link);
+	// Prepare templates (full and simplified fallback)
+	const fullTemplate = type === 'verify' 
+		? verifyEmailTemplate(link, userName) 
+		: resetEmailTemplate(link, userName);
+	const simpleTemplate = type === 'verify'
+		? simpleVerifyEmailTemplate(link, userName)
+		: simpleResetEmailTemplate(link, userName);
+
+	console.log(`[AUTH_EMAIL] Full template HTML length:`, fullTemplate.html.length);
+	console.log(`[AUTH_EMAIL] Simple template HTML length:`, simpleTemplate.html.length);
+
+	// Send email with multi-provider support and fallback
+	const emailResult = await sendEmailWithFallback(
+		{
+			to: email,
+			subject: fullTemplate.subject,
+			html: fullTemplate.html,
+			text: fullTemplate.text,
+		},
+		simpleTemplate.html // Fallback to simple template if full one fails
+	);
+
+	// Log email send to Supabase
 	try {
-		const r = await postmark.sendEmail({ From: EMAIL_FROM, To: email, Subject: tpl.subject, HtmlBody: tpl.html, TextBody: tpl.text, MessageStream: 'outbound' });
-		const messageId = (r as unknown as { MessageID?: string }).MessageID || null;
-		try {
-			const supa = getSupabaseAdmin();
-			await supa.from('email_log').insert({ provider: 'postmark', to_email: email, template: type, status: 'sent', provider_message_id: messageId, payload: { subject: tpl.subject } });
-		} catch {}
-		return NextResponse.json({ ok: true, id: messageId });
-	} catch (e) {
-		const errorText = `Email send failed: ${e instanceof Error ? e.message : String(e)}`;
-		console.error('postmark send failed', e);
-		try {
-			const supa = getSupabaseAdmin();
-			await supa.from('email_log').insert({ provider: 'postmark', to_email: email, template: type, status: 'failed', payload: { error: errorText } });
-		} catch {}
-		return new NextResponse(errorText, { status: 502 });
+		const supa = getSupabaseAdmin();
+		await supa.from('email_log').insert({
+			provider: emailResult.provider,
+			to_email: email,
+			template: type,
+			status: emailResult.success ? 'sent' : 'failed',
+			provider_message_id: emailResult.messageId || null,
+			payload: {
+				subject: fullTemplate.subject,
+				attempts: emailResult.attempts,
+				error: emailResult.error,
+			},
+		});
+	} catch (logError) {
+		console.error('[AUTH_EMAIL] Failed to log email send:', logError);
+	}
+
+	if (emailResult.success) {
+		console.log(`[AUTH_EMAIL] ✅ Email sent via ${emailResult.provider}, ID: ${emailResult.messageId}`);
+		return NextResponse.json({
+			ok: true,
+			id: emailResult.messageId,
+			provider: emailResult.provider,
+		});
+	} else {
+		console.error('[AUTH_EMAIL] ❌ All email providers failed:', emailResult.error);
+		return new NextResponse(
+			`Email send failed: ${emailResult.error}`,
+			{ status: 502 }
+		);
 	}
 }

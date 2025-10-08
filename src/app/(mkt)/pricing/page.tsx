@@ -8,6 +8,8 @@ export default function Pricing() {
   const [proLoading, setProLoading] = useState(false);
   const [hasPlan, setHasPlan] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info');
   const [billing, setBilling] = useState<'monthly' | 'yearly'>(() => {
     if (typeof window === 'undefined') return 'monthly';
     try { const v = localStorage.getItem('billingPreference'); if (v==='yearly' || v==='monthly') return v; } catch {}
@@ -285,9 +287,15 @@ export default function Pricing() {
       } catch {}
 
       setStarterLoading(false);
+      
+      // Show success message before redirect
+      setError(null);
+      setMessage('✅ Starter plan activated! Redirecting to setup...');
+      setMessageType('success');
+      
       setTimeout(() => {
         window.location.href = redirectTarget;
-      }, redirectTarget === '/dashboard' ? 400 : 0);
+      }, redirectTarget === '/dashboard' ? 400 : 1500);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unable to activate Starter';
       setError(message);
@@ -453,6 +461,19 @@ export default function Pricing() {
               {error && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
+              {message && (
+                <div className={`mt-4 p-3 border rounded-lg ${
+                  messageType === 'success' ? 'bg-green-50 border-green-200' :
+                  messageType === 'error' ? 'bg-red-50 border-red-200' :
+                  'bg-blue-50 border-blue-200'
+                }`}>
+                  <p className={`text-sm ${
+                    messageType === 'success' ? 'text-green-600' :
+                    messageType === 'error' ? 'text-red-600' :
+                    'text-blue-600'
+                  }`}>{message}</p>
                 </div>
               )}
             </div>
@@ -666,7 +687,7 @@ export default function Pricing() {
             Ready to start collecting more reviews?
           </h2>
           <p className="text-xl text-blue-100 mb-10 leading-relaxed">
-            Join hundreds of businesses already growing their reputation. Get started free and upgrade anytime.
+            Start growing your online reputation today. Get started free and upgrade anytime.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
