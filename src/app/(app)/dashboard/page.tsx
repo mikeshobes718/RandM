@@ -518,6 +518,16 @@ export default function Dashboard() {
                   <>
                     <Link
                       href="/settings"
+                      onClick={() => {
+                        console.log('Settings link clicked');
+                        // Ensure navigation happens
+                        setTimeout(() => {
+                          if (window.location.pathname !== '/settings') {
+                            console.log('Navigation failed, forcing redirect');
+                            window.location.href = '/settings';
+                          }
+                        }, 100);
+                      }}
                       className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-900/10"
                     >
                       <svg className="h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">

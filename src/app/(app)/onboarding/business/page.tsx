@@ -32,6 +32,7 @@ export default function OnboardingBusinessPage() {
   const [error, setError] = useState('');
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | null>(null);
   const [isAutosaving, setIsAutosaving] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   
   // Autocomplete state
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
@@ -111,6 +112,53 @@ export default function OnboardingBusinessPage() {
       console.log('📝 Loaded saved form data from previous session');
     }
   }, []);
+
+  // Load existing business data when in edit mode
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const editMode = urlParams.get('edit') === '1';
+    setIsEditMode(editMode);
+    
+    if (editMode) {
+      loadExistingBusinessData();
+    }
+  }, []);
+
+  const loadExistingBusinessData = async () => {
+    try {
+      const response = await fetch('/api/businesses/me', {
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data?.business) {
+          const business = data.business;
+          setBusinessName(business.name || '');
+          setReviewLink(business.review_link || '');
+          setAddress(business.address || '');
+          
+          // Set selected place if we have place data
+          if (business.place_id) {
+            setSelectedPlace({
+              id: business.place_id,
+              displayName: business.name,
+              formattedAddress: business.address,
+              rating: business.rating,
+              writeAReviewUri: business.review_link,
+              googleMapsUri: business.google_maps_uri,
+              lat: business.lat,
+              lng: business.lng,
+            });
+          }
+          
+          console.log('📝 Loaded existing business data for editing');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load existing business data:', error);
+    }
+  };
 
   // Get selected plan from localStorage or URL params
   useEffect(() => {
@@ -291,12 +339,18 @@ export default function OnboardingBusinessPage() {
         }
       }
 
-      // Clear selected plan and form data from localStorage
-      localStorage.removeItem('selectedPlan');
-      localStorage.removeItem(AUTOSAVE_KEY);
+      // Clear selected plan and form data from localStorage only if not in edit mode
+      if (!isEditMode) {
+        localStorage.removeItem('selectedPlan');
+        localStorage.removeItem(AUTOSAVE_KEY);
+      }
 
-      // Redirect to dashboard
-      router.push('/dashboard?from=onboarding');
+      // Redirect based on mode
+      if (isEditMode) {
+        router.push('/dashboard?from=edit');
+      } else {
+        router.push('/dashboard?from=onboarding');
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to save business. Please try again.');
       setLoading(false);
@@ -308,10 +362,13 @@ export default function OnboardingBusinessPage() {
       <div className="max-w-2xl mx-auto px-4">
         <div className="mb-6">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
-            Connect your business
+            {isEditMode ? 'Edit your business' : 'Connect your business'}
           </h1>
           <p className="mt-2 text-gray-600">
-            Search for your business on Google to automatically load your review link and details.
+            {isEditMode 
+              ? 'Update your business information and review link.'
+              : 'Search for your business on Google to automatically load your review link and details.'
+            }
           </p>
           <div className="mt-4 flex items-center gap-3">
             {selectedPlan && (
@@ -466,7 +523,7 @@ export default function OnboardingBusinessPage() {
                   Saving...
                 </>
               ) : (
-                'Save and continue'
+                isEditMode ? 'Update business details' : 'Save and continue'
               )}
             </button>
           </div>

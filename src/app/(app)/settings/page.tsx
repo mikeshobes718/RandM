@@ -302,6 +302,11 @@ export default function SettingsPage() {
 
   async function remove(uid: string) {
     if (!businessId) return;
+    
+    if (!confirm('Are you sure you want to remove this member? They will lose access to the business dashboard.')) {
+      return;
+    }
+    
     setError(null);
     try {
       await fetch('/api/members/remove', {
@@ -313,6 +318,8 @@ export default function SettingsPage() {
       const data = await r.json();
       setInvites(data.invites||[]);
       setMembers(data.members||[]);
+      setSuccess('Member removed successfully');
+      setTimeout(() => setSuccess(null), 3000);
     } catch (e) {
       setError('Failed to remove member');
     }

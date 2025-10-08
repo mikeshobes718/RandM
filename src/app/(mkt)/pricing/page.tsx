@@ -250,10 +250,24 @@ export default function Pricing() {
         headers,
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error(await res.text());
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Stripe checkout failed:', res.status, errorText);
+        throw new Error(`Checkout failed: ${errorText}`);
+      }
+      
       const j = await res.json();
+      console.log('Stripe checkout response:', j);
+      
       try { if (j?.id) localStorage.setItem('stripe:lastSessionId', String(j.id)); } catch {}
-      if (j?.url) window.location.href = j.url;
+      
+      if (j?.url) {
+        console.log('Redirecting to Stripe checkout:', j.url);
+        window.location.href = j.url;
+      } else {
+        throw new Error('No checkout URL received from server');
+      }
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Checkout failed";
       setError(message);
@@ -480,7 +494,7 @@ export default function Pricing() {
     : starterLoading
       ? 'Activating Starter...'
       : starterActive && onboardingComplete
-        ? 'Manage Plan'
+        ? 'Current Plan'
         : (starterActive || selectedPlanFromStorage === 'starter') && !onboardingComplete
           ? 'Complete Setup'
           : isPro
@@ -489,7 +503,7 @@ export default function Pricing() {
               ? 'Activate Starter'
               : 'Get Started Free';
 
-  const starterDisabled = planChecking || starterLoading;
+  const starterDisabled = planChecking || starterLoading || (starterActive && onboardingComplete);
   const proCtaLabel = planChecking
     ? 'Checking plan...'
     : proLoading
