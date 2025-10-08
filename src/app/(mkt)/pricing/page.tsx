@@ -29,6 +29,47 @@ export default function Pricing() {
     if (hasPlan) setWelcome(false);
   }, [hasPlan]);
 
+  // Refresh onboarding state when plan status changes to starter
+  useEffect(() => {
+    if (planStatus === 'starter' && !onboardingComplete && !hasBusiness) {
+      console.log('[PRICING DEBUG] Plan status is starter but onboarding state not set, refreshing...');
+      // Trigger a refresh to get the latest business state
+      const refreshBusinessState = async () => {
+        try {
+          const headers: Record<string, string> = {};
+          try {
+            const token = localStorage.getItem('idToken') || '';
+            if (token) headers.Authorization = `Bearer ${token}`;
+          } catch {}
+          
+          let businessRes = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers });
+          if (!businessRes.ok) {
+            businessRes = await fetch('/api/businesses/me', { cache: 'no-store', headers });
+          }
+          if (businessRes.ok) {
+            const businessData = (await businessRes.json().catch(() => null)) as { business?: any } | null;
+            const business = businessData?.business;
+            const hasBusinessData = Boolean(business);
+            const isOnboardingComplete = hasBusinessData && business?.google_place_id;
+            
+            console.log('[PRICING DEBUG] Refresh business state result:', {
+              hasBusinessData,
+              isOnboardingComplete,
+              business: business ? { google_place_id: business.google_place_id } : null
+            });
+            
+            setHasBusiness(hasBusinessData);
+            setOnboardingComplete(isOnboardingComplete);
+          }
+        } catch (error) {
+          console.error('[PRICING DEBUG] Failed to refresh business state:', error);
+        }
+      };
+      
+      refreshBusinessState();
+    }
+  }, [planStatus, onboardingComplete, hasBusiness]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -77,6 +118,38 @@ export default function Pricing() {
         return;
       }
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      // Check business/onboarding status first
+      try {
+        let businessRes = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers });
+        if (!businessRes.ok) {
+          businessRes = await fetch('/api/businesses/me', { cache: 'no-store', headers });
+        }
+        if (businessRes.ok) {
+          const businessData = (await businessRes.json().catch(() => null)) as { business?: any } | null;
+          const business = businessData?.business;
+          const hasBusinessData = Boolean(business);
+          const isOnboardingComplete = hasBusinessData && business?.google_place_id;
+          
+          console.log('[PRICING DEBUG] Business check result:', {
+            hasBusinessData,
+            isOnboardingComplete,
+            business: business ? { google_place_id: business.google_place_id } : null
+          });
+          
+          if (!cancelled) {
+            setHasBusiness(hasBusinessData);
+            setOnboardingComplete(isOnboardingComplete);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setHasBusiness(false);
+          setOnboardingComplete(false);
+        }
+      }
+
+      // Then check plan status
       let resolved = false;
       try {
         let planRes = await fetch('/api/plan/status', { cache: 'no-store', credentials: 'include', headers });
@@ -92,30 +165,6 @@ export default function Pricing() {
       } catch {}
       if (!resolved) {
         await fallbackToEntitlements(headers);
-      }
-
-      // Check business/onboarding status
-      try {
-        let businessRes = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers });
-        if (!businessRes.ok) {
-          businessRes = await fetch('/api/businesses/me', { cache: 'no-store', headers });
-        }
-        if (businessRes.ok) {
-          const businessData = (await businessRes.json().catch(() => null)) as { business?: any } | null;
-          const business = businessData?.business;
-          const hasBusinessData = Boolean(business);
-          const isOnboardingComplete = hasBusinessData && business?.google_place_id;
-          
-          if (!cancelled) {
-            setHasBusiness(hasBusinessData);
-            setOnboardingComplete(isOnboardingComplete);
-          }
-        }
-      } catch {
-        if (!cancelled) {
-          setHasBusiness(false);
-          setOnboardingComplete(false);
-        }
       }
     };
 
@@ -426,6 +475,18 @@ export default function Pricing() {
             : authed
               ? 'Activate Starter'
               : 'Get Started Free';
+
+  // Debug logging for button label logic
+  if (typeof window !== 'undefined' && authed) {
+    console.log('[PRICING DEBUG]', {
+      planStatus,
+      starterActive,
+      onboardingComplete,
+      hasBusiness,
+      starterButtonLabel,
+      isPro
+    });
+  }
   const starterDisabled = planChecking || starterLoading;
   const proCtaLabel = planChecking
     ? 'Checking plan...'
