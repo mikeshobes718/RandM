@@ -78,7 +78,7 @@ export async function GET(req: Request) {
 
     // Calculate MRR (Monthly Recurring Revenue)
     // Pro plan pricing would need to be defined
-    const proMonthlyPrice = 29; // Placeholder - should come from Stripe or config
+    const proMonthlyPrice = 49.99; // Pro plan monthly price
     const mrr = proCount * proMonthlyPrice;
 
     // Get recent signups (last 30 days)

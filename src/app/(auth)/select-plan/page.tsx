@@ -133,7 +133,7 @@ export default function SelectPlanPage() {
             <div className="text-center">
               <h3 className="text-2xl font-bold text-slate-900 mb-2">Pro</h3>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-slate-900">$29</span>
+                <span className="text-4xl font-bold text-slate-900">$49.99</span>
                 <span className="text-slate-600 ml-2">/month</span>
               </div>
               <p className="text-slate-600 mb-8">
