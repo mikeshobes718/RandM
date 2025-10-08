@@ -190,6 +190,12 @@ export default function VerifyEmailPage() {
 
       if (!response.ok) {
         const errorText = await response.text();
+        
+        // Handle rate limiting specifically
+        if (response.status === 429) {
+          throw new Error(`Rate limited: ${errorText}`);
+        }
+        
         throw new Error(errorText || 'Failed to send email');
       }
 
@@ -204,7 +210,18 @@ export default function VerifyEmailPage() {
     } catch (err: any) {
       console.error('Resend error:', err);
       
-      setMessage(`Failed to send verification email: ${err.message}. Please try again or contact support.`);
+      let errorMessage = err.message;
+      
+      // Handle rate limiting with better user messaging
+      if (err.message.includes('Rate limited') || err.message.includes('Too many attempts')) {
+        errorMessage = 'Too many verification attempts. Please wait 5 minutes before trying again.';
+        setCooldown(300); // 5 minutes
+      } else if (err.message.includes('TOO_MANY_ATTEMPTS_TRY_LATER')) {
+        errorMessage = 'Too many verification attempts. Please wait 5 minutes before trying again.';
+        setCooldown(300); // 5 minutes
+      }
+      
+      setMessage(`Failed to send verification email: ${errorMessage}. Please try again or contact support.`);
       setMessageType('error');
     } finally {
       setLoading(false);

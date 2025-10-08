@@ -6,9 +6,42 @@ import { simpleResetEmailTemplate, simpleVerifyEmailTemplate } from '@/lib/email
 import { sendEmailWithFallback } from '@/lib/emailService';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
+// Rate limiting storage (in-memory for simplicity)
+const rateLimitStore = new Map<string, { count: number; lastAttempt: number }>();
+const RATE_LIMIT_WINDOW = 5 * 60 * 1000; // 5 minutes
+const MAX_ATTEMPTS = 3; // Max attempts per window
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30; // Increase timeout to 30 seconds
+
+function checkRateLimit(email: string, type: string): { allowed: boolean; retryAfter?: number } {
+	const now = Date.now();
+	const key = `${email}:${type}`;
+	const record = rateLimitStore.get(key);
+
+	if (!record) {
+		rateLimitStore.set(key, { count: 1, lastAttempt: now });
+		return { allowed: true };
+	}
+
+	// Reset if window has passed
+	if (now - record.lastAttempt > RATE_LIMIT_WINDOW) {
+		rateLimitStore.set(key, { count: 1, lastAttempt: now });
+		return { allowed: true };
+	}
+
+	// Check if under limit
+	if (record.count < MAX_ATTEMPTS) {
+		record.count++;
+		record.lastAttempt = now;
+		return { allowed: true };
+	}
+
+	// Rate limited
+	const retryAfter = Math.ceil((RATE_LIMIT_WINDOW - (now - record.lastAttempt)) / 1000);
+	return { allowed: false, retryAfter };
+}
 
 export async function POST(req: Request) {
 	const { email, type } = await req.json();
@@ -16,6 +49,14 @@ export async function POST(req: Request) {
 	const auth = getAuthAdmin();
 
 	console.log(`[AUTH_EMAIL] Processing ${type} request for:`, email);
+
+	// Check rate limit
+	const rateLimit = checkRateLimit(email, type);
+	if (!rateLimit.allowed) {
+		const message = `Too many attempts. Please wait ${rateLimit.retryAfter} seconds before trying again.`;
+		console.log(`[AUTH_EMAIL] Rate limited for ${email}: ${message}`);
+		return new NextResponse(message, { status: 429 });
+	}
 
 	// Try to get user's display name for personalization
 	let userName: string | undefined;
@@ -65,9 +106,17 @@ export async function POST(req: Request) {
 		}
 		console.log(`[AUTH_EMAIL] ✅ ${type} link generated: ${link}`);
 	} catch (e) {
-		const msg = `Link generation failed: ${e instanceof Error ? e.message : String(e)}`;
+		let msg = `Link generation failed: ${e instanceof Error ? e.message : String(e)}`;
+		let status = 400;
+		
+		// Handle Firebase rate limiting specifically
+		if (e instanceof Error && e.message.includes('TOO_MANY_ATTEMPTS_TRY_LATER')) {
+			msg = 'Too many verification attempts. Please wait 5 minutes before trying again.';
+			status = 429;
+		}
+		
 		console.error('[AUTH_EMAIL] ❌', msg);
-		return new NextResponse(msg, { status: 400 });
+		return new NextResponse(msg, { status });
 	}
 
 	// Prepare templates (full and simplified fallback)
