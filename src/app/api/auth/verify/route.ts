@@ -19,13 +19,14 @@ export async function GET(req: Request) {
 
   try {
     if (mode === 'verifyEmail') {
-      // Verify the email
-      await auth.applyActionCode(oobCode);
-      console.log('[VERIFY] ✅ Email verified successfully');
+      // Verify the email verification code
+      const email = await auth.verifyEmailVerificationCode(oobCode);
+      console.log('[VERIFY] ✅ Email verified successfully for:', email);
       return NextResponse.redirect(`${APP_URL}/verify-email?verified=true`);
     } else if (mode === 'resetPassword') {
-      // Handle password reset
-      console.log('[VERIFY] ✅ Password reset link verified');
+      // Verify the password reset code
+      const email = await auth.verifyPasswordResetCode(oobCode);
+      console.log('[VERIFY] ✅ Password reset link verified for:', email);
       return NextResponse.redirect(`${APP_URL}/login?reset=true&oobCode=${oobCode}`);
     } else {
       console.log('[VERIFY] ❌ Invalid mode:', mode);
