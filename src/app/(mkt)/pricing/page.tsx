@@ -312,7 +312,7 @@ export default function Pricing() {
     : starterLoading
       ? 'Activating Starter...'
       : starterActive
-        ? 'Continue setup'
+        ? 'Manage Plan'
         : isPro
           ? 'Go to Dashboard'
           : authed
@@ -325,9 +325,13 @@ export default function Pricing() {
       ? 'Processing...'
       : isPro
         ? 'Manage Billing'
-        : billing === 'monthly'
-          ? 'Upgrade to Pro (Monthly)'
-          : 'Upgrade to Pro (Yearly)';
+        : starterActive
+          ? billing === 'monthly'
+            ? 'Upgrade to Pro (Monthly)'
+            : 'Upgrade to Pro (Yearly)'
+          : billing === 'monthly'
+            ? 'Start Pro (Monthly)'
+            : 'Start Pro (Yearly)';
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="pointer-events-none absolute inset-0 -z-10">
@@ -354,6 +358,15 @@ export default function Pricing() {
           <p className="mt-4 text-lg text-slate-600 md:text-xl">
             Everything you need to collect more reviews, nurture customer trust, and measure the impact.
           </p>
+          {/* Current Plan Status */}
+          {authed && planStatus !== 'loading' && planStatus !== 'none' && (
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              You're on the {planStatus === 'starter' ? 'Starter' : 'Pro'} plan {planStatus === 'starter' ? '– free forever' : '– unlimited features'}
+            </div>
+          )}
           <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-white/80 bg-white/85 p-1 shadow-sm shadow-slate-900/10 backdrop-blur">
             <button
               className={`${billing === 'monthly' ? 'bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-700'} rounded-full px-4 py-2 text-sm font-medium transition`}
@@ -399,9 +412,18 @@ export default function Pricing() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-3">
             {/* Starter Plan */}
-            <div className="rounded-3xl border border-white/70 bg-white/85 p-8 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl">
+            <div className={`rounded-3xl border p-8 shadow-lg backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl ${
+              starterActive ? 'border-emerald-300 bg-emerald-50/50' : 'border-white/70 bg-white/85'
+            }`}>
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-semibold text-slate-900 mb-2">Starter</h3>
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <h3 className="text-2xl font-semibold text-slate-900">Starter</h3>
+                  {starterActive && (
+                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700">
+                      Current Plan
+                    </span>
+                  )}
+                </div>
                 <p className="text-slate-600 mb-6 text-sm">Perfect for small businesses getting started</p>
                 <div className="mb-6">
                   <span className="text-5xl font-bold text-gray-900">{starterPriceText}</span>
@@ -479,15 +501,26 @@ export default function Pricing() {
             </div>
 
             {/* Pro Plan - Featured */}
-            <div className="relative rounded-3xl border border-indigo-300 bg-white/90 p-8 shadow-2xl shadow-indigo-500/20 backdrop-blur transition hover:-translate-y-1">
+            <div className={`relative rounded-3xl border p-8 shadow-2xl backdrop-blur transition hover:-translate-y-1 ${
+              isPro ? 'border-emerald-300 bg-emerald-50/50 shadow-emerald-500/20' : 'border-indigo-300 bg-white/90 shadow-indigo-500/20'
+            }`}>
               <div className="absolute -top-5 left-1/2 w-max -translate-x-1/2">
-                <span className="inline-flex items-center rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white">
-                  Most Popular
+                <span className={`inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white ${
+                  isPro ? 'bg-gradient-to-r from-emerald-500 to-green-500' : 'bg-gradient-to-r from-indigo-500 to-violet-500'
+                }`}>
+                  {isPro ? 'Current Plan' : 'Most Popular'}
                 </span>
               </div>
               
               <div className="mb-8 text-center">
-                <h3 className="text-2xl font-semibold text-slate-900 mb-2">Pro</h3>
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <h3 className="text-2xl font-semibold text-slate-900">Pro</h3>
+                  {isPro && (
+                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700">
+                      Active
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-slate-600 mb-6">For growing businesses that need more power</p>
                 <div className="mb-6">
                   <span className="text-5xl font-bold text-slate-900">${proPrice}</span>
