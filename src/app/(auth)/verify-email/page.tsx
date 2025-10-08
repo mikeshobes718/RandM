@@ -87,6 +87,8 @@ export default function VerifyEmailPage() {
     const params = new URLSearchParams(window.location.search);
     const verified = params.get('verified');
     const error = params.get('error');
+    const mode = params.get('mode');
+    const oobCode = params.get('oobCode');
 
     if (verified === 'true') {
       setMessage('✅ Email verified successfully! Redirecting...');
@@ -98,6 +100,9 @@ export default function VerifyEmailPage() {
           window.location.href = redirectUrl;
         }, 1500);
       });
+    } else if (mode === 'verifyEmail' && oobCode) {
+      // Handle verification code from custom verification handler
+      handleVerificationCode(oobCode);
     } else if (error) {
       let errorMessage = 'Verification failed. Please try again.';
       if (error === 'expired') {

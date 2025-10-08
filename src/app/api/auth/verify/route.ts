@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { getEnv } from '@/lib/env';
 
 export const runtime = 'nodejs';
@@ -15,34 +14,13 @@ export async function GET(req: Request) {
     return NextResponse.redirect(`${APP_URL}/verify-email?error=invalid-link`);
   }
 
-  const auth = getAuthAdmin();
-
-  try {
-    if (mode === 'verifyEmail') {
-      // Verify the email verification code
-      const email = await auth.verifyEmailVerificationCode(oobCode);
-      console.log('[VERIFY] ✅ Email verified successfully for:', email);
-      return NextResponse.redirect(`${APP_URL}/verify-email?verified=true`);
-    } else if (mode === 'resetPassword') {
-      // Verify the password reset code
-      const email = await auth.verifyPasswordResetCode(oobCode);
-      console.log('[VERIFY] ✅ Password reset link verified for:', email);
-      return NextResponse.redirect(`${APP_URL}/login?reset=true&oobCode=${oobCode}`);
-    } else {
-      console.log('[VERIFY] ❌ Invalid mode:', mode);
-      return NextResponse.redirect(`${APP_URL}/verify-email?error=invalid-mode`);
-    }
-  } catch (error) {
-    console.error('[VERIFY] ❌ Action code application failed:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
-    // Handle specific Firebase errors
-    if (errorMessage.includes('expired')) {
-      return NextResponse.redirect(`${APP_URL}/verify-email?error=expired`);
-    } else if (errorMessage.includes('invalid')) {
-      return NextResponse.redirect(`${APP_URL}/verify-email?error=invalid`);
-    } else {
-      return NextResponse.redirect(`${APP_URL}/verify-email?error=verification-failed`);
-    }
+  // Pass the verification parameters to the client-side page
+  // The client-side will handle the actual verification using Firebase client SDK
+  if (mode === 'verifyEmail') {
+    return NextResponse.redirect(`${APP_URL}/verify-email?mode=verifyEmail&oobCode=${oobCode}`);
+  } else if (mode === 'resetPassword') {
+    return NextResponse.redirect(`${APP_URL}/login?mode=resetPassword&oobCode=${oobCode}`);
+  } else {
+    return NextResponse.redirect(`${APP_URL}/verify-email?error=invalid-mode`);
   }
 }
