@@ -13,3 +13,4 @@ const config = {
 
 const app = getApps().length ? getApps()[0]! : initializeApp(config);
 export const clientAuth = getAuth(app);
+export { app };
