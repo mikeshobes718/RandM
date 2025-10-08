@@ -124,12 +124,23 @@ export default function Pricing() {
     try {
       window.addEventListener('focus', handleChange);
       window.addEventListener('idtoken:changed', handleChange as EventListener);
+      // Also refresh when page becomes visible (user returns from onboarding)
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          void refresh();
+        }
+      });
     } catch {}
     return () => {
       cancelled = true;
       try {
         window.removeEventListener('focus', handleChange);
         window.removeEventListener('idtoken:changed', handleChange as EventListener);
+        document.removeEventListener('visibilitychange', () => {
+          if (!document.hidden) {
+            void refresh();
+          }
+        });
       } catch {}
     };
   }, []);
@@ -312,6 +323,29 @@ export default function Pricing() {
       setPlanStatus('starter');
       setHasPlan(true);
       setIsPro(false);
+
+      // Refresh onboarding state after plan activation
+      try {
+        const headersAuth: Record<string, string> = {};
+        if (headers.Authorization) headersAuth.Authorization = headers.Authorization;
+        let businessRes = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers: headersAuth });
+        if (!businessRes.ok && headersAuth.Authorization) {
+          businessRes = await fetch('/api/businesses/me', { cache: 'no-store', headers: headersAuth });
+        }
+        if (businessRes.ok) {
+          const businessData = (await businessRes.json().catch(() => null)) as { business?: any } | null;
+          const business = businessData?.business;
+          const hasBusinessData = Boolean(business);
+          const isOnboardingComplete = hasBusinessData && business?.google_place_id;
+          
+          setHasBusiness(hasBusinessData);
+          setOnboardingComplete(isOnboardingComplete);
+        }
+      } catch {
+        // Keep defaults if business check fails
+        setHasBusiness(false);
+        setOnboardingComplete(false);
+      }
 
       let redirectTarget = '/onboarding/business';
       const idTokenValue = headers.Authorization?.replace(/^Bearer\s+/i, '').trim();
