@@ -1,8 +1,50 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { clientAuth } from '@/lib/firebaseClient';
-import { onAuthStateChanged, sendEmailVerification, applyActionCode } from 'firebase/auth';
+import { onAuthStateChanged, applyActionCode } from 'firebase/auth';
 import Link from 'next/link';
+
+/**
+ * Check if user needs plan selection or can go to dashboard
+ * New users should go to plan selection first, then onboarding
+ */
+async function getPostVerificationRedirect(): Promise<string> {
+  try {
+    // Check if user has a business record (completed onboarding)
+    const response = await fetch('/api/businesses/me', {
+      credentials: 'include',
+    });
+
+    console.log('[ONBOARDING CHECK] API response status:', response.status);
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('[ONBOARDING CHECK] Business data:', {
+        hasBusiness: !!data?.business,
+        businessId: data?.business?.id,
+        businessName: data?.business?.name
+      });
+      
+      // API returns { business: {...} } or { business: null }
+      // Existing users with business records go to dashboard
+      if (data && data.business && data.business.id) {
+        console.log('[ONBOARDING CHECK] ✅ Has business, going to dashboard');
+        return '/dashboard';
+      }
+      
+      console.log('[ONBOARDING CHECK] ❌ No business, going to plan selection');
+    } else {
+      console.log('[ONBOARDING CHECK] ❌ API failed or no business, going to plan selection');
+    }
+
+    // No business found, need plan selection first
+    return '/select-plan';
+  } catch (error) {
+    console.error('[ONBOARDING CHECK] Error:', error);
+    // Default to plan selection if we can't determine
+    return '/select-plan';
+  }
+}
 
 export default function VerifyEmailPage() {
   const [email, setEmail] = useState('');
@@ -25,20 +67,14 @@ export default function VerifyEmailPage() {
       if (user) {
         await user.reload();
         if (user.emailVerified) {
-          // User is verified, redirect to dashboard
-          window.location.href = '/dashboard';
+          // User is verified, check if they need onboarding
+          const redirectUrl = await getPostVerificationRedirect();
+          window.location.href = redirectUrl;
         } else {
-          // Check if we should auto-send verification email
-          const params = new URLSearchParams(window.location.search);
-          const shouldAutoSend = params.get('autoSend') === '1';
-          
-          if (shouldAutoSend && !autoSent) {
-            setAutoSent(true);
-            // Auto-send verification email after a short delay
-            setTimeout(() => {
-              handleResend(true);
-            }, 500);
-          }
+          // Email was already sent during registration via server-side API
+          // No need to auto-send again
+          setMessage('📧 Verification email sent! Please check your inbox and spam folder.');
+          setMessageType('success');
         }
       }
     });
@@ -70,12 +106,15 @@ export default function VerifyEmailPage() {
         await clientAuth.currentUser.reload();
       }
 
-      setMessage('✅ Email verified successfully! Redirecting to dashboard...');
+      setMessage('✅ Email verified successfully! Redirecting...');
       setMessageType('success');
 
-      // Redirect to dashboard after a short delay
+      // Check if user needs onboarding or can go to dashboard
+      const redirectUrl = await getPostVerificationRedirect();
+      
+      // Redirect after a short delay
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        window.location.href = redirectUrl;
       }, 1500);
     } catch (err: any) {
       console.error('Verification error:', err);
@@ -96,7 +135,8 @@ export default function VerifyEmailPage() {
   const handleResend = async (isAutoSend = false) => {
     if (cooldown > 0 || loading) return;
 
-    if (!clientAuth.currentUser) {
+    const userEmail = email || clientAuth.currentUser?.email;
+    if (!userEmail) {
       setMessage('Please sign in again to resend verification email');
       setMessageType('error');
       return;
@@ -104,16 +144,30 @@ export default function VerifyEmailPage() {
 
     setLoading(true);
     if (!isAutoSend) {
-      setMessage('');
+      setMessage('Sending verification email...');
+      setMessageType('info');
     }
 
     try {
-      // Try sending via Firebase
-      await sendEmailVerification(clientAuth.currentUser, {
-        url: `${window.location.origin}/verify-email`,
+      // Use Postmark-based email API instead of Firebase
+      const response = await fetch('/api/auth/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userEmail,
+          type: 'verify'
+        }),
       });
 
-      setMessage(isAutoSend ? 'Verification email sent! Please check your inbox.' : 'Verification email sent! Please check your inbox.');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to send email');
+      }
+
+      const result = await response.json();
+      console.log('Email sent successfully:', result);
+
+      setMessage(isAutoSend ? '📧 Verification email sent! Please check your inbox and spam folder.' : '✅ Verification email sent! Please check your inbox and spam folder.');
       setMessageType('success');
       
       // Set cooldown
@@ -121,14 +175,7 @@ export default function VerifyEmailPage() {
     } catch (err: any) {
       console.error('Resend error:', err);
       
-      // More specific error handling
-      if (err.code === 'auth/too-many-requests') {
-        setMessage('Too many requests. Please wait a few minutes before trying again.');
-      } else if (err.code === 'auth/user-token-expired') {
-        setMessage('Your session expired. Please sign in again.');
-      } else {
-        setMessage('Failed to send verification email. Please try clicking "Resend" again.');
-      }
+      setMessage(`Failed to send verification email: ${err.message}. Please try again or contact support.`);
       setMessageType('error');
     } finally {
       setLoading(false);
@@ -152,11 +199,15 @@ export default function VerifyEmailPage() {
       if (clientAuth.currentUser.emailVerified) {
         setMessage('✅ Email verified! Redirecting...');
         setMessageType('success');
+        
+        // Check if user needs onboarding or can go to dashboard
+        const redirectUrl = await getPostVerificationRedirect();
+        
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          window.location.href = redirectUrl;
         }, 1000);
       } else {
-        setMessage('Email not verified yet. Please check your inbox and click the verification link.');
+        setMessage('Email not verified yet. Please check your inbox (and spam folder) and click the verification link.');
         setMessageType('error');
       }
     } catch (err) {
@@ -228,6 +279,19 @@ export default function VerifyEmailPage() {
               </button>
             </div>
           )}
+
+          {/* Help Text */}
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+            <p className="text-xs text-blue-700 mb-2">
+              <strong>📬 Didn't receive the email?</strong>
+            </p>
+            <ul className="text-xs text-blue-600 space-y-1 pl-4 list-disc">
+              <li>Check your spam/junk folder</li>
+              <li>Make sure you entered the correct email</li>
+              <li>Wait a minute and click "Resend" if needed</li>
+              <li>Contact support if issues persist</li>
+            </ul>
+          </div>
 
           {/* Footer */}
           <div className="mt-6 text-center">

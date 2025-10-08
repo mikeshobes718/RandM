@@ -4,6 +4,48 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { clientAuth } from '@/lib/firebaseClient';
 import Link from 'next/link';
 
+/**
+ * Check if user needs plan selection or can go to dashboard
+ * New users should go to plan selection first, then onboarding
+ */
+async function getPostLoginRedirect(): Promise<string> {
+  try {
+    // Check if user has a business record (completed onboarding)
+    const response = await fetch('/api/businesses/me', {
+      credentials: 'include',
+    });
+
+    console.log('[LOGIN ONBOARDING CHECK] API response status:', response.status);
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('[LOGIN ONBOARDING CHECK] Business data:', {
+        hasBusiness: !!data?.business,
+        businessId: data?.business?.id,
+        businessName: data?.business?.name
+      });
+      
+      // API returns { business: {...} } or { business: null }
+      // Existing users with business records go to dashboard
+      if (data && data.business && data.business.id) {
+        console.log('[LOGIN ONBOARDING CHECK] ✅ Has business, going to dashboard');
+        return '/dashboard';
+      }
+      
+      console.log('[LOGIN ONBOARDING CHECK] ❌ No business, going to plan selection');
+    } else {
+      console.log('[LOGIN ONBOARDING CHECK] ❌ API failed or no business, going to plan selection');
+    }
+
+    // No business found, need plan selection first
+    return '/select-plan';
+  } catch (error) {
+    console.error('[LOGIN ONBOARDING CHECK] Error:', error);
+    // Default to plan selection if we can't determine
+    return '/select-plan';
+  }
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,8 +96,9 @@ export default function LoginPage() {
         credentials: 'include',
       });
 
-      // Redirect to dashboard
-      window.location.href = '/dashboard';
+      // Check if user needs onboarding or can go to dashboard
+      const redirectUrl = await getPostLoginRedirect();
+      window.location.href = redirectUrl;
     } catch (err: any) {
       console.error('Login error:', err);
 

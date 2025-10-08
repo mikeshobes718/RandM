@@ -30,6 +30,7 @@ export default function OnboardingBusinessPage() {
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | null>(null);
   
   // Autocomplete state
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
@@ -39,6 +40,26 @@ export default function OnboardingBusinessPage() {
   const sessionTokenRef = useRef(generateSessionToken());
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Get selected plan from localStorage or URL params
+  useEffect(() => {
+    // Check URL params first (for Stripe redirects)
+    const urlParams = new URLSearchParams(window.location.search);
+    const planFromUrl = urlParams.get('plan') as 'starter' | 'pro' | null;
+    
+    if (planFromUrl) {
+      setSelectedPlan(planFromUrl);
+    } else {
+      // Check localStorage
+      const planFromStorage = localStorage.getItem('selectedPlan') as 'starter' | 'pro' | null;
+      if (planFromStorage) {
+        setSelectedPlan(planFromStorage);
+      } else {
+        // Default to starter if no plan selected
+        setSelectedPlan('starter');
+      }
+    }
+  }, []);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -164,6 +185,30 @@ export default function OnboardingBusinessPage() {
         throw new Error('Failed to save business');
       }
 
+      // Send welcome email based on selected plan
+      if (selectedPlan) {
+        try {
+          const emailResponse = await fetch('/api/auth/welcome-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: localStorage.getItem('userEmail') || '',
+              plan: selectedPlan
+            }),
+          });
+          
+          if (emailResponse.ok) {
+            console.log(`Welcome email sent for ${selectedPlan} plan`);
+          }
+        } catch (emailError) {
+          console.error('Failed to send welcome email:', emailError);
+          // Don't fail the onboarding if email fails
+        }
+      }
+
+      // Clear selected plan from localStorage
+      localStorage.removeItem('selectedPlan');
+
       // Redirect to dashboard
       router.push('/dashboard?from=onboarding');
     } catch (err: any) {
@@ -182,6 +227,11 @@ export default function OnboardingBusinessPage() {
           <p className="mt-2 text-gray-600">
             Search for your business on Google to automatically load your review link and details.
           </p>
+          {selectedPlan && (
+            <div className="mt-4 inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800">
+              {selectedPlan === 'pro' ? '✨ Pro Plan' : '🚀 Starter Plan'} Selected
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl ring-1 ring-black/5 space-y-5">
