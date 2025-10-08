@@ -86,6 +86,8 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
         HtmlBody: options.html,
         TextBody: options.text,
         MessageStream: 'outbound',
+        TrackOpens: false, // Disable tracking for faster delivery
+        TrackLinks: 'None', // Disable link tracking for faster delivery
       });
 
       const messageId = (result as any).MessageID || null;

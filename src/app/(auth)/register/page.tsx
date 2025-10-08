@@ -4,6 +4,21 @@ import { clientAuth } from '@/lib/firebaseClient';
 import Link from 'next/link';
 import PasswordStrengthMeter from '@/components/PasswordStrengthMeter';
 
+// Format phone number as user types
+function formatPhoneNumber(value: string): string {
+  // Remove all non-digit characters
+  const phoneNumber = value.replace(/\D/g, '');
+  
+  // Limit to 10 digits
+  const limitedPhoneNumber = phoneNumber.slice(0, 10);
+  
+  // Format as (XXX) XXX-XXXX
+  if (limitedPhoneNumber.length === 0) return '';
+  if (limitedPhoneNumber.length <= 3) return `(${limitedPhoneNumber}`;
+  if (limitedPhoneNumber.length <= 6) return `(${limitedPhoneNumber.slice(0, 3)}) ${limitedPhoneNumber.slice(3)}`;
+  return `(${limitedPhoneNumber.slice(0, 3)}) ${limitedPhoneNumber.slice(3, 6)}-${limitedPhoneNumber.slice(6)}`;
+}
+
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,8 +34,8 @@ export default function RegisterPage() {
     setLoading(true);
 
     // Basic validation
-    if (!email || !password || !businessName || !businessPhone) {
-      setError('Please fill in all fields');
+    if (!email || !password || !businessName) {
+      setError('Please fill in all required fields');
       setLoading(false);
       return;
     }
@@ -31,9 +46,10 @@ export default function RegisterPage() {
       return;
     }
 
+    // Validate phone number only if provided
     const phoneDigits = businessPhone.replace(/\D/g, '');
-    if (phoneDigits.length !== 10) {
-      setError('Please enter a valid 10-digit phone number');
+    if (phoneDigits.length > 0 && phoneDigits.length !== 10) {
+      setError('Please enter a valid 10-digit phone number or leave it blank');
       setLoading(false);
       return;
     }
@@ -76,7 +92,7 @@ export default function RegisterPage() {
       // Store business info for onboarding (but don't create record yet)
       // User will create it during onboarding flow
       localStorage.setItem('pendingBusinessName', businessName.trim());
-      localStorage.setItem('pendingBusinessPhone', phoneDigits);
+      localStorage.setItem('pendingBusinessPhone', phoneDigits || '');
 
       // Store email for verification page
       localStorage.setItem('userEmail', email);
@@ -206,8 +222,7 @@ export default function RegisterPage() {
                 value={businessPhone}
                 onChange={(e) => setBusinessPhone(formatPhoneNumber(e.target.value))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="(555) 123-4567"
-                required
+                placeholder="(optional)"
               />
             </div>
 

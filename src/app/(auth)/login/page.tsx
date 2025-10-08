@@ -1,6 +1,6 @@
 "use client";
-import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useState, useEffect } from 'react';
+import { signInWithEmailAndPassword, confirmPasswordReset } from 'firebase/auth';
 import { clientAuth } from '@/lib/firebaseClient';
 import Link from 'next/link';
 
@@ -52,6 +52,65 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isPasswordReset, setIsPasswordReset] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetCode, setResetCode] = useState('');
+
+  // Check for password reset mode
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const mode = params.get('mode');
+    const oobCode = params.get('oobCode');
+    
+    if (mode === 'resetPassword' && oobCode) {
+      setIsPasswordReset(true);
+      setResetCode(oobCode);
+    }
+  }, []);
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    if (!newPassword || !confirmPassword) {
+      setError('Please fill in all fields');
+      setLoading(false);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await confirmPasswordReset(clientAuth, resetCode, newPassword);
+      setError('Password reset successful! You can now sign in with your new password.');
+      setIsPasswordReset(false);
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      console.error('Password reset error:', err);
+      if (err.code === 'auth/expired-action-code') {
+        setError('Password reset link has expired. Please request a new one.');
+      } else if (err.code === 'auth/invalid-action-code') {
+        setError('Invalid password reset link. Please request a new one.');
+      } else {
+        setError('Failed to reset password. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,8 +188,12 @@ export default function LoginPage() {
                 <path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back</h1>
-            <p className="text-slate-600">Sign in to your account</p>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+              {isPasswordReset ? 'Reset your password' : 'Welcome back'}
+            </h1>
+            <p className="text-slate-600">
+              {isPasswordReset ? 'Enter your new password below' : 'Sign in to your account'}
+            </p>
           </div>
 
           {/* Error Message */}
@@ -141,7 +204,58 @@ export default function LoginPage() {
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {isPasswordReset ? (
+            <form onSubmit={handlePasswordReset} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter new password"
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Confirm new password"
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Resetting...' : 'Reset Password'}
+              </button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setIsPasswordReset(false)}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Back to login
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email
@@ -202,6 +316,7 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
+          )}
 
           {/* Footer */}
           <div className="mt-6 text-center text-sm text-gray-600">
