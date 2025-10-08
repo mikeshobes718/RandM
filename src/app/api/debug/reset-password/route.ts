@@ -36,6 +36,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error('Password reset error:', error);
-    return new NextResponse(`Error: ${error.message}`, { status: 500 });
+    return new NextResponse(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`, { status: 500 });
   }
 }
