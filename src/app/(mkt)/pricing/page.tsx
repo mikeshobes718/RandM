@@ -32,7 +32,6 @@ export default function Pricing() {
   // Refresh onboarding state when plan status changes to starter
   useEffect(() => {
     if (planStatus === 'starter' && !onboardingComplete && !hasBusiness) {
-      console.log('[PRICING DEBUG] Plan status is starter but onboarding state not set, refreshing...');
       // Trigger a refresh to get the latest business state
       const refreshBusinessState = async () => {
         try {
@@ -52,17 +51,12 @@ export default function Pricing() {
             const hasBusinessData = Boolean(business);
             const isOnboardingComplete = hasBusinessData && business?.google_place_id;
             
-            console.log('[PRICING DEBUG] Refresh business state result:', {
-              hasBusinessData,
-              isOnboardingComplete,
-              business: business ? { google_place_id: business.google_place_id } : null
-            });
             
             setHasBusiness(hasBusinessData);
             setOnboardingComplete(isOnboardingComplete);
           }
         } catch (error) {
-          console.error('[PRICING DEBUG] Failed to refresh business state:', error);
+          // Silently handle error
         }
       };
       
@@ -131,11 +125,6 @@ export default function Pricing() {
           const hasBusinessData = Boolean(business);
           const isOnboardingComplete = hasBusinessData && business?.google_place_id;
           
-          console.log('[PRICING DEBUG] Business check result:', {
-            hasBusinessData,
-            isOnboardingComplete,
-            business: business ? { google_place_id: business.google_place_id } : null
-          });
           
           if (!cancelled) {
             setHasBusiness(hasBusinessData);
@@ -476,27 +465,6 @@ export default function Pricing() {
               ? 'Activate Starter'
               : 'Get Started Free';
 
-  // Debug logging for button label logic
-  if (typeof window !== 'undefined' && authed) {
-    console.log('[PRICING DEBUG]', {
-      planStatus,
-      starterActive,
-      onboardingComplete,
-      hasBusiness,
-      starterButtonLabel,
-      isPro
-    });
-  }
-
-  // Debug banner for testing environment
-  const debugInfo = authed ? {
-    planStatus,
-    starterActive,
-    onboardingComplete,
-    hasBusiness,
-    starterButtonLabel,
-    isPro
-  } : null;
   const starterDisabled = planChecking || starterLoading;
   const proCtaLabel = planChecking
     ? 'Checking plan...'
@@ -527,17 +495,8 @@ export default function Pricing() {
           </div>
         </div>
       )}
-      {/* Debug Banner */}
-      {debugInfo && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-red-100 border-b border-red-300 p-2 text-xs font-mono">
-          <div className="max-w-6xl mx-auto px-4">
-            <strong>DEBUG:</strong> planStatus={debugInfo.planStatus} | starterActive={String(debugInfo.starterActive)} | onboardingComplete={String(debugInfo.onboardingComplete)} | hasBusiness={String(debugInfo.hasBusiness)} | buttonLabel="{debugInfo.starterButtonLabel}" | isPro={String(debugInfo.isPro)}
-          </div>
-        </div>
-      )}
-
       {/* Pricing Header */}
-      <section className={`relative px-4 pb-14 sm:px-6 lg:px-8 ${debugInfo ? 'pt-32' : 'pt-24'}`}>
+      <section className="relative px-4 pt-24 pb-14 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-indigo-700 shadow-lg">Starter is free • Upgrade anytime</span>
           <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
