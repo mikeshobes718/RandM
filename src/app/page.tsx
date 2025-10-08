@@ -463,7 +463,7 @@ export default function Home() {
               href="/dashboard"
               className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition transform hover:scale-105"
             >
-              Peek inside the dashboard
+              Open dashboard
               <svg aria-hidden className="h-5 w-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M9 5l7 7-7 7" />
               </svg>

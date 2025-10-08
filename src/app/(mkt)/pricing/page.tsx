@@ -19,6 +19,8 @@ export default function Pricing() {
   const [authed, setAuthed] = useState(false);
   const [planStatus, setPlanStatus] = useState<'loading' | 'none' | string>('loading');
   const [isPro, setIsPro] = useState(false);
+  const [hasBusiness, setHasBusiness] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
   useEffect(() => {
     try { setWelcome(new URL(window.location.href).searchParams.get('welcome') === '1'); } catch {}
   }, []);
@@ -70,6 +72,8 @@ export default function Pricing() {
       if (!cancelled) setAuthed(nextAuthed);
       if (!nextAuthed) {
         applyStatus('none');
+        setHasBusiness(false);
+        setOnboardingComplete(false);
         return;
       }
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
@@ -88,6 +92,30 @@ export default function Pricing() {
       } catch {}
       if (!resolved) {
         await fallbackToEntitlements(headers);
+      }
+
+      // Check business/onboarding status
+      try {
+        let businessRes = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers });
+        if (!businessRes.ok) {
+          businessRes = await fetch('/api/businesses/me', { cache: 'no-store', headers });
+        }
+        if (businessRes.ok) {
+          const businessData = (await businessRes.json().catch(() => null)) as { business?: any } | null;
+          const business = businessData?.business;
+          const hasBusinessData = Boolean(business);
+          const isOnboardingComplete = hasBusinessData && business?.google_place_id;
+          
+          if (!cancelled) {
+            setHasBusiness(hasBusinessData);
+            setOnboardingComplete(isOnboardingComplete);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setHasBusiness(false);
+          setOnboardingComplete(false);
+        }
       }
     };
 
@@ -190,6 +218,46 @@ export default function Pricing() {
     }
   }
 
+  async function cancelStarterPlan() {
+    if (!confirm('Are you sure you want to cancel your Starter plan? This will stop your review request allocations.')) {
+      return;
+    }
+    
+    try {
+      setError(null);
+      setStarterLoading(true);
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      try {
+        const token = localStorage.getItem('idToken') || '';
+        if (token) headers.Authorization = `Bearer ${token}`;
+      } catch {}
+      const res = await fetch('/api/plan/cancel', {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const j = await res.json();
+      if (j?.success) {
+        setMessage('✅ Starter plan cancelled successfully');
+        setMessageType('success');
+        setPlanStatus('none');
+        setHasPlan(false);
+        setIsPro(false);
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else if (j?.redirectToPortal) {
+        await openBillingPortal();
+      }
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Unable to cancel subscription';
+      setError(message);
+    } finally {
+      setStarterLoading(false);
+    }
+  }
+
   async function handleProCta() {
     if (proLoading) return;
     if (authed && planStatus === 'loading') return;
@@ -205,8 +273,12 @@ export default function Pricing() {
       window.location.href = '/register';
       return;
     }
-    if (planStatus === 'starter') {
+    if (planStatus === 'starter' && onboardingComplete) {
       window.location.href = '/dashboard';
+      return;
+    }
+    if (planStatus === 'starter' && !onboardingComplete) {
+      window.location.href = '/onboarding/business';
       return;
     }
     if (isPro) {
@@ -311,13 +383,15 @@ export default function Pricing() {
     ? 'Checking plan...'
     : starterLoading
       ? 'Activating Starter...'
-      : starterActive
+      : starterActive && onboardingComplete
         ? 'Manage Plan'
-        : isPro
-          ? 'Go to Dashboard'
-          : authed
-            ? 'Activate Starter'
-            : 'Get Started Free';
+        : starterActive && !onboardingComplete
+          ? 'Complete Setup'
+          : isPro
+            ? 'Go to Dashboard'
+            : authed
+              ? 'Activate Starter'
+              : 'Get Started Free';
   const starterDisabled = planChecking || starterLoading;
   const proCtaLabel = planChecking
     ? 'Checking plan...'
@@ -496,6 +570,22 @@ export default function Pricing() {
                     messageType === 'error' ? 'text-red-600' :
                     'text-blue-600'
                   }`}>{message}</p>
+                </div>
+              )}
+              
+              {/* Subscription Management for Starter Plan */}
+              {authed && starterActive && onboardingComplete && (
+                <div className="mt-4 pt-4 border-t border-slate-200">
+                  <div className="text-center">
+                    <p className="text-xs text-slate-500 mb-3">Manage your Starter plan</p>
+                    <button
+                      onClick={cancelStarterPlan}
+                      disabled={starterLoading}
+                      className="text-xs text-slate-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                    >
+                      {starterLoading ? 'Cancelling...' : 'Cancel Starter plan'}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
