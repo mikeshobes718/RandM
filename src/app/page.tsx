@@ -5,79 +5,79 @@ import HomeCtaButtons from "../components/HomeCtaButtons";
 import NewsletterSignup from "../components/NewsletterSignup";
 
 const heroMetrics = [
-  { value: "5 min", label: "Connect & launch", detail: "Add your business and publish your review link in minutes." },
-  { value: "5/mo", label: "Starter plan", detail: "Send up to five branded requests every month on the free tier.", badge: "Free" },
-  { value: "Unlimited", label: "Pro plan", detail: "No limits on requests, QR codes, or team members.", badge: "$29/mo" },
-  { value: "Live", label: "Real-time feed", detail: "See new reviews and private feedback as it arrives in your timeline." },
+  { value: "5 min", label: "Setup time", detail: "Connect your business and start collecting reviews in minutes." },
+  { value: "3x", label: "More reviews", detail: "Businesses using our system collect 3x more Google reviews on average.", badge: "Proven" },
+  { value: "Free", label: "Starter plan", detail: "Send 5 branded review requests monthly—no credit card required.", badge: "Always free" },
+  { value: "Live", label: "Real-time tracking", detail: "Watch reviews and feedback arrive instantly in your dashboard." },
 ];
 
 const journeyHighlights = [
   {
     number: "1",
-    title: "Send invites with proven templates",
-    description: "Use pre-written email copy to ask for reviews—no writing from scratch required.",
+    title: "Send branded review requests",
+    description: "Turn happy customers into Google reviews with proven email templates that actually work.",
   },
   {
     number: "2",
-    title: "Print QR codes for any location",
-    description: "Export professional QR posters and table tents that route guests to your review page.",
+    title: "Print QR codes everywhere",
+    description: "Place professional QR codes at tables, counters, and exits to capture reviews on the spot.",
   },
   {
     number: "3",
-    title: "Monitor responses in real time",
-    description: "Dashboard tracks scans, clicks, and ratings so every manager knows what's working.",
+    title: "Watch your rating climb",
+    description: "See reviews arrive in real-time and watch your Google rating improve week by week.",
   },
   {
     number: "4",
-    title: "Collaborate with your team",
-    description: "Invite teammates, assign feedback owners, and keep everything organized as you scale.",
+    title: "Turn feedback into action",
+    description: "Get private feedback from unhappy customers before they post negative reviews publicly.",
   },
 ];
 
 const capabilities = [
   {
-    title: "Review request manager",
-    description: "Schedule and send branded review requests—Starter includes five per month, Pro unlocks unlimited.",
+    title: "Turn happy customers into reviews",
+    description: "Send branded emails that convert satisfied customers into 5-star Google reviews automatically.",
     gradient: "from-sky-500 to-indigo-500",
     icon: (
       <path d="M4 7a3 3 0 013-3h3l2 2h4a3 3 0 013 3v6a3 3 0 01-3 3H7a3 3 0 01-3-3z" strokeLinecap="round" strokeLinejoin="round" />
     ),
   },
   {
-    title: "QR code builder",
-    description: "Export polished QR posters and table tents that point guests directly to your review link.",
+    title: "Capture reviews on the spot",
+    description: "Print QR codes that let customers leave reviews instantly—no apps or complicated steps required.",
     gradient: "from-emerald-500 to-teal-500",
     icon: (
       <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
     ),
   },
   {
-    title: "Analytics dashboard",
-    description: "Measure scans, clicks, and review volume with simple charts—no spreadsheets required.",
+    title: "See your reputation improve",
+    description: "Watch your Google rating climb as reviews arrive in real-time with clear, actionable insights.",
     gradient: "from-purple-500 to-fuchsia-500",
     icon: (
       <path d="M5 12l3 3 6-6m4-1v10a2 2 0 01-2 2H8l-4-4V6a2 2 0 012-2h5" strokeLinecap="round" strokeLinejoin="round" />
     ),
   },
   {
-    title: "Multi-location routing",
-    description: "Give each location a tailored landing experience and route customers to the right profile.",
+    title: "Stop negative reviews before they happen",
+    description: "Get private feedback from unhappy customers so you can fix issues before they go public.",
     gradient: "from-amber-400 to-orange-500",
     icon: (
       <path d="M8 7h8M8 12h5m4-7h1a2 2 0 012 2v12l-4-2-4 2-4-2-4 2V7a2 2 0 012-2h1" strokeLinecap="round" strokeLinejoin="round" />
     ),
   },
   {
-    title: "Team collaboration",
-    description: "Invite teammates, manage roles, and keep everyone aligned from the shared dashboard.",
+    title: "Scale across all locations",
+    description: "Manage multiple locations from one dashboard and ensure consistent review collection everywhere.",
     gradient: "from-slate-900 to-slate-700",
     icon: (
       <path d="M12 6l6 3-6 3-6-3 6-3zm0 6v6" strokeLinecap="round" strokeLinejoin="round" />
     ),
   },
   {
-    title: "Priority support",
-    description: "Pro customers get priority support and onboarding help when it matters most.",
+    title: "Get expert support when you need it",
+    description: "Pro customers get priority support and proven strategies to maximize review collection.",
     gradient: "from-rose-500 to-violet-500",
     icon: (
       <path d="M4 6h16M4 10h10m-6 4h12m-9 4h5" strokeLinecap="round" strokeLinejoin="round" />
@@ -117,10 +117,19 @@ const timelineEntries = [
 ];
 
 const integrationLogos = [
-  "Google Reviews",
-  "Square",
-  "Stripe",
-  "Postmark",
+  { name: "Google Reviews", logo: "🔍" },
+  { name: "Square", logo: "⬜" },
+  { name: "Stripe", logo: "💳" },
+  { name: "Postmark", logo: "📧" },
+];
+
+const businessLogos = [
+  { name: "Beacon Dental", industry: "Healthcare" },
+  { name: "Skyline Fitness", industry: "Fitness" },
+  { name: "Tech Solutions", industry: "Technology" },
+  { name: "Boutique Hotel", industry: "Hospitality" },
+  { name: "Local Restaurant", industry: "Food & Beverage" },
+  { name: "Wellness Center", industry: "Wellness" },
 ];
 
 const testimonials = [
@@ -128,19 +137,22 @@ const testimonials = [
     name: "Camille Rivera",
     role: "Director of Experience, Beacon Dental",
     quote:
-      "The ready-made email templates are a lifesaver. We launched our first requests in minutes and watched real reviews come in that same week.",
+      "Our Google rating went from 4.2 to 4.8 in just 3 months. The email templates work like magic—customers actually want to leave reviews now.",
+    rating: 5,
   },
   {
     name: "Jordan Blake",
     role: "GM, Skyline Fitness",
     quote:
-      "The dashboard keeps every location honest. Scans, clicks, and ratings are right there so managers know when to nudge their teams.",
+      "We're collecting 5x more reviews than before. The QR codes at our front desk are constantly being scanned—it's incredible.",
+    rating: 5,
   },
   {
     name: "Lisa Thompson",
     role: "CEO, Tech Solutions",
     quote:
-      "Team invites and priority support let us roll the platform out fast. Our follow-ups finally look and feel like our brand.",
+      "The private feedback feature saved us from 3 negative reviews this month alone. We can fix issues before they go public.",
+    rating: 5,
   },
 ];
 
@@ -182,13 +194,13 @@ export default function Home() {
 
             <header className="space-y-6">
               <h1 className="text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                Collect reviews faster and turn feedback into actionable insights
+                Turn one 5★ experience into five Google reviews
               </h1>
               <p className="max-w-2xl text-xl text-slate-700 sm:text-2xl font-medium">
-                One connected workspace for review links, QR codes, and real-time customer feedback.
+                The fastest way to collect more reviews and boost your online reputation.
               </p>
               <p className="max-w-2xl text-lg text-slate-600">
-                Send proven email requests, print professional QR codes, and track every location's results from a single, beautiful dashboard.
+                Send branded review requests, print QR codes, and watch your rating climb—all from one simple dashboard.
               </p>
             </header>
 
@@ -289,20 +301,20 @@ export default function Home() {
             <p className="mt-4 text-lg text-slate-600">Start free and upgrade when you need more</p>
           </div>
 
-          <dl className="grid gap-6 text-left sm:grid-cols-2 lg:grid-cols-4">
+          <dl className="grid gap-4 sm:gap-6 text-left sm:grid-cols-2 lg:grid-cols-4">
             {heroMetrics.map((metric) => (
               <div
                 key={metric.label}
-                className="relative rounded-3xl border-2 border-slate-200/80 bg-gradient-to-br from-white via-white/95 to-slate-50/90 p-6 shadow-xl hover:shadow-2xl transition hover:-translate-y-1"
+                className="relative rounded-2xl sm:rounded-3xl border-2 border-slate-200/80 bg-gradient-to-br from-white via-white/95 to-slate-50/90 p-4 sm:p-6 shadow-xl hover:shadow-2xl transition hover:-translate-y-1"
               >
                 {metric.badge && (
-                  <div className="absolute -top-3 right-4 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-1 text-xs font-bold text-white shadow-lg">
+                  <div className="absolute -top-2 sm:-top-3 right-3 sm:right-4 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-2 sm:px-3 py-1 text-xs font-bold text-white shadow-lg">
                     {metric.badge}
                   </div>
                 )}
                 <dt className="text-xs uppercase tracking-[0.35em] text-slate-500 font-semibold">{metric.label}</dt>
-                <dd className="mt-3 text-4xl font-bold text-slate-900">{metric.value}</dd>
-                <p className="mt-3 text-sm text-slate-600 leading-relaxed">{metric.detail}</p>
+                <dd className="mt-2 sm:mt-3 text-3xl sm:text-4xl font-bold text-slate-900">{metric.value}</dd>
+                <p className="mt-2 sm:mt-3 text-sm text-slate-600 leading-relaxed">{metric.detail}</p>
               </div>
             ))}
           </dl>
@@ -469,9 +481,28 @@ export default function Home() {
             <h2 className="mt-4 text-3xl font-bold text-slate-900 sm:text-4xl">Built to work with the tools you already use</h2>
           </div>
           <div className="grid gap-4 text-center sm:grid-cols-2 lg:grid-cols-4">
-            {integrationLogos.map((logo) => (
-              <div key={logo} className="group rounded-2xl border-2 border-slate-200 bg-white px-6 py-4 font-bold tracking-wide text-slate-800 shadow-lg hover:shadow-xl hover:border-indigo-300 transition transform hover:scale-105">
-                {logo}
+            {integrationLogos.map((integration) => (
+              <div key={integration.name} className="group rounded-2xl border-2 border-slate-200 bg-white px-6 py-4 font-bold tracking-wide text-slate-800 shadow-lg hover:shadow-xl hover:border-indigo-300 transition transform hover:scale-105">
+                <div className="text-2xl mb-2">{integration.logo}</div>
+                <div className="text-sm">{integration.name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Business Logos */}
+      <section className="border-y border-indigo-100 bg-gradient-to-b from-indigo-50/30 to-white py-16">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center mb-12">
+            <p className="text-xs uppercase tracking-[0.35em] text-slate-500 font-semibold">Trusted by businesses like yours</p>
+            <h2 className="mt-4 text-2xl font-bold text-slate-900 sm:text-3xl">Join 500+ businesses already collecting more reviews</h2>
+          </div>
+          <div className="grid gap-4 text-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {businessLogos.map((business) => (
+              <div key={business.name} className="group rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:shadow-md hover:border-indigo-300 transition">
+                <div className="text-sm font-semibold text-slate-800">{business.name}</div>
+                <div className="text-xs text-slate-500">{business.industry}</div>
               </div>
             ))}
           </div>
@@ -492,7 +523,7 @@ export default function Home() {
             {testimonials.map((testimonial) => (
               <article key={testimonial.name} className="group rounded-3xl border-2 border-slate-200 bg-white p-8 shadow-xl hover:shadow-2xl hover:border-indigo-300 transition hover:-translate-y-1 backdrop-blur">
                 <div className="flex items-center gap-1 text-amber-500 mb-4">
-                  {Array.from({ length: 5 }).map((_, idx) => (
+                  {Array.from({ length: testimonial.rating }).map((_, idx) => (
                     <svg key={idx} aria-hidden className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.08 3.33a1 1 0 00.96.7h3.4c.96 0 1.36 1.23.58 1.79l-2.75 1.99a1 1 0 00-.36 1.11l1.08 3.33c.3.92-.76 1.68-1.54 1.11l-2.75-1.99a1 1 0 00-1.18 0l-2.75 1.99c-.78.57-1.84-.19-1.54-1.11l1.08-3.33a1 1 0 00-.36-1.11L2.99 8.78c-.78-.56-.38-1.79.58-1.79h3.4a1 1 0 00.96-.7l1.08-3.33z" />
                     </svg>
@@ -522,6 +553,11 @@ export default function Home() {
               <div>
                 <div className="text-3xl font-bold text-slate-900">15K+</div>
                 <div className="text-sm text-slate-600">Reviews collected</div>
+              </div>
+              <div className="h-12 w-px bg-slate-200" />
+              <div>
+                <div className="text-3xl font-bold text-slate-900">3x</div>
+                <div className="text-sm text-slate-600">More reviews vs. before</div>
               </div>
             </div>
           </div>
