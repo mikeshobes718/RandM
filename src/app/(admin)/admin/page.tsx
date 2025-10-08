@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
-import { app } from '@/lib/firebase';
+import { app } from '@/lib/firebaseClient';
 
 interface DashboardMetrics {
   totalAccounts: number;
