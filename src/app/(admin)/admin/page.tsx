@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { getAuth } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { app } from '@/lib/firebaseClient';
 
 interface DashboardMetrics {
@@ -24,16 +24,31 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchMetrics();
+    const auth = getAuth(app);
+    
+    // Wait for auth state to be ready
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchMetrics(user);
+      } else {
+        setError('Not authenticated');
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  async function fetchMetrics() {
+  async function fetchMetrics(user?: any) {
     try {
-      const auth = getAuth(app);
-      const user = auth.currentUser;
+      if (!user) {
+        const auth = getAuth(app);
+        user = auth.currentUser;
+      }
       
       if (!user) {
         setError('Not authenticated');
+        setLoading(false);
         return;
       }
 
@@ -83,7 +98,15 @@ export default function AdminPage() {
           <h3 className="text-red-800 font-medium">Error loading dashboard</h3>
           <p className="text-red-600 text-sm mt-1">{error}</p>
           <button 
-            onClick={fetchMetrics}
+            onClick={() => {
+              const auth = getAuth(app);
+              const user = auth.currentUser;
+              if (user) {
+                setLoading(true);
+                setError(null);
+                fetchMetrics(user);
+              }
+            }}
             className="mt-3 px-4 py-2 bg-red-600 text-white rounded-md text-sm hover:bg-red-700"
           >
             Retry
@@ -223,7 +246,15 @@ export default function AdminPage() {
               View Support Tickets
             </button>
             <button 
-              onClick={fetchMetrics}
+              onClick={() => {
+                const auth = getAuth(app);
+                const user = auth.currentUser;
+                if (user) {
+                  setLoading(true);
+                  setError(null);
+                  fetchMetrics(user);
+                }
+              }}
               className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
             >
               Refresh Metrics
