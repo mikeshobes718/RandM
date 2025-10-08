@@ -1,7 +1,8 @@
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 import Link from "next/link";
 import { FeatureTabs } from "@/components/FeatureTabs";
+import HomeCtaButtons from "@/components/HomeCtaButtons";
 
 const METRICS = [
   { value: '5/mo', label: 'Starter review requests', tone: 'from-indigo-500/80 to-violet-500/90' },
@@ -74,22 +75,8 @@ export default function FeaturesPage() {
           <p className="mt-5 text-lg text-slate-700 md:text-xl">
             Reviews & Marketing brings share links, QR kits, and live analytics together so every happy customer can leave a public review.
           </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5"
-            >
-              Get Started Free
-              <svg className="ml-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
-              </svg>
-            </Link>
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center rounded-2xl border border-indigo-200 bg-white px-7 py-3 text-sm font-semibold text-indigo-700 shadow-sm shadow-slate-900/5 transition hover:border-indigo-300 hover:bg-indigo-50"
-            >
-              Talk to Sales
-            </Link>
+          <div className="mt-10">
+            <HomeCtaButtons align="center" variant="full" />
           </div>
           <div className="mt-12 grid gap-4 sm:grid-cols-3">
             {METRICS.map((metric) => (
@@ -173,19 +160,8 @@ export default function FeaturesPage() {
         <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 p-10 text-center shadow-2xl shadow-indigo-900/30">
           <h2 className="text-3xl font-bold text-white sm:text-4xl">See it in action</h2>
           <p className="mt-3 text-base text-indigo-100 sm:text-lg">Start free and collect your first reviews this week with branded share links and QR kits.</p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center rounded-2xl bg-white px-8 py-4 text-sm font-semibold text-indigo-600 shadow-lg shadow-slate-900/25 transition hover:-translate-y-0.5 hover:bg-indigo-50"
-            >
-              Get Started Free
-            </Link>
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center rounded-2xl border-2 border-white/80 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Talk to Sales
-            </Link>
+          <div className="mt-8">
+            <HomeCtaButtons align="center" variant="full" />
           </div>
         </div>
       </section>

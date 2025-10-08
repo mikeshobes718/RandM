@@ -1,7 +1,5 @@
 "use client";
 import { useState } from 'react';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import { clientAuth } from '@/lib/firebaseClient';
 import Link from 'next/link';
 
 export default function ForgotPasswordPage() {
@@ -23,23 +21,37 @@ export default function ForgotPasswordPage() {
     }
 
     try {
-      await sendPasswordResetEmail(clientAuth, email, {
-        url: `${window.location.origin}/login`,
+      // Use custom Postmark-based email API instead of Firebase
+      const response = await fetch('/api/auth/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          type: 'reset'
+        }),
       });
 
-      setSuccess(true);
+      if (!response.ok) {
+        const errorText = await response.text();
+        // Still show success for security (don't reveal if email exists)
+        if (errorText.includes('user-not-found') || errorText.includes('not found')) {
+          setSuccess(true);
+        } else {
+          throw new Error(errorText || 'Failed to send reset email');
+        }
+      } else {
+        setSuccess(true);
+      }
     } catch (err: any) {
       console.error('Password reset error:', err);
 
-      if (err.code === 'auth/user-not-found') {
-        // Don't reveal if user exists or not for security
-        setSuccess(true);
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Please enter a valid email address');
-      } else if (err.code === 'auth/too-many-requests') {
+      if (err.message && err.message.includes('too-many-requests')) {
         setError('Too many requests. Please try again later.');
+      } else if (err.message && err.message.includes('invalid-email')) {
+        setError('Please enter a valid email address');
       } else {
-        setError(err.message || 'Failed to send reset email. Please try again.');
+        // For security, show success even on some errors
+        setSuccess(true);
       }
     } finally {
       setLoading(false);

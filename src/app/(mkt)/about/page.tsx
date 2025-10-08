@@ -1,9 +1,9 @@
 import Link from "next/link";
 
 const HIGHLIGHTS = [
-  { value: '10,000+', label: 'Reviews collected across our customers' },
-  { value: '500+', label: 'Businesses scaling with Reviews & Marketing' },
-  { value: '4.9/5', label: 'Average customer satisfaction rating' },
+  { value: '2023', label: 'Year founded' },
+  { value: 'SaaS', label: 'Modern cloud platform' },
+  { value: '24/7', label: 'Platform availability' },
 ];
 
 const VALUES = [
@@ -24,7 +24,7 @@ const VALUES = [
 const MILESTONES = [
   { year: '2023', text: 'Launched the first QR-to-review toolkit with realtime analytics.' },
   { year: '2024', text: 'Introduced automated follow-ups and multi-location brand controls.' },
-  { year: '2025', text: 'Scaled to thousands of locations with true omnichannel review capture.' },
+  { year: '2025', text: 'Expanding platform capabilities with enhanced analytics and integrations.' },
 ];
 
 export default function AboutPage() {
@@ -41,7 +41,7 @@ export default function AboutPage() {
           <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-indigo-700 shadow-sm shadow-slate-900/5 backdrop-blur">Our story</span>
           <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">We help local operators turn delight into proof</h1>
           <p className="mt-5 text-lg text-slate-700 md:text-xl">
-            Reviews & Marketing was born inside busy service businesses that needed polished tech without the enterprise bloat. Today we power reputational flywheels for thousands of locations.
+            Reviews & Marketing was born inside busy service businesses that needed polished tech without the enterprise bloat. We're on a mission to help businesses of all sizes collect authentic reviews.
           </p>
         </div>
       </section>

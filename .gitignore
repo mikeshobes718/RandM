@@ -32,3 +32,6 @@ simple-deploy/
 .last_bundle_name
 ".next 2/"
 desktop-transcriber/
+
+# Next.js build cache
+.next/cache/

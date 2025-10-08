@@ -157,6 +157,15 @@ export default function Dashboard() {
         
         // Use business data from storage if available, otherwise from API
         const businessData = businessFromStorage || j.business;
+        
+        // CRITICAL: Redirect to onboarding if business exists but missing Google Place ID
+        // This ensures all users complete the onboarding flow regardless of when business was created
+        if (businessData && !businessData.google_place_id) {
+          console.log('[DASHBOARD] Business exists but no google_place_id, redirecting to onboarding');
+          window.location.href = '/onboarding/business';
+          return;
+        }
+        
         setBusiness(businessData);
         setStats(j.stats ?? { reviewsThisMonth: 0, shareLinkScans: 0, averageRating: null });
         setRecentFeedback(Array.isArray(j.recentFeedback) ? j.recentFeedback : []);

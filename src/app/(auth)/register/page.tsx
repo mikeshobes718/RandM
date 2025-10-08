@@ -1,8 +1,8 @@
 "use client";
 import { useState } from 'react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { clientAuth } from '@/lib/firebaseClient';
 import Link from 'next/link';
+import PasswordStrengthMeter from '@/components/PasswordStrengthMeter';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -25,8 +25,8 @@ export default function RegisterPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
       setLoading(false);
       return;
     }
@@ -39,11 +39,30 @@ export default function RegisterPage() {
     }
 
     try {
-      // Create Firebase account
-      const userCredential = await createUserWithEmailAndPassword(clientAuth, email, password);
+      // Use server-side registration API (prevents Firebase auto-emails)
+      const registrationResponse = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          displayName: businessName.trim(),
+        }),
+      });
+
+      if (!registrationResponse.ok) {
+        const errorText = await registrationResponse.text();
+        throw new Error(errorText || 'Registration failed');
+      }
+
+      const { customToken, uid } = await registrationResponse.json();
+
+      // Sign in with custom token
+      const { signInWithCustomToken } = await import('firebase/auth');
+      const userCredential = await signInWithCustomToken(clientAuth, customToken);
       const user = userCredential.user;
 
-      // Get auth token
+      // Get ID token
       const token = await user.getIdToken();
       
       // Set session cookie
@@ -54,25 +73,17 @@ export default function RegisterPage() {
         credentials: 'include',
       });
 
-      // Create business record
-      await fetch('/api/businesses/upsert', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: businessName.trim(),
-          contact_phone: phoneDigits,
-        }),
-        credentials: 'include',
-      });
+      // Store business info for onboarding (but don't create record yet)
+      // User will create it during onboarding flow
+      localStorage.setItem('pendingBusinessName', businessName.trim());
+      localStorage.setItem('pendingBusinessPhone', phoneDigits);
 
       // Store email for verification page
       localStorage.setItem('userEmail', email);
       localStorage.setItem('idToken', token);
 
-      // Don't try to send verification email here - let the verify-email page handle it
-      // This prevents the registration from failing if email sending fails
-      // Redirect to verification page immediately
-      window.location.href = '/verify-email?autoSend=1';
+      // Redirect to verification page (email was already sent by server)
+      window.location.href = '/verify-email';
     } catch (err: any) {
       console.error('Registration error:', err);
       
@@ -102,15 +113,15 @@ export default function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-xl border border-indigo-100 p-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg">
-              <svg className="w-8 h-8 text-white" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
-              </svg>
-            </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Create your account</h1>
-            <p className="text-slate-600">Start collecting reviews in minutes</p>
+        <div className="text-center mb-8">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg">
+            <svg className="w-8 h-8 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
+            </svg>
           </div>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Create your account</h1>
+          <p className="text-slate-600">Start collecting reviews in minutes</p>
+        </div>
 
           {/* Error Message */}
           {error && (
@@ -145,14 +156,15 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
-                  placeholder="At least 6 characters"
+                  placeholder="Create a strong password"
                   required
-                  minLength={6}
+                  minLength={8}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -166,6 +178,9 @@ export default function RegisterPage() {
                   )}
                 </button>
               </div>
+              
+              {/* Password Strength Meter */}
+              <PasswordStrengthMeter password={password} />
             </div>
 
             <div>
@@ -217,3 +232,4 @@ export default function RegisterPage() {
     </main>
   );
 }
+// Cache bust Tue Oct  7 21:07:36 -05 2025

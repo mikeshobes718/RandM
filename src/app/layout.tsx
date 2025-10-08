@@ -3,6 +3,10 @@ import Link from "next/link";
 import SiteHeader from "../components/SiteHeader";
 import ClientAuthSync from "../components/ClientAuthSync";
 import SiteFooter from "../components/SiteFooter";
+import { ErrorBoundary } from "../components/ErrorBoundary";
+import CrispChat from "../components/CrispChat";
+import ExitIntentPopup from "../components/ExitIntentPopup";
+import AccessibilityChecker from "../components/AccessibilityChecker";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -17,22 +21,68 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Reviews & Marketing — Turn Happy Customers into 5★ Reviews",
+  title: {
+    default: "Reviews & Marketing — Turn Happy Customers into 5★ Reviews",
+    template: "%s | Reviews & Marketing",
+  },
   description:
-    "All-in-one toolkit to collect reviews, generate QR codes, share links, and measure impact—built for local businesses.",
+    "One connected workspace for review links, QR codes, and real-time customer feedback. Start free, no credit card required.",
+  keywords: [
+    "review management",
+    "customer reviews",
+    "QR code generator",
+    "review collection",
+    "Google reviews",
+    "business reviews",
+    "review automation",
+    "customer feedback",
+    "review analytics",
+    "local business marketing",
+  ],
+  authors: [{ name: "Reviews & Marketing" }],
+  creator: "Reviews & Marketing",
+  publisher: "Reviews & Marketing",
   metadataBase: new URL("https://reviewsandmarketing.com"),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "Reviews & Marketing",
+    title: "Reviews & Marketing — Turn Happy Customers into 5★ Reviews",
     description:
-      "Collect more 5★ reviews and grow with built-in analytics.",
+      "One connected workspace for review links, QR codes, and real-time customer feedback. Start free today.",
     url: "https://reviewsandmarketing.com",
     siteName: "Reviews & Marketing",
     type: "website",
+    locale: "en_US",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Reviews & Marketing Dashboard",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Reviews & Marketing",
-    description: "Collect more 5★ reviews and grow.",
+    title: "Reviews & Marketing — Turn Happy Customers into 5★ Reviews",
+    description: "Collect reviews faster with one connected workspace. Start free today.",
+    creator: "@reviewsandmktg",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
   },
 };
 
@@ -41,8 +91,32 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Structured data for organization
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Reviews & Marketing",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "description": "Free Starter plan available"
+    },
+    "description": "One connected workspace for review links, QR codes, and real-time customer feedback.",
+    "url": "https://reviewsandmarketing.com",
+    "screenshot": "https://reviewsandmarketing.com/og-image.png"
+  };
+
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ? (
           <script
@@ -51,12 +125,19 @@ export default function RootLayout({
             defer
           />
         ) : null}
-        <ClientAuthSync />
-        <SiteHeader />
-        {children}
-        <SiteFooter />
+        <ErrorBoundary>
+          <ClientAuthSync />
+          <SiteHeader />
+          {children}
+          <SiteFooter />
+          {/* Live chat widget */}
+          <CrispChat />
+          {/* Exit-intent popup for email capture */}
+          <ExitIntentPopup delay={5000} cookieExpiry={7} />
+          {/* Accessibility checker (dev only) */}
+          {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
+        </ErrorBoundary>
       </body>
     </html>
   );
 }
-// Force rebuild - Fri Oct  3 19:45:30 -05 2025
