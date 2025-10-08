@@ -21,8 +21,32 @@ export default function Pricing() {
   const [isPro, setIsPro] = useState(false);
   const [hasBusiness, setHasBusiness] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [selectedPlanFromStorage, setSelectedPlanFromStorage] = useState<'starter' | 'pro' | null>(null);
   useEffect(() => {
     try { setWelcome(new URL(window.location.href).searchParams.get('welcome') === '1'); } catch {}
+    
+    // Check for selected plan in localStorage
+    const checkStoredPlan = () => {
+      try {
+        const storedPlan = localStorage.getItem('selectedPlan') as 'starter' | 'pro' | null;
+        setSelectedPlanFromStorage(storedPlan);
+      } catch {}
+    };
+    
+    checkStoredPlan();
+    
+    // Listen for storage changes (when user selects plan on another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'selectedPlan') {
+        checkStoredPlan();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -326,7 +350,7 @@ export default function Pricing() {
       window.location.href = '/dashboard';
       return;
     }
-    if (planStatus === 'starter' && !onboardingComplete) {
+    if ((planStatus === 'starter' || selectedPlanFromStorage === 'starter') && !onboardingComplete) {
       window.location.href = '/onboarding/business';
       return;
     }
@@ -457,7 +481,7 @@ export default function Pricing() {
       ? 'Activating Starter...'
       : starterActive && onboardingComplete
         ? 'Manage Plan'
-        : starterActive && !onboardingComplete
+        : (starterActive || selectedPlanFromStorage === 'starter') && !onboardingComplete
           ? 'Complete Setup'
           : isPro
             ? 'Go to Dashboard'
@@ -506,12 +530,12 @@ export default function Pricing() {
             Everything you need to collect more reviews, nurture customer trust, and measure the impact.
           </p>
           {/* Current Plan Status */}
-          {authed && planStatus !== 'loading' && planStatus !== 'none' && (
+          {authed && (planStatus !== 'loading' && planStatus !== 'none' || selectedPlanFromStorage) && (
             <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
               <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
-              You're on the {planStatus === 'starter' ? 'Starter' : 'Pro'} plan {planStatus === 'starter' ? '– free forever' : '– unlimited features'}
+              You're on the {(planStatus === 'starter' || selectedPlanFromStorage === 'starter') ? 'Starter' : 'Pro'} plan {(planStatus === 'starter' || selectedPlanFromStorage === 'starter') ? '– free forever' : '– unlimited features'}
             </div>
           )}
           <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-white/80 bg-white/85 p-1 shadow-sm shadow-slate-900/10 backdrop-blur">
@@ -565,7 +589,7 @@ export default function Pricing() {
               <div className="text-center mb-8">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <h3 className="text-2xl font-semibold text-slate-900">Starter</h3>
-                  {starterActive && (
+                  {(starterActive || selectedPlanFromStorage === 'starter') && (
                     <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700">
                       Current Plan
                     </span>
@@ -671,7 +695,7 @@ export default function Pricing() {
                 <span className={`inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-white ${
                   isPro ? 'bg-gradient-to-r from-emerald-500 to-green-500' : 'bg-gradient-to-r from-indigo-500 to-violet-500'
                 }`}>
-                  {isPro ? 'Current Plan' : 'Most Popular'}
+                  {(isPro || selectedPlanFromStorage === 'pro') ? 'Current Plan' : 'Most Popular'}
                 </span>
               </div>
               

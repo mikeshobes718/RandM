@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { requireUid } from '@/lib/authServer';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   // Require authentication and email verification for all app routes
@@ -27,6 +28,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     // If we can't check verification status, redirect to verify-email for safety
     redirect('/verify-email');
   }
+
+  // Check if user has completed onboarding (has google_place_id)
+  // Skip this check for onboarding routes to avoid redirect loops
+  // Note: This check is handled by individual page layouts to avoid loops
 
   return <>{children}</>;
 }
