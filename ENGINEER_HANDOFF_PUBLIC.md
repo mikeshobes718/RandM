@@ -5,25 +5,26 @@
 **Project Owner**: Mike Shobes (mikeshobes718@yahoo.com)  
 **Repository**: https://github.com/mikeshobes718/RandM  
 **Live Site**: https://reviewsandmarketing.com  
-**GitHub Commit**: `80de0fc` - Plan selection flow implementation
+**GitHub Commit**: `14266dc` - Pro plan pricing fixes & admin portal Phase 2
 
 ---
 
 ## Table of Contents
 
 1. [Project Overview](#project-overview)
-2. [Tech Stack](#tech-stack)
-3. [Project Structure](#project-structure)
-4. [Local Development Setup](#local-development-setup)
-5. [Deployment](#deployment)
-6. [Environment Variables](#environment-variables)
-7. [Database](#database)
-8. [Key Features & Flows](#key-features--flows)
-9. [API Endpoints](#api-endpoints)
-10. [Email System](#email-system)
-11. [Billing & Subscriptions](#billing--subscriptions)
-12. [Common Tasks](#common-tasks)
-13. [Troubleshooting](#troubleshooting)
+2. [Credentials & API Keys](#credentials--api-keys)
+3. [Tech Stack](#tech-stack)
+4. [Project Structure](#project-structure)
+5. [Local Development Setup](#local-development-setup)
+6. [Deployment](#deployment)
+7. [Environment Variables](#environment-variables)
+8. [Database](#database)
+9. [Key Features & Flows](#key-features--flows)
+10. [API Endpoints](#api-endpoints)
+11. [Email System](#email-system)
+12. [Billing & Subscriptions](#billing--subscriptions)
+13. [Common Tasks](#common-tasks)
+14. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -37,6 +38,165 @@
 - Basic + advanced analytics
 - Two-tier pricing (Starter free, Pro $29/month)
 - Team collaboration features
+
+---
+
+## Credentials & API Keys
+
+### Founder Account
+```
+Email: mikeshobes718@yahoo.com
+UID: kJERvnLZBoUxlEsD4astNqcZ4ID3
+```
+
+### Firebase Authentication
+**Project**: reviewpilot2
+
+**Client Config** (public, safe for frontend):
+```javascript
+const firebaseConfig = {
+  apiKey: "[REDACTED]",
+  authDomain: "reviewpilot2.firebaseapp.com",
+  projectId: "reviewpilot2",
+  storageBucket: "reviewpilot2.firebasestorage.app",
+  messagingSenderId: "[REDACTED]",
+  appId: "[REDACTED]",
+  measurementId: "[REDACTED]"
+};
+```
+
+**Service Account** (server-side only, keep secret):
+- Firebase service account JSON must be base64 encoded for `FIREBASE_SERVICE_ACCOUNT_B64` env var
+- Contains private key and client credentials for server-side authentication
+- **CRITICAL**: Never commit this to version control
+
+### Google Cloud / Maps API
+```
+Project: review-pilot-api
+API Key: [REDACTED]
+```
+
+**Enabled APIs**:
+- Places API (New v1)
+- Places API (Legacy, fallback)
+- Maps Static API
+- Maps JavaScript API
+
+### Stripe (Payment Processing)
+
+**Test Mode**:
+```
+Publishable: [REDACTED]
+Secret: [REDACTED]
+Webhook Secret: [REDACTED]
+```
+
+**Live Mode** (Production):
+```
+Publishable: [REDACTED]
+Secret: [REDACTED]
+```
+
+**Products**:
+```
+Product ID: [REDACTED]
+Monthly Price ID: [REDACTED]
+```
+
+**Webhook Endpoint**: `https://reviewsandmarketing.com/api/webhooks/stripe`
+
+### Supabase (PostgreSQL Database)
+
+```
+Project: reviewsandmarketing
+URL: [REDACTED]
+Database Password: [REDACTED]
+
+Anon Key: [REDACTED]
+Service Role Key: [REDACTED]
+```
+
+**Connection Strings**:
+
+Direct (for migrations):
+```
+postgresql://postgres:[REDACTED]@db.[REDACTED].supabase.co:5432/postgres?sslmode=require
+```
+
+Pooled (for app runtime):
+```
+postgresql://postgres.[REDACTED]:[REDACTED]@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&sslmode=require
+```
+
+### Postmark (Transactional Email)
+
+```
+Server Name: Reviews & Marketing
+From Address: subscriptions@reviewsandmarketing.com
+
+API Token: [REDACTED]
+Account API Token: [REDACTED]
+Server API Token: [REDACTED]
+```
+
+**Message Stream**: outbound
+
+**Dashboard**: https://account.postmarkapp.com
+
+### Square (POS Integration)
+
+```
+Production Application ID: [REDACTED]
+Production Access Token: [REDACTED]
+Production Application Secret: [REDACTED]
+Redirect URL: https://reviewsandmarketing.com/api/square/callback
+```
+
+### Resend (Alternative Email Provider - Not Currently Used)
+
+```
+API Key: [REDACTED]
+```
+
+### AWS (Not Currently Used)
+
+```
+Access Key ID: [REDACTED]
+Secret Access Key: [REDACTED]
+Region: us-east-1
+```
+
+**Note**: AWS is no longer used. All infrastructure is on Vercel.
+
+### GitHub
+
+```
+Repository: https://github.com/mikeshobes718/RandM
+Personal Access Token: [REDACTED]
+Latest Commit: 80de0fc - "feat: Implement plan selection flow after email verification"
+```
+
+### Crisp Chat (Live Chat Widget)
+
+```
+Website ID: 5a825f3d-0b3c-43ba-ab11-589af2fac7bb
+Dashboard: https://app.crisp.chat/
+```
+
+**Integration Code**:
+```html
+<script type="text/javascript">
+window.$crisp=[];
+window.CRISP_WEBSITE_ID="5a825f3d-0b3c-43ba-ab11-589af2fac7bb";
+(function(){
+  d=document;
+  s=d.createElement("script");
+  s.src="https://client.crisp.chat/l.js";
+  s.async=1;
+  d.getElementsByTagName("head")[0].appendChild(s);
+})();
+</script>
+```
 
 ---
 
@@ -159,45 +319,52 @@ cd RandM
 npm install
 ```
 
-3. **Create `.env.local`** (copy from `.env.example`):
+3. **Create `.env.local`** (copy from `.env.example` or use credentials above):
 ```bash
 # Firebase
 FIREBASE_SERVICE_ACCOUNT_B64="<base64 encoded service account JSON>"
-NEXT_PUBLIC_FIREBASE_API_KEY="<firebase-api-key>"
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="<firebase-auth-domain>"
-NEXT_PUBLIC_FIREBASE_PROJECT_ID="<firebase-project-id>"
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="<firebase-storage-bucket>"
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="<firebase-messaging-sender-id>"
-NEXT_PUBLIC_FIREBASE_APP_ID="<firebase-app-id>"
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="<firebase-measurement-id>"
+NEXT_PUBLIC_FIREBASE_API_KEY="AIzaSyAbvy5lC1yczSa8HMmicpEYFFZz0tbHZ5s"
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="reviewpilot2.firebaseapp.com"
+NEXT_PUBLIC_FIREBASE_PROJECT_ID="reviewpilot2"
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="reviewpilot2.firebasestorage.app"
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="577051575061"
+NEXT_PUBLIC_FIREBASE_APP_ID="1:577051575061:web:16dfd593d88bbdc5351f1c"
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID="G-JZ78N8KWSY"
 
 # App
 APP_URL="http://localhost:3000"
 
 # Supabase
-SUPABASE_URL="<supabase-url>"
-SUPABASE_SERVICE_ROLE_KEY="<supabase-service-role-key>"
+SUPABASE_URL="https://rhnxzpbhoqbvoqyqmfox.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="<service role key from above>"
 
 # Stripe (use test keys locally)
 STRIPE_SECRET_KEY="sk_test_..."
 STRIPE_PUBLISHABLE_KEY="pk_test_..."
-STRIPE_PRICE_ID="<stripe-price-id>"
+STRIPE_PRICE_ID="price_1RtCwIHeDIfu648XMWOVdjQV"
 STRIPE_WEBHOOK_SECRET="whsec_..."
 
 # Postmark
-POSTMARK_SERVER_TOKEN="<postmark-server-token>"
+POSTMARK_SERVER_TOKEN="7001fe52-f8cc-4eec-b907-f81b36fdbfd0"
 EMAIL_FROM="subscriptions@reviewsandmarketing.com"
 
 # Google Maps
-GOOGLE_MAPS_API_KEY="<google-maps-api-key>"
+GOOGLE_MAPS_API_KEY="AIzaSyDKxmw2MgQHVrNReNvyBOPwQefyElqf0vc"
 ```
 
-4. **Run development server**:
+4. **Base64 encode Firebase service account**:
+```bash
+# Create a file firebase-service-account.json with the JSON above, then:
+cat firebase-service-account.json | base64 | tr -d '\n'
+# Copy the output and use as FIREBASE_SERVICE_ACCOUNT_B64
+```
+
+5. **Run development server**:
 ```bash
 npm run dev
 ```
 
-5. **Open browser**:
+6. **Open browser**:
 ```
 http://localhost:3000
 ```
@@ -207,7 +374,7 @@ http://localhost:3000
 Run migrations:
 ```bash
 # Connect to Supabase via psql
-psql "<supabase-connection-string>"
+psql "postgresql://postgres:Blaze2026@db.rhnxzpbhoqbvoqyqmfox.supabase.co:5432/postgres?sslmode=require"
 
 # Then run each migration file
 \i db/000_init.sql
@@ -560,10 +727,12 @@ LIMIT 10;
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/api/admin/plan` | GET | Lookup user plan by email |
-| `/api/admin/users/list` | GET | List all users |
-| `/api/admin/subscriptions/list` | GET | List all subscriptions |
+| `/api/admin/users/list` | GET | List all users (with pagination) |
+| `/api/admin/subscriptions/list` | GET | List all subscriptions (with filtering) |
+| `/api/admin/dashboard/metrics` | GET | Dashboard overview metrics |
+| `/api/admin/reset-password` | POST | Reset user password |
 
-**Auth**: Requires `x-admin-token` header or admin email check.
+**Auth**: Requires Firebase ID token and admin email verification.
 
 ### Other
 
@@ -663,7 +832,7 @@ curl -X POST https://reviewsandmarketing.com/api/auth/email \
 - 1 business
 - No team members
 
-**Pro** ($29/month):
+**Pro** ($49.99/month):
 - Unlimited review requests
 - Advanced analytics
 - Unlimited businesses
@@ -699,7 +868,7 @@ if (!isPro) {
 **Promote user to Pro**:
 ```bash
 cd /Users/mike/Documents/reviewsandmarketing
-SUPABASE_URL="<supabase-url>" \
+SUPABASE_URL="https://rhnxzpbhoqbvoqyqmfox.supabase.co" \
 SUPABASE_SERVICE_ROLE_KEY="<service-role-key>" \
 node scripts/promote_to_pro.mjs user@example.com
 ```
@@ -759,7 +928,7 @@ const uid = await requireUid(req);
 
 ```bash
 # Connect to Supabase
-psql "<supabase-connection-string>"
+psql "postgresql://postgres:Blaze2026@db.rhnxzpbhoqbvoqyqmfox.supabase.co:5432/postgres?sslmode=require"
 
 # Run migration file
 \i db/00X_migration_name.sql
@@ -824,7 +993,7 @@ vercel deploy --prebuilt --prod
 
 **Check**:
 1. Connection string format (pooled vs direct)
-2. Password is correct
+2. Password is correct (`Blaze2026`)
 3. Supabase project is active (not paused)
 4. SSL mode is `require`
 
@@ -906,6 +1075,31 @@ node scripts/promote_to_pro.mjs user@example.com
 
 ## Recent Updates (January 8, 2025)
 
+### Admin Portal Phase 2 Implementation
+- **Commit**: `c342413` - "Fix pricing page state detection and implement admin portal Phase 2"
+- **New Pages**: `/admin/users`, `/admin/subscriptions`, `/admin/templates`, `/admin/settings`, `/admin/support`, `/admin/logs`
+- **Features**: User management with search/pagination, subscription management with filtering, email template placeholders, site settings with feature toggles, support ticket system, activity logging
+- **Authentication**: Firebase ID token-based admin access control
+- **UI**: Consistent styling with sidebar navigation
+
+### Pricing Page State Detection Fix
+- **Commit**: `c342413` - "Fix pricing page state detection and implement admin portal Phase 2"
+- **Issue**: Pricing page showed "Activate Starter" instead of "Complete Setup" for users who selected plan
+- **Solution**: Added localStorage listener to detect selected plan and update UI accordingly
+- **Features**: Cross-tab plan detection, "Current Plan" badges, header plan status
+
+### Onboarding Bypass Prevention
+- **Commit**: `c342413` - "Fix pricing page state detection and implement admin portal Phase 2"
+- **Issue**: Users could manually navigate to dashboard without completing onboarding
+- **Solution**: Added server-side checks in dashboard layout requiring `google_place_id`
+- **Security**: Prevents access to dashboard without business setup completion
+
+### Pro Plan Pricing Correction
+- **Commit**: `14266dc` - "Fix Pro plan pricing to $49.99/month"
+- **Issue**: Inconsistent Pro plan pricing ($29 vs $49.99)
+- **Files Updated**: Admin dashboard metrics API, select-plan page
+- **Verification**: All components now consistently show $49.99/month
+
 ### Plan Selection Flow Implementation
 - **Commit**: `80de0fc` - "feat: Implement plan selection flow after email verification"
 - **New Page**: `/select-plan` - Plan selection after email verification
@@ -920,12 +1114,13 @@ node scripts/promote_to_pro.mjs user@example.com
 
 ### Password Strength Meter
 - **Component**: `src/components/PasswordStrengthMeter.tsx`
-- **Integration**: Registration page with real-time validation
-- **Features**: Visual strength indicator, minimum 8 characters
+- **Features**: Real-time password validation, visual strength indicators, integrated with registration form
 
 ### Email System Improvements
-- **Multi-provider**: Postmark primary, Resend fallback
-- **Branded Templates**: Custom HTML templates for all emails
+- **Custom Domain Links**: Verification and password reset links now use `reviewsandmarketing.com` domain
+- **Branded Templates**: All emails use consistent branding and styling
+- **Multi-Provider Support**: Postmark primary, Resend fallback
+- **Delivery Tracking**: Email log table for delivery status monitoring
 - **Server-side Registration**: Prevents Firebase auto-emails
 - **Plan-specific Emails**: Different welcome emails for Starter vs Pro
 
@@ -942,8 +1137,12 @@ This document contains everything needed to develop, deploy, and maintain the Re
 
 **IMPORTANT**: Always deploy to https://www.reviewsandmarketing.com - this is a real/live product serving real customers. Fix issues ASAP as we have real customers using this platform.
 
+**Current Status**: All critical issues resolved, admin portal Phase 2 complete, pricing consistency fixed, onboarding flow secure.
+
+**Recent Testing**: All user flows verified working by tester (registration, plan selection, login, password reset, admin portal).
+
 **GitHub Repository**: https://github.com/mikeshobes718/RandM  
-**Latest Commit**: `80de0fc` - Plan selection flow implementation  
+**Latest Commit**: `14266dc` - Pro plan pricing fixes & admin portal Phase 2  
 **Live Site**: https://reviewsandmarketing.com
 
 **Crisp Chat Integration**:
