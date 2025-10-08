@@ -44,6 +44,9 @@ const ServerEnvSchema = z.object({
   FIREBASE_AUTH_PROVIDER_X509_CERT_URL: z.string().url().optional(),
   FIREBASE_CLIENT_X509_CERT_URL: z.string().url().optional(),
   FIREBASE_UNIVERSE_DOMAIN: z.string().min(1).optional(),
+
+  // Admin portal configuration
+  ADMIN_TOKEN: z.string().min(1).optional(),
 });
 
 type ServerEnv = z.infer<typeof ServerEnvSchema>;
