@@ -99,19 +99,19 @@ function DemoLinks() {
 
 function DemoQr() {
   return (
-    <div className="grid md:grid-cols-2 gap-6 items-center">
+    <div className="grid grid-cols-1 gap-6 items-center md:grid-cols-2">
       <div className="aspect-square rounded-xl bg-gray-50 border border-gray-200 grid place-content-center">
-        <div className="w-40 h-40 bg-gradient-to-br from-gray-300 to-gray-200 rounded-md grid place-content-center text-gray-600">
+        <div className="w-28 h-28 sm:w-40 sm:h-40 bg-gradient-to-br from-gray-300 to-gray-200 rounded-md grid place-content-center text-gray-600">
           QR
         </div>
       </div>
       <div>
         <h4 className="text-lg font-semibold mb-2">Print-ready assets</h4>
         <p className="text-gray-600">Export high-resolution QR posters and table tents in one click. Add your logo and brand colors.</p>
-        <div className="mt-4 flex gap-3">
-          <span className="px-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 text-sm">PNG</span>
-          <span className="px-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 text-sm">PDF</span>
-          <span className="px-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 text-sm">SVG</span>
+        <div className="mt-4 flex flex-wrap gap-2 sm:gap-3">
+          <button className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 text-sm">PNG</button>
+          <button className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 text-sm">PDF</button>
+          <button className="px-4 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 text-sm">SVG</button>
         </div>
       </div>
     </div>
@@ -145,11 +145,18 @@ function DemoAutomation() {
 }
 
 function DemoAnalytics() {
+  // On mobile, allow horizontal scroll with a minimum chart width for readability
   return (
-    <div className="grid md:grid-cols-5 gap-3 items-end h-40">
-      {[18, 32, 24, 44, 36].map((h, i) => (
-        <div key={i} className="rounded-md bg-gradient-to-t from-blue-600 to-purple-600" style={{ height: `${h * 2}px` }} />
-      ))}
+    <div className="-mx-2 overflow-x-auto px-2" aria-label="Analytics demo chart">
+      <div className="grid grid-cols-5 gap-3 items-end h-40 min-w-[420px] md:min-w-0 md:h-40 md:grid-cols-5">
+        {[18, 32, 24, 44, 36].map((h, i) => (
+          <div
+            key={i}
+            className="rounded-md bg-gradient-to-t from-blue-600 to-purple-600"
+            style={{ height: `${h * 2}px` }}
+          />
+        ))}
+      </div>
     </div>
   );
 }
