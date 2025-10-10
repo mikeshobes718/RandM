@@ -391,7 +391,7 @@ function HeaderInner() {
                 )}
               </div>
 
-              {landingCtas(navLinks, authed, hasBusiness, pro)}
+              {/* Removed redundant mobile quick access section */}
             </div>
           </div>
         </div>
