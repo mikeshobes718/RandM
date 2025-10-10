@@ -24,6 +24,11 @@ export async function POST(req: Request) {
   const pm = getPostmarkClient();
   const link = `${APP_URL}/settings?accept=${token}`;
   const tpl = inviteEmail(uid, link);
-  await pm.sendEmail({ From: EMAIL_FROM, To: email, Subject: tpl.subject, HtmlBody: tpl.html, TextBody: tpl.text });
-  return NextResponse.json({ ok: true });
+  try {
+    await pm.sendEmail({ From: EMAIL_FROM, To: email, Subject: tpl.subject, HtmlBody: tpl.html, TextBody: tpl.text });
+    return NextResponse.json({ ok: true, emailSent: true });
+  } catch (err) {
+    // Non-fatal: invitation record exists; surface success so UI can update pending list
+    return NextResponse.json({ ok: true, emailSent: false, warning: 'Invite created, but email not sent yet. We\'ll retry shortly.' });
+  }
 }

@@ -2,17 +2,33 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   const res = NextResponse.json({ ok: true });
-  // Clear host-only cookie (covers older session cookies)
-  res.headers.append('Set-Cookie', 'idToken=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax');
-  res.headers.append('Set-Cookie', 'onboarding_complete=; Max-Age=0; Path=/; SameSite=Lax');
-  // Clear domain cookie when present (matches how we set the session cookie)
-  try {
-    const host = (() => { try { return new URL(process.env.APP_URL || '').hostname; } catch { try { return new URL(req.url).hostname; } catch { return ''; } } })();
-    if (host && host.includes('.')) {
-      const domain = `.${host.replace(/^www\./,'')}`;
-      res.headers.append('Set-Cookie', `idToken=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax; Domain=${domain}`);
-      res.headers.append('Set-Cookie', `onboarding_complete=; Max-Age=0; Path=/; SameSite=Lax; Domain=${domain}`);
+  
+  // Use the exact same cookie options as the session route
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    maxAge: 0,
+    path: '/'
+  };
+  
+  // Add domain for production to match session cookie setting
+  if (process.env.NODE_ENV === 'production' && process.env.APP_URL) {
+    try {
+      const url = new URL(process.env.APP_URL);
+      const hostname = url.hostname;
+      if (hostname.includes('.')) {
+        const domain = `.${hostname.replace(/^www\./, '')}`;
+        (cookieOptions as any).domain = domain;
+      }
+    } catch (e) {
+      console.warn('Failed to set cookie domain:', e);
     }
-  } catch {}
+  }
+  
+  // Clear cookies with exact same options as when they were set
+  res.cookies.set('idToken', '', cookieOptions);
+  res.cookies.set('onboarding_complete', '', { ...cookieOptions, httpOnly: false });
+  
   return res;
 }

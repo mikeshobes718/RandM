@@ -778,16 +778,31 @@ function DashboardContent() {
                                 : ' '}
                           </span>
                         </div>
-                        <a
-                          href={landingUrl || '#'}
-                          target="_blank"
-                          rel="noopener"
-                          onClick={(e) => { if (!landingUrl) e.preventDefault(); }}
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('[DASHBOARD] Open button clicked, landingUrl:', landingUrl);
+                            if (landingUrl) {
+                              // Always try to open in new tab first
+                              console.log('[DASHBOARD] Attempting to open in new tab');
+                              const w = window.open(landingUrl, '_blank', 'noopener,noreferrer');
+                              if (!w) {
+                                // Only fallback to same tab if popup is blocked
+                                console.warn('[DASHBOARD] Popup blocked, opening in same tab');
+                                window.location.href = landingUrl;
+                              } else {
+                                console.log('[DASHBOARD] Successfully opened in new tab');
+                              }
+                            } else {
+                              console.log('[DASHBOARD] No landingUrl available');
+                            }
+                          }}
+                          disabled={!landingUrl}
                           className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                          aria-disabled={!landingUrl}
                         >
                           Open
-                        </a>
+                        </button>
                       </div>
                     </div>
                     <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">

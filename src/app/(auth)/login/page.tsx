@@ -57,15 +57,26 @@ export default function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [resetCode, setResetCode] = useState('');
 
-  // Check for password reset mode
+  // Check for password reset mode and signed_out parameter
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const mode = params.get('mode');
     const oobCode = params.get('oobCode');
+    const signedOut = params.get('signed_out');
     
     if (mode === 'resetPassword' && oobCode) {
       setIsPasswordReset(true);
       setResetCode(oobCode);
+    }
+    
+    // Clear any residual auth state when coming from logout
+    if (signedOut) {
+      try {
+        localStorage.removeItem('idToken');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('selectedPlan');
+        sessionStorage.clear();
+      } catch {}
     }
   }, []);
 

@@ -60,29 +60,43 @@ function HeaderInner() {
       }
     } catch {}
     async function refresh() {
+      console.log('[HEADER] Starting auth refresh');
+      // Optimistically default to signed-out until server confirms auth
+      try { 
+        setAuthed(false); 
+        setEmail(''); 
+        console.log('[HEADER] Set pessimistic state: signed out');
+      } catch {}
       try {
-        setAuthed(Boolean(localStorage.getItem('idToken')));
-        setEmail(localStorage.getItem('userEmail') || '');
-      } catch { setAuthed(false); setEmail(''); }
-      try {
-        const r = await fetch('/api/auth/me', { cache: 'no-store' });
+        console.log('[HEADER] Fetching /api/auth/me');
+        const r = await fetch('/api/auth/me', { cache: 'no-store', credentials: 'include' });
+        console.log('[HEADER] Auth check response:', r.status);
         if (r.ok) {
           const j = await r.json();
+          console.log('[HEADER] Auth data:', { email: j?.email, verified: j?.emailVerified });
           setAuthed(true);
           if (j?.email) setEmail(j.email);
           if (typeof j?.emailVerified === 'boolean') setEmailVerified(j.emailVerified);
         } else {
+          console.log('[HEADER] Auth check failed, staying signed out');
+          setAuthed(false);
+          setEmail('');
           setEmailVerified(null);
         }
-      } catch { setEmailVerified(null); }
+      } catch (err) { 
+        console.log('[HEADER] Auth check error:', err);
+        setAuthed(false); 
+        setEmail(''); 
+        setEmailVerified(null); 
+      }
       try {
-        const r = await fetch('/api/entitlements', { cache: 'no-store' });
-        if (r.ok) { const j = await r.json(); setPro(Boolean(j?.pro)); }
+        const r = await fetch('/api/entitlements', { cache: 'no-store', credentials: 'include' });
+        if (r.ok) { const j = await r.json(); setPro(Boolean(j?.pro)); } else { setPro(null); }
       } catch { setPro(null); }
       try {
-        const r2 = await fetch('/api/plan/status', { cache: 'no-store' });
-        if (r2.ok) { const j2 = await r2.json(); setPlanStatus(j2?.status || null); }
-      } catch {}
+        const r2 = await fetch('/api/plan/status', { cache: 'no-store', credentials: 'include' });
+        if (r2.ok) { const j2 = await r2.json(); setPlanStatus(j2?.status || null); } else { setPlanStatus(null); }
+      } catch { setPlanStatus(null); }
       try {
         let ok = false;
         let j3: { business?: unknown } | null = null;
@@ -106,11 +120,19 @@ function HeaderInner() {
     window.addEventListener('focus', onChanged);
     window.addEventListener('storage', (e: Event) => {
       const ev = e as StorageEvent;
-      if (ev.key === 'idToken') onChanged();
+      if (ev.key === 'idToken' || ev.key === 'userEmail' || ev.key === 'selectedPlan') onChanged();
     });
+    // Also poll briefly after navigation from /settings logout redirect
+    let pollCount = 0;
+    const poll = setInterval(() => {
+      pollCount += 1;
+      void refresh();
+      if (pollCount > 6) clearInterval(poll);
+    }, 500);
     return () => {
       window.removeEventListener('idtoken:changed', onChanged as EventListener);
       window.removeEventListener('focus', onChanged);
+      clearInterval(poll);
     };
   }, []);
 
@@ -225,7 +247,23 @@ function HeaderInner() {
         </div>
       );
     }
-    return signOutButton;
+    // Graceful fallback: if auth state is indeterminate, prefer signed-out CTAs
+    return (
+      <div className="flex items-center gap-3">
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm shadow-slate-900/5 transition hover:-translate-y-0.5 hover:bg-slate-50"
+        >
+          Sign in
+        </Link>
+        <Link
+          href="/register"
+          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5 hover:from-indigo-400 hover:to-purple-400"
+        >
+          Create account
+        </Link>
+      </div>
+    );
   }, [authed, pro, hasBusiness, planStatus, ctaLoading]);
 
   return (
@@ -474,14 +512,19 @@ async function startCheckout(plan: 'monthly' | 'yearly', setLoading: (v: boolean
 }
 
 async function logout() {
-  try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
-  try { localStorage.removeItem('idToken'); localStorage.removeItem('userEmail'); } catch {}
-  // Force a hard navigation to clear any client state
+  try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
   try {
-    const url = new URL('/', window.location.origin);
+    localStorage.removeItem('idToken');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('selectedPlan');
+    sessionStorage.clear();
+  } catch {}
+  // Force a hard navigation to clear any client state and ensure header reset
+  try {
+    const url = new URL('/login', window.location.origin);
     url.searchParams.set('signed_out', Date.now().toString());
     window.location.replace(url.toString());
   } catch {
-    window.location.href = '/';
+    window.location.href = '/login';
   }
 }

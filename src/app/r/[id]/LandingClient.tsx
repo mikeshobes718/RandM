@@ -203,10 +203,7 @@ export default function LandingClient({ id }: { id: string }) {
     }
 
     let pendingWindow: Window | null = null;
-    if (rating >= 5 && typeof window !== 'undefined') {
-      // Pre-open a blank tab synchronously to avoid popup blockers
-      try { pendingWindow = window.open('about:blank', '_blank', 'noopener'); } catch { pendingWindow = null; }
-    }
+    // Remove pre-opening about:blank tab to avoid stray extra tab; rely on direct navigation
 
     try {
       setSubmitting(true);
@@ -245,12 +242,7 @@ export default function LandingClient({ id }: { id: string }) {
         setSubmitted(true);
         const destination = String(data.redirect);
         try {
-          if (pendingWindow) {
-            pendingWindow.location.href = destination;
-            try { pendingWindow.focus(); } catch {}
-          } else {
-            window.location.assign(destination);
-          }
+          window.open(destination, '_blank', 'noopener,noreferrer');
           return;
         } catch {}
       }
@@ -261,14 +253,8 @@ export default function LandingClient({ id }: { id: string }) {
           if (!lastRedirect && biz?.reviewLink) setLastRedirect(biz.reviewLink);
         } catch {}
         setError(null);
-        if (pendingWindow) {
-          try { pendingWindow.close(); } catch {}
-        }
       }
     } catch (e) {
-      if (pendingWindow) {
-        try { pendingWindow.close(); } catch {}
-      }
       const message = e instanceof Error && e.message ? e.message : 'Something went wrong. Please try again.';
       setError(message);
       // On 5-star flow, still surface the fallback UI so users can proceed to Google

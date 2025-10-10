@@ -281,22 +281,42 @@ export default function SettingsPage() {
 
   async function invite() {
     if (!businessId) return;
-    const emailToInvite = (inviteEmail || '').trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailToInvite)) {
+    const emailToInvite = (inviteEmail || '').trim().toLowerCase();
+    console.log('[INVITE] Raw inviteEmail:', JSON.stringify(inviteEmail));
+    console.log('[INVITE] Processed email:', JSON.stringify(emailToInvite));
+    console.log('[INVITE] Email length:', emailToInvite.length);
+    console.log('[INVITE] Contains @:', emailToInvite.includes('@'));
+    
+    // Very simple email validation - just check for @ and basic structure
+    if (!emailToInvite || !emailToInvite.includes('@') || emailToInvite.length < 5) {
+      console.log('[INVITE] Email validation failed:', emailToInvite);
       setError('Please enter a valid email address');
       return;
     }
+    
+    console.log('[INVITE] Email validation passed, proceeding with invite');
     setError(null);
     setSuccess(null);
     try {
+      console.log('[INVITE] Making API call with:', { businessId, email: emailToInvite, role: 'member' });
       const response = await fetch('/api/members/invite', {
         method: 'POST',
         headers: { ...bearer(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ businessId, email: emailToInvite, role: 'member' })
       });
+      console.log('[INVITE] API response status:', response.status);
       if (response.ok) {
         setInviteEmail('');
-        setSuccess('Invitation sent! Pending invites updated.');
+        try {
+          const payload = await response.json().catch(()=>null) as { emailSent?: boolean; warning?: string } | null;
+          if (payload?.emailSent === false && payload?.warning) {
+            setSuccess(payload.warning);
+          } else {
+            setSuccess('Invitation sent! Pending invites updated.');
+          }
+        } catch {
+          setSuccess('Invitation sent! Pending invites updated.');
+        }
         setTimeout(() => setSuccess(null), 3000);
         // Refresh members/invites lists
         const r = await fetch(`/api/members/list?businessId=${businessId}`, { headers: bearer() });
@@ -353,16 +373,26 @@ export default function SettingsPage() {
         credentials: 'include',
         body: JSON.stringify({ idToken: (typeof localStorage !== 'undefined' ? localStorage.getItem('idToken') : '') || undefined })
       });
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const text = await res.text().catch(()=> '');
+        throw new Error(text || 'Unable to open billing portal');
+      }
       const j = await res.json();
       if (j?.url) {
-        try { window.open(j.url, '_blank', 'noopener'); } catch { window.location.href = j.url; }
+        try {
+          const w = window.open(j.url, '_blank', 'noopener,noreferrer');
+          if (!w) window.location.href = j.url;
+        } catch { window.location.href = j.url; }
         return;
       }
       throw new Error('Unable to open billing portal');
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'Unable to open billing portal';
-      setError(message);
+      if (/stripe customer not found/i.test(message)) {
+        setError('Stripe customer not found. Start a Pro checkout once to initialize billing, then return here.');
+      } else {
+        setError(message);
+      }
     } finally {
     }
   }
@@ -477,7 +507,7 @@ export default function SettingsPage() {
           </div>
         )}
         {success && (
-          <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+          <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700" role="status" aria-live="polite">
             {success}
           </div>
         )}
@@ -869,9 +899,19 @@ export default function SettingsPage() {
             <button
               onClick={async () => {
                 if (confirm('Sign out of your account?')) {
-                  await fetch('/api/auth/logout', { method: 'POST' });
-                  localStorage.removeItem('idToken');
-                  router.push('/login');
+                  try { 
+                    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); 
+                  } catch {}
+                  try { 
+                    localStorage.removeItem('idToken');
+                    localStorage.removeItem('userEmail');
+                    localStorage.removeItem('selectedPlan');
+                  } catch {}
+                  try {
+                    sessionStorage.clear();
+                  } catch {}
+                  // Force a hard redirect to ensure complete session cleanup
+                  window.location.replace('/login');
                 }
               }}
               className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition"

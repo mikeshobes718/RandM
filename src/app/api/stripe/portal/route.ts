@@ -64,6 +64,34 @@ export async function POST(req: Request) {
   }
 
   if (!customerId) {
+    // Attempt to resolve or create a customer by email
+    try {
+      const auth = getAuthAdmin();
+      const user = await auth.getUser(uid);
+      const email = user.email || undefined;
+      if (email) {
+        // Try to find an existing Stripe customer by email first
+        try {
+          const list = await stripe.customers.list({ email, limit: 5 });
+          const found = list.data.find((c) => (c.email || '').toLowerCase() === email.toLowerCase());
+          if (found?.id) {
+            customerId = found.id;
+          }
+        } catch {}
+
+        if (!customerId) {
+          const created = await stripe.customers.create({ email, metadata: { uid } });
+          customerId = created.id;
+        }
+
+        if (customerId) {
+          await supa.from('stripe_customers').upsert({ uid, stripe_customer_id: customerId });
+        }
+      }
+    } catch {}
+  }
+
+  if (!customerId) {
     return new NextResponse('Stripe customer not found', { status: 404 });
   }
 

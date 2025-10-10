@@ -334,32 +334,66 @@ export default function Pricing() {
   }
 
   async function openBillingPortal() {
+    console.log('[BILLING PORTAL] Starting billing portal request');
     try {
       setError(null);
       setProError(null);
       setProLoading(true);
+      console.log('[BILLING PORTAL] Loading state set to true');
+      
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       try {
         const token = localStorage.getItem('idToken') || '';
         if (token) headers.Authorization = `Bearer ${token}`;
+        console.log('[BILLING PORTAL] Headers prepared:', { hasToken: !!token });
       } catch {}
+      
+      console.log('[BILLING PORTAL] Making fetch request to /api/stripe/portal');
       const res = await fetch('/api/stripe/portal', {
         method: 'POST',
         headers,
         credentials: 'include',
         body: JSON.stringify({ idToken: (typeof localStorage !== 'undefined' ? localStorage.getItem('idToken') : '') || undefined })
       });
-      if (!res.ok) throw new Error(await res.text());
+      
+      console.log('[BILLING PORTAL] Response status:', res.status);
+      if (!res.ok) {
+        const text = await res.text().catch(()=>'');
+        console.error('[BILLING PORTAL] Request failed:', res.status, text);
+        throw new Error(text || 'Unable to open billing portal');
+      }
+      
       const j = await res.json();
+      console.log('[BILLING PORTAL] Response data:', j);
+      
       if (j?.url) {
-        try { window.open(j.url, '_blank', 'noopener'); } catch { window.location.href = j.url; }
+        console.log('[BILLING PORTAL] Opening URL:', j.url);
+        try {
+          const w = window.open(j.url, '_blank', 'noopener,noreferrer');
+          if (!w) {
+            console.warn('[BILLING PORTAL] Popup blocked, redirecting in same tab');
+            window.location.href = j.url;
+          } else {
+            console.log('[BILLING PORTAL] Successfully opened in new tab');
+          }
+        } catch (err) {
+          console.error('[BILLING PORTAL] Error opening window:', err);
+          window.location.href = j.url;
+        }
         return;
       }
-      throw new Error('Unable to open billing portal');
+      throw new Error('No URL returned from billing portal');
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'Unable to open billing portal';
-      setError(message);
+      console.error('[BILLING PORTAL] Error:', message);
+      // Scope the error to the Pro card UI
+      if (/stripe customer not found/i.test(message)) {
+        setProError('Stripe customer not found. Start a Pro checkout once to initialize billing, then return here.');
+      } else {
+        setProError(message);
+      }
     } finally {
+      console.log('[BILLING PORTAL] Setting loading state to false');
       setProLoading(false);
     }
   }
@@ -404,11 +438,20 @@ export default function Pricing() {
   }
 
   async function handleProCta() {
-    if (proLoading) return;
-    if (authed && planStatus === 'loading') return;
+    console.log('[PRO CTA] handleProCta called', { proLoading, authed, planStatus, isPro });
+    if (proLoading) {
+      console.log('[PRO CTA] Already loading, returning');
+      return;
+    }
+    if (authed && planStatus === 'loading') {
+      console.log('[PRO CTA] Plan status loading, returning');
+      return;
+    }
     if (isPro) {
+      console.log('[PRO CTA] User is Pro, opening billing portal');
       await openBillingPortal();
     } else {
+      console.log('[PRO CTA] User not Pro, starting subscription');
       await handleSubscribeWithPlan(billing);
     }
   }
@@ -625,7 +668,9 @@ export default function Pricing() {
             >
               Yearly
             </button>
-            <span className="hidden sm:inline rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700">Save vs monthly</span>
+            {billing === 'yearly' && (
+              <span className="hidden sm:inline rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700">Save 17% vs monthly</span>
+            )}
           </div>
           {billing === 'yearly' && (
             <div className="mt-2 text-sm text-slate-600">≈ $41.58/mo when billed yearly</div>
@@ -826,12 +871,17 @@ export default function Pricing() {
             </ul>
               
               <button 
-                onClick={handleProCta} 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('[PRICING] Pro button clicked');
+                  handleProCta();
+                }}
                 disabled={proLoading || planChecking}
                 className="w-full rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {proLoading ? "Processing…" : proCtaLabel}
-            </button>
+              </button>
             {proError && (
               <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-sm text-red-600">{proError}</p>
