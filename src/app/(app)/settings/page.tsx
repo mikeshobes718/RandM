@@ -41,7 +41,7 @@ export default function SettingsPage() {
   const [userName, setUserName] = useState('');
   const [savingAccount, setSavingAccount] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
-  const BUILD_VERSION = '2025-10-06-v5'; // Update this to force cache bust
+  const BUILD_VERSION = '2025-10-10-v6-logout-fix'; // Update this to force cache bust
   const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 
   // Google Places Autocomplete state
@@ -280,8 +280,15 @@ export default function SettingsPage() {
   }
 
   async function invite() {
-    if (!businessId) return;
+    if (!businessId) {
+      alert('DEBUG: No businessId available');
+      return;
+    }
     const emailToInvite = (inviteEmail || '').trim().toLowerCase();
+    
+    // Show debug info
+    alert(`DEBUG INVITE:\nRaw: "${inviteEmail}"\nProcessed: "${emailToInvite}"\nLength: ${emailToInvite.length}\nHas @: ${emailToInvite.includes('@')}`);
+    
     console.log('[INVITE] Raw inviteEmail:', JSON.stringify(inviteEmail));
     console.log('[INVITE] Processed email:', JSON.stringify(emailToInvite));
     console.log('[INVITE] Email length:', emailToInvite.length);
@@ -305,6 +312,7 @@ export default function SettingsPage() {
         body: JSON.stringify({ businessId, email: emailToInvite, role: 'member' })
       });
       console.log('[INVITE] API response status:', response.status);
+      alert(`DEBUG: API response status: ${response.status}`);
       if (response.ok) {
         setInviteEmail('');
         try {
@@ -464,6 +472,12 @@ export default function SettingsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-10">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        {/* Deployment Confirmation Banner */}
+        <div className="rounded-2xl border-2 border-green-500 bg-green-50 p-4 text-center">
+          <p className="text-lg font-bold text-green-900">✅ DEPLOYMENT CONFIRMED: {BUILD_VERSION}</p>
+          <p className="text-sm text-green-700 mt-1">Latest fixes are active. Console logs enabled for debugging.</p>
+        </div>
+        
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -899,18 +913,25 @@ export default function SettingsPage() {
             <button
               onClick={async () => {
                 if (confirm('Sign out of your account?')) {
+                  alert('DEBUG: Starting logout process...');
                   try { 
-                    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); 
-                  } catch {}
+                    const res = await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+                    alert(`DEBUG: Logout API response: ${res.status}`);
+                  } catch (e) {
+                    alert(`DEBUG: Logout API error: ${e}`);
+                  }
                   try { 
                     localStorage.removeItem('idToken');
                     localStorage.removeItem('userEmail');
                     localStorage.removeItem('selectedPlan');
+                    alert('DEBUG: LocalStorage cleared');
                   } catch {}
                   try {
                     sessionStorage.clear();
+                    alert('DEBUG: SessionStorage cleared');
                   } catch {}
                   // Force a hard redirect to ensure complete session cleanup
+                  alert('DEBUG: About to redirect to /login');
                   window.location.replace('/login');
                 }
               }}
