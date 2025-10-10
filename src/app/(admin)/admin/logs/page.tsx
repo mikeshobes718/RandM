@@ -22,22 +22,42 @@ export default function AdminLogsPage() {
               <div className="border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900">Admin Actions</h4>
                 <p className="text-sm text-gray-600 mt-1">Track admin actions like plan changes, user modifications</p>
-                <button className="mt-2 text-blue-600 hover:text-blue-800 text-sm">View Admin Logs</button>
+                <button
+                  onClick={() => alert('Admin logs coming soon')}
+                  className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  View Admin Logs
+                </button>
               </div>
               <div className="border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900">User Activity</h4>
                 <p className="text-sm text-gray-600 mt-1">Monitor user signups, logins, and key actions</p>
-                <button className="mt-2 text-blue-600 hover:text-blue-800 text-sm">View User Logs</button>
+                <button
+                  onClick={() => alert('User logs coming soon')}
+                  className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  View User Logs
+                </button>
               </div>
               <div className="border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900">System Events</h4>
                 <p className="text-sm text-gray-600 mt-1">System-level events and error tracking</p>
-                <button className="mt-2 text-blue-600 hover:text-blue-800 text-sm">View System Logs</button>
+                <button
+                  onClick={() => alert('System logs coming soon')}
+                  className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  View System Logs
+                </button>
               </div>
               <div className="border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900">Email Logs</h4>
                 <p className="text-sm text-gray-600 mt-1">Track email sending, delivery status, and failures</p>
-                <button className="mt-2 text-blue-600 hover:text-blue-800 text-sm">View Email Logs</button>
+                <button
+                  onClick={() => alert('Email logs coming soon')}
+                  className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  View Email Logs
+                </button>
               </div>
             </div>
           </div>

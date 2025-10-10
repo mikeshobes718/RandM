@@ -22,17 +22,32 @@ export default function AdminSupportPage() {
               <div className="border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900">Contact Form Submissions</h4>
                 <p className="text-sm text-gray-600 mt-1">View messages sent through the contact form</p>
-                <button className="mt-2 text-blue-600 hover:text-blue-800 text-sm">View Messages</button>
+                <button
+                  onClick={() => alert('Support messages viewer coming soon')}
+                  className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  View Messages
+                </button>
               </div>
               <div className="border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900">User Support Requests</h4>
                 <p className="text-sm text-gray-600 mt-1">Manage user-reported issues and feature requests</p>
-                <button className="mt-2 text-blue-600 hover:text-blue-800 text-sm">View Requests</button>
+                <button
+                  onClick={() => alert('Support requests viewer coming soon')}
+                  className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  View Requests
+                </button>
               </div>
               <div className="border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900">Email Support</h4>
                 <p className="text-sm text-gray-600 mt-1">Direct email support and response tracking</p>
-                <button className="mt-2 text-blue-600 hover:text-blue-800 text-sm">Email Dashboard</button>
+                <button
+                  onClick={() => alert('Email support dashboard coming soon')}
+                  className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  Email Dashboard
+                </button>
               </div>
             </div>
           </div>

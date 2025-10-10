@@ -280,26 +280,34 @@ export default function SettingsPage() {
   }
 
   async function invite() {
-    if (!businessId || !inviteEmail) return;
+    if (!businessId) return;
+    const emailToInvite = (inviteEmail || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailToInvite)) {
+      setError('Please enter a valid email address');
+      return;
+    }
     setError(null);
     setSuccess(null);
     try {
       const response = await fetch('/api/members/invite', {
         method: 'POST',
         headers: { ...bearer(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessId, email: inviteEmail, role: 'member' })
+        body: JSON.stringify({ businessId, email: emailToInvite, role: 'member' })
       });
       if (response.ok) {
         setInviteEmail('');
-        setSuccess('Invitation sent successfully!');
+        setSuccess('Invitation sent! Pending invites updated.');
         setTimeout(() => setSuccess(null), 3000);
-        // Refresh members list
+        // Refresh members/invites lists
         const r = await fetch(`/api/members/list?businessId=${businessId}`, { headers: bearer() });
-        const data = await r.json();
-        setInvites(data.invites||[]);
-        setMembers(data.members||[]);
+        if (r.ok) {
+          const data = await r.json();
+          setInvites(data.invites||[]);
+          setMembers(data.members||[]);
+        }
       } else {
-        setError('Failed to send invitation');
+        const text = await response.text().catch(()=> 'Failed to send invitation');
+        setError(text || 'Failed to send invitation');
       }
     } catch (e) {
       setError('Failed to send invitation');

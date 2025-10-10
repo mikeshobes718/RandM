@@ -22,17 +22,32 @@ export default function AdminTemplatesPage() {
               <div className="border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900">Verification Email Template</h4>
                 <p className="text-sm text-gray-600 mt-1">Customize the email verification message</p>
-                <button className="mt-2 text-blue-600 hover:text-blue-800 text-sm">Edit Template</button>
+                <button
+                  onClick={() => alert('Template editor coming soon')}
+                  className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  Edit Template
+                </button>
               </div>
               <div className="border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900">Password Reset Template</h4>
                 <p className="text-sm text-gray-600 mt-1">Customize the password reset email</p>
-                <button className="mt-2 text-blue-600 hover:text-blue-800 text-sm">Edit Template</button>
+                <button
+                  onClick={() => alert('Template editor coming soon')}
+                  className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  Edit Template
+                </button>
               </div>
               <div className="border border-gray-200 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900">Welcome Email Templates</h4>
                 <p className="text-sm text-gray-600 mt-1">Starter and Pro plan welcome messages</p>
-                <button className="mt-2 text-blue-600 hover:text-blue-800 text-sm">Edit Templates</button>
+                <button
+                  onClick={() => alert('Template editor coming soon')}
+                  className="mt-2 text-blue-600 hover:text-blue-800 text-sm"
+                >
+                  Edit Templates
+                </button>
               </div>
             </div>
           </div>

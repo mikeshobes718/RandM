@@ -125,6 +125,7 @@ export default function OnboardingBusinessPage() {
   }, []);
 
   const loadExistingBusinessData = async () => {
+    setLoading(true);
     try {
       const response = await fetch('/api/businesses/me', {
         credentials: 'include',
@@ -157,6 +158,8 @@ export default function OnboardingBusinessPage() {
       }
     } catch (error) {
       console.error('Failed to load existing business data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -446,6 +449,19 @@ export default function OnboardingBusinessPage() {
             )}
           </div>
         </div>
+
+        {/* Skeleton loader during edit data fetch */}
+        {isEditMode && loading && (
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl ring-1 ring-black/5 space-y-5 animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-1/2" />
+            <div className="h-10 bg-gray-200 rounded" />
+            <div className="h-4 bg-gray-200 rounded w-2/3" />
+            <div className="h-10 bg-gray-200 rounded" />
+            <div className="h-4 bg-gray-200 rounded w-1/3" />
+            <div className="h-10 bg-gray-200 rounded" />
+            <div className="h-10 bg-gray-200 rounded mt-4" />
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl ring-1 ring-black/5 space-y-5">
           {/* Error Message */}

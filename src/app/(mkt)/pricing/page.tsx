@@ -347,11 +347,12 @@ export default function Pricing() {
         method: 'POST',
         headers,
         credentials: 'include',
+        body: JSON.stringify({ idToken: (typeof localStorage !== 'undefined' ? localStorage.getItem('idToken') : '') || undefined })
       });
       if (!res.ok) throw new Error(await res.text());
       const j = await res.json();
       if (j?.url) {
-        window.location.href = j.url;
+        try { window.open(j.url, '_blank', 'noopener'); } catch { window.location.href = j.url; }
         return;
       }
       throw new Error('Unable to open billing portal');
