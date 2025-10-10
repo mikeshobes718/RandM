@@ -2,7 +2,8 @@
 import BusinessSetupForm from "@/components/onboarding/BusinessSetupForm";
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
+import { useSearchParams } from 'next/navigation';
 import { formatPhone } from '@/lib/phone';
 
 type Business = {
@@ -85,12 +86,16 @@ type FeedbackItem = {
   created_at: string;
 };
 
-export default function Dashboard() {
+function DashboardContent() {
+  const searchParams = useSearchParams();
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [finalizing, setFinalizing] = useState<boolean>(false);
   const [planStatus, setPlanStatus] = useState<string>('loading');
+  
+  // Check if coming from edit mode
+  const isFromEdit = searchParams?.get('from') === 'edit';
   const [stats, setStats] = useState<Stats>({ reviewsThisMonth: 0, shareLinkScans: 0, averageRating: null });
   const [recentFeedback, setRecentFeedback] = useState<FeedbackItem[]>([]);
   const [square, setSquare] = useState<SquareConnectionInfo>(null);
@@ -160,10 +165,16 @@ export default function Dashboard() {
         
         // CRITICAL: Redirect to onboarding if business exists but missing Google Place ID
         // This ensures all users complete the onboarding flow regardless of when business was created
-        if (businessData && !businessData.google_place_id) {
+        // BUT skip this redirect if coming from edit mode
+        if (businessData && !businessData.google_place_id && !isFromEdit) {
           console.log('[DASHBOARD] Business exists but no google_place_id, redirecting to onboarding');
           window.location.href = '/onboarding/business';
           return;
+        }
+        
+        // Log edit mode detection
+        if (isFromEdit) {
+          console.log('[DASHBOARD] Edit mode detected, skipping onboarding redirect');
         }
         
         setBusiness(businessData);
@@ -379,7 +390,23 @@ export default function Dashboard() {
     }
   }
 
-  const landingUrl = useMemo(() => (business?.id ? `${typeof window!=='undefined'?window.location.origin:''}/r/${encodeURIComponent(business.id)}` : null), [business?.id]);
+  const [landingUrl, setLandingUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!business?.id) {
+      setLandingUrl(null);
+      return;
+    }
+    const resolveOrigin = () => {
+      if (typeof window !== 'undefined' && window.location?.origin) {
+        return window.location.origin;
+      }
+      // Default to primary production origin to avoid stale environment fallbacks
+      return 'https://www.reviewsandmarketing.com';
+    };
+    const origin = resolveOrigin().replace(/\/$/, '');
+    setLandingUrl(`${origin}/r/${encodeURIComponent(business.id)}`);
+  }, [business?.id]);
   const planBadge = useMemo(() => {
     if (!planStatus || planStatus === 'loading') return { label: 'Checking plan…', tone: 'loading' as const, pending: true };
     const normalized = planStatus.toLowerCase();
@@ -464,6 +491,8 @@ export default function Dashboard() {
       }
     }
   }, [landingUrl]);
+
+  // Removed window.open-based handler in favor of anchor navigation for broader browser compatibility
 
   useEffect(() => {
     if (copyState === 'idle' || typeof window === 'undefined') return undefined;
@@ -707,7 +736,129 @@ export default function Dashboard() {
                 ))}
               </div>
 
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,0.5fr),minmax(0,1fr)]">
+              <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr),minmax(0,0.55fr)]">
+                {landingUrl && (
+                  <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-lg shadow-slate-900/5 backdrop-blur order-first">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
+                        <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Review landing link</div>
+                        <p className="mt-2 text-sm text-slate-600">
+                          Share anywhere—QR or direct. We’ll keep the destination optimized for every device.
+                        </p>
+                      </div>
+                      <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:w-[360px]">
+                        <div className="flex w-full flex-col gap-2">
+                        <div className="flex items-stretch overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-inner">
+                          <input
+                            className="flex-1 bg-transparent px-3 py-3 text-sm text-slate-700"
+                            readOnly
+                            value={landingUrl}
+                            onFocus={(e) => e.currentTarget.select()}
+                              title={landingUrl}
+                              spellCheck={false}
+                              autoComplete="off"
+                              style={{ fontFamily: 'ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' }}
+                            />
+                            <button
+                              type="button"
+                              onClick={handleCopyLanding}
+                              className="h-full px-4 py-2 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50"
+                            >
+                              {copyState === 'copied' ? 'Copied!' : copyState === 'error' ? 'Copy failed' : 'Copy link'}
+                            </button>
+                          </div>
+                          <span
+                            className={`text-xs ${copyState === 'copied' ? 'text-emerald-600' : copyState === 'error' ? 'text-rose-600' : 'text-slate-500'}`}
+                            aria-live="polite"
+                          >
+                            {copyState === 'copied'
+                              ? 'Review landing link copied to clipboard'
+                              : copyState === 'error'
+                                ? 'Unable to copy link — try again'
+                                : ' '}
+                          </span>
+                        </div>
+                        <a
+                          href={landingUrl || '#'}
+                          target="_blank"
+                          rel="noopener"
+                          onClick={(e) => { if (!landingUrl) e.preventDefault(); }}
+                          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                          aria-disabled={!landingUrl}
+                        >
+                          Open
+                        </a>
+                      </div>
+                    </div>
+                    <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+                      <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-inner">
+                        <img
+                          src={`/api/qr?data=${encodeURIComponent(landingUrl)}&format=png&scale=8`}
+                          alt="QR code linking to your review landing page"
+                          className="h-full w-full p-3"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="space-y-2 text-sm text-slate-600">
+                        <p>Ideal for signage, receipts, and campaigns. We refresh the QR automatically.</p>
+                        <a
+                          className="inline-flex items-center gap-2 font-semibold text-indigo-600 hover:text-indigo-500"
+                          href={landingUrl ? `/api/qr?data=${encodeURIComponent(landingUrl)}&format=png&scale=8` : '#'}
+                          download
+                          onClick={(e) => { if (!landingUrl) e.preventDefault(); }}
+                        >
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 15v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                          </svg>
+                          Download PNG
+                        </a>
+                        {copyState === 'error' && (
+                          <p className="text-xs text-rose-500">Unable to copy automatically. Please copy the link manually.</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-6 grid gap-4 rounded-2xl border border-slate-200/80 bg-slate-50/60 p-4 md:grid-cols-2">
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-900 mb-2">Need inspiration?</h4>
+                        <ul className="space-y-1 text-sm text-slate-600 list-disc list-inside">
+                          <li>Printable counter cards with your QR</li>
+                          <li>Window cling designs in your brand colors</li>
+                          <li>Follow-up email copy you can send to customers</li>
+                        </ul>
+                        <Link
+                          className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500"
+                          href="/support?topic=marketing"
+                        >
+                          View example materials
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
+                          </svg>
+                        </Link>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-900 mb-2">Need a designer?</h4>
+                        <p className="text-sm text-slate-600">
+                          Work with our marketing team for ready-to-print signage, or bring your own designer and we’ll share editable templates.
+                        </p>
+                        <div className="mt-3 flex flex-col gap-2">
+                          <Link
+                            href="/contact?topic=design"
+                            className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500"
+                          >
+                            Hire our team
+                          </Link>
+                          <Link
+                            href="/support?topic=templates"
+                            className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white"
+                          >
+                            Request DIY template (PDF)
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-lg shadow-slate-900/5 backdrop-blur">
                   <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Primary location</div>
                   <div className="mt-3 text-xl font-semibold text-slate-900">{business.name}</div>
@@ -732,82 +883,6 @@ export default function Dashboard() {
                     </svg>
                   </Link>
                 </div>
-
-                {landingUrl && (
-                  <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-lg shadow-slate-900/5 backdrop-blur">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                      <div>
-                        <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Review landing link</div>
-                        <p className="mt-2 text-sm text-slate-600">
-                          Share anywhere—QR or direct. We’ll keep the destination optimized for every device.
-                        </p>
-                      </div>
-                      <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center lg:w-[360px]">
-                        <div className="flex w-full flex-col gap-2">
-                          <div className="flex items-stretch overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-inner">
-                            <input
-                              className="flex-1 bg-transparent px-3 py-3 text-sm text-slate-700"
-                              readOnly
-                              value={landingUrl}
-                            />
-                            <button
-                              type="button"
-                              onClick={handleCopyLanding}
-                              className="h-full px-4 py-2 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50"
-                            >
-                              {copyState === 'copied' ? 'Copied!' : copyState === 'error' ? 'Copy failed' : 'Copy link'}
-                            </button>
-                          </div>
-                          <span
-                            className={`text-xs ${copyState === 'copied' ? 'text-emerald-600' : copyState === 'error' ? 'text-rose-600' : 'text-slate-500'}`}
-                            aria-live="polite"
-                          >
-                            {copyState === 'copied'
-                              ? 'Review landing link copied to clipboard'
-                              : copyState === 'error'
-                                ? 'Unable to copy link — try again'
-                                : ' '}
-                          </span>
-                        </div>
-                        <a
-                          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200/80 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
-                          target="_blank"
-                          href={landingUrl}
-                          rel="noopener"
-                          referrerPolicy="no-referrer"
-                        >
-                          Open
-                        </a>
-                      </div>
-                    </div>
-                    <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
-                      <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-inner">
-                        <img
-                          src={`/api/qr?data=${encodeURIComponent(landingUrl)}&format=png&scale=8`}
-                          alt="QR code linking to your review landing page"
-                          className="h-full w-full p-3"
-                          loading="lazy"
-                        />
-                      </div>
-                      <div className="space-y-2 text-sm text-slate-600">
-                        <p>Ideal for signage, receipts, and campaigns. We refresh the QR automatically.</p>
-                        <a
-                          className="inline-flex items-center gap-2 font-semibold text-indigo-600 hover:text-indigo-500"
-                          href={`/api/qr?data=${encodeURIComponent(landingUrl)}&format=png&scale=8`}
-                          download
-                        >
-                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 15v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-                          </svg>
-                          Download PNG
-                        </a>
-                        {copyState === 'error' && (
-                          <p className="text-xs text-rose-500">Unable to copy automatically. Please copy the link manually.</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-lg shadow-slate-900/5 backdrop-blur">
@@ -1061,5 +1136,22 @@ function MetricIcon({ type }: { type: 'rating' | 'reviews' | 'scans' }) {
       <rect x="4" y="14" width="6" height="6" rx="1" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M18 14h-2a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2z" />
     </svg>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-20">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-indigo-600 border-r-transparent"></div>
+            <p className="mt-4 text-slate-600">Loading dashboard...</p>
+          </div>
+        </div>
+      </main>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }

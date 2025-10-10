@@ -26,6 +26,24 @@ export async function GET(request: Request) {
   if (error) return new NextResponse(error.message, { status: 500 });
   const rawStatus = (data?.status as string | undefined) || 'none';
   const planId = (data?.plan_id as string | undefined) || null;
+  
+  // If no subscription found, check if user has a business (indicates starter plan)
+  if (!data) {
+    try {
+      const { data: business } = await supa
+        .from('businesses')
+        .select('id')
+        .eq('owner_uid', uid)
+        .maybeSingle();
+      
+      if (business) {
+        return NextResponse.json({ status: 'starter', plan: 'starter' });
+      }
+    } catch (businessError) {
+      console.error('Error checking business:', businessError);
+    }
+  }
+  
   const normalizedStatus = planId === 'starter' && rawStatus.toLowerCase() === 'active' ? 'starter' : rawStatus;
   return NextResponse.json({ status: normalizedStatus, plan: planId });
 }

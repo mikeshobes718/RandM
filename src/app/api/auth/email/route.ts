@@ -166,11 +166,15 @@ export async function POST(req: Request) {
 			ok: true,
 			id: emailResult.messageId,
 			provider: emailResult.provider,
+			link,
 		});
 	} else {
 		console.error('[AUTH_EMAIL] ❌ All email providers failed:', emailResult.error);
-		return new NextResponse(
-			`Email send failed: ${emailResult.error}`,
+		return NextResponse.json(
+			{
+				error: `Email send failed: ${emailResult.error}`,
+				link,
+			},
 			{ status: 502 }
 		);
 	}

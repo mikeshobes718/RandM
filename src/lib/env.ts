@@ -11,6 +11,7 @@ const ServerEnvSchema = z.object({
   STRIPE_PORTAL_CONFIGURATION_ID: z.string().optional(),
 
   POSTMARK_SERVER_TOKEN: z.string().min(1),
+  RESEND_API_KEY: z.string().min(1).optional(),
   EMAIL_FROM: z.string().email(),
 
   GOOGLE_MAPS_API_KEY: z.string().min(1),

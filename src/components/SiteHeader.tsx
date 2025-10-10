@@ -455,6 +455,7 @@ async function startCheckout(plan: 'monthly' | 'yearly', setLoading: (v: boolean
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      credentials: 'include',
     });
     if (!res.ok) throw new Error(await res.text());
     const j = await res.json();

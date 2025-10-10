@@ -8,6 +8,12 @@ export default function Pricing() {
   const [proLoading, setProLoading] = useState(false);
   const [hasPlan, setHasPlan] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [proError, setProError] = useState<string | null>(null);
+  
+  // Debug error state changes
+  useEffect(() => {
+    console.log('Error state changed to:', error);
+  }, [error]);
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info');
   const [billing, setBilling] = useState<'monthly' | 'yearly'>(() => {
@@ -102,6 +108,27 @@ export default function Pricing() {
 
     const fallbackToEntitlements = async (headers: Record<string, string>) => {
       try {
+        // Check if user has any business (indicates starter plan)
+        let businessRes = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers });
+        if (!businessRes.ok) {
+          businessRes = await fetch('/api/businesses/me', { cache: 'no-store', headers });
+        }
+        if (businessRes.ok) {
+          const businessData = (await businessRes.json().catch(() => null)) as { business?: any } | null;
+          console.log('🔍 Business data:', businessData);
+          if (businessData?.business) {
+            // User has a business, so they're on starter plan
+            console.log('✅ Detected starter plan via business data');
+            applyStatus('starter');
+            return;
+          } else {
+            console.log('❌ No business data found');
+          }
+        } else {
+          console.log('❌ Business API failed:', businessRes.status);
+        }
+        
+        // Fallback to entitlements check for Pro
         let r = await fetch('/api/entitlements', { cache: 'no-store', credentials: 'include', headers });
         if (!r.ok) r = await fetch('/api/entitlements', { cache: 'no-store', headers });
         if (!r.ok) {
@@ -209,7 +236,21 @@ export default function Pricing() {
 
   async function handleSubscribeWithPlan(plan: 'monthly' | 'yearly') {
     try {
+      if (typeof window !== 'undefined') {
+        const desiredHost = (process.env.NEXT_PUBLIC_APP_HOST || 'app.reviewsandmarketing.com').toLowerCase();
+        const currentHost = window.location.hostname.toLowerCase();
+        const isLocal = currentHost === 'localhost' || currentHost === '127.0.0.1';
+        if (!isLocal && currentHost !== desiredHost) {
+          const params = new URLSearchParams();
+          params.set('plan', plan);
+          params.set('from', currentHost);
+          window.location.href = `https://${desiredHost}/pricing?${params.toString()}`;
+          return;
+        }
+      }
+
       setError(null);
+      setProError(null);
       setProLoading(true);
       // Require verified email before starting checkout
       try {
@@ -249,28 +290,44 @@ export default function Pricing() {
         method: "POST",
         headers,
         body: JSON.stringify(payload),
+        credentials: 'include',
       });
       
       if (!res.ok) {
         const errorText = await res.text();
         console.error('Stripe checkout failed:', res.status, errorText);
-        throw new Error(`Checkout failed: ${errorText}`);
+        console.log('About to throw error with message:', `Checkout failed (${res.status}): ${errorText}`);
+        throw new Error(`Checkout failed (${res.status}): ${errorText || 'Unknown error'}`);
       }
       
-      const j = await res.json();
+      const j = await res.json().catch(() => null);
       console.log('Stripe checkout response:', j);
       
       try { if (j?.id) localStorage.setItem('stripe:lastSessionId', String(j.id)); } catch {}
       
       if (j?.url) {
         console.log('Redirecting to Stripe checkout:', j.url);
-        window.location.href = j.url;
+        try {
+          window.location.assign(j.url);
+        } catch {
+          window.location.href = j.url;
+        }
       } else {
         throw new Error('No checkout URL received from server');
       }
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Checkout failed";
+      console.error('Pro upgrade error:', e);
+      console.log('Setting error state to:', message);
       setError(message);
+      setProError(message);
+      console.log('Error state set, will clear in 5 seconds');
+      // Show error for 5 seconds
+      setTimeout(() => {
+        console.log('Clearing error state after timeout');
+        setError(null);
+        setProError(null);
+      }, 5000);
     } finally {
       setProLoading(false);
     }
@@ -279,6 +336,7 @@ export default function Pricing() {
   async function openBillingPortal() {
     try {
       setError(null);
+      setProError(null);
       setProLoading(true);
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       try {
@@ -311,7 +369,6 @@ export default function Pricing() {
     }
     
     try {
-      setError(null);
       setStarterLoading(true);
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       try {
@@ -774,6 +831,11 @@ export default function Pricing() {
               >
                 {proLoading ? "Processing…" : proCtaLabel}
             </button>
+            {proError && (
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{proError}</p>
+              </div>
+            )}
             </div>
 
             {/* Enterprise Plan */}

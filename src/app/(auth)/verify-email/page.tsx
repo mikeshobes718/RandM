@@ -54,6 +54,8 @@ export default function VerifyEmailPage() {
   const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info');
   const [cooldown, setCooldown] = useState(0);
   const [autoSent, setAutoSent] = useState(false);
+  const [verificationLink, setVerificationLink] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState<string>('');
 
   useEffect(() => {
     // Get stored email
@@ -61,12 +63,19 @@ export default function VerifyEmailPage() {
     if (storedEmail) {
       setEmail(storedEmail);
     }
+    try {
+      const storedLink = localStorage.getItem('pendingVerificationLink');
+      if (storedLink) {
+        setVerificationLink(storedLink);
+      }
+    } catch {}
 
     // Check if user is already verified
     const unsubscribe = onAuthStateChanged(clientAuth, async (user) => {
       if (user) {
         await user.reload();
         if (user.emailVerified) {
+          try { localStorage.removeItem('pendingVerificationLink'); } catch {}
           // User is verified, check if they need onboarding
           const redirectUrl = await getPostVerificationRedirect();
           window.location.href = redirectUrl;
@@ -140,6 +149,7 @@ export default function VerifyEmailPage() {
 
       // Check if user needs onboarding or can go to dashboard
       const redirectUrl = await getPostVerificationRedirect();
+      try { localStorage.removeItem('pendingVerificationLink'); } catch {}
       
       // Redirect after a short delay
       setTimeout(() => {
@@ -188,18 +198,29 @@ export default function VerifyEmailPage() {
         }),
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        
-        // Handle rate limiting specifically
-        if (response.status === 429) {
-          throw new Error(`Rate limited: ${errorText}`);
-        }
-        
-        throw new Error(errorText || 'Failed to send email');
+      let result: any = null;
+      try {
+        result = await response.json();
+      } catch {
+        result = null;
       }
 
-      const result = await response.json();
+      if (result?.link) {
+        setVerificationLink(result.link);
+        try { localStorage.setItem('pendingVerificationLink', result.link); } catch {}
+      }
+
+      if (!response.ok) {
+        const errorText = (result && typeof result.error === 'string') ? result.error : 'Failed to send verification email';
+        
+        // Handle rate limiting specifically
+        if (response.status === 429 || errorText.includes('Too many verification attempts')) {
+          throw new Error(`Too many attempts. Please wait 5 minutes before trying again.`);
+        }
+        
+        throw new Error(errorText);
+      }
+
       console.log('Email sent successfully:', result);
 
       setMessage(isAutoSend ? '📧 Verification email sent! Please check your inbox and spam folder.' : '✅ Verification email sent! Please check your inbox and spam folder.');
@@ -236,8 +257,8 @@ export default function VerifyEmailPage() {
     }
 
     setLoading(true);
-    setMessage('Checking verification status...');
-    setMessageType('info');
+      setMessage('Checking verification status...');
+      setMessageType('info');
 
     try {
       await clientAuth.currentUser.reload();
@@ -245,6 +266,7 @@ export default function VerifyEmailPage() {
       if (clientAuth.currentUser.emailVerified) {
         setMessage('✅ Email verified! Redirecting...');
         setMessageType('success');
+        try { localStorage.removeItem('pendingVerificationLink'); } catch {}
         
         // Check if user needs onboarding or can go to dashboard
         const redirectUrl = await getPostVerificationRedirect();
@@ -262,6 +284,26 @@ export default function VerifyEmailPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOpenLink = () => {
+    if (!verificationLink) return;
+    try {
+      window.open(verificationLink, '_blank', 'noopener,noreferrer');
+    } catch {
+      window.location.href = verificationLink;
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!verificationLink) return;
+    try {
+      await navigator.clipboard.writeText(verificationLink);
+      setCopyStatus('Copied!');
+    } catch {
+      setCopyStatus('Unable to copy automatically. You can select and copy the link above.');
+    }
+    setTimeout(() => setCopyStatus(''), 2500);
   };
 
   // Cooldown timer
@@ -299,6 +341,28 @@ export default function VerifyEmailPage() {
               'bg-blue-50 border border-blue-200 text-blue-700'
             }`}>
               <p className="text-sm">{message}</p>
+            </div>
+          )}
+
+          {verificationLink && (
+            <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+              <p className="font-semibold mb-2">Still missing the email?</p>
+              <p className="mb-3">You can verify instantly with the secure link below.</p>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <button
+                  onClick={handleOpenLink}
+                  className="inline-flex items-center justify-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-amber-600 transition"
+                >
+                  Open verification link
+                </button>
+                <button
+                  onClick={handleCopyLink}
+                  className="inline-flex items-center justify-center rounded-lg border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100 transition"
+                >
+                  Copy link
+                </button>
+              </div>
+              {copyStatus && <p className="mt-2 text-xs text-amber-600">{copyStatus}</p>}
             </div>
           )}
 

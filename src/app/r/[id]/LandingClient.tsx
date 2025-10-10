@@ -80,8 +80,12 @@ export default function LandingClient({ id }: { id: string }) {
   const [phone, setPhone] = useState('');
   const [comment, setComment] = useState('');
   const [consent, setConsent] = useState(false);
+  const [happyName, setHappyName] = useState('');
+  const [happyEmail, setHappyEmail] = useState('');
+  const [happyConsent, setHappyConsent] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [lastRedirect, setLastRedirect] = useState<string | null>(null);
 
   const entrySource = useMemo(() => {
     if (!searchParams) return 'landing';
@@ -114,6 +118,11 @@ export default function LandingClient({ id }: { id: string }) {
   useEffect(() => {
     setSubmitted(false);
     setError(null);
+    if (rating === 5) {
+      setHappyName('');
+      setHappyEmail('');
+      setHappyConsent(true);
+    }
   }, [rating]);
 
   const sendEvent = useCallback(
@@ -181,6 +190,22 @@ export default function LandingClient({ id }: { id: string }) {
         setError('Enter a valid email address so we can stay in touch.');
         return;
       }
+    } else if (rating >= 5) {
+      const trimmedEmail = happyEmail.trim();
+      if (!trimmedEmail) {
+        setError('Enter your email so we can send a thank-you perk.');
+        return;
+      }
+      if (!isValidEmail(trimmedEmail)) {
+        setError('Please enter a valid email address before continuing to Google.');
+        return;
+      }
+    }
+
+    let pendingWindow: Window | null = null;
+    if (rating >= 5 && typeof window !== 'undefined') {
+      // Pre-open a blank tab synchronously to avoid popup blockers
+      try { pendingWindow = window.open('about:blank', '_blank', 'noopener'); } catch { pendingWindow = null; }
     }
 
     try {
@@ -198,6 +223,12 @@ export default function LandingClient({ id }: { id: string }) {
         payload.phone = phoneDigits || undefined;
         payload.comment = comment.trim();
         payload.consent = consent;
+      } else {
+        const trimmedHappyEmail = happyEmail.trim();
+        const trimmedHappyName = happyName.trim();
+        payload.email = trimmedHappyEmail;
+        if (trimmedHappyName) payload.name = trimmedHappyName;
+        payload.consent = happyConsent;
       }
       const res = await fetch('/api/feedback/submit', {
         method: 'POST',
@@ -210,18 +241,46 @@ export default function LandingClient({ id }: { id: string }) {
       }
       const data = await res.json();
       if (rating >= 5 && data.redirect) {
-        window.location.assign(data.redirect as string);
-        return;
+        try { setLastRedirect(String(data.redirect)); } catch {}
+        setSubmitted(true);
+        const destination = String(data.redirect);
+        try {
+          if (pendingWindow) {
+            pendingWindow.location.href = destination;
+            try { pendingWindow.focus(); } catch {}
+          } else {
+            window.location.assign(destination);
+          }
+          return;
+        } catch {}
       }
       setSubmitted(true);
       if (rating >= 5) {
+        try {
+          // Persist a best-effort fallback from loaded business
+          if (!lastRedirect && biz?.reviewLink) setLastRedirect(biz.reviewLink);
+        } catch {}
         setError(null);
+        if (pendingWindow) {
+          try { pendingWindow.close(); } catch {}
+        }
       }
     } catch (e) {
+      if (pendingWindow) {
+        try { pendingWindow.close(); } catch {}
+      }
       const message = e instanceof Error && e.message ? e.message : 'Something went wrong. Please try again.';
       setError(message);
+      // On 5-star flow, still surface the fallback UI so users can proceed to Google
+      if (rating >= 5) {
+        try {
+          if (!lastRedirect && biz?.reviewLink) setLastRedirect(biz.reviewLink);
+        } catch {}
+        setSubmitted(true);
+      }
     } finally {
       setSubmitting(false);
+      pendingWindow = null;
     }
   }
 
@@ -273,20 +332,87 @@ export default function LandingClient({ id }: { id: string }) {
           )}
 
           {fiveStar && (
-            <div className="mt-6 space-y-4">
-              <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-3 text-sm text-center">
-                Thanks for the love! Tap below to post a quick Google review.
-              </div>
-              <button
-                type="button"
-                onClick={submit}
-                disabled={submitting}
-                className="w-full rounded-2xl px-4 py-3 text-base font-semibold shadow-md transition disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ backgroundColor: buttonColor, color: buttonTextColor }}
-              >
-                {submitting ? 'Opening Google…' : 'Leave a Google review'}
-              </button>
-              <p className="text-xs text-gray-500 text-center">Opens Google in a new tab.</p>
+            <div className="mt-6">
+              {submitted ? (
+                <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-6 text-center text-sm">
+                  <div>Thanks for sending your info!</div>
+                  <div className="mt-2 text-emerald-700">
+                    {lastRedirect || biz?.reviewLink ? (
+                      <a
+                        href={(lastRedirect || biz?.reviewLink) as string}
+                        target="_blank"
+                        rel="noopener"
+                        className="underline font-semibold"
+                      >
+                        Click here to open Google and leave your review
+                      </a>
+                    ) : (
+                      <span>If Google didn’t open automatically, you can close this tab and try again.</span>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+                  <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-3 text-sm text-center">
+                    Thanks for the love! Drop your info so we can send perks and reminders before we pop you over to Google.
+                  </div>
+                  <input
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                    placeholder="Your name (optional)"
+                    value={happyName}
+                    onChange={(e) => setHappyName(e.target.value)}
+                  />
+                  <input
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                    placeholder="Email for rewards & follow-up"
+                    type="email"
+                    value={happyEmail}
+                    onChange={(e) => setHappyEmail(e.target.value)}
+                    required
+                  />
+                  <label className="flex items-start gap-2 text-xs text-gray-600">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      checked={happyConsent}
+                      onChange={(e) => setHappyConsent(e.target.checked)}
+                    />
+                    <span>Keep me posted about promos and follow up if there’s anything else you need.</span>
+                  </label>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full rounded-2xl px-4 py-3 text-base font-semibold shadow-md transition disabled:opacity-60 disabled:cursor-not-allowed"
+                    style={{ backgroundColor: buttonColor, color: buttonTextColor }}
+                  >
+                    {submitting ? 'Opening Google…' : 'Send & leave a Google review'}
+                  </button>
+                  <p className="text-xs text-gray-500 text-center">We’ll open Google in a new tab right after you tap the button.</p>
+                  {submitted && fiveStar && (
+                    <p className="mt-2 text-xs text-gray-500 text-center">
+                      If a new tab didn’t open,{' '}
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          // Try to fetch redirect again as a fallback
+                          void (async () => {
+                            try {
+                              const r = await fetch(`/api/public/business?id=${encodeURIComponent(id)}`, { cache: 'no-store' });
+                              const j = await r.json().catch(() => null) as { google_maps_write_review_uri?: string; review_link?: string } | null;
+                              const dest = j?.google_maps_write_review_uri || j?.review_link;
+                              if (dest) window.location.href = dest;
+                            } catch {}
+                          })();
+                        }}
+                        className="underline"
+                      >
+                        click here to open Google
+                      </a>.
+                    </p>
+                  )}
+                </form>
+              )}
             </div>
           )}
 

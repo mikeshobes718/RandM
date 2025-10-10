@@ -160,24 +160,63 @@ export default function OnboardingBusinessPage() {
     }
   };
 
-  // Get selected plan from localStorage or URL params
+  // Get selected plan from URL/localStorage, but avoid defaulting to Starter in edit mode
   useEffect(() => {
-    // Check URL params first (for Stripe redirects)
     const urlParams = new URLSearchParams(window.location.search);
     const planFromUrl = urlParams.get('plan') as 'starter' | 'pro' | null;
-    
+    const isEdit = urlParams.get('edit') === '1';
     if (planFromUrl) {
       setSelectedPlan(planFromUrl);
-    } else {
-      // Check localStorage
-      const planFromStorage = localStorage.getItem('selectedPlan') as 'starter' | 'pro' | null;
-      if (planFromStorage) {
-        setSelectedPlan(planFromStorage);
-      } else {
-        // Default to starter if no plan selected
-        setSelectedPlan('starter');
-      }
+      return;
     }
+    const planFromStorage = localStorage.getItem('selectedPlan') as 'starter' | 'pro' | null;
+    if (planFromStorage) {
+      setSelectedPlan(planFromStorage);
+      return;
+    }
+    if (!isEdit) {
+      setSelectedPlan('starter');
+    }
+  }, []);
+
+  // Resolve live plan status (Pro vs Starter) for accuracy in edit mode or when storage is stale
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const headers: Record<string, string> = {};
+        try {
+          const tok = localStorage.getItem('idToken');
+          if (tok) headers.Authorization = `Bearer ${tok}`;
+        } catch {}
+        // Prefer plan/status
+        let r = await fetch('/api/plan/status', { cache: 'no-store', credentials: 'include', headers });
+        if (!r.ok) r = await fetch('/api/plan/status', { cache: 'no-store', headers });
+        if (r.ok) {
+          const j = await r.json().catch(() => null) as { status?: string } | null;
+          const status = (j?.status || '').toLowerCase();
+          if (cancelled) return;
+          if (status === 'active' || status === 'trialing') {
+            setSelectedPlan('pro');
+            return;
+          }
+          if (status === 'starter') {
+            setSelectedPlan('starter');
+            return;
+          }
+        }
+        // Fallback to entitlements
+        let e = await fetch('/api/entitlements', { cache: 'no-store', credentials: 'include', headers });
+        if (!e.ok) e = await fetch('/api/entitlements', { cache: 'no-store', headers });
+        if (!cancelled && e.ok) {
+          const ej = await e.json().catch(() => null) as { pro?: boolean } | null;
+          setSelectedPlan(ej?.pro ? 'pro' : 'starter');
+        }
+      } catch {
+        // Ignore and keep whatever we have from URL/localStorage
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   // Autosave on form field changes
@@ -299,23 +338,39 @@ export default function OnboardingBusinessPage() {
 
     try {
       // Save business via API
+      const formData = new FormData();
+      formData.append('name', businessName.trim());
+      if (reviewLink.trim()) formData.append('review_link', reviewLink.trim());
+      if (address.trim()) formData.append('address', address.trim());
+      if (selectedPlace?.id) formData.append('google_place_id', selectedPlace.id);
+      if (selectedPlace?.googleMapsUri) formData.append('google_maps_place_uri', selectedPlace.googleMapsUri);
+      if (selectedPlace?.writeAReviewUri) formData.append('google_maps_write_review_uri', selectedPlace.writeAReviewUri);
+      if (selectedPlace?.rating) formData.append('google_rating', selectedPlace.rating.toString());
+      
+      // Add idToken for authentication
+      try {
+        const idToken = localStorage.getItem('idToken');
+        if (idToken) {
+          formData.append('idToken', idToken);
+        }
+      } catch (e) {
+        console.warn('Could not get idToken from localStorage:', e);
+      }
+
       const response = await fetch('/api/businesses/upsert/form', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: businessName.trim(),
-          review_link: reviewLink.trim() || null,
-          address: address.trim() || null,
-          google_place_id: selectedPlace?.id || null,
-          google_maps_place_uri: selectedPlace?.googleMapsUri || null,
-          google_maps_write_review_uri: selectedPlace?.writeAReviewUri || null,
-          google_rating: selectedPlace?.rating || null,
-        }),
+        body: formData,
         credentials: 'include',
+        redirect: 'manual', // Prevent automatic redirect
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to save business');
+      // Check if successful (2xx, 3xx redirect, or opaque redirect)
+      // Opaque redirects have type 'opaqueredirect' and status 0
+      const isSuccess = response.ok || response.status === 303 || response.type === 'opaqueredirect';
+      
+      if (!isSuccess) {
+        const errorText = await response.text().catch(() => 'Failed to save business');
+        throw new Error(errorText);
       }
 
       // Send welcome email based on selected plan
@@ -345,8 +400,12 @@ export default function OnboardingBusinessPage() {
         localStorage.removeItem(AUTOSAVE_KEY);
       }
 
-      // Redirect based on mode
-      if (isEditMode) {
+      // Manually redirect after success
+      // For opaque redirects, we can't access the Location header, so use default URLs
+      if (response.type === 'opaqueredirect' || response.status === 303 || response.redirected) {
+        const redirectUrl = isEditMode ? '/dashboard?from=edit' : '/dashboard?from=onboarding';
+        window.location.href = redirectUrl;
+      } else if (isEditMode) {
         router.push('/dashboard?from=edit');
       } else {
         router.push('/dashboard?from=onboarding');

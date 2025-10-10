@@ -76,14 +76,26 @@ export async function POST(req: Request) {
 				uid: userRecord.uid,
 				email: userRecord.email,
 				emailSendFailed: true,
+				verificationLink: null,
 				errorDetails: 'Failed to generate verification link',
 				message: 'Account created but verification email could not be sent. Please request a new verification email.',
 			});
 		}
 
+		let customVerificationLink = verificationLink;
+		try {
+			const url = new URL(verificationLink);
+			const oobCode = url.searchParams.get('oobCode');
+			if (oobCode) {
+				customVerificationLink = `${APP_URL}/api/auth/verify?mode=verifyEmail&oobCode=${encodeURIComponent(oobCode)}`;
+			}
+		} catch (linkParseError) {
+			console.warn('[REGISTER] Unable to derive custom verification link, using Firebase link:', linkParseError);
+		}
+
 		// Prepare email templates (full and simplified fallback)
-		const fullTemplate = verifyEmailTemplate(verificationLink, displayName);
-		const simpleTemplate = simpleVerifyEmailTemplate(verificationLink, displayName);
+		const fullTemplate = verifyEmailTemplate(customVerificationLink, displayName);
+		const simpleTemplate = simpleVerifyEmailTemplate(customVerificationLink, displayName);
 		
 		console.log('[REGISTER] Sending email to:', email.trim());
 		console.log('[REGISTER] Full template HTML length:', fullTemplate.html.length);
@@ -128,6 +140,7 @@ export async function POST(req: Request) {
 				uid: userRecord.uid,
 				email: userRecord.email,
 				emailProvider: emailResult.provider,
+				verificationLink: customVerificationLink,
 				message: 'Account created successfully. Please check your email to verify your address.',
 			});
 		} else {
@@ -138,6 +151,7 @@ export async function POST(req: Request) {
 				uid: userRecord.uid,
 				email: userRecord.email,
 				emailSendFailed: true,
+				verificationLink: customVerificationLink,
 				errorDetails: emailResult.error,
 				message: 'Account created but verification email failed to send. Please request a new verification email.',
 			});

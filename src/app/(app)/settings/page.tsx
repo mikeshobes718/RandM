@@ -238,7 +238,6 @@ export default function SettingsPage() {
     if (!businessId) return;
     setSavingBusiness(true);
     setError(null);
-    setSuccess(null);
     try {
       const payload: any = {
         id: businessId,
@@ -261,9 +260,16 @@ export default function SettingsPage() {
         body: JSON.stringify(payload),
       });
       if (response.ok) {
+        console.log('✅ Business settings saved successfully');
         setSuccess('Business settings saved successfully!');
-        setTimeout(() => setSuccess(null), 3000);
+        // Scroll to top to ensure success message is visible
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => {
+          console.log('🔄 Clearing success message');
+          setSuccess(null);
+        }, 5000); // Increased from 3 to 5 seconds
       } else {
+        console.error('❌ Failed to save business settings:', response.status);
         setError('Failed to save business settings');
       }
     } catch (e) {
@@ -457,12 +463,12 @@ export default function SettingsPage() {
 
         {/* Tabs */}
         <div className="border-b border-slate-200 bg-white rounded-t-2xl">
-          <nav className="flex gap-1 px-2 pt-2" aria-label="Tabs">
+          <nav className="flex gap-1 px-2 pt-2 overflow-x-auto no-scrollbar" aria-label="Tabs" style={{ WebkitOverflowScrolling: 'touch' }}>
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 rounded-t-xl px-4 py-3 text-sm font-medium transition ${
+                className={`flex shrink-0 items-center gap-2 rounded-t-xl px-4 py-3 text-sm font-medium transition whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-indigo-700 border-b-2 border-indigo-600'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -768,7 +774,7 @@ export default function SettingsPage() {
                 <h2 className="text-xl font-semibold text-slate-900 mb-4">Billing & Subscription</h2>
                 <div className="space-y-4">
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-6">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <div className="font-semibold text-slate-900">Current Plan</div>
                         <div className="text-2xl font-bold text-indigo-600 mt-1">
@@ -778,7 +784,7 @@ export default function SettingsPage() {
                       {!pro && (
                         <Link
                           href="/pricing"
-                          className="rounded-xl px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold shadow-lg hover:from-indigo-700 hover:to-purple-700 transition"
+                          className="w-full rounded-xl px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-center font-semibold shadow-lg hover:from-indigo-700 hover:to-purple-700 transition sm:w-auto"
                         >
                           Upgrade to Pro
                         </Link>

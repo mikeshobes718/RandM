@@ -71,7 +71,8 @@ export default function RegisterPage() {
         throw new Error(errorText || 'Registration failed');
       }
 
-      const { customToken, uid } = await registrationResponse.json();
+      const registrationData = await registrationResponse.json();
+      const { customToken, uid, verificationLink } = registrationData as { customToken: string; uid: string; verificationLink?: string | null };
 
       // Sign in with custom token
       const { signInWithCustomToken } = await import('firebase/auth');
@@ -97,6 +98,11 @@ export default function RegisterPage() {
       // Store email for verification page
       localStorage.setItem('userEmail', email);
       localStorage.setItem('idToken', token);
+      try {
+        if (verificationLink) {
+          localStorage.setItem('pendingVerificationLink', verificationLink);
+        }
+      } catch {}
 
       // Redirect to verification page (email was already sent by server)
       window.location.href = '/verify-email';
@@ -215,7 +221,7 @@ export default function RegisterPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Business Phone
+                Business Phone <span className="text-xs font-normal text-gray-500">(optional)</span>
               </label>
               <input
                 type="tel"

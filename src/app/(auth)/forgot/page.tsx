@@ -7,12 +7,16 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [resetLink, setResetLink] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState<string>('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     setSuccess(false);
+    setResetLink(null);
+    setCopyStatus('');
 
     if (!email) {
       setError('Please enter your email address');
@@ -31,9 +35,20 @@ export default function ForgotPasswordPage() {
         }),
       });
 
+      let result: any = null;
+      try {
+        result = await response.json();
+      } catch {
+        result = null;
+      }
+
+      if (result?.link) {
+        setResetLink(result.link);
+      }
+
       if (!response.ok) {
-        const errorText = await response.text();
         // Still show success for security (don't reveal if email exists)
+        const errorText = typeof result?.error === 'string' ? result.error : '';
         if (errorText.includes('user-not-found') || errorText.includes('not found')) {
           setSuccess(true);
         } else {
@@ -55,6 +70,26 @@ export default function ForgotPasswordPage() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!resetLink) return;
+    try {
+      await navigator.clipboard.writeText(resetLink);
+      setCopyStatus('Reset link copied to your clipboard.');
+    } catch {
+      setCopyStatus('Unable to copy automatically. You can select and copy the link above.');
+    }
+    setTimeout(() => setCopyStatus(''), 2500);
+  };
+
+  const handleOpenLink = () => {
+    if (!resetLink) return;
+    try {
+      window.open(resetLink, '_blank', 'noopener,noreferrer');
+    } catch {
+      window.location.href = resetLink;
     }
   };
 
@@ -88,6 +123,27 @@ export default function ForgotPasswordPage() {
                     </p>
                   </div>
                 </div>
+                {resetLink && (
+                  <div className="mt-4 rounded-lg border border-green-200 bg-white p-3 text-sm text-green-700">
+                    <p className="font-semibold mb-2">Need it right away?</p>
+                    <p className="mb-3">Use the button below to open your reset link instantly.</p>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <button
+                        onClick={handleOpenLink}
+                        className="inline-flex items-center justify-center rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-600 transition"
+                      >
+                        Open reset link
+                      </button>
+                      <button
+                        onClick={handleCopyLink}
+                        className="inline-flex items-center justify-center rounded-lg border border-green-300 px-4 py-2 text-sm font-semibold text-green-700 hover:bg-green-100 transition"
+                      >
+                        Copy link
+                      </button>
+                    </div>
+                    {copyStatus && <p className="mt-2 text-xs text-green-600">{copyStatus}</p>}
+                  </div>
+                )}
               </div>
 
               <Link

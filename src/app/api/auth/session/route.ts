@@ -24,13 +24,31 @@ export async function POST(request: NextRequest) {
       
       // Set the session cookie as HttpOnly
       const response = NextResponse.json({ success: true });
-      response.cookies.set('idToken', sessionCookie, {
+      
+      // Configure cookie domain for production
+      const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: 'lax' as const,
         maxAge: expiresIn,
         path: '/'
-      });
+      };
+      
+      // Add domain for production to ensure cookie persistence across subdomains
+      if (process.env.NODE_ENV === 'production' && process.env.APP_URL) {
+        try {
+          const url = new URL(process.env.APP_URL);
+          const hostname = url.hostname;
+          if (hostname.includes('.')) {
+            const domain = `.${hostname.replace(/^www\./, '')}`;
+            (cookieOptions as any).domain = domain;
+          }
+        } catch (e) {
+          console.warn('Failed to set cookie domain:', e);
+        }
+      }
+      
+      response.cookies.set('idToken', sessionCookie, cookieOptions);
       
       return response;
     } catch (firebaseError) {

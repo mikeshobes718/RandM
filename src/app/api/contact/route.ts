@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPostmarkClient } from '@/lib/postmark';
+import { sendEmailWithFallback } from '@/lib/emailService';
 import { getEnv } from '@/lib/env';
 import { brandedHtml } from '@/lib/emailTemplates';
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, message, recaptchaToken } = await req.json();
+    const { name, email, message, recaptchaToken } = await req.json().catch(() => ({}));
     if (!name || !email || !message) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
@@ -21,22 +21,56 @@ export async function POST(req: NextRequest) {
     }
 
     const { EMAIL_FROM } = getEnv();
-    const pm = getPostmarkClient();
     const support = 'support@reviewsandmarketing.com';
     const subject = `Contact form — ${name}`;
-    const html = brandedHtml({ title: 'New contact form submission', intro: `${name} (${email}) wrote:`, footerNote: 'We will get back to you as soon as possible.' })
-      .replace('</h1>', '</h1>' + `<div style="margin:12px 0;padding:12px;border-radius:12px;background:#f8fafc;border:1px solid #e5e7eb;color:#0f172a;white-space:pre-wrap;">${message.replace(/</g,'&lt;')}</div>`);
+    const sanitizedMessage = message.replace(/</g, '&lt;');
+    const html = brandedHtml({
+      title: 'New contact form submission',
+      intro: `${name} (${email}) wrote:`,
+      footerNote: 'We will get back to you as soon as possible.',
+    }).replace(
+      '</h1>',
+      `</h1><div style="margin:12px 0;padding:12px;border-radius:12px;background:#f8fafc;border:1px solid #e5e7eb;color:#0f172a;white-space:pre-wrap;">${sanitizedMessage}</div>`,
+    );
+    const text = `${name} (${email})\n\n${message}`;
 
-    await pm.sendEmail({ From: EMAIL_FROM, To: support, Subject: subject, HtmlBody: html, TextBody: `${name} (${email})\n\n${message}` });
-    // Send a copy to the submitter
-    await pm.sendEmail({ From: EMAIL_FROM, To: email, Subject: 'We received your message', HtmlBody: brandedHtml({ title: 'Thanks for contacting us', intro: 'Our team has received your message and will reply shortly.' }), TextBody: 'We received your message and will reply shortly.' });
+    const supportResult = await sendEmailWithFallback(
+      {
+        to: support,
+        subject,
+        html,
+        text,
+        from: `Reviews & Marketing Contact <${EMAIL_FROM}>`,
+      },
+    );
 
-    return NextResponse.json({ ok: true });
+    if (!supportResult.success) {
+      return NextResponse.json(
+        { error: 'Unable to send message. Please try again later or email support@reviewsandmarketing.com directly.' },
+        { status: 502 },
+      );
+    }
+
+    await sendEmailWithFallback(
+      {
+        to: email,
+        subject: 'We received your message',
+        html: brandedHtml({
+          title: 'Thanks for contacting us',
+          intro: 'Our team has received your message and will reply shortly.',
+          footerNote: 'If this was not you, please ignore this email.',
+        }),
+        text: 'We received your message and will reply shortly.',
+        from: `Reviews & Marketing <${EMAIL_FROM}>`,
+      },
+    );
+
+    return NextResponse.json({ ok: true, message: 'Message sent' });
   } catch (e) {
+    console.error('[CONTACT] Failed to process submission', e);
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 }
-
 
 
 

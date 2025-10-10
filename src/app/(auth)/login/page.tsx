@@ -162,8 +162,12 @@ export default function LoginPage() {
       console.error('Login error:', err);
 
       // Handle specific Firebase errors
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        setError('Invalid email or password');
+      if (err.code === 'auth/user-not-found') {
+        setError('No account found with that email. Double-check the address or create a new account.');
+      } else if (err.code === 'auth/wrong-password') {
+        setError('Incorrect password. You can try again or reset it below.');
+      } else if (err.code === 'auth/invalid-credential') {
+        setError('Unable to sign in with those credentials. Please verify your email or reset your password and try again.');
       } else if (err.code === 'auth/invalid-email') {
         setError('Please enter a valid email address');
       } else if (err.code === 'auth/user-disabled') {

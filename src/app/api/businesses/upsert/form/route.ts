@@ -165,8 +165,12 @@ export async function POST(req: Request) {
   // Log for debugging
   console.log('[upsert/form] Returning business data:', business ? `${business.name} (id: ${business.id})` : 'null');
   
+  // Check if this is an edit request by looking for edit parameter in referer
+  const referer = req.headers.get('referer') || '';
+  const isEditRequest = referer.includes('edit=1');
+  
   const res = (ct.includes('application/x-www-form-urlencoded') || ct.includes('multipart/form-data'))                                                          
-    ? NextResponse.redirect(new URL('/dashboard', req.url), 303)
+    ? NextResponse.redirect(new URL(isEditRequest ? '/dashboard?from=edit' : '/dashboard', req.url), 303)
     : NextResponse.json({ ok: true, business: business || null });
   try {
     const host = (() => { try { return new URL(process.env.APP_URL || '').hostname; } catch { try { return new URL(req.url).hostname; } catch { return ''; } } })();                                                                            

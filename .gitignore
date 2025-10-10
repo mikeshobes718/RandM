@@ -35,3 +35,4 @@ desktop-transcriber/
 
 # Next.js build cache
 .next/cache/
+.env*.local
