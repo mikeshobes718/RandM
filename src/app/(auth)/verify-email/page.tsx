@@ -286,14 +286,7 @@ export default function VerifyEmailPage() {
     }
   };
 
-  const handleOpenLink = () => {
-    if (!verificationLink) return;
-    try {
-      window.open(verificationLink, '_blank', 'noopener,noreferrer');
-    } catch {
-      window.location.href = verificationLink;
-    }
-  };
+  // Prefer anchor navigation for better popup compatibility on mobile
 
   const handleCopyLink = async () => {
     if (!verificationLink) return;
@@ -349,12 +342,16 @@ export default function VerifyEmailPage() {
               <p className="font-semibold mb-2">Still missing the email?</p>
               <p className="mb-3">You can verify instantly with the secure link below.</p>
               <div className="flex flex-col gap-2 sm:flex-row">
-                <button
-                  onClick={handleOpenLink}
-                  className="inline-flex items-center justify-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-amber-600 transition"
-                >
-                  Open verification link
-                </button>
+                {verificationLink && (
+                  <a
+                    href={verificationLink}
+                    target="_blank"
+                    rel="noopener"
+                    className="inline-flex items-center justify-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-amber-600 transition"
+                  >
+                    Open verification link
+                  </a>
+                )}
                 <button
                   onClick={handleCopyLink}
                   className="inline-flex items-center justify-center rounded-lg border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100 transition"

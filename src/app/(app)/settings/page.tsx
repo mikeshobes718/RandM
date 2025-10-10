@@ -333,16 +333,29 @@ export default function SettingsPage() {
 
   async function openBillingPortal() {
     try {
-      const response = await fetch('/api/stripe/portal', {
+      setError(null);
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      try {
+        const token = localStorage.getItem('idToken') || '';
+        if (token) headers.Authorization = `Bearer ${token}`;
+      } catch {}
+      const res = await fetch('/api/stripe/portal', {
         method: 'POST',
-        headers: { ...bearer(), 'Content-Type': 'application/json' },
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({ idToken: (typeof localStorage !== 'undefined' ? localStorage.getItem('idToken') : '') || undefined })
       });
-      if (response.ok) {
-        const data = await response.json();
-        window.location.href = data.url;
+      if (!res.ok) throw new Error(await res.text());
+      const j = await res.json();
+      if (j?.url) {
+        try { window.open(j.url, '_blank', 'noopener'); } catch { window.location.href = j.url; }
+        return;
       }
-    } catch (e) {
-      setError('Failed to open billing portal');
+      throw new Error('Unable to open billing portal');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Unable to open billing portal';
+      setError(message);
+    } finally {
     }
   }
 

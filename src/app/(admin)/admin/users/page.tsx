@@ -176,10 +176,16 @@ export default function AdminUsersPage() {
                     {new Date(user.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <button className="text-blue-600 hover:text-blue-800 mr-4">
+                    <a
+                      href={`/admin/users?uid=${encodeURIComponent(user.uid)}`}
+                      className="text-blue-600 hover:text-blue-800 mr-4"
+                    >
                       View Details
-                    </button>
-                    <button className="text-red-600 hover:text-red-800">
+                    </a>
+                    <button
+                      onClick={() => alert('Deactivate coming soon')}
+                      className="text-red-600 hover:text-red-800"
+                    >
                       Deactivate
                     </button>
                   </td>

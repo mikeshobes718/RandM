@@ -476,5 +476,12 @@ async function startCheckout(plan: 'monthly' | 'yearly', setLoading: (v: boolean
 async function logout() {
   try { await fetch('/api/auth/logout', { method: 'POST' }); } catch {}
   try { localStorage.removeItem('idToken'); localStorage.removeItem('userEmail'); } catch {}
-  window.location.href = '/';
+  // Force a hard navigation to clear any client state
+  try {
+    const url = new URL('/', window.location.origin);
+    url.searchParams.set('signed_out', Date.now().toString());
+    window.location.replace(url.toString());
+  } catch {
+    window.location.href = '/';
+  }
 }

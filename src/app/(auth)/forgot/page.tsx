@@ -128,12 +128,16 @@ export default function ForgotPasswordPage() {
                     <p className="font-semibold mb-2">Need it right away?</p>
                     <p className="mb-3">Use the button below to open your reset link instantly.</p>
                     <div className="flex flex-col gap-2 sm:flex-row">
-                      <button
-                        onClick={handleOpenLink}
-                        className="inline-flex items-center justify-center rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-600 transition"
-                      >
-                        Open reset link
-                      </button>
+                      {resetLink && (
+                        <a
+                          href={resetLink}
+                          target="_blank"
+                          rel="noopener"
+                          className="inline-flex items-center justify-center rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-600 transition"
+                        >
+                          Open reset link
+                        </a>
+                      )}
                       <button
                         onClick={handleCopyLink}
                         className="inline-flex items-center justify-center rounded-lg border border-green-300 px-4 py-2 text-sm font-semibold text-green-700 hover:bg-green-100 transition"
