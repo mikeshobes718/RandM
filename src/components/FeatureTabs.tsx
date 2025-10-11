@@ -36,14 +36,14 @@ export function FeatureTabs() {
 
   return (
     <div className="w-full">
-      <div className="flex flex-wrap gap-2 md:gap-3">
+      <div className="flex flex-wrap gap-2 sm:gap-3">
         {tabs.map((t) => {
           const isActive = active === t.key;
           return (
             <button
               key={t.key}
               onClick={() => setActive(t.key)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition border ${
+              className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition border ${
                 isActive
                   ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white border-transparent shadow"
                   : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
@@ -56,8 +56,8 @@ export function FeatureTabs() {
         })}
       </div>
 
-      <div className="mt-6 rounded-2xl bg-white border border-gray-100 shadow-sm p-6 md:p-8">
-        <p className="text-gray-600 mb-6">{tabs.find((t) => t.key === active)?.description}</p>
+      <div className="mt-4 sm:mt-6 rounded-2xl bg-white border border-gray-100 shadow-sm p-4 sm:p-6 md:p-8">
+        <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">{tabs.find((t) => t.key === active)?.description}</p>
         {active === "links" && <DemoLinks />}
         {active === "qr" && <DemoQr />}
         {active === "automation" && <DemoAutomation />}
@@ -69,28 +69,28 @@ export function FeatureTabs() {
 
 function DemoLinks() {
   return (
-    <div className="grid md:grid-cols-2 gap-6">
-      <div className="rounded-xl border border-gray-100 p-4">
-        <div className="text-sm text-gray-500 mb-2">Preview</div>
-        <div className="rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 flex items-center justify-between">
-          <div>
-            <div className="font-semibold">Your Google Review Link</div>
-            <div className="text-blue-100 text-sm">reviews.co/yourbrand</div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+      <div className="rounded-xl border border-gray-100 p-3 sm:p-4">
+        <div className="text-xs sm:text-sm text-gray-500 mb-2">Preview</div>
+        <div className="rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-sm sm:text-base font-semibold">Your Google Review Link</div>
+            <div className="text-blue-100 text-xs sm:text-sm truncate">reviews.co/yourbrand</div>
           </div>
-          <button className="bg-white text-blue-700 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-blue-50">
+          <button className="bg-white text-blue-700 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-blue-50 whitespace-nowrap flex-shrink-0">
             Copy
           </button>
         </div>
       </div>
-      <div className="rounded-xl border border-gray-100 p-4">
-        <div className="text-sm text-gray-500 mb-2">Share</div>
-        <div className="flex gap-3">
-          <span className="inline-flex items-center gap-2 rounded-lg px-3 py-2 bg-gray-50 text-gray-700 border border-gray-200">
-            <svg aria-hidden className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 12h-6m0 0l3 3m-3-3l3-3M2 12h6m0 0l-3 3m3-3l-3-3"/></svg>
+      <div className="rounded-xl border border-gray-100 p-3 sm:p-4">
+        <div className="text-xs sm:text-sm text-gray-500 mb-2">Share</div>
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 bg-gray-50 text-gray-700 border border-gray-200 text-xs sm:text-sm">
+            <svg aria-hidden className="w-3 h-3 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M22 12h-6m0 0l3 3m-3-3l3-3M2 12h6m0 0l-3 3m3-3l-3-3"/></svg>
             SMS
           </span>
-          <span className="inline-flex items-center gap-2 rounded-lg px-3 py-2 bg-gray-50 text-gray-700 border border-gray-200">Email</span>
-          <span className="inline-flex items-center gap-2 rounded-lg px-3 py-2 bg-gray-50 text-gray-700 border border-gray-200">WhatsApp</span>
+          <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 bg-gray-50 text-gray-700 border border-gray-200 text-xs sm:text-sm">Email</span>
+          <span className="inline-flex items-center gap-1.5 sm:gap-2 rounded-lg px-2.5 sm:px-3 py-1.5 sm:py-2 bg-gray-50 text-gray-700 border border-gray-200 text-xs sm:text-sm">WhatsApp</span>
         </div>
       </div>
     </div>
