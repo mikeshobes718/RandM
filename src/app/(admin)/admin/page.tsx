@@ -264,21 +264,32 @@ export default function AdminPage() {
               <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">Coming soon</span>
             </button>
             <button 
-              onClick={() => {
+              onClick={async () => {
                 const auth = getAuth(app);
                 const user = auth.currentUser;
                 if (user) {
                   setLoading(true);
                   setError(null);
-                  fetchMetrics(user);
+                  await fetchMetrics(user);
+                  // Show brief success message
+                  const btn = document.getElementById('refresh-btn');
+                  if (btn) {
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg><span class="text-green-600">Updated!</span>';
+                    setTimeout(() => {
+                      btn.innerHTML = originalText;
+                    }, 2000);
+                  }
                 }
               }}
-              className="w-full text-left px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-md transition flex items-center gap-2"
+              id="refresh-btn"
+              disabled={loading}
+              className="w-full text-left px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-md transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <span>Refresh Metrics</span>
+              <span>{loading ? 'Refreshing...' : 'Refresh Metrics'}</span>
             </button>
           </div>
         </div>

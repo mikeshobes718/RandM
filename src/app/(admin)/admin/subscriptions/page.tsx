@@ -94,6 +94,17 @@ export default function AdminSubscriptionsPage() {
     }
   };
 
+  const formatPlanName = (planId: string) => {
+    // Convert Stripe price IDs to human-friendly names
+    if (planId.includes('starter')) return 'Starter';
+    if (planId.includes('pro') && planId.includes('manual')) return 'Pro (Manual)';
+    if (planId.includes('pro') && planId.includes('monthly')) return 'Pro (Monthly)';
+    if (planId.includes('pro') && planId.includes('yearly')) return 'Pro (Yearly)';
+    if (planId.includes('pro')) return 'Pro';
+    // Fallback: capitalize first letter
+    return planId.charAt(0).toUpperCase() + planId.slice(1);
+  };
+
   if (loading) {
     return (
       <div className="p-8">
@@ -196,8 +207,11 @@ export default function AdminSubscriptionsPage() {
                     {subscription.uid.substring(0, 8)}...
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPlanColor(subscription.plan_id)}`}>
-                      {subscription.plan_id.charAt(0).toUpperCase() + subscription.plan_id.slice(1)}
+                    <span 
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPlanColor(subscription.plan_id)}`}
+                      title={`Stripe Price ID: ${subscription.plan_id}`}
+                    >
+                      {formatPlanName(subscription.plan_id)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -252,11 +266,13 @@ export default function AdminSubscriptionsPage() {
             <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No subscriptions found</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              {statusFilter === 'all' ? 'No active subscriptions yet' : `No ${statusFilter} subscriptions`}
+            </h3>
             <p className="mt-1 text-sm text-gray-500">
               {statusFilter === 'all' 
-                ? 'No subscriptions have been created yet.'
-                : `No subscriptions with status "${statusFilter}" found.`
+                ? 'Subscriptions will appear here when users upgrade to Pro. Encourage signups via the pricing page.'
+                : `Try selecting a different status filter or check back later.`
               }
             </p>
           </div>
