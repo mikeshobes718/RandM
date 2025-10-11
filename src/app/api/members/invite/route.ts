@@ -18,7 +18,15 @@ export async function POST(req: Request) {
 
   const supa = getSupabaseAdmin();
   const token = crypto.randomUUID();
-  await supa.from('member_invites').insert({ token, business_id: businessId, email, role, invited_by: uid });
+  
+  // Insert invite with error handling
+  const insertResult = await supa.from('member_invites').insert({ token, business_id: businessId, email, role, invited_by: uid });
+  console.log('[INVITE API] Insert result:', JSON.stringify(insertResult));
+  
+  if (insertResult.error) {
+    console.error('[INVITE API] Insert error:', insertResult.error);
+    return new NextResponse(`Failed to create invite: ${insertResult.error.message}`, { status: 500 });
+  }
 
   const { APP_URL, EMAIL_FROM } = getEnv();
   const pm = getPostmarkClient();
@@ -26,8 +34,10 @@ export async function POST(req: Request) {
   const tpl = inviteEmail(uid, link);
   try {
     await pm.sendEmail({ From: EMAIL_FROM, To: email, Subject: tpl.subject, HtmlBody: tpl.html, TextBody: tpl.text });
+    console.log('[INVITE API] Email sent successfully');
     return NextResponse.json({ ok: true, emailSent: true });
   } catch (err) {
+    console.error('[INVITE API] Email send error:', err);
     // Non-fatal: invitation record exists; surface success so UI can update pending list
     return NextResponse.json({ ok: true, emailSent: false, warning: 'Invite created, but email not sent yet. We\'ll retry shortly.' });
   }

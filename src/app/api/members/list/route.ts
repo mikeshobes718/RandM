@@ -24,15 +24,24 @@ export async function GET(req: Request) {
   try {
     const m = await supa.from('business_members').select('uid,role,added_at').eq('business_id', businessId);
     members = { data: m.data || [] };
-  } catch {}
+    console.log('[LIST API] Members query result:', JSON.stringify(m));
+  } catch (e) {
+    console.error('[LIST API] Members query error:', e);
+  }
   try {
     const i = await supa.from('member_invites').select('email,role,invited_at,token').eq('business_id', businessId);
     invites = { data: i.data || [] };
-  } catch {}
-  return NextResponse.json({
+    console.log('[LIST API] Invites query result:', JSON.stringify(i));
+  } catch (e) {
+    console.error('[LIST API] Invites query error:', e);
+  }
+  
+  const response = {
     canManage: canManageMembers(role),
     members: members.data || [],
     invites: invites.data || [],
     role,
-  });
+  };
+  console.log('[LIST API] Returning response:', JSON.stringify(response));
+  return NextResponse.json(response);
 }
