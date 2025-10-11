@@ -41,7 +41,7 @@ export default function SettingsPage() {
   const [userName, setUserName] = useState('');
   const [savingAccount, setSavingAccount] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
-  const BUILD_VERSION = '2025-10-11-v10-production-clean'; // Update this to force cache bust
+  const BUILD_VERSION = '2025-10-11-v11-mobile-responsive'; // Update this to force cache bust
   const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 
   // Google Places Autocomplete state
@@ -379,6 +379,37 @@ export default function SettingsPage() {
     }
   }
 
+  async function cancelInvite(token: string) {
+    if (!businessId) return;
+    
+    if (!confirm('Revoke this invitation?')) {
+      return;
+    }
+    
+    setError(null);
+    try {
+      await fetch('/api/members/cancel-invite', {
+        method: 'POST',
+        headers: { ...bearer(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const r = await fetch(`/api/members/list?businessId=${businessId}`, { 
+        headers: bearer(),
+        credentials: 'include',
+        cache: 'no-store'
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setInvites(data.invites||[]);
+        setMembers(data.members||[]);
+      }
+      setSuccess('Invitation revoked successfully');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (e) {
+      setError('Failed to revoke invitation');
+    }
+  }
+
   async function openBillingPortal() {
     try {
       setError(null);
@@ -484,27 +515,22 @@ export default function SettingsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-10">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* Success Banner */}
-        <div className="rounded-2xl border-2 border-green-500 bg-green-50 p-4 text-center">
-          <p className="text-lg font-bold text-green-900">✅ All Systems Operational</p>
-          <p className="text-sm text-green-700 mt-1">Team invites, billing portal, and sign-out flows working correctly.</p>
-        </div>
         
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Settings</h1>
-            <p className="mt-1 text-slate-600">Manage your account and business preferences</p>
-            <p className="mt-1 text-xs text-slate-400">Build: {BUILD_VERSION}</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900">Settings</h1>
+            <p className="mt-1 text-sm sm:text-base text-slate-600">Manage your account and business preferences</p>
           </div>
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition whitespace-nowrap"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Back to Dashboard
+            <span className="hidden sm:inline">Back to Dashboard</span>
+            <span className="sm:hidden">Dashboard</span>
           </Link>
         </div>
 
@@ -769,19 +795,19 @@ export default function SettingsPage() {
                 ) : (
                   <>
                     {canManage && (
-                      <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Invite Team Member</label>
-                        <div className="flex gap-2">
+                      <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-6">
+                        <label className="block text-sm font-medium text-slate-700 mb-3">Invite Team Member</label>
+                        <div className="flex flex-col sm:flex-row gap-3">
                           <input
                             type="email"
                             value={inviteEmail}
                             onChange={e=>setInviteEmail(e.target.value)}
                             placeholder="colleague@company.com"
-                            className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                            className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
                           />
                           <button
                             onClick={invite}
-                            className="rounded-xl px-6 py-3 bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition whitespace-nowrap"
+                            className="rounded-xl px-6 py-3 bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition whitespace-nowrap w-full sm:w-auto"
                           >
                             Send Invite
                           </button>
@@ -789,21 +815,21 @@ export default function SettingsPage() {
                       </div>
                     )}
 
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
                       {/* Current Members */}
                       <div>
-                        <h3 className="font-semibold text-slate-900 mb-3">Current Members</h3>
-                        <div className="space-y-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-3">Current Members</h3>
+                        <div className="space-y-3">
                           {members.map(m => (
-                            <div key={m.uid} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4">
-                              <div className="flex-1">
-                                <div className="font-medium text-slate-900">{m.email || m.uid}</div>
-                                <div className="text-sm text-slate-500 capitalize">{m.role}</div>
+                            <div key={m.uid} className="flex items-start sm:items-center justify-between rounded-xl border border-slate-200 bg-white p-3 sm:p-4 gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-slate-900 text-sm sm:text-base truncate">{m.email || m.uid}</div>
+                                <div className="text-xs sm:text-sm text-slate-500 capitalize mt-0.5">{m.role}</div>
                               </div>
                               {canManage && m.role !== 'owner' && (
                                 <button
                                   onClick={()=>remove(m.uid)}
-                                  className="text-red-600 hover:text-red-700 text-sm font-medium"
+                                  className="text-red-600 hover:text-red-700 text-xs sm:text-sm font-medium flex-shrink-0"
                                 >
                                   Remove
                                 </button>
@@ -820,14 +846,22 @@ export default function SettingsPage() {
 
                       {/* Pending Invites */}
                       <div>
-                        <h3 className="font-semibold text-slate-900 mb-3">Pending Invites</h3>
-                        <div className="space-y-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-3">Pending Invites</h3>
+                        <div className="space-y-3">
                           {invites.map(i => (
-                            <div key={i.token} className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-4">
-                              <div className="flex-1">
-                                <div className="font-medium text-slate-900">{i.email}</div>
-                                <div className="text-sm text-slate-500 capitalize">{i.role} • Pending</div>
+                            <div key={i.token} className="flex items-start sm:items-center justify-between rounded-xl border border-amber-200 bg-amber-50 p-3 sm:p-4 gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-slate-900 text-sm sm:text-base truncate">{i.email}</div>
+                                <div className="text-xs sm:text-sm text-slate-500 capitalize mt-0.5">{i.role} • Pending</div>
                               </div>
+                              {canManage && (
+                                <button
+                                  onClick={()=>cancelInvite(i.token)}
+                                  className="text-red-600 hover:text-red-700 text-xs sm:text-sm font-medium flex-shrink-0"
+                                >
+                                  Revoke
+                                </button>
+                              )}
                             </div>
                           ))}
                           {invites.length===0 && (

@@ -530,26 +530,23 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="text-center">
-            <div className="inline-flex items-center gap-6 rounded-2xl border-2 border-indigo-200 bg-white px-8 py-4 shadow-lg">
-              <div>
-                <div className="text-3xl font-bold text-slate-900">4.8/5</div>
-                <div className="text-sm text-slate-600">Average rating</div>
+          <div className="text-center px-4">
+            <div className="inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-6 rounded-2xl border-2 border-indigo-200 bg-white px-6 sm:px-8 py-6 sm:py-4 shadow-lg w-full sm:w-auto max-w-2xl mx-auto">
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-slate-900">4.8/5</div>
+                <div className="text-xs sm:text-sm text-slate-600 whitespace-nowrap">Average rating</div>
               </div>
-              <div className="h-12 w-px bg-slate-200" />
-              <div>
-                <div className="text-3xl font-bold text-slate-900">500+</div>
-                <div className="text-sm text-slate-600">Active businesses</div>
+              <div className="hidden sm:block h-12 w-px bg-slate-200" />
+              <div className="block sm:hidden h-px w-full bg-slate-200" />
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-slate-900">500+</div>
+                <div className="text-xs sm:text-sm text-slate-600 whitespace-nowrap">Active businesses</div>
               </div>
-              <div className="h-12 w-px bg-slate-200" />
-              <div>
-                <div className="text-3xl font-bold text-slate-900">15K+</div>
-                <div className="text-sm text-slate-600">Reviews collected</div>
-              </div>
-              <div className="h-12 w-px bg-slate-200" />
-              <div>
-                <div className="text-3xl font-bold text-slate-900">3x</div>
-                <div className="text-sm text-slate-600">More reviews vs. before</div>
+              <div className="hidden sm:block h-12 w-px bg-slate-200" />
+              <div className="block sm:hidden h-px w-full bg-slate-200" />
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-slate-900">15K+</div>
+                <div className="text-xs sm:text-sm text-slate-600 whitespace-nowrap">Reviews collected</div>
               </div>
             </div>
           </div>
