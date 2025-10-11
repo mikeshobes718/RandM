@@ -98,6 +98,8 @@ function DashboardContent() {
   const isFromEdit = searchParams?.get('from') === 'edit';
   const [stats, setStats] = useState<Stats>({ reviewsThisMonth: 0, shareLinkScans: 0, averageRating: null });
   const [recentFeedback, setRecentFeedback] = useState<FeedbackItem[]>([]);
+  const [expandedFeedback, setExpandedFeedback] = useState<Set<string>>(new Set());
+  const [feedbackSort, setFeedbackSort] = useState<'date' | 'rating'>('date');
   const [square, setSquare] = useState<SquareConnectionInfo>(null);
   const [backfillOpen, setBackfillOpen] = useState(false);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
@@ -128,6 +130,28 @@ function DashboardContent() {
       setRecentFeedback(items);
     } catch {}
   };
+
+  const toggleFeedbackExpansion = (id: string) => {
+    setExpandedFeedback(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const sortedFeedback = useMemo(() => {
+    const sorted = [...recentFeedback];
+    if (feedbackSort === 'rating') {
+      sorted.sort((a, b) => b.rating - a.rating);
+    } else {
+      sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
+    return sorted;
+  }, [recentFeedback, feedbackSort]);
 
   useEffect(() => {
     // Do not redirect users from the dashboard based on email verification.
@@ -901,57 +925,140 @@ function DashboardContent() {
               </div>
 
               <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-lg shadow-slate-900/5 backdrop-blur">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <div className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Latest feedback</div>
                     <p className="mt-2 text-sm text-slate-600">Private submissions from your review landing. Only your team can see these.</p>
                   </div>
-                  <Link href="/feedback" className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500">
-                    View all
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
-                    </svg>
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    <select 
+                      value={feedbackSort} 
+                      onChange={(e) => setFeedbackSort(e.target.value as 'date' | 'rating')}
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition"
+                    >
+                      <option value="date">Sort by Date</option>
+                      <option value="rating">Sort by Rating</option>
+                    </select>
+                    <Link href="/feedback" className="inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500 transition">
+                      View all
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-6-6l6 6-6 6" />
+                      </svg>
+                    </Link>
+                  </div>
                 </div>
                 {recentFeedback.length === 0 ? (
                   <div className="mt-5 rounded-2xl border border-dashed border-slate-200/80 bg-slate-50/60 px-5 py-6 text-sm text-slate-600">
                     No feedback yet. Share your landing link to start gathering responses.
                   </div>
                 ) : (
-                  <ul className="mt-6 space-y-4">
-                    {recentFeedback.map((item) => (
-                      <li key={item.id} className="relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white/90 p-4 shadow-sm">
-                        <div className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-indigo-400 to-violet-500" aria-hidden="true" />
-                        <div className="ml-3 flex flex-col gap-3">
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                              <div className="text-sm font-semibold text-slate-900">{item.name || 'Anonymous'}</div>
-                              <div className="text-xs text-slate-500">{item.email || '—'}</div>
-                              {item.phone && <div className="text-xs text-slate-500">{formatPhone(item.phone)}</div>}
+                  <ul className="mt-6 space-y-3">
+                    {sortedFeedback.map((item, idx) => {
+                      const isExpanded = expandedFeedback.has(item.id);
+                      const commentTruncated = item.comment && item.comment.length > 120;
+                      const displayComment = isExpanded || !commentTruncated 
+                        ? item.comment 
+                        : item.comment?.slice(0, 120) + '...';
+                      
+                      return (
+                        <li 
+                          key={item.id} 
+                          className={`relative overflow-hidden rounded-2xl border border-slate-200/70 p-4 shadow-sm transition-all hover:shadow-md ${
+                            idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'
+                          }`}
+                        >
+                          <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-indigo-400 to-violet-500" aria-hidden="true" />
+                          <div className="ml-2 space-y-3">
+                            {/* Header row: Contact info, rating, and follow-up status */}
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-baseline gap-2">
+                                  <span className="text-sm font-semibold text-slate-900">{item.name || 'Anonymous'}</span>
+                                  <span className="text-xs text-slate-500">
+                                    {[item.email, item.phone].filter(Boolean).join(' • ') || '—'}
+                                  </span>
+                                </div>
+                                <div className="mt-1 text-xs text-slate-400">
+                                  {new Date(item.created_at).toLocaleDateString('en-US', { 
+                                    month: 'short', 
+                                    day: 'numeric', 
+                                    year: 'numeric',
+                                    hour: 'numeric',
+                                    minute: '2-digit'
+                                  })}
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                {/* Rating badge */}
+                                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                  item.rating >= 4 
+                                    ? 'bg-emerald-500/10 text-emerald-700' 
+                                    : item.rating >= 3 
+                                    ? 'bg-amber-500/10 text-amber-700'
+                                    : 'bg-red-500/10 text-red-700'
+                                }`}>
+                                  <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.08 3.33a1 1 0 00.96.7h3.4c.96 0 1.36 1.23.58 1.79l-2.75 1.99a1 1 0 00-.36 1.11l1.08 3.33c.3.92-.76 1.68-1.54 1.11l-2.75-1.99a1 1 0 00-1.18 0l-2.75 1.99c-.78.57-1.84-.19-1.54-1.11l1.08-3.33a1 1 0 00-.36-1.11L2.99 8.78c-.78-.56-.38-1.79.58-1.79h3.4a1 1 0 00.96-.7l1.08-3.33z" />
+                                  </svg>
+                                  {item.rating}
+                                </span>
+                                
+                                {/* Follow-up status chip */}
+                                {item.marketing_consent ? (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                                    <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L8.5 11.086l6.543-6.543a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    </svg>
+                                    Can follow up
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-500/10 px-2.5 py-1 text-xs font-medium text-slate-600">
+                                    <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                    </svg>
+                                    No follow-up
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            <div className="inline-flex items-center gap-1 rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-600">
-                              {item.rating}★ rating
-                            </div>
-                          </div>
-                          {item.comment && (
-                            <p className="text-sm text-slate-600 whitespace-pre-line">{item.comment}</p>
-                          )}
-                          <div className="flex flex-col gap-2 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-                            <span>{new Date(item.created_at).toLocaleString()}</span>
-                            {item.marketing_consent ? (
-                              <span className="inline-flex items-center gap-1 text-emerald-600">
-                                <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L8.5 11.086l6.543-6.543a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                                Follow-up permitted
-                              </span>
-                            ) : (
-                              <span>Follow-up not permitted</span>
+                            
+                            {/* Comment */}
+                            {item.comment && (
+                              <div>
+                                <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                                  {displayComment}
+                                </p>
+                                {commentTruncated && (
+                                  <button 
+                                    onClick={() => toggleFeedbackExpansion(item.id)}
+                                    className="mt-2 text-xs font-medium text-indigo-600 hover:text-indigo-700 transition"
+                                  >
+                                    {isExpanded ? 'Show less' : 'Read more'}
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                            
+                            {/* Action button for follow-up permitted items */}
+                            {item.marketing_consent && item.email && (
+                              <div className="pt-2 border-t border-slate-100">
+                                <a
+                                  href={`mailto:${item.email}?subject=Following up on your feedback`}
+                                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 transition shadow-sm"
+                                >
+                                  <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M3 4a2 2 0 00-2 2v1.161l8.441 4.221a1.25 1.25 0 001.118 0L19 7.162V6a2 2 0 00-2-2H3z" />
+                                    <path d="M19 8.839l-7.77 3.885a2.75 2.75 0 01-2.46 0L1 8.839V14a2 2 0 002 2h14a2 2 0 002-2V8.839z" />
+                                  </svg>
+                                  Send Reply
+                                </a>
+                              </div>
                             )}
                           </div>
-                        </div>
-                      </li>
-                    ))}
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
