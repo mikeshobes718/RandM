@@ -183,7 +183,20 @@ export default function AdminUsersPage() {
                       View Details
                     </button>
                     <button
-                      onClick={() => alert('Deactivate coming soon')}
+                      onClick={() => {
+                        if (confirm(
+                          `⚠️ Deactivate User Account\n\n` +
+                          `This will:\n` +
+                          `• Revoke access to the platform\n` +
+                          `• Prevent login with this email\n` +
+                          `• NOT delete user data\n\n` +
+                          `User: ${user.email}\n\n` +
+                          `This action can be reversed by reactivating the account.\n\n` +
+                          `Continue with deactivation?`
+                        )) {
+                          alert('Deactivation feature coming soon');
+                        }
+                      }}
                       className="text-red-600 hover:text-red-800 font-medium"
                     >
                       Deactivate
