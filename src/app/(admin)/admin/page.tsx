@@ -26,6 +26,13 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Cleanup: restore scroll on unmount if refresh was interrupted
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   useEffect(() => {
     const auth = getAuth(app);
     
@@ -281,10 +288,14 @@ export default function AdminPage() {
                 if (user) {
                   setRefreshing(true);
                   setError(null);
+                  // Lock body scroll
+                  document.body.style.overflow = 'hidden';
                   await fetchMetrics(user);
-                  // Show success message for 3 seconds
-                  await new Promise(resolve => setTimeout(resolve, 3000));
+                  // Show success message for 4 seconds (longer for visibility)
+                  await new Promise(resolve => setTimeout(resolve, 4000));
                   setRefreshing(false);
+                  // Restore body scroll
+                  document.body.style.overflow = '';
                 }
               }}
               disabled={loading || refreshing}
