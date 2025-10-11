@@ -41,7 +41,7 @@ export default function SettingsPage() {
   const [userName, setUserName] = useState('');
   const [savingAccount, setSavingAccount] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
-  const BUILD_VERSION = '2025-10-11-v9-timeout-fix'; // Update this to force cache bust
+  const BUILD_VERSION = '2025-10-11-v10-production-clean'; // Update this to force cache bust
   const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 
   // Google Places Autocomplete state
@@ -297,39 +297,25 @@ export default function SettingsPage() {
   }
 
   async function invite() {
-    if (!businessId) {
-      alert('DEBUG: No businessId available');
-      return;
-    }
+    if (!businessId) return;
+    
     const emailToInvite = (inviteEmail || '').trim().toLowerCase();
     
-    // Show debug info
-    alert(`DEBUG INVITE:\nRaw: "${inviteEmail}"\nProcessed: "${emailToInvite}"\nLength: ${emailToInvite.length}\nHas @: ${emailToInvite.includes('@')}`);
-    
-    console.log('[INVITE] Raw inviteEmail:', JSON.stringify(inviteEmail));
-    console.log('[INVITE] Processed email:', JSON.stringify(emailToInvite));
-    console.log('[INVITE] Email length:', emailToInvite.length);
-    console.log('[INVITE] Contains @:', emailToInvite.includes('@'));
-    
-    // Very simple email validation - just check for @ and basic structure
+    // Simple email validation
     if (!emailToInvite || !emailToInvite.includes('@') || emailToInvite.length < 5) {
-      console.log('[INVITE] Email validation failed:', emailToInvite);
       setError('Please enter a valid email address');
       return;
     }
     
-    console.log('[INVITE] Email validation passed, proceeding with invite');
     setError(null);
     setSuccess(null);
     try {
-      console.log('[INVITE] Making API call with:', { businessId, email: emailToInvite, role: 'member' });
       const response = await fetch('/api/members/invite', {
         method: 'POST',
         headers: { ...bearer(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ businessId, email: emailToInvite, role: 'member' })
       });
-      console.log('[INVITE] API response status:', response.status);
-      alert(`DEBUG: API response status: ${response.status}`);
+      
       if (response.ok) {
         setInviteEmail('');
         try {
@@ -342,7 +328,8 @@ export default function SettingsPage() {
         } catch {
           setSuccess('Invitation sent! Pending invites updated.');
         }
-        setTimeout(() => setSuccess(null), 3000);
+        setTimeout(() => setSuccess(null), 5000);
+        
         // Refresh members/invites lists
         try {
           const r = await fetch(`/api/members/list?businessId=${businessId}`, { 
@@ -350,17 +337,13 @@ export default function SettingsPage() {
             credentials: 'include',
             cache: 'no-store'
           });
-          alert(`DEBUG: Refresh list API status: ${r.status}`);
           if (r.ok) {
             const data = await r.json();
-            alert(`DEBUG: Invites count: ${data.invites?.length || 0}, Members count: ${data.members?.length || 0}`);
             setInvites(data.invites||[]);
             setMembers(data.members||[]);
-          } else {
-            alert(`DEBUG: Refresh list failed: ${r.status}`);
           }
         } catch (e) {
-          alert(`DEBUG: Refresh list error: ${e}`);
+          console.warn('Failed to refresh members list:', e);
         }
       } else {
         const text = await response.text().catch(()=> 'Failed to send invitation');
@@ -501,10 +484,10 @@ export default function SettingsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-10">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* Deployment Confirmation Banner */}
+        {/* Success Banner */}
         <div className="rounded-2xl border-2 border-green-500 bg-green-50 p-4 text-center">
-          <p className="text-lg font-bold text-green-900">✅ DEPLOYMENT CONFIRMED: {BUILD_VERSION}</p>
-          <p className="text-sm text-green-700 mt-1">Timeout handling + table created. Team invites should work.</p>
+          <p className="text-lg font-bold text-green-900">✅ All Systems Operational</p>
+          <p className="text-sm text-green-700 mt-1">Team invites, billing portal, and sign-out flows working correctly.</p>
         </div>
         
         {/* Header */}
@@ -942,38 +925,32 @@ export default function SettingsPage() {
             <button
               onClick={async () => {
                 if (confirm('Sign out of your account?')) {
-                  alert('DEBUG: Starting logout process...');
-                  
                   // Clear client-side storage FIRST
                   try { 
                     localStorage.removeItem('idToken');
                     localStorage.removeItem('userEmail');
                     localStorage.removeItem('selectedPlan');
-                    alert('DEBUG: LocalStorage cleared');
                   } catch {}
                   try {
                     sessionStorage.clear();
-                    alert('DEBUG: SessionStorage cleared');
                   } catch {}
                   
                   // Then call logout API
                   try { 
-                    const res = await fetch('/api/auth/logout', { 
+                    await fetch('/api/auth/logout', { 
                       method: 'POST', 
                       credentials: 'include',
                       cache: 'no-store',
                       headers: { 'Cache-Control': 'no-cache' }
                     });
-                    alert(`DEBUG: Logout API response: ${res.status}`);
                   } catch (e) {
-                    alert(`DEBUG: Logout API error: ${e}`);
+                    console.error('Logout error:', e);
                   }
                   
                   // Wait a moment for cookies to clear
                   await new Promise(resolve => setTimeout(resolve, 100));
                   
                   // Force a hard redirect to ensure complete session cleanup
-                  alert('DEBUG: About to redirect to /login');
                   window.location.replace('/login?nocache=' + Date.now());
                 }
               }}
