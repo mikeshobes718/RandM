@@ -212,15 +212,15 @@ export default function AdminSubscriptionsPage() {
                     {new Date(subscription.updated_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <a
-                      href={`/admin/subscriptions?uid=${encodeURIComponent(subscription.uid)}`}
-                      className="text-blue-600 hover:text-blue-800 mr-4"
+                    <button
+                      onClick={() => alert('Subscription details page coming soon')}
+                      className="text-blue-600 hover:text-blue-800 mr-4 font-medium"
                     >
                       View Details
-                    </a>
+                    </button>
                     <button
                       onClick={() => alert('Cancel coming soon')}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-red-600 hover:text-red-800 font-medium"
                     >
                       Cancel
                     </button>
