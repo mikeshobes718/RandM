@@ -41,7 +41,7 @@ export default function SettingsPage() {
   const [userName, setUserName] = useState('');
   const [savingAccount, setSavingAccount] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
-  const BUILD_VERSION = '2025-10-11-v8-invite-logging'; // Update this to force cache bust
+  const BUILD_VERSION = '2025-10-11-v9-timeout-fix'; // Update this to force cache bust
   const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 
   // Google Places Autocomplete state
@@ -126,16 +126,33 @@ export default function SettingsPage() {
           // Fetch members if business exists
           if (id) {
             try {
-              const r = await fetch(`/api/members/list?businessId=${id}`, { cache: 'no-store', headers: bearer(), credentials: 'include' });
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+              
+              const r = await fetch(`/api/members/list?businessId=${id}`, { 
+                cache: 'no-store', 
+                headers: bearer(), 
+                credentials: 'include',
+                signal: controller.signal
+              });
+              clearTimeout(timeoutId);
+              
               if (r.ok) {
                 const data = await r.json();
                 setMembers(data.members || []);
                 setInvites(data.invites || []);
                 setCanManage(Boolean(data.canManage));
                 setRole(data.role || '');
+              } else {
+                console.warn('Failed to fetch members, status:', r.status);
               }
             } catch (e) {
               console.warn('Failed to fetch members:', e);
+              // Set default values so page still loads
+              setMembers([]);
+              setInvites([]);
+              setCanManage(false);
+              setRole('');
             }
           }
         }
@@ -487,7 +504,7 @@ export default function SettingsPage() {
         {/* Deployment Confirmation Banner */}
         <div className="rounded-2xl border-2 border-green-500 bg-green-50 p-4 text-center">
           <p className="text-lg font-bold text-green-900">✅ DEPLOYMENT CONFIRMED: {BUILD_VERSION}</p>
-          <p className="text-sm text-green-700 mt-1">Server-side logging enabled for invite debugging. Check Vercel logs.</p>
+          <p className="text-sm text-green-700 mt-1">Timeout handling + table created. Team invites should work.</p>
         </div>
         
         {/* Header */}

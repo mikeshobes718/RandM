@@ -21,7 +21,6 @@ export async function POST(req: Request) {
   
   // Insert invite with error handling
   const insertResult = await supa.from('member_invites').insert({ token, business_id: businessId, email, role, invited_by: uid });
-  console.log('[INVITE API] Insert result:', JSON.stringify(insertResult));
   
   if (insertResult.error) {
     console.error('[INVITE API] Insert error:', insertResult.error);
@@ -34,7 +33,6 @@ export async function POST(req: Request) {
   const tpl = inviteEmail(uid, link);
   try {
     await pm.sendEmail({ From: EMAIL_FROM, To: email, Subject: tpl.subject, HtmlBody: tpl.html, TextBody: tpl.text });
-    console.log('[INVITE API] Email sent successfully');
     return NextResponse.json({ ok: true, emailSent: true });
   } catch (err) {
     console.error('[INVITE API] Email send error:', err);
