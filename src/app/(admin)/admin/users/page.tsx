@@ -228,12 +228,13 @@ export default function AdminUsersPage() {
                     {new Date(user.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <button
-                      onClick={() => alert('User details page coming soon')}
-                      className="text-blue-600 hover:text-blue-800 mr-4 font-medium"
+                    <span
+                      className="text-gray-400 mr-4 font-medium cursor-not-allowed inline-flex items-center gap-1"
+                      title="User details page under construction"
                     >
                       View Details
-                    </button>
+                      <span className="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">Soon</span>
+                    </span>
                     <button
                       onClick={() => {
                         if (confirm(

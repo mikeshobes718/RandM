@@ -226,12 +226,13 @@ export default function AdminSubscriptionsPage() {
                     {new Date(subscription.updated_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <button
-                      onClick={() => alert('Subscription details page coming soon')}
-                      className="text-blue-600 hover:text-blue-800 mr-4 font-medium"
+                    <span
+                      className="text-gray-400 mr-4 font-medium cursor-not-allowed inline-flex items-center gap-1"
+                      title="Subscription details page under construction"
                     >
                       View Details
-                    </button>
+                      <span className="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">Soon</span>
+                    </span>
                     <button
                       onClick={() => {
                         if (confirm(
@@ -242,7 +243,7 @@ export default function AdminSubscriptionsPage() {
                           `• Stop future billing\n` +
                           `• User data will be retained\n\n` +
                           `User: ${subscription.uid}\n` +
-                          `Plan: ${subscription.plan_id}\n` +
+                          `Plan: ${formatPlanName(subscription.plan_id)}\n` +
                           `Status: ${subscription.status}\n\n` +
                           `This is a high-impact action. The user will lose access to Pro features.\n\n` +
                           `Continue with cancellation?`

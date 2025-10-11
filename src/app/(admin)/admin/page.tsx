@@ -24,6 +24,7 @@ export default function AdminPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const auth = getAuth(app);
@@ -134,7 +135,17 @@ export default function AdminPage() {
       </div>
 
       {/* Key Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 relative transition-opacity ${refreshing ? 'opacity-50' : ''}`}>
+        {refreshing && (
+          <div className="absolute inset-0 bg-white/30 backdrop-blur-[2px] rounded-lg flex items-center justify-center z-10">
+            <div className="bg-white rounded-lg shadow-lg px-4 py-3 flex items-center gap-3">
+              <svg className="w-5 h-5 text-indigo-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span className="text-sm font-medium text-gray-700">Refreshing metrics...</span>
+            </div>
+          </div>
+        )}
         {/* Total Accounts */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
@@ -268,28 +279,34 @@ export default function AdminPage() {
                 const auth = getAuth(app);
                 const user = auth.currentUser;
                 if (user) {
-                  setLoading(true);
+                  setRefreshing(true);
                   setError(null);
                   await fetchMetrics(user);
-                  // Show brief success message
-                  const btn = document.getElementById('refresh-btn');
-                  if (btn) {
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = '<svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg><span class="text-green-600">Updated!</span>';
-                    setTimeout(() => {
-                      btn.innerHTML = originalText;
-                    }, 2000);
-                  }
+                  // Show success message for 3 seconds
+                  await new Promise(resolve => setTimeout(resolve, 3000));
+                  setRefreshing(false);
                 }
               }}
-              id="refresh-btn"
-              disabled={loading}
-              className="w-full text-left px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-md transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading || refreshing}
+              className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                refreshing ? 'bg-green-50 text-green-600' : 'text-indigo-600 hover:bg-indigo-50'
+              }`}
             >
-              <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <span>{loading ? 'Refreshing...' : 'Refresh Metrics'}</span>
+              {refreshing ? (
+                <>
+                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Metrics Updated!</span>
+                </>
+              ) : (
+                <>
+                  <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>{loading ? 'Loading...' : 'Refresh Metrics'}</span>
+                </>
+              )}
             </button>
           </div>
         </div>
