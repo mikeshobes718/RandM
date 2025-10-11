@@ -41,7 +41,7 @@ export default function SettingsPage() {
   const [userName, setUserName] = useState('');
   const [savingAccount, setSavingAccount] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
-  const BUILD_VERSION = '2025-10-10-v6-logout-fix'; // Update this to force cache bust
+  const BUILD_VERSION = '2025-10-11-v7-cookie-delete'; // Update this to force cache bust
   const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 
   // Google Places Autocomplete state
@@ -487,7 +487,7 @@ export default function SettingsPage() {
         {/* Deployment Confirmation Banner */}
         <div className="rounded-2xl border-2 border-green-500 bg-green-50 p-4 text-center">
           <p className="text-lg font-bold text-green-900">✅ DEPLOYMENT CONFIRMED: {BUILD_VERSION}</p>
-          <p className="text-sm text-green-700 mt-1">Latest fixes are active. Console logs enabled for debugging.</p>
+          <p className="text-sm text-green-700 mt-1">Enhanced cookie deletion & invite refresh debugging active.</p>
         </div>
         
         {/* Header */}
