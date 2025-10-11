@@ -327,11 +327,23 @@ export default function SettingsPage() {
         }
         setTimeout(() => setSuccess(null), 3000);
         // Refresh members/invites lists
-        const r = await fetch(`/api/members/list?businessId=${businessId}`, { headers: bearer() });
-        if (r.ok) {
-          const data = await r.json();
-          setInvites(data.invites||[]);
-          setMembers(data.members||[]);
+        try {
+          const r = await fetch(`/api/members/list?businessId=${businessId}`, { 
+            headers: bearer(),
+            credentials: 'include',
+            cache: 'no-store'
+          });
+          alert(`DEBUG: Refresh list API status: ${r.status}`);
+          if (r.ok) {
+            const data = await r.json();
+            alert(`DEBUG: Invites count: ${data.invites?.length || 0}, Members count: ${data.members?.length || 0}`);
+            setInvites(data.invites||[]);
+            setMembers(data.members||[]);
+          } else {
+            alert(`DEBUG: Refresh list failed: ${r.status}`);
+          }
+        } catch (e) {
+          alert(`DEBUG: Refresh list error: ${e}`);
         }
       } else {
         const text = await response.text().catch(()=> 'Failed to send invitation');
@@ -914,12 +926,8 @@ export default function SettingsPage() {
               onClick={async () => {
                 if (confirm('Sign out of your account?')) {
                   alert('DEBUG: Starting logout process...');
-                  try { 
-                    const res = await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-                    alert(`DEBUG: Logout API response: ${res.status}`);
-                  } catch (e) {
-                    alert(`DEBUG: Logout API error: ${e}`);
-                  }
+                  
+                  // Clear client-side storage FIRST
                   try { 
                     localStorage.removeItem('idToken');
                     localStorage.removeItem('userEmail');
@@ -930,9 +938,26 @@ export default function SettingsPage() {
                     sessionStorage.clear();
                     alert('DEBUG: SessionStorage cleared');
                   } catch {}
+                  
+                  // Then call logout API
+                  try { 
+                    const res = await fetch('/api/auth/logout', { 
+                      method: 'POST', 
+                      credentials: 'include',
+                      cache: 'no-store',
+                      headers: { 'Cache-Control': 'no-cache' }
+                    });
+                    alert(`DEBUG: Logout API response: ${res.status}`);
+                  } catch (e) {
+                    alert(`DEBUG: Logout API error: ${e}`);
+                  }
+                  
+                  // Wait a moment for cookies to clear
+                  await new Promise(resolve => setTimeout(resolve, 100));
+                  
                   // Force a hard redirect to ensure complete session cleanup
                   alert('DEBUG: About to redirect to /login');
-                  window.location.replace('/login');
+                  window.location.replace('/login?nocache=' + Date.now());
                 }
               }}
               className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition"
