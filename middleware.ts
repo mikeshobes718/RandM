@@ -19,23 +19,10 @@ export async function middleware(req: NextRequest) {
     }
   };
 
-  // Root: gently route users to a meaningful page to avoid any cache edge 404s
+  // Root: always serve marketing homepage for signed-out users.
+  // Authenticated users will still navigate to dashboard from the app shell.
   if (pathname === '/' || pathname === '') {
-    const url = req.nextUrl.clone();
-    // Default landing: dashboard for authed verified users; otherwise send to verify
-    if (token) {
-      const claims = decodeJwt(token);
-      if (claims && claims.email_verified === false) {
-        url.pathname = '/verify-email';
-        url.searchParams.set('next', '/dashboard');
-      } else {
-        url.pathname = '/dashboard';
-      }
-    } else {
-      url.pathname = '/verify-email';
-      url.searchParams.set('next', '/dashboard');
-    }
-    return NextResponse.redirect(url);
+    return NextResponse.next();
   }
 
   // Protect dashboard: be conservative. Only redirect to verify-email if BOTH
