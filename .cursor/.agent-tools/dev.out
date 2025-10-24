@@ -1,0 +1,137 @@
+
+> reviewsandmarketing@0.1.0 dev
+> next dev -p 3000
+
+   ▲ Next.js 15.5.2
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.0.16:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 3.5s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 618ms (159 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 24.8s (727 modules)
+ GET / 200 in 25554ms
+ ✓ Compiled in 1022ms (255 modules)
+ GET / 200 in 201ms
+ ○ Compiling /api/auth/me ...
+ ✓ Compiled /api/auth/me in 1004ms (471 modules)
+ ✓ Compiled in 648ms (242 modules)
+ GET /api/auth/me 401 in 2890ms
+ GET /api/auth/me 401 in 2359ms
+ GET /api/auth/me 401 in 1891ms
+ GET /favicon.ico 200 in 2954ms
+ GET /api/auth/me 401 in 1390ms
+ GET /api/auth/me 401 in 892ms
+ GET /api/auth/me 401 in 62ms
+ ○ Compiling /api/entitlements ...
+ ✓ Compiled /api/entitlements in 2.5s (1066 modules)
+ GET /api/auth/me 401 in 2589ms
+ GET /api/entitlements 401 in 2907ms
+ GET /api/entitlements 401 in 2913ms
+ GET /api/entitlements 401 in 2913ms
+ GET /api/entitlements 401 in 2914ms
+ GET /api/entitlements 401 in 2904ms
+ GET /api/entitlements 401 in 58ms
+ ○ Compiling /api/plan/status ...
+ ✓ Compiled /api/plan/status in 871ms (1068 modules)
+ GET /api/auth/me 401 in 1207ms
+ GET /api/entitlements 401 in 1212ms
+ GET /api/plan/status 401 in 1261ms
+ GET /api/plan/status 401 in 1263ms
+ GET /api/plan/status 401 in 1264ms
+ GET /api/plan/status 401 in 1168ms
+ GET /api/plan/status 401 in 104ms
+ GET /api/plan/status 401 in 108ms
+ GET /api/entitlements 401 in 109ms
+ GET /api/plan/status 401 in 125ms
+ ○ Compiling /api/businesses/me ...
+ ✓ Compiled /api/businesses/me in 716ms (1070 modules)
+ GET /api/businesses/me 401 in 962ms
+ GET /api/businesses/me 401 in 891ms
+ GET /api/businesses/me 401 in 893ms
+ GET /api/businesses/me 401 in 848ms
+ GET /api/businesses/me 401 in 844ms
+ GET /api/businesses/me 401 in 1026ms
+ GET /api/plan/status 401 in 57ms
+ GET /api/businesses/me 401 in 74ms
+ GET /api/businesses/me 401 in 76ms
+ GET /api/businesses/me 401 in 78ms
+ GET /api/businesses/me 401 in 80ms
+ GET /api/businesses/me 401 in 80ms
+ GET /api/businesses/me 401 in 70ms
+ GET /api/businesses/me 401 in 65ms
+ GET /api/businesses/me 401 in 66ms
+ GET /api/businesses/me 401 in 66ms
+ GET /api/businesses/me 401 in 41ms
+ ✓ Compiled in 3s (256 modules)
+ GET / 200 in 152ms
+ ✓ Compiled in 929ms (256 modules)
+ GET / 200 in 211ms
+ ✓ Compiled in 1511ms (256 modules)
+ GET / 200 in 133ms
+ ⨯ Error: Cannot find module './4586.js'
+Require stack:
+- /Users/mike/RandM/.next/server/webpack-runtime.js
+- /Users/mike/RandM/.next/server/app/api/businesses/me/route.js
+- /Users/mike/RandM/node_modules/next/dist/server/require.js
+- /Users/mike/RandM/node_modules/next/dist/server/load-components.js
+- /Users/mike/RandM/node_modules/next/dist/build/utils.js
+- /Users/mike/RandM/node_modules/next/dist/build/swc/options.js
+- /Users/mike/RandM/node_modules/next/dist/build/swc/index.js
+- /Users/mike/RandM/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/mike/RandM/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/mike/RandM/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/mike/RandM/node_modules/next/dist/server/lib/router-server.js
+- /Users/mike/RandM/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/api/auth/me/route.js:1:11937)
+    at Object.<anonymous> (.next/server/app/api/auth/me/route.js:1:11999) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/api/auth/me'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 4.9s (1130 modules)
+ GET /api/auth/me 500 in 6125ms
+ GET / 200 in 2952ms
+ ○ Compiling /api/entitlements ...
+ ✓ Compiled /api/entitlements in 771ms (1011 modules)
+ GET /api/entitlements 401 in 2091ms
+ ○ Compiling /api/plan/status ...
+ ✓ Compiled /api/plan/status in 914ms (1013 modules)
+ GET / 200 in 2720ms
+ GET /api/plan/status 401 in 1658ms
+ ○ Compiling /api/businesses/me ...
+ ✓ Compiled /api/businesses/me in 609ms (1015 modules)
+ GET /api/businesses/me 401 in 796ms
+ GET /api/businesses/me 401 in 39ms
+ ⨯ Error: Cannot find module './4586.js'
+Require stack:
+- /Users/mike/RandM/.next/server/webpack-runtime.js
+- /Users/mike/RandM/.next/server/app/api/businesses/me/route.js
+- /Users/mike/RandM/node_modules/next/dist/server/require.js
+- /Users/mike/RandM/node_modules/next/dist/server/load-components.js
+- /Users/mike/RandM/node_modules/next/dist/build/utils.js
+- /Users/mike/RandM/node_modules/next/dist/build/swc/options.js
+- /Users/mike/RandM/node_modules/next/dist/build/swc/index.js
+- /Users/mike/RandM/node_modules/next/dist/build/analysis/parse-module.js
+- /Users/mike/RandM/node_modules/next/dist/build/analysis/get-page-static-info.js
+- /Users/mike/RandM/node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js
+- /Users/mike/RandM/node_modules/next/dist/server/lib/router-server.js
+- /Users/mike/RandM/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/api/auth/me/route.js:1:11937)
+    at Object.<anonymous> (.next/server/app/api/auth/me/route.js:1:11999) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/api/auth/me'
+}
+ GET /api/auth/me 500 in 1133ms
+ GET /api/entitlements 401 in 80ms
+ GET /api/plan/status 401 in 31ms
+ GET /api/businesses/me 401 in 28ms
+ GET /api/businesses/me 401 in 37ms
+ ✓ Compiled in 4.5s (407 modules)
+ ✓ Compiled in 1032ms (407 modules)
+[?25h

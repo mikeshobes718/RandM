@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest",
+        "--headless",
+        "--allowed-origins=localhost:3000;*.vercel.app;reviewsandmarketing.com;www.reviewsandmarketing.com",
+        "--blocked-origins=*analytics*;*tracking*"
+      ]
+    }
+  }
+}

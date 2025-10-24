@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import SiteHeader from "../components/SiteHeader";
-import ClientAuthSync from "../components/ClientAuthSync";
 import SiteFooter from "../components/SiteFooter";
 import { ErrorBoundary } from "../components/ErrorBoundary";
-import CrispChat from "../components/CrispChat";
-import ExitIntentPopup from "../components/ExitIntentPopup";
-import AccessibilityChecker from "../components/AccessibilityChecker";
+import ClientWidgets from "../components/ClientWidgets";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -126,16 +123,11 @@ export default function RootLayout({
           />
         ) : null}
         <ErrorBoundary>
-          <ClientAuthSync />
           <SiteHeader />
           {children}
           <SiteFooter />
-          {/* Live chat widget */}
-          <CrispChat />
-          {/* Exit-intent popup for email capture */}
-          <ExitIntentPopup delay={5000} cookieExpiry={7} />
-          {/* Accessibility checker (dev only) */}
-          {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
+          {/* Client-only widgets mounted after hydration */}
+          <ClientWidgets />
         </ErrorBoundary>
       </body>
     </html>
