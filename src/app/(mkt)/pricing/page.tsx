@@ -620,6 +620,45 @@ export default function Pricing() {
             : 'Start Pro (Yearly)';
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* FAQPage JSON-LD for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [
+              {
+                '@type': 'Question',
+                name: 'Can I cancel my subscription anytime?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text:
+                    'Yes, you can cancel your subscription at any time. There are no long-term contracts or cancellation fees. You\'ll continue to have access to your plan until the end of your current billing period.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Is there a free plan?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text:
+                    'Yes — our Starter plan is free and lets you connect your business, manage your main review link, and generate a QR code. Upgrade to Pro anytime for advanced features.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: 'Do you offer discounts for annual billing?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text:
+                    'Yes! We offer a discount for annual billing compared to paying monthly.',
+                },
+              },
+            ],
+          }),
+        }}
+      />
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-x-0 top-[-280px] h-[500px] rounded-full bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.35),transparent_60%)] blur-3xl animate-float-blob" />
         <div className="absolute left-[-200px] bottom-[-160px] h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.25),transparent_70%)] blur-3xl animate-float-blob" style={{ animationDelay: '2s' }} />

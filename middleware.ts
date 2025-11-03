@@ -3,6 +3,24 @@ import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  try {
+    const host = req.headers.get('host') || '';
+    const isVercel = /\.vercel\.app$/i.test(host);
+    const isLocal = /^localhost(?::\d+)?$/.test(host) || /^127\.0\.0\.1(?::\d+)?$/.test(host);
+    const targetHost = 'www.reviewsandmarketing.com';
+    // Redirect any typos or non-canonical subdomains on the apex to www
+    if (!isLocal && !isVercel) {
+      const normalized = host.toLowerCase();
+      const isCanonical = normalized === targetHost;
+      const isApex = normalized === 'reviewsandmarketing.com';
+      const isSubdomainOfApex = normalized.endsWith('.reviewsandmarketing.com');
+      if (!isCanonical && (isApex || isSubdomainOfApex)) {
+        const url = req.nextUrl.clone();
+        url.hostname = targetHost;
+        return NextResponse.redirect(url, 308);
+      }
+    }
+  } catch {}
   const token = req.cookies.get('idToken')?.value;
 
   // Lightweight JWT decode (no signature verification) to read email_verified claim

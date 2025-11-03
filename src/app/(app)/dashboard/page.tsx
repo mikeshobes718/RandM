@@ -1073,7 +1073,12 @@ function DashboardContent() {
                     Enter your business details and an optional Google review link. We’ll generate your branded landing page and QR instantly.
                   </p>
                 </div>
-                <BusinessSetupForm onSuccess={async () => { await new Promise(r => setTimeout(r, 500)); window.location.href = "/dashboard?from=onboarding&t=" + Date.now(); }} />
+                {/* Hide the form while we finalize propagation to avoid a flash of onboarding after save */}
+                {finalizing ? (
+                  <div className="rounded-2xl border border-indigo-200/70 bg-indigo-50/80 p-4 text-sm text-indigo-700">Finalizing your business setup…</div>
+                ) : (
+                  <BusinessSetupForm onSuccess={async () => { await new Promise(r => setTimeout(r, 500)); window.location.href = "/dashboard?from=onboarding&t=" + Date.now(); }} />
+                )}
               </div>
             </section>
           )}
