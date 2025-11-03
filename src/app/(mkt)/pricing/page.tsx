@@ -236,18 +236,7 @@ export default function Pricing() {
 
   async function handleSubscribeWithPlan(plan: 'monthly' | 'yearly') {
     try {
-      if (typeof window !== 'undefined') {
-        const desiredHost = (process.env.NEXT_PUBLIC_APP_HOST || 'app.reviewsandmarketing.com').toLowerCase();
-        const currentHost = window.location.hostname.toLowerCase();
-        const isLocal = currentHost === 'localhost' || currentHost === '127.0.0.1';
-        if (!isLocal && currentHost !== desiredHost) {
-          const params = new URLSearchParams();
-          params.set('plan', plan);
-          params.set('from', currentHost);
-          window.location.href = `https://${desiredHost}/pricing?${params.toString()}`;
-          return;
-        }
-      }
+      // Always stay on current host; avoid cross-host redirects
 
       setError(null);
       setProError(null);
