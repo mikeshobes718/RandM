@@ -14,7 +14,9 @@ export async function middleware(req: NextRequest) {
       const isCanonical = normalized === targetHost;
       const isApex = normalized === 'reviewsandmarketing.com';
       const isSubdomainOfApex = normalized.endsWith('.reviewsandmarketing.com');
-      if (!isCanonical && (isApex || isSubdomainOfApex)) {
+      // Only redirect apex or the common typo subdomain 'ww' → 'www'.
+      const isWwTypo = normalized === 'ww.reviewsandmarketing.com';
+      if (!isCanonical && (isApex || isWwTypo)) {
         const url = req.nextUrl.clone();
         url.hostname = targetHost;
         return NextResponse.redirect(url, 308);
