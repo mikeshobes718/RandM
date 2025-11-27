@@ -14,23 +14,23 @@ const heroMetrics = [
 const journeyHighlights = [
   {
     number: "1",
-    title: "Send branded review requests",
-    description: "Turn happy customers into Google reviews with proven email templates that actually work.",
+    title: "Connect your business",
+    description: "Link your Google Business Profile in seconds. We automatically pull your logo and details to brand your experience.",
   },
   {
     number: "2",
-    title: "Print QR codes everywhere",
-    description: "Place professional QR codes at tables, counters, and exits to capture reviews on the spot.",
+    title: "Collect feedback",
+    description: "Use our automated email campaigns or print custom QR codes to ask customers for feedback at the perfect moment.",
   },
   {
     number: "3",
-    title: "Watch your rating climb",
-    description: "See reviews arrive in real-time and watch your Google rating improve week by week.",
+    title: "Smart routing",
+    description: "Happy customers are guided to Google for a 5-star review. Unhappy ones are routed to a private form so you can fix it.",
   },
   {
     number: "4",
-    title: "Turn feedback into action",
-    description: "Get private feedback from unhappy customers before they post negative reviews publicly.",
+    title: "Watch your business grow",
+    description: "Track new reviews, monitor your rating climb, and reply to customers directly from your dashboard.",
   },
 ];
 
@@ -194,7 +194,7 @@ export default function Home() {
 
             <header className="space-y-6">
               <h1 className="text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                Turn every great experience into a Google review
+                Turn every great experience into a <span className="inline-flex"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">o</span><span className="text-[#FBBC05]">o</span><span className="text-[#4285F4]">g</span><span className="text-[#34A853]">l</span><span className="text-[#EA4335]">e</span></span> review
               </h1>
               <p className="max-w-2xl text-xl text-slate-700 sm:text-2xl font-medium">
                 The fastest way to collect more reviews and boost your online reputation.
