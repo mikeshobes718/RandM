@@ -20,7 +20,7 @@ const journeyHighlights = [
   {
     number: "2",
     title: "Collect feedback",
-    description: "Use our automated email campaigns or print custom QR codes to ask customers for feedback at the perfect moment.",
+    description: "Use our simple tools or print custom QR codes to ask customers for feedback at the perfect moment.",
   },
   {
     number: "3",

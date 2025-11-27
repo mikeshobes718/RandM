@@ -76,7 +76,7 @@ export default function FeaturesPage() {
             Simple tools to help you collect 5-star reviews, stop negative feedback, and grow your business.
           </p>
           <div className="mt-10">
-            <HomeCtaButtons align="center" variant="full" />
+            <HomeCtaButtons align="center" variant="full" theme="light" />
           </div>
           <div className="mt-12 grid gap-4 sm:grid-cols-3">
             {METRICS.map((metric) => (
