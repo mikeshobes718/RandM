@@ -5,52 +5,52 @@ import { FeatureTabs } from "@/components/FeatureTabs";
 import HomeCtaButtons from "@/components/HomeCtaButtons";
 
 const METRICS = [
-  { value: '5/mo', label: 'Starter review requests', tone: 'from-indigo-500/80 to-violet-500/90' },
-  { value: '1 QR kit', label: 'Included on every plan', tone: 'from-emerald-400/80 to-emerald-500/90' },
-  { value: 'Multi-location', label: 'Routing on Pro', tone: 'from-sky-400/80 to-blue-500/90' },
+  { value: 'Free', label: 'Starter plan', tone: 'from-indigo-500/80 to-violet-500/90' },
+  { value: 'Custom', label: 'QR codes', tone: 'from-emerald-400/80 to-emerald-500/90' },
+  { value: 'Smart', label: 'Routing logic', tone: 'from-sky-400/80 to-blue-500/90' },
 ];
 
 const PILLARS = [
   {
     iconBg: 'from-blue-500 to-indigo-500',
-    title: 'Review request templates',
-    copy: 'Send branded email requests in minutes. Starter covers five asks each month, and Pro unlocks more volume with the same polished tone.',
+    title: 'Get reviews automatically',
+    copy: 'Send branded emails that ask for reviews at the perfect time. We handle the follow-ups so you don\'t have to.',
   },
   {
     iconBg: 'from-purple-500 to-fuchsia-500',
-    title: 'QR code builder',
-    copy: 'Generate table-tent and receipt-ready QR codes that launch guests directly into your Google review flow.',
+    title: 'Capture reviews in-person',
+    copy: 'Print custom QR codes for your tables, receipts, or front desk. Customers scan and review in seconds.',
   },
   {
     iconBg: 'from-emerald-500 to-teal-500',
-    title: 'Live performance dashboard',
-    copy: 'Track scans, clicks, and new reviews across every location from a single workspace.',
+    title: 'Track your success',
+    copy: 'See exactly how many new reviews you\'re getting and watch your Google rating climb in real-time.',
   },
 ];
 
 const HIGHLIGHTS = [
   {
-    title: 'Everything you need to launch asks',
+    title: 'Simple tools that work',
     bullets: [
-      'Starter plan: five branded review requests per month',
-      'Email templates validated on real operators',
-      'Pro plan adds higher volume and priority support when you scale',
+      'Start for free with 5 review requests every month',
+      'Proven email templates that get customers to click',
+      'Upgrade to Pro for unlimited requests when you\'re ready',
     ],
   },
   {
-    title: 'Stay coordinated as your locations grow',
+    title: 'Manage everything in one place',
     bullets: [
-      'Route guests to the right review destination per location',
-      'Invite teammates on Pro to assign follow-ups and keep tabs on private feedback',
-      'Monitor average rating, scans, and clicks from the dashboard view',
+      'Smart routing sends happy customers to Google',
+      'Private feedback form catches unhappy customers first',
+      'See results for all your locations in one dashboard',
     ],
   },
   {
-    title: 'Ready-to-share QR kits',
+    title: 'Print-ready QR codes',
     bullets: [
-      'Download high-resolution QR codes with your colors and logo',
-      'Use the included landing page for kiosks, receipts, and packaging',
-      'Swap destinations without reprinting—links stay updated automatically',
+      'Download your custom QR code instantly',
+      'Add your logo and brand colors automatically',
+      'Perfect for menus, receipts, and front desks',
     ],
   },
 ];
@@ -70,10 +70,10 @@ export default function FeaturesPage() {
             Platform tour
           </span>
           <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
-            The modern stack for ⭐⭐⭐⭐⭐ growth
+            Everything you need to get more reviews
           </h1>
           <p className="mt-5 text-lg text-slate-700 md:text-xl">
-            Reviews & Marketing brings share links, QR kits, and live analytics together so every happy customer can leave a public review.
+            Simple tools to help you collect 5-star reviews, stop negative feedback, and grow your business.
           </p>
           <div className="mt-10">
             <HomeCtaButtons align="center" variant="full" />
@@ -96,7 +96,7 @@ export default function FeaturesPage() {
               key={pillar.title}
               className="group rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl"
             >
-              <div className={`mb-6 grid h-12 w-12 place-content-center rounded-xl bg-gradient-to-br ${pillar.iconBg} text-white`}> 
+              <div className={`mb-6 grid h-12 w-12 place-content-center rounded-xl bg-gradient-to-br ${pillar.iconBg} text-white`}>
                 <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M4 12h10M4 17h7" />
                 </svg>
