@@ -417,11 +417,11 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-indigo-700">
-              Command pulse
+              Live Activity
             </span>
-            <h2 className="mt-6 text-4xl font-bold text-slate-900 sm:text-5xl">Stay on top of activity as it happens</h2>
+            <h2 className="mt-6 text-4xl font-bold text-slate-900 sm:text-5xl">Watch your reputation grow in real-time</h2>
             <p className="mt-6 text-xl text-slate-600 max-w-3xl mx-auto">
-              Monitor new reviews, QR scans, and private feedback from the live timeline. Filter by location or teammate in one click.
+              See reviews, QR scans, and feedback arrive instantly. No more guessing what's happening.
             </p>
           </div>
 
