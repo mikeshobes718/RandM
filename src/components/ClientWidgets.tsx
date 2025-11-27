@@ -13,11 +13,26 @@ export default function ClientWidgets() {
     <>
       <ClientAuthSync />
       <CrispChat />
-      <ExitIntentPopup delay={5000} cookieExpiry={7} />
+      {/* <ExitIntentPopup delay={5000} cookieExpiry={7} /> */}
       {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
