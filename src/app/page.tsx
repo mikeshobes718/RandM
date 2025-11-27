@@ -194,7 +194,7 @@ export default function Home() {
 
             <header className="space-y-6">
               <h1 className="text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                Turn one 5★ experience into five Google reviews
+                Turn every great experience into a Google review
               </h1>
               <p className="max-w-2xl text-xl text-slate-700 sm:text-2xl font-medium">
                 The fastest way to collect more reviews and boost your online reputation.
