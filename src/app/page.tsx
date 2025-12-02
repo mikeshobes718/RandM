@@ -20,7 +20,7 @@ const journeyHighlights = [
   {
     number: "2",
     title: "Share your QR code",
-    description: "Place the QR code around your business. When customers scan it and select five stars, they're sent to leave a 5-star Google review and prompted to share their contact info for promotions.",
+    description: "Display the QR code throughout your business. When customers scan it and choose five stars, they're automatically directed to your Google Reviews page to leave a 5-star review, and also invited to share their contact information for special offers and promotions.",
   },
   {
     number: "3",
@@ -343,10 +343,10 @@ export default function Home() {
               Customer journey
             </span>
             <h2 className="mt-6 text-4xl font-bold text-slate-900 sm:text-5xl">
-              A simple flow from invite to review
+              A simple flow from connection to growth
             </h2>
             <p className="mt-6 text-xl text-slate-600 max-w-3xl mx-auto">
-              Send a branded email, post a QR code, and track responses in real time—no extra tools or complex setup required.
+              Connect your Google Business Profile, display QR codes, route feedback smartly, and watch your reviews grow—all from one simple dashboard.
             </p>
           </div>
 

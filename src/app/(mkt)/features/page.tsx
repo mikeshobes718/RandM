@@ -73,7 +73,7 @@ export default function FeaturesPage() {
             Everything you need to get more reviews
           </h1>
           <p className="mt-5 text-lg text-slate-700 md:text-xl">
-            Simple tools to help you collect 5-star reviews, stop negative feedback, and grow your business.
+            Connect your profile, display QR codes, route feedback smartly, and manage everything from one dashboard.
           </p>
           <div className="mt-10 flex justify-center">
             <HomeCtaButtons align="center" variant="full" theme="light" />
