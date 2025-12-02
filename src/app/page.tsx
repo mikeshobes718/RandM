@@ -15,22 +15,22 @@ const journeyHighlights = [
   {
     number: "1",
     title: "Connect your business",
-    description: "Link your Google Business Profile. We automatically generate a QR code for your review page.",
+    description: "Link your Google Business Profile in seconds. We'll automatically generate a QR code for your review page.",
   },
   {
     number: "2",
     title: "Place QR codes",
-    description: "Customers scan and rate. 5 stars → directed to Google + asked for contact info for promos.",
+    description: "Customers scan and rate their experience. 5-star ratings are directed to Google and we collect their contact info for promos.",
   },
   {
     number: "3",
     title: "Smart routing",
-    description: "4 stars or less → private feedback form, not Google. You get their contact to follow up with a promo or apology.",
+    description: "4 stars or less? We don't send them to Google. Instead, we ask what went wrong and get their contact info so you can follow up.",
   },
   {
     number: "4",
     title: "Track and grow",
-    description: "Monitor reviews, organize customer contacts, and respond directly from your dashboard.",
+    description: "Track new reviews, monitor your rating climb, organize customer contacts, and respond from your dashboard.",
   },
 ];
 
