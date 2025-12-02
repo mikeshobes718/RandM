@@ -15,7 +15,7 @@ const journeyHighlights = [
   {
     number: "1",
     title: "Connect your business",
-    description: "Link your Google Business Profile in seconds. We automatically pull your logo and details to brand your experience.",
+    description: "Link your Google Business Profile in seconds. We automatically pull your account info via your Google Place ID.",
   },
   {
     number: "2",
