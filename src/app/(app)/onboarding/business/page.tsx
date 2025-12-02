@@ -33,7 +33,7 @@ export default function OnboardingBusinessPage() {
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | null>(null);
   const [isAutosaving, setIsAutosaving] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  
+
   // Autocomplete state
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -42,7 +42,7 @@ export default function OnboardingBusinessPage() {
   const sessionTokenRef = useRef(generateSessionToken());
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  
+
   // Autosave state
   const autosaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const AUTOSAVE_KEY = 'onboarding_form_data';
@@ -118,7 +118,7 @@ export default function OnboardingBusinessPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const editMode = urlParams.get('edit') === '1';
     setIsEditMode(editMode);
-    
+
     if (editMode) {
       loadExistingBusinessData();
     }
@@ -138,7 +138,7 @@ export default function OnboardingBusinessPage() {
           setBusinessName(business.name || '');
           setReviewLink(business.review_link || '');
           setAddress(business.address || '');
-          
+
           // Set selected place if we have place data
           if (business.place_id) {
             setSelectedPlace({
@@ -152,7 +152,7 @@ export default function OnboardingBusinessPage() {
               lng: business.lng,
             });
           }
-          
+
           console.log('📝 Loaded existing business data for editing');
         }
       }
@@ -191,7 +191,7 @@ export default function OnboardingBusinessPage() {
         try {
           const tok = localStorage.getItem('idToken');
           if (tok) headers.Authorization = `Bearer ${tok}`;
-        } catch {}
+        } catch { }
         // Prefer plan/status
         let r = await fetch('/api/plan/status', { cache: 'no-store', credentials: 'include', headers });
         if (!r.ok) r = await fetch('/api/plan/status', { cache: 'no-store', headers });
@@ -278,12 +278,12 @@ export default function OnboardingBusinessPage() {
 
   const handleBusinessNameChange = (value: string) => {
     setBusinessName(value);
-    
+
     // Clear selected place when user edits manually
     if (selectedPlace && value !== selectedPlace.displayName) {
       setSelectedPlace(null);
     }
-    
+
     // Clear debounce timer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -309,7 +309,7 @@ export default function OnboardingBusinessPage() {
       if (response.ok) {
         const details: PlaceDetails = await response.json();
         setSelectedPlace(details);
-        
+
         // Auto-populate fields
         if (details.writeAReviewUri) {
           setReviewLink(details.writeAReviewUri);
@@ -341,20 +341,22 @@ export default function OnboardingBusinessPage() {
 
     try {
       // Save business via API
-      const formData = new FormData();
-      formData.append('name', businessName.trim());
-      if (reviewLink.trim()) formData.append('review_link', reviewLink.trim());
-      if (address.trim()) formData.append('address', address.trim());
-      if (selectedPlace?.id) formData.append('google_place_id', selectedPlace.id);
-      if (selectedPlace?.googleMapsUri) formData.append('google_maps_place_uri', selectedPlace.googleMapsUri);
-      if (selectedPlace?.writeAReviewUri) formData.append('google_maps_write_review_uri', selectedPlace.writeAReviewUri);
-      if (selectedPlace?.rating) formData.append('google_rating', selectedPlace.rating.toString());
-      
+      const payload: Record<string, any> = {
+        name: businessName.trim(),
+      };
+
+      if (reviewLink.trim()) payload.review_link = reviewLink.trim();
+      if (address.trim()) payload.address = address.trim();
+      if (selectedPlace?.id) payload.google_place_id = selectedPlace.id;
+      if (selectedPlace?.googleMapsUri) payload.google_maps_place_uri = selectedPlace.googleMapsUri;
+      if (selectedPlace?.writeAReviewUri) payload.google_maps_write_review_uri = selectedPlace.writeAReviewUri;
+      if (selectedPlace?.rating) payload.google_rating = selectedPlace.rating;
+
       // Add idToken for authentication
       try {
         const idToken = localStorage.getItem('idToken');
         if (idToken) {
-          formData.append('idToken', idToken);
+          payload.idToken = idToken;
         }
       } catch (e) {
         console.warn('Could not get idToken from localStorage:', e);
@@ -362,18 +364,19 @@ export default function OnboardingBusinessPage() {
 
       const response = await fetch('/api/businesses/upsert/form', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
         credentials: 'include',
-        redirect: 'manual', // Prevent automatic redirect
       });
 
-      // Check if successful (2xx, 3xx redirect, or opaque redirect)
-      // Opaque redirects have type 'opaqueredirect' and status 0
-      const isSuccess = response.ok || response.status === 303 || response.type === 'opaqueredirect';
-      
-      if (!isSuccess) {
+      if (!response.ok) {
         const errorText = await response.text().catch(() => 'Failed to save business');
         throw new Error(errorText);
+      }
+
+      const data = await response.json();
+      if (!data.ok) {
+        throw new Error('Failed to save business');
       }
 
       // Send welcome email based on selected plan
@@ -387,7 +390,7 @@ export default function OnboardingBusinessPage() {
               plan: selectedPlan
             }),
           });
-          
+
           if (emailResponse.ok) {
             console.log(`Welcome email sent for ${selectedPlan} plan`);
           }
@@ -403,12 +406,8 @@ export default function OnboardingBusinessPage() {
         localStorage.removeItem(AUTOSAVE_KEY);
       }
 
-      // Manually redirect after success
-      // For opaque redirects, we can't access the Location header, so use default URLs
-      if (response.type === 'opaqueredirect' || response.status === 303 || response.redirected) {
-        const redirectUrl = isEditMode ? '/dashboard?from=edit' : '/dashboard?from=onboarding';
-        window.location.href = redirectUrl;
-      } else if (isEditMode) {
+      // Redirect after success
+      if (isEditMode) {
         router.push('/dashboard?from=edit');
       } else {
         router.push('/dashboard?from=onboarding');
@@ -427,7 +426,7 @@ export default function OnboardingBusinessPage() {
             {isEditMode ? 'Edit your business' : 'Connect your business'}
           </h1>
           <p className="mt-2 text-gray-600">
-            {isEditMode 
+            {isEditMode
               ? 'Update your business information and review link.'
               : 'Search for your business on Google to automatically load your review link and details.'
             }
@@ -509,7 +508,7 @@ export default function OnboardingBusinessPage() {
               required
               className="w-full rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-            
+
             {/* Autocomplete Dropdown */}
             {showSuggestions && suggestions.length > 0 && (
               <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">

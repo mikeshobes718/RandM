@@ -75,7 +75,7 @@ export default function FeaturesPage() {
           <p className="mt-5 text-lg text-slate-700 md:text-xl">
             Simple tools to help you collect 5-star reviews, stop negative feedback, and grow your business.
           </p>
-          <div className="mt-10">
+          <div className="mt-10 flex justify-center">
             <HomeCtaButtons align="center" variant="full" theme="light" />
           </div>
           <div className="mt-12 grid gap-4 sm:grid-cols-3">

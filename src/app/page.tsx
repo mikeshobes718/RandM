@@ -20,7 +20,7 @@ const journeyHighlights = [
   {
     number: "2",
     title: "Collect feedback",
-    description: "Use our simple tools or print custom QR codes to ask customers for feedback at the perfect moment.",
+    description: "Place custom QR codes on tables, receipts, or your front desk to let customers review you in seconds.",
   },
   {
     number: "3",
@@ -352,12 +352,12 @@ export default function Home() {
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {journeyHighlights.map((item, index) => (
-              <div key={item.title} className="relative">
+              <div key={item.title} className="relative flex">
                 {/* Connection line for desktop */}
                 {index < journeyHighlights.length - 1 && (
                   <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-indigo-300 to-transparent -z-10" />
                 )}
-                <div className="group rounded-3xl border-2 border-slate-200/70 bg-white p-6 shadow-lg hover:shadow-2xl transition hover:-translate-y-1">
+                <div className="group rounded-3xl border-2 border-slate-200/70 bg-white p-6 shadow-lg hover:shadow-2xl transition hover:-translate-y-1 flex flex-col h-full w-full">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white text-xl font-bold shadow-lg">
                       {item.number}
