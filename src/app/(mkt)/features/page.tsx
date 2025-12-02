@@ -5,52 +5,52 @@ import { FeatureTabs } from "@/components/FeatureTabs";
 import HomeCtaButtons from "@/components/HomeCtaButtons";
 
 const METRICS = [
-  { value: 'Free', label: 'Starter plan', tone: 'from-indigo-500/80 to-violet-500/90' },
-  { value: 'Custom', label: 'QR codes', tone: 'from-emerald-400/80 to-emerald-500/90' },
-  { value: 'Smart', label: 'Routing logic', tone: 'from-sky-400/80 to-blue-500/90' },
+  { value: 'Instant', label: 'QR Setup', tone: 'from-indigo-500/80 to-violet-500/90' },
+  { value: 'Smart', label: 'Routing', tone: 'from-emerald-400/80 to-emerald-500/90' },
+  { value: 'Growth', label: 'Dashboard', tone: 'from-sky-400/80 to-blue-500/90' },
 ];
 
 const PILLARS = [
   {
     iconBg: 'from-blue-500 to-indigo-500',
-    title: 'Get reviews automatically',
-    copy: 'Send branded emails that ask for reviews at the perfect time. We handle the follow-ups so you don\'t have to.',
+    title: 'Instant QR Codes',
+    copy: 'Link your Google Profile and we instantly generate a custom QR code that leads customers straight to your review page.',
   },
   {
     iconBg: 'from-purple-500 to-fuchsia-500',
-    title: 'Capture reviews in-person',
-    copy: 'Print custom QR codes for your tables, receipts, or front desk. Customers scan and review in seconds.',
+    title: 'Smart Routing Logic',
+    copy: 'We send 5-star experiences to Google. We route 4 stars or less to a private form so you can fix issues without hurting your rating.',
   },
   {
     iconBg: 'from-emerald-500 to-teal-500',
-    title: 'Track your success',
-    copy: 'See exactly how many new reviews you\'re getting and watch your Google rating climb in real-time.',
+    title: 'Customer Growth',
+    copy: 'Collect contact info from every scan. Send promos to happy customers and win back the unhappy ones before they leave a bad review.',
   },
 ];
 
 const HIGHLIGHTS = [
   {
-    title: 'Simple tools that work',
+    title: 'How it works',
     bullets: [
-      'Start for free with 5 review requests every month',
-      'Proven email templates that get customers to click',
-      'Upgrade to Pro for unlimited requests when you\'re ready',
+      'Place QR codes on tables, receipts, or front desk',
+      'Customers scan and rate their experience',
+      'Smart routing handles the rest automatically',
     ],
   },
   {
-    title: 'Manage everything in one place',
+    title: 'Why it works',
     bullets: [
-      'Smart routing sends happy customers to Google',
-      'Private feedback form catches unhappy customers first',
-      'See results for all your locations in one dashboard',
+      'Protect your Google rating from bad reviews',
+      'Capture customer emails for marketing',
+      'Turn happy customers into 5-star reviews',
     ],
   },
   {
-    title: 'Print-ready QR codes',
+    title: 'Manage it all',
     bullets: [
-      'Download your custom QR code instantly',
-      'Add your logo and brand colors automatically',
-      'Perfect for menus, receipts, and front desks',
+      'Track every scan and review in real-time',
+      'Reply to Google reviews from your dashboard',
+      'Export customer data for email campaigns',
     ],
   },
 ];
@@ -158,8 +158,8 @@ export default function FeaturesPage() {
 
       <section className="px-4 pb-20 pt-12 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 p-10 text-center shadow-2xl shadow-indigo-900/30">
-          <h2 className="text-3xl font-bold text-white sm:text-4xl">See it in action</h2>
-          <p className="mt-3 text-base text-indigo-100 sm:text-lg">Start free and collect your first reviews this week with branded share links and QR kits.</p>
+          <h2 className="text-3xl font-bold text-white sm:text-4xl">Start growing today</h2>
+          <p className="mt-3 text-base text-indigo-100 sm:text-lg">Join thousands of businesses turning happy customers into 5-star reviews.</p>
           <div className="mt-8">
             <HomeCtaButtons align="center" variant="full" />
           </div>
