@@ -20,12 +20,12 @@ const journeyHighlights = [
   {
     number: "2",
     title: "Collect feedback",
-    description: "Place QR codes around your business. Customers scan, rate their experience, and 5-star ratings automatically direct them to leave a Google review. You can also send follow-up emails.",
+    description: "Place QR codes around your business for customers to scan. When they choose 5 stars, we direct them to Google and ask for their contact info so you can send coupons and promos.",
   },
   {
     number: "3",
     title: "Smart routing",
-    description: "Ratings of 4 stars or less don't go to Google. Instead, we ask what the issue was and how you can contact them—protecting your rating while gathering feedback.",
+    description: "If they choose 4 stars or less, we don't send them to Google. Instead, we ask what the issue was and get their contact info so you can follow up with a promo.",
   },
   {
     number: "4",
