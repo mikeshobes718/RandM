@@ -11,27 +11,29 @@ const NAV_LINKS = [
   { href: '/contact', label: 'Contact' },
 ];
 
-export default function SiteHeader() {
+import { AuthUser } from "@/lib/auth-server";
+
+export default function SiteHeader({ initialUser }: { initialUser?: AuthUser | null }) {
   const pathname = usePathname();
   if (pathname?.startsWith('/r/')) {
     return null;
   }
   return (
     <Suspense fallback={null}>
-      <HeaderInner />
+      <HeaderInner initialUser={initialUser} />
     </Suspense>
   );
 }
 
-function HeaderInner() {
-  const [authed, setAuthed] = useState(false);
+function HeaderInner({ initialUser }: { initialUser?: AuthUser | null }) {
+  const [authed, setAuthed] = useState(!!initialUser);
   const [pro, setPro] = useState<boolean | null>(null);
   const [planStatus, setPlanStatus] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [email, setEmail] = useState<string>('');
+  const [email, setEmail] = useState<string>(initialUser?.email || '');
   const [ctaLoading, setCtaLoading] = useState(false);
   const [hasBusiness, setHasBusiness] = useState<boolean>(false);
-  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
+  const [emailVerified, setEmailVerified] = useState<boolean | null>(initialUser?.emailVerified ?? null);
   const searchParams = useSearchParams();
   const pathname = usePathname();
   void searchParams;
@@ -51,7 +53,7 @@ function HeaderInner() {
         ev.preventDefault();
         window.location.href = '/verify-email?next=/dashboard';
       }
-    } catch {}
+    } catch { }
   };
 
   useEffect(() => {
@@ -59,15 +61,15 @@ function HeaderInner() {
       if (document.cookie.split(';').some(c => c.trim().startsWith('onboarding_complete=1'))) {
         setHasBusiness(true);
       }
-    } catch {}
+    } catch { }
     async function refresh() {
       console.log('[HEADER] Starting auth refresh');
       // Optimistically default to signed-out until server confirms auth
-      try { 
-        setAuthed(false); 
-        setEmail(''); 
+      try {
+        setAuthed(false);
+        setEmail('');
         console.log('[HEADER] Set pessimistic state: signed out');
-      } catch {}
+      } catch { }
       try {
         console.log('[HEADER] Fetching /api/auth/me');
         const r = await fetch('/api/auth/me', { cache: 'no-store', credentials: 'include' });
@@ -84,11 +86,11 @@ function HeaderInner() {
           setEmail('');
           setEmailVerified(null);
         }
-      } catch (err) { 
+      } catch (err) {
         console.log('[HEADER] Auth check error:', err);
-        setAuthed(false); 
-        setEmail(''); 
-        setEmailVerified(null); 
+        setAuthed(false);
+        setEmail('');
+        setEmailVerified(null);
       }
       try {
         const r = await fetch('/api/entitlements', { cache: 'no-store', credentials: 'include' });
@@ -104,13 +106,13 @@ function HeaderInner() {
         const tok = localStorage.getItem('idToken') || '';
         const headers: Record<string, string> = tok ? { Authorization: `Bearer ${tok}` } : {};
         let r3: Response | null = null;
-        try { r3 = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers }); } catch {}
+        try { r3 = await fetch('/api/businesses/me', { cache: 'no-store', credentials: 'include', headers }); } catch { }
         if (r3 && r3.ok) { ok = true; j3 = await r3.json().catch(() => null); }
         if (!ok) {
           try {
             r3 = await fetch('/api/businesses/me', { cache: 'no-store', headers });
             if (r3.ok) { ok = true; j3 = await r3.json().catch(() => null); }
-          } catch {}
+          } catch { }
         }
         setHasBusiness(ok && Boolean(j3?.business));
       } catch { setHasBusiness(false); }
@@ -154,8 +156,8 @@ function HeaderInner() {
         document.body.style.overflow = 'hidden';
         return () => { document.body.style.overflow = original; };
       }
-    } catch {}
-    return () => {};
+    } catch { }
+    return () => { };
   }, [menuOpen]);
 
   const planChip = useMemo(() => {
@@ -469,7 +471,7 @@ function landingCtas(
 }
 
 function getBillingPref(): 'monthly' | 'yearly' {
-  try { const v = localStorage.getItem('billingPreference'); if (v === 'yearly' || v === 'monthly') return v; } catch {}
+  try { const v = localStorage.getItem('billingPreference'); if (v === 'yearly' || v === 'monthly') return v; } catch { }
   return 'monthly';
 }
 
@@ -489,7 +491,7 @@ async function startCheckout(plan: 'monthly' | 'yearly', setLoading: (v: boolean
         }
         payload = { plan: chosen, uid: 'anon', email: em };
       }
-    } catch {}
+    } catch { }
     const res = await fetch('/api/stripe/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -498,7 +500,7 @@ async function startCheckout(plan: 'monthly' | 'yearly', setLoading: (v: boolean
     });
     if (!res.ok) throw new Error(await res.text());
     const j = await res.json();
-    try { if (j?.id) localStorage.setItem('stripe:lastSessionId', String(j.id)); } catch {}
+    try { if (j?.id) localStorage.setItem('stripe:lastSessionId', String(j.id)); } catch { }
     if (j?.url) {
       window.location.href = j.url;
     } else {
@@ -513,13 +515,13 @@ async function startCheckout(plan: 'monthly' | 'yearly', setLoading: (v: boolean
 }
 
 async function logout() {
-  try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
+  try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch { }
   try {
     localStorage.removeItem('idToken');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('selectedPlan');
     sessionStorage.clear();
-  } catch {}
+  } catch { }
   // Force a hard navigation to clear any client state and ensure header reset
   try {
     const url = new URL('/login', window.location.origin);

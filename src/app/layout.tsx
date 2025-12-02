@@ -6,6 +6,7 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import ClientWidgets from "../components/ClientWidgets";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { getCurrentUser } from "../lib/auth-server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -83,11 +84,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getCurrentUser();
+
   // Structured data for organization
   const organizationSchema = {
     "@context": "https://schema.org",
@@ -123,7 +126,7 @@ export default function RootLayout({
           />
         ) : null}
         <ErrorBoundary>
-          <SiteHeader />
+          <SiteHeader initialUser={user} />
           {children}
           <SiteFooter />
           {/* Client-only widgets mounted after hydration */}
