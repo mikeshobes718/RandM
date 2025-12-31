@@ -143,6 +143,7 @@ export async function GET(req: Request) {
     merchant_id: merchantId || tokenResponse.merchant_id || null,
     default_location_id: locationId,
     sandbox,
+    is_enabled: true,
     updated_at: new Date().toISOString(),
   }, { onConflict: 'uid' });
   if (error) {
