@@ -127,10 +127,10 @@ export default function Pricing() {
             </ul>
             <button 
               onClick={handleStarterCta}
-              disabled={starterLoading || planStatus === 'starter'}
+              disabled={starterLoading || planStatus === 'starter' || isPro}
               className="secondary-button w-full h-12 disabled:opacity-50"
             >
-              {planStatus === 'starter' ? 'Current Plan' : (starterLoading ? '...' : 'Get Started Free')}
+              {planStatus === 'starter' ? 'Current Plan' : (isPro ? 'Included in Pro' : (starterLoading ? '...' : 'Get Started Free'))}
             </button>
           </div>
 

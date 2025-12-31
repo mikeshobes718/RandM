@@ -59,13 +59,11 @@ export default function ForgotPasswordPage() {
       }
     } catch (err: any) {
       console.error('Password reset error:', err);
-
       if (err.message && err.message.includes('too-many-requests')) {
         setError('Too many requests. Please try again later.');
       } else if (err.message && err.message.includes('invalid-email')) {
         setError('Please enter a valid email address');
       } else {
-        // For security, show success even on some errors
         setSuccess(true);
       }
     } finally {
@@ -77,128 +75,103 @@ export default function ForgotPasswordPage() {
     if (!resetLink) return;
     try {
       await navigator.clipboard.writeText(resetLink);
-      setCopyStatus('Reset link copied to your clipboard.');
+      setCopyStatus('Reset link copied!');
     } catch {
-      setCopyStatus('Unable to copy automatically. You can select and copy the link above.');
+      setCopyStatus('Unable to copy.');
     }
     setTimeout(() => setCopyStatus(''), 2500);
   };
 
-  const handleOpenLink = () => {
-    if (!resetLink) return;
-    try {
-      window.open(resetLink, '_blank', 'noopener,noreferrer');
-    } catch {
-      window.location.href = resetLink;
-    }
-  };
+  const inputClass = "h-11 w-full rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all bg-white";
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg">
-              <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path fillRule="evenodd" d="M12 1.586l-4 4v3.414l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a2 2 0 002 2h4a2 2 0 002-2V4a1 1 0 00-.293-.707l-6-6a1 1 0 00-1.414 0zM17 6a1 1 0 011-1h2a1 1 0 011 1v7h-4V6zm-1 7h-.5a2.5 2.5 0 000 5H16v1a1 1 0 11-2 0v-1h-.5a4.5 4.5 0 110-9H14v-1a1 1 0 112 0v1h.5a2.5 2.5 0 010 5H16v7a3 3 0 11-6 0v-7h-.5a4.5 4.5 0 010-9H10V6a3 3 0 016 0v1h.5a4.5 4.5 0 110 9H16v-3z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Reset your password</h1>
-            <p className="text-slate-600">We'll send you a link to reset your password</p>
-          </div>
+    <main className="min-h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-10">
+          <Link href="/" className="inline-block text-2xl font-black tracking-tighter text-brand mb-8">
+            R&M
+          </Link>
+          <h1 className="text-2xl font-bold tracking-tight">Reset password</h1>
+        </div>
 
-          {/* Success Message */}
+        <div className="premium-card p-8 rounded-3xl">
+          {error && (
+            <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-red-600 font-medium">
+              {error}
+            </div>
+          )}
+
           {success ? (
             <div className="space-y-6">
-              <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <svg className="w-6 h-6 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-green-900">Check your email</p>
-                    <p className="text-sm text-green-700 mt-1">
-                      If an account exists for {email}, you'll receive a password reset link shortly.
+                  <div>
+                    <p className="text-sm font-bold text-emerald-900">Check your email</p>
+                    <p className="text-xs text-emerald-700 mt-1 leading-relaxed">
+                      If an account exists, you'll receive a password reset link shortly.
                     </p>
                   </div>
                 </div>
+                
                 {resetLink && (
-                  <div className="mt-4 rounded-lg border border-green-200 bg-white p-3 text-sm text-green-700">
-                    <p className="font-semibold mb-2">Need it right away?</p>
-                    <p className="mb-3">Use the button below to open your reset link instantly.</p>
-                    <div className="flex flex-col gap-2 sm:flex-row">
-                      {resetLink && (
-                        <a
-                          href={resetLink}
-                          target="_blank"
-                          rel="noopener"
-                          className="inline-flex items-center justify-center rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-green-600 transition"
-                        >
-                          Open reset link
-                        </a>
-                      )}
+                  <div className="mt-4 pt-4 border-t border-emerald-200">
+                    <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-widest mb-3">Development Link</p>
+                    <div className="flex flex-col gap-2">
+                      <a
+                        href={resetLink}
+                        className="primary-button !bg-emerald-600 !h-9 !text-xs w-full"
+                      >
+                        Open Reset Link
+                      </a>
                       <button
                         onClick={handleCopyLink}
-                        className="inline-flex items-center justify-center rounded-lg border border-green-300 px-4 py-2 text-sm font-semibold text-green-700 hover:bg-green-100 transition"
+                        className="secondary-button !h-9 !text-xs w-full"
                       >
-                        Copy link
+                        {copyStatus || 'Copy Link'}
                       </button>
                     </div>
-                    {copyStatus && <p className="mt-2 text-xs text-green-600">{copyStatus}</p>}
                   </div>
                 )}
               </div>
 
               <Link
                 href="/login"
-                className="block w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all text-center"
+                className="primary-button w-full h-11"
               >
                 Back to sign in
               </Link>
             </div>
           ) : (
-            <>
-              {/* Error Message */}
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
-              )}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-muted uppercase tracking-widest">Email Address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={inputClass}
+                  placeholder="name@company.com"
+                  required
+                />
+              </div>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="you@example.com"
-                    required
-                  />
-                </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="primary-button w-full h-11"
+              >
+                {loading ? '...' : 'Send Reset Link'}
+              </button>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Sending...' : 'Send reset link'}
-                </button>
-              </form>
-
-              {/* Footer */}
-              <div className="mt-6 text-center text-sm text-gray-600">
-                Remember your password?{' '}
-                <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-                  Sign in
+              <div className="pt-4 text-center">
+                <Link href="/login" className="text-xs font-bold text-brand hover:underline">
+                  Remember password? Sign in
                 </Link>
               </div>
-            </>
+            </form>
           )}
         </div>
       </div>

@@ -4,44 +4,19 @@ import { clientAuth } from '@/lib/firebaseClient';
 import { onAuthStateChanged, applyActionCode } from 'firebase/auth';
 import Link from 'next/link';
 
-/**
- * Check if user needs plan selection or can go to dashboard
- * New users should go to plan selection first, then onboarding
- */
 async function getPostVerificationRedirect(): Promise<string> {
   try {
-    // Check if user has a business record (completed onboarding)
     const response = await fetch('/api/businesses/me', {
       credentials: 'include',
     });
-
-    console.log('[ONBOARDING CHECK] API response status:', response.status);
-
     if (response.ok) {
       const data = await response.json();
-      console.log('[ONBOARDING CHECK] Business data:', {
-        hasBusiness: !!data?.business,
-        businessId: data?.business?.id,
-        businessName: data?.business?.name
-      });
-      
-      // API returns { business: {...} } or { business: null }
-      // Existing users with business records go to dashboard
       if (data && data.business && data.business.id) {
-        console.log('[ONBOARDING CHECK] ✅ Has business, going to dashboard');
         return '/dashboard';
       }
-      
-      console.log('[ONBOARDING CHECK] ❌ No business, going to plan selection');
-    } else {
-      console.log('[ONBOARDING CHECK] ❌ API failed or no business, going to plan selection');
     }
-
-    // No business found, need plan selection first
     return '/select-plan';
   } catch (error) {
-    console.error('[ONBOARDING CHECK] Error:', error);
-    // Default to plan selection if we can't determine
     return '/select-plan';
   }
 }
@@ -53,45 +28,34 @@ export default function VerifyEmailPage() {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info');
   const [cooldown, setCooldown] = useState(0);
-  const [autoSent, setAutoSent] = useState(false);
   const [verificationLink, setVerificationLink] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<string>('');
 
   useEffect(() => {
-    // Get stored email
     const storedEmail = localStorage.getItem('userEmail');
-    if (storedEmail) {
-      setEmail(storedEmail);
-    }
+    if (storedEmail) setEmail(storedEmail);
+    
     try {
       const storedLink = localStorage.getItem('pendingVerificationLink');
-      if (storedLink) {
-        setVerificationLink(storedLink);
-      }
+      if (storedLink) setVerificationLink(storedLink);
     } catch {}
 
-    // Check if user is already verified
     const unsubscribe = onAuthStateChanged(clientAuth, async (user) => {
       if (user) {
         await user.reload();
         if (user.emailVerified) {
           try { localStorage.removeItem('pendingVerificationLink'); } catch {}
-          // User is verified, check if they need onboarding
           const redirectUrl = await getPostVerificationRedirect();
           window.location.href = redirectUrl;
         } else {
-          // Email was already sent during registration via server-side API
-          // No need to auto-send again
           setMessage('📧 Verification email sent! Please check your inbox and spam folder.');
           setMessageType('success');
         }
       }
     });
-
     return () => unsubscribe();
-  }, [autoSent]);
+  }, []);
 
-  // Handle verification link from email
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const verified = params.get('verified');
@@ -102,30 +66,15 @@ export default function VerifyEmailPage() {
     if (verified === 'true') {
       setMessage('✅ Email verified successfully! Redirecting...');
       setMessageType('success');
-      
-      // Check if user needs onboarding or can go to dashboard
-      getPostVerificationRedirect().then((redirectUrl) => {
-        setTimeout(() => {
-          window.location.href = redirectUrl;
-        }, 1500);
+      getPostVerificationRedirect().then((url) => {
+        setTimeout(() => { window.location.href = url; }, 1500);
       });
     } else if (mode === 'verifyEmail' && oobCode) {
-      // Handle verification code from custom verification handler
       handleVerificationCode(oobCode);
     } else if (error) {
       let errorMessage = 'Verification failed. Please try again.';
-      if (error === 'expired') {
-        errorMessage = 'Verification link has expired. Please request a new one below.';
-      } else if (error === 'invalid') {
-        errorMessage = 'Invalid verification link. Please request a new one below.';
-      } else if (error === 'invalid-link') {
-        errorMessage = 'Invalid verification link format. Please request a new one below.';
-      } else if (error === 'invalid-mode') {
-        errorMessage = 'Invalid verification mode. Please request a new one below.';
-      } else if (error === 'verification-failed') {
-        errorMessage = 'Email verification failed. Please request a new one below.';
-      }
-      
+      if (error === 'expired') errorMessage = 'Verification link has expired.';
+      else if (error === 'invalid') errorMessage = 'Invalid verification link.';
       setMessage(errorMessage);
       setMessageType('error');
     }
@@ -135,158 +84,53 @@ export default function VerifyEmailPage() {
     setVerifying(true);
     setMessage('Verifying your email...');
     setMessageType('info');
-
     try {
       await applyActionCode(clientAuth, code);
-      
-      // Reload user to get updated emailVerified status
-      if (clientAuth.currentUser) {
-        await clientAuth.currentUser.reload();
-      }
-
+      if (clientAuth.currentUser) await clientAuth.currentUser.reload();
       setMessage('✅ Email verified successfully! Redirecting...');
       setMessageType('success');
-
-      // Check if user needs onboarding or can go to dashboard
-      const redirectUrl = await getPostVerificationRedirect();
+      const url = await getPostVerificationRedirect();
       try { localStorage.removeItem('pendingVerificationLink'); } catch {}
-      
-      // Redirect after a short delay
-      setTimeout(() => {
-        window.location.href = redirectUrl;
-      }, 1500);
+      setTimeout(() => { window.location.href = url; }, 1500);
     } catch (err: any) {
-      console.error('Verification error:', err);
-      
-      if (err.code === 'auth/expired-action-code') {
-        setMessage('Verification link has expired. Please request a new one below.');
-      } else if (err.code === 'auth/invalid-action-code') {
-        setMessage('Invalid verification link. Please request a new one below.');
-      } else {
-        setMessage('Failed to verify email. Please try again.');
-      }
+      setMessage('Failed to verify email. Link may be expired.');
       setMessageType('error');
     } finally {
       setVerifying(false);
     }
   };
 
-  const handleResend = async (isAutoSend = false) => {
+  const handleResend = async () => {
     if (cooldown > 0 || loading) return;
-
     const userEmail = email || clientAuth.currentUser?.email;
     if (!userEmail) {
-      setMessage('Please sign in again to resend verification email');
+      setMessage('Please sign in again to resend.');
       setMessageType('error');
       return;
     }
-
     setLoading(true);
-    if (!isAutoSend) {
-      setMessage('Sending verification email...');
-      setMessageType('info');
-    }
-
     try {
-      // Use Postmark-based email API instead of Firebase
       const response = await fetch('/api/auth/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: userEmail,
-          type: 'verify'
-        }),
+        body: JSON.stringify({ email: userEmail, type: 'verify' }),
       });
-
-      let result: any = null;
-      try {
-        result = await response.json();
-      } catch {
-        result = null;
-      }
-
+      const result = await response.json();
       if (result?.link) {
         setVerificationLink(result.link);
         try { localStorage.setItem('pendingVerificationLink', result.link); } catch {}
       }
-
-      if (!response.ok) {
-        const errorText = (result && typeof result.error === 'string') ? result.error : 'Failed to send verification email';
-        
-        // Handle rate limiting specifically
-        if (response.status === 429 || errorText.includes('Too many verification attempts')) {
-          throw new Error(`Too many attempts. Please wait 5 minutes before trying again.`);
-        }
-        
-        throw new Error(errorText);
-      }
-
-      console.log('Email sent successfully:', result);
-
-      setMessage(isAutoSend ? '📧 Verification email sent! Please check your inbox and spam folder.' : '✅ Verification email sent! Please check your inbox and spam folder.');
+      if (!response.ok) throw new Error(result.error || 'Failed to send');
+      setMessage('✅ Verification email sent! Please check your inbox.');
       setMessageType('success');
-      
-      // Set cooldown
       setCooldown(60);
     } catch (err: any) {
-      console.error('Resend error:', err);
-      
-      let errorMessage = err.message;
-      
-      // Handle rate limiting with better user messaging
-      if (err.message.includes('Rate limited') || err.message.includes('Too many attempts')) {
-        errorMessage = 'Too many verification attempts. Please wait 5 minutes before trying again.';
-        setCooldown(300); // 5 minutes
-      } else if (err.message.includes('TOO_MANY_ATTEMPTS_TRY_LATER')) {
-        errorMessage = 'Too many verification attempts. Please wait 5 minutes before trying again.';
-        setCooldown(300); // 5 minutes
-      }
-      
-      setMessage(`Failed to send verification email: ${errorMessage}. Please try again or contact support.`);
+      setMessage(`Failed: ${err.message}`);
       setMessageType('error');
     } finally {
       setLoading(false);
     }
   };
-
-  const handleCheckVerification = async () => {
-    if (!clientAuth.currentUser) {
-      setMessage('Please sign in again');
-      setMessageType('error');
-      return;
-    }
-
-    setLoading(true);
-      setMessage('Checking verification status...');
-      setMessageType('info');
-
-    try {
-      await clientAuth.currentUser.reload();
-      
-      if (clientAuth.currentUser.emailVerified) {
-        setMessage('✅ Email verified! Redirecting...');
-        setMessageType('success');
-        try { localStorage.removeItem('pendingVerificationLink'); } catch {}
-        
-        // Check if user needs onboarding or can go to dashboard
-        const redirectUrl = await getPostVerificationRedirect();
-        
-        setTimeout(() => {
-          window.location.href = redirectUrl;
-        }, 1000);
-      } else {
-        setMessage('Email not verified yet. Please check your inbox (and spam folder) and click the verification link.');
-        setMessageType('error');
-      }
-    } catch (err) {
-      setMessage('Failed to check verification status. Please try again.');
-      setMessageType('error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Prefer anchor navigation for better popup compatibility on mobile
 
   const handleCopyLink = async () => {
     if (!verificationLink) return;
@@ -294,12 +138,11 @@ export default function VerifyEmailPage() {
       await navigator.clipboard.writeText(verificationLink);
       setCopyStatus('Copied!');
     } catch {
-      setCopyStatus('Unable to copy automatically. You can select and copy the link above.');
+      setCopyStatus('Failed to copy.');
     }
     setTimeout(() => setCopyStatus(''), 2500);
   };
 
-  // Cooldown timer
   useEffect(() => {
     if (cooldown > 0) {
       const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
@@ -307,108 +150,109 @@ export default function VerifyEmailPage() {
     }
   }, [cooldown]);
 
-  return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg">
-              <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M2 6a2 2 0 012-2h16a2 2 0 012 2l-10 6L2 6zm20 2.24l-10 6-10-6V18a2 2 0 002 2h16a2 2 0 002-2V8.24z" />
-              </svg>
-            </div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">
-              {verifying ? 'Verifying...' : 'Verify your email'}
-            </h1>
-            <p className="text-slate-600">
-              {email ? `We sent a verification link to ${email}` : 'Check your inbox for a verification link'}
-            </p>
-          </div>
+  const inputClass = "h-11 w-full rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all bg-white";
 
-          {/* Message */}
+  return (
+    <main className="min-h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-10">
+          <Link href="/" className="inline-block text-2xl font-black tracking-tighter text-brand mb-8">
+            R&M
+          </Link>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {verifying ? 'Verifying...' : 'Verify your email'}
+          </h1>
+          <p className="text-xs text-muted mt-2">
+            {email ? `Sent to ${email}` : 'Check your inbox for a link'}
+          </p>
+        </div>
+
+        <div className="premium-card p-8 rounded-3xl">
           {message && (
-            <div className={`mb-6 p-4 rounded-xl ${
-              messageType === 'success' ? 'bg-green-50 border border-green-200 text-green-700' :
-              messageType === 'error' ? 'bg-red-50 border border-red-200 text-red-700' :
-              'bg-blue-50 border border-blue-200 text-blue-700'
+            <div className={`mb-6 p-3 rounded-lg text-xs font-medium border ${
+              messageType === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
+              messageType === 'error' ? 'bg-red-50 border-red-100 text-red-700' :
+              'bg-brand/5 border-brand/10 text-brand'
             }`}>
-              <p className="text-sm">{message}</p>
+              {message}
             </div>
           )}
 
           {verificationLink && (
-            <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-              <p className="font-semibold mb-2">Still missing the email?</p>
-              <p className="mb-3">You can verify instantly with the secure link below.</p>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                {verificationLink && (
-                  <a
-                    href={verificationLink}
-                    target="_blank"
-                    rel="noopener"
-                    className="inline-flex items-center justify-center rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-amber-600 transition"
-                  >
-                    Open verification link
-                  </a>
-                )}
+            <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-100">
+              <p className="text-[10px] font-bold text-amber-900 uppercase tracking-widest mb-3">Development Link</p>
+              <div className="flex flex-col gap-2">
+                <a
+                  href={verificationLink}
+                  className="primary-button !bg-amber-600 !h-9 !text-xs w-full"
+                >
+                  Verify Instantly
+                </a>
                 <button
                   onClick={handleCopyLink}
-                  className="inline-flex items-center justify-center rounded-lg border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100 transition"
+                  className="secondary-button !h-9 !text-xs w-full"
                 >
-                  Copy link
+                  {copyStatus || 'Copy Link'}
                 </button>
               </div>
-              {copyStatus && <p className="mt-2 text-xs text-amber-600">{copyStatus}</p>}
             </div>
           )}
 
-          {/* Actions */}
           {!verifying && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <button
-                onClick={handleCheckVerification}
+                onClick={async () => {
+                  setLoading(true);
+                  if (clientAuth.currentUser) {
+                    await clientAuth.currentUser.reload();
+                    if (clientAuth.currentUser.emailVerified) {
+                      window.location.href = await getPostVerificationRedirect();
+                    } else {
+                      setMessage('Email not verified yet. Please check your inbox.');
+                      setMessageType('error');
+                    }
+                  }
+                  setLoading(false);
+                }}
                 disabled={loading}
-                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="primary-button w-full h-11"
               >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-                {loading ? 'Checking...' : "I've verified my email"}
+                {loading ? '...' : "I've verified my email"}
               </button>
 
               <button
-                onClick={() => handleResend(false)}
+                onClick={handleResend}
                 disabled={loading || cooldown > 0}
-                className="w-full py-3 px-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="secondary-button w-full h-11 text-xs"
               >
-                {cooldown > 0 ? `Resend in ${cooldown}s` : loading ? 'Sending...' : 'Resend verification email'}
+                {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend verification email'}
               </button>
             </div>
           )}
 
-          {/* Help Text */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-            <p className="text-xs text-blue-700 mb-2">
-              <strong>📬 Didn't receive the email?</strong>
-            </p>
-            <ul className="text-xs text-blue-600 space-y-1 pl-4 list-disc">
-              <li>Check your spam/junk folder</li>
-              <li>Make sure you entered the correct email</li>
-              <li>Wait a minute and click "Resend" if needed</li>
-              <li>Contact support if issues persist</li>
+          <div className="mt-8 pt-6 border-t border-border">
+            <h4 className="text-[10px] font-bold text-muted uppercase tracking-widest mb-3">Troubleshooting</h4>
+            <ul className="text-[10px] text-muted space-y-2 leading-relaxed">
+              <li className="flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-muted/40" />
+                Check your spam or junk folder
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-muted/40" />
+                Make sure the email is correct
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1 h-1 rounded-full bg-muted/40" />
+                Wait a few minutes before resending
+              </li>
             </ul>
           </div>
+        </div>
 
-          {/* Footer */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              Wrong email?{' '}
-              <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
-                Create a new account
-              </Link>
-            </p>
-          </div>
+        <div className="mt-8 text-center">
+          <Link href="/register" className="text-xs text-brand font-bold hover:underline">
+            Wrong email? Create a new account
+          </Link>
         </div>
       </div>
     </main>
