@@ -70,11 +70,10 @@ export async function POST(req: Request) {
     if (lc.includes(k)) { inferred = v; break; }
   }
 
+  // Allow worldwide search by default - only restrict if explicitly provided
   const regions = includedRegionCodes
     ? includedRegionCodes.split(',').map((s) => s.trim()).filter(Boolean)
-    : (inferred ? [inferred]
-      : (cookieCountry ? [cookieCountry]
-        : (headerCountry ? [headerCountry] : undefined)));
+    : (inferred ? [inferred] : undefined);
 
   let data: { suggestions?: RawSuggestion[] } = { suggestions: [] };
   try {

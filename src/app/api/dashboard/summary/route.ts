@@ -138,9 +138,18 @@ export async function GET(req: NextRequest) {
     try {
       const { getPlaceDetails } = await import('@/lib/googlePlaces');
       const details = await getPlaceDetails(biz.google_place_id);
+      console.log('[DASHBOARD API] Place details for rating refresh:', { 
+        placeId: biz.google_place_id, 
+        rating: details?.rating,
+        displayName: details?.displayName?.text,
+        types: details?.types 
+      });
       if (details?.rating != null) {
         normalizedRating = details.rating;
         await supa.from('businesses').update({ google_rating: details.rating }).eq('id', biz.id);
+        console.log('[DASHBOARD API] Successfully updated rating:', details.rating);
+      } else {
+        console.log('[DASHBOARD API] No rating available - place may not be a business or has no reviews yet');
       }
     } catch (e) {
       console.error('[DASHBOARD API] Error refreshing rating:', e);
