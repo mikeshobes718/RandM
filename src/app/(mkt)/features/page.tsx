@@ -63,8 +63,11 @@ export default function FeaturesPage() {
               Everything you need to <br className="hidden md:block" />
               <span className="text-brand">master your reputation.</span>
             </h1>
-            <p className="text-xl text-muted max-w-2xl mx-auto mb-10 text-balance leading-relaxed">
+            <p className="text-xl text-muted max-w-2xl mx-auto mb-6 text-balance leading-relaxed">
               A complete toolkit designed to help modern businesses collect more reviews, filter private feedback, and grow faster.
+            </p>
+            <p className="text-sm text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed italic">
+              Display the QR code throughout your business. When customers scan it and choose five stars, they’re automatically directed to your Google Reviews page to leave a 5-star review, and also invited to share their contact information for special offers and promotions.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <HomeCtaButtons variant="hero" />

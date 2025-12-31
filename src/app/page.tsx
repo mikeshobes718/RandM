@@ -31,18 +31,23 @@ const features = [
 const steps = [
   {
     num: "01",
-    title: "Connect Profile",
-    text: "Link your Google Business Profile in seconds with our smart search."
+    title: "Connect your business",
+    text: "Link your Google Business Profile in seconds. We’ll instantly generate a QR code that leads customers to your Google review page."
   },
   {
     num: "02",
-    title: "Deploy Toolkit",
-    text: "Print your QR codes or send automated email requests to your customers."
+    title: "Share your QR code",
+    text: "Place the QR code around your business. When customers scan it and select five stars, they’re sent to leave a 5-star Google review and prompted to share their contact info for promotions."
   },
   {
     num: "03",
-    title: "Boost Rating",
-    text: "Watch your 5-star review count climb as we filter out the noise."
+    title: "Handle lower ratings",
+    text: "If they choose four stars or fewer, they won’t be directed to Google. Instead, they’ll be asked what went wrong and how to contact them so you can follow up with support, promotions or an apology."
+  },
+  {
+    num: "04",
+    title: "Manage everything in one place",
+    text: "Track new reviews, watch ratings increase, organize customer contact info, and reply directly from a simple, easy-to-use dashboard."
   }
 ];
 
@@ -98,16 +103,21 @@ export default function Home() {
         <div className="container mx-auto px-6">
           <div className="max-w-2xl mx-auto text-center mb-16">
             <h2 className="mb-4">How it works</h2>
-            <p className="text-muted">A simple 3-step system designed for busy operators.</p>
+            <p className="text-muted">A simple 4-step system designed for busy operators.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 max-w-6xl mx-auto mb-16">
             {steps.map((step) => (
               <div key={step.num} className="relative group">
                 <div className="text-5xl font-black text-brand/10 mb-4 group-hover:text-brand/20 transition-colors">{step.num}</div>
-                <h3 className="mb-3">{step.title}</h3>
+                <h3 className="mb-3 text-lg">{step.title}</h3>
                 <p className="text-muted text-sm leading-relaxed">{step.text}</p>
               </div>
             ))}
+          </div>
+          <div className="max-w-3xl mx-auto text-center p-8 bg-white/50 rounded-[32px] border border-brand/10 shadow-sm">
+            <p className="text-lg text-slate-600 leading-relaxed italic">
+              "Display the QR code throughout your business. When customers scan it and choose five stars, they’re automatically directed to your Google Reviews page to leave a 5-star review, and also invited to share their contact information for special offers and promotions."
+            </p>
           </div>
         </div>
       </section>
