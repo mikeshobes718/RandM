@@ -40,6 +40,12 @@ type FeedbackItem = {
   created_at: string;
 };
 
+type ActivityItem = {
+  event: string;
+  time: string;
+  icon: string;
+};
+
 function DashboardContent() {
   const searchParams = useSearchParams();
   const [business, setBusiness] = useState<Business | null>(null);
@@ -49,6 +55,7 @@ function DashboardContent() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [stats, setStats] = useState<Stats>({ reviewsThisMonth: 0, shareLinkScans: 0, averageRating: null });
   const [recentFeedback, setRecentFeedback] = useState<FeedbackItem[]>([]);
+  const [activityFeed, setActivityFeed] = useState<ActivityItem[]>([]);
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
 
   const isFromEdit = searchParams?.get('from') === 'edit';
@@ -67,6 +74,7 @@ function DashboardContent() {
         setBusiness(data.business);
         setStats(data.stats ?? { reviewsThisMonth: 0, shareLinkScans: 0, averageRating: null });
         setRecentFeedback(data.recentFeedback ?? []);
+        setActivityFeed(data.activityFeed ?? []);
         setIsPro(data.isPro ?? false);
         setAnalytics(data.analytics ?? null);
         
@@ -261,19 +269,23 @@ function DashboardContent() {
                 <span className="text-[10px] font-bold text-brand bg-brand/5 px-2 py-1 rounded">Pro</span>
               </div>
               <div className="space-y-4">
-                {[
-                  { event: 'Review Link Scanned', time: '2 mins ago', icon: '📱' },
-                  { event: 'New 5-Star Feedback', time: '1 hour ago', icon: '⭐' },
-                  { event: 'Email Follow-up Sent', time: '3 hours ago', icon: '✉️' },
-                ].map((act, i) => (
-                  <div key={i} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-3">
-                      <span className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm">{act.icon}</span>
-                      <span className="font-medium">{act.event}</span>
+                {activityFeed.length === 0 ? (
+                  <p className="text-xs text-muted text-center py-4">No recent activity detected.</p>
+                ) : (
+                  activityFeed.map((act, i) => (
+                    <div key={i} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-3">
+                        <span className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm text-base">{act.icon}</span>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-slate-700 capitalize">{act.event}</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-medium text-slate-400">
+                        {new Date(act.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
-                    <span className="text-muted">{act.time}</span>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </section>
           )}

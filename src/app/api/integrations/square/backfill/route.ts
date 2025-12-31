@@ -19,7 +19,18 @@ export async function GET() {
   if (!pro) return new NextResponse('Pro plan required', { status: 403 });
   try {
     const jobs = await getBackfillJobsForUser(uid);
-    return NextResponse.json({ jobs });
+    
+    const supa = getSupabaseAdmin();
+    // Get all businesses for this user to count total customers
+    const { data: businesses } = await supa.from('businesses').select('id').eq('owner_uid', uid);
+    const bizIds = (businesses || []).map(b => b.id);
+    
+    const { count: totalCustomers } = await supa
+      .from('customers')
+      .select('*', { count: 'exact', head: true })
+      .in('business_id', bizIds);
+
+    return NextResponse.json({ jobs, totalCustomers: totalCustomers || 0 });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to load backfill jobs';
     return new NextResponse(message, { status: 500 });

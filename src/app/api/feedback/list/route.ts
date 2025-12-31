@@ -31,8 +31,8 @@ export async function GET(req: Request) {
   
   const supa = getSupabaseAdmin();
   const url = new URL(req.url);
-  const days = Math.min(365, Math.max(1, Number(url.searchParams.get('days') || '60')));
-  const limit = Math.min(1000, Math.max(10, Number(url.searchParams.get('limit') || '500')));
+  const days = Math.min(10000, Math.max(1, Number(url.searchParams.get('days') || '90')));
+  const limit = Math.min(5000, Math.max(10, Number(url.searchParams.get('limit') || '500')));
   // User's businesses
   const { data: biz } = await supa.from('businesses').select('id').eq('owner_uid', uid);
   const ids = (biz || []).map((b: { id: string }) => b.id);

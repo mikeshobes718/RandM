@@ -36,6 +36,7 @@ function SquareIntegrationInner() {
   const [redirecting, setRedirecting] = useState(false);
   const [backfillLoading, setBackfillLoading] = useState(false);
   const [jobs, setJobs] = useState<BackfillJob[]>([]);
+  const [customerCount, setCustomerCount] = useState<number | null>(null);
   const [maxCustomers, setMaxCustomers] = useState(100);
   const [isBackfilling, setIsBackfilling] = useState(false);
 
@@ -56,7 +57,7 @@ function SquareIntegrationInner() {
     }
   }, [searchParams]);
 
-  const loadJobs = async () => {
+  const loadStats = async () => {
     try {
       const tok = localStorage.getItem('idToken');
       const headers: Record<string, string> = tok ? { Authorization: `Bearer ${tok}` } : {};
@@ -64,6 +65,7 @@ function SquareIntegrationInner() {
       if (res.ok) {
         const data = await res.json();
         setJobs(data.jobs || []);
+        setCustomerCount(data.totalCustomers || 0);
       }
     } catch {}
   };
@@ -134,7 +136,7 @@ function SquareIntegrationInner() {
           }
         }
 
-        await loadJobs();
+        await loadStats();
 
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load Square status');
@@ -230,7 +232,7 @@ function SquareIntegrationInner() {
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setMessage(`Backfill complete: Sent ${data.sent} requests, skipped ${data.skipped}.`);
-      await loadJobs();
+      await loadStats();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Backfill failed');
     } finally {
@@ -446,6 +448,25 @@ function SquareIntegrationInner() {
 
             {/* Right Column: History & Automation */}
             <div className="lg:col-span-5 space-y-6">
+              {/* Customer Database Summary */}
+              {status?.connected && (
+                <section className="premium-card p-6 rounded-3xl bg-emerald-50/50 border-emerald-100">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-sm font-bold text-emerald-900">Customer Database</h2>
+                    <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 005.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-3xl font-black text-emerald-700">{customerCount ?? '—'}</span>
+                    <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Total Customers</span>
+                  </div>
+                  <p className="text-[10px] text-emerald-600 leading-relaxed font-medium">
+                    Imported from Square and other sources. These customers are eligible for automated review requests.
+                  </p>
+                </section>
+              )}
+
               {/* Automation Status */}
               <section className="premium-card p-6 rounded-3xl bg-brand/5 border-dashed">
                 <div className="flex items-center justify-between mb-4">

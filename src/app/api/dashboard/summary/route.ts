@@ -146,9 +146,32 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(5);
 
+    const { data: eventData } = await supa
+      .from('review_events')
+      .select('id,created_at,metadata')
+      .eq('business_id', biz.id)
+      .eq('event', 'google_opened')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
     const merged = [
       ...(feedbackData || []).map(f => ({ ...f, type: 'feedback' })),
-      ...(contactData || []).map(c => ({ ...c, type: 'contact', rating: 5 }))
+      ...(contactData || []).map(c => ({ 
+        ...c, 
+        type: 'contact', 
+        rating: 5, 
+        comment: '5-star review (Contact form completed)' 
+      })),
+      ...(eventData || [])
+        .filter(e => !e.metadata?.feedback_id)
+        .map(e => ({
+          id: e.id,
+          rating: 5,
+          name: 'Anonymous Customer',
+          comment: '5-star review (Redirected to Google)',
+          created_at: e.created_at,
+          type: 'event'
+        }))
     ];
     
     recentFeedback = merged
@@ -230,6 +253,34 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // Recent Activity Feed
+  let activityFeed: any[] = [];
+  try {
+    const { data: eventData } = await supa
+      .from('review_events')
+      .select('event,created_at,rating,metadata')
+      .eq('business_id', biz.id)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    activityFeed = (eventData || []).map(e => {
+      let icon = '📱';
+      let label = e.event.replace(/_/g, ' ');
+      if (e.event === 'google_opened') { icon = '⭐'; label = 'Redirected to Google'; }
+      if (e.event === 'feedback_submitted') { icon = '✉️'; label = 'New Private Feedback'; }
+      if (e.event === 'rating_selected') { icon = '✨'; label = 'Rating Selected'; }
+      if (e.event === 'page_opened') { icon = '🌐'; label = 'Review Page Opened'; }
+      
+      return {
+        event: label,
+        time: e.created_at,
+        icon
+      };
+    });
+  } catch (e) {
+    console.error('[DASHBOARD API] Activity feed error:', e);
+  }
+
   const formattedPhone = biz.contact_phone ? formatPhone(biz.contact_phone) : null;
 
   return NextResponse.json({
@@ -250,6 +301,7 @@ export async function GET(req: NextRequest) {
     recentFeedback,
     squareConnection,
     isPro,
-    analytics
+    analytics,
+    activityFeed
   });
 }
