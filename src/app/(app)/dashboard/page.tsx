@@ -27,6 +27,10 @@ type Stats = {
 type Analytics = {
   history: { date: string; reviews: number; scans: number }[];
   sentiment: { positive: number; neutral: number; negative: number };
+  ratingDistribution?: Record<number, number>;
+  funnel?: { scans: number; selections: number; completions: number };
+  sources?: Record<string, number>;
+  growth?: number;
 };
 
 type FeedbackItem = {
