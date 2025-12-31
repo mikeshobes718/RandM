@@ -7,7 +7,7 @@ import { inputClass, primaryButtonClass, secondaryButtonClass } from '@/lib/styl
 
 type Member = { uid: string; email: string; role: string; added_at: string };
 type Invite = { email: string; role: string; invited_at: string; token: string };
-type Business = { id: string; name: string; contact_phone?: string; review_link?: string };
+type Business = { id: string; name: string; contact_phone?: string; review_link?: string; google_rating?: number | null };
 
 function SettingsContent() {
   const router = useRouter();
@@ -466,7 +466,17 @@ function SettingsContent() {
                   <h2 className="text-xl font-bold mb-6">Business Identity</h2>
                   <div className="space-y-6">
                     <div className="relative" ref={businessNameWrapperRef}>
-                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1">Business Name</label>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1">Business Name</label>
+                        {business?.google_rating != null && (
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.08 3.33a1 1 0 00.96.7h3.4c.96 0 1.36 1.23.58 1.79l-2.75 1.99a1 1 0 00-.36 1.11l1.08 3.33c.3.92-.76 1.68-1.54 1.11l-2.75-1.99a1 1 0 00-1.18 0l-2.75 1.99c-.78.57-1.84-.19-1.54-1.11l1.08-3.33a1 1 0 00-.36-1.11L2.99 8.78c-.78-.56-.38-1.79.58-1.79h3.4a1 1 0 00.96-.7l1.08-3.33z" />
+                            </svg>
+                            {business.google_rating} Rating
+                          </div>
+                        )}
+                      </div>
                       <input
                         value={businessName}
                         onChange={(e) => handleBusinessNameChange(e.target.value)}

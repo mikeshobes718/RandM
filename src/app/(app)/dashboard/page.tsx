@@ -166,10 +166,10 @@ function DashboardContent() {
         <div className="premium-card p-6 rounded-2xl">
           <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Google Rating</div>
           <div className="flex items-end gap-3">
-            <div className="text-4xl font-black">{stats.averageRating?.toFixed(1) || '—'}</div>
+            <div className="text-4xl font-black">{stats.averageRating !== null ? stats.averageRating.toFixed(1) : '—'}</div>
             <div className="flex mb-1.5">
               {[1, 2, 3, 4, 5].map((s) => (
-                <svg key={s} className={`w-4 h-4 ${s <= (stats.averageRating || 0) ? 'text-amber-400' : 'text-slate-200'}`} fill="currentColor" viewBox="0 0 20 20">
+                <svg key={s} className={`w-4 h-4 ${s <= (stats.averageRating ?? 0) ? 'text-amber-400' : 'text-slate-200'}`} fill="currentColor" viewBox="0 0 20 20">
                   <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.08 3.33a1 1 0 00.96.7h3.4c.96 0 1.36 1.23.58 1.79l-2.75 1.99a1 1 0 00-.36 1.11l1.08 3.33c.3.92-.76 1.68-1.54 1.11l-2.75-1.99a1 1 0 00-1.18 0l-2.75 1.99c-.78.57-1.84-.19-1.54-1.11l1.08-3.33a1 1 0 00-.36-1.11L2.99 8.78c-.78-.56-.38-1.79.58-1.79h3.4a1 1 0 00.96-.7l1.08-3.33z" />
                 </svg>
               ))}

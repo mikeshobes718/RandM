@@ -135,18 +135,20 @@ export async function GET(req: NextRequest) {
     console.error('[DASHBOARD API] Error fetching stats:', e);
   }
 
-  // Attempt to refresh Google rating if missing
-  if (normalizedRating === null && biz.google_place_id) {
+  // Attempt to refresh Google rating if missing or zero
+  if ((normalizedRating === null || normalizedRating === 0) && biz.google_place_id) {
     try {
       const { getPlaceDetails } = await import('@/lib/googlePlaces');
       const details = await getPlaceDetails(biz.google_place_id);
+      
       if (details?.rating != null) {
         normalizedRating = details.rating;
-        // Background update
-        supa.from('businesses')
+        // Immediate update to database
+        await supa.from('businesses')
           .update({ google_rating: details.rating })
-          .eq('id', biz.id)
-          .then();
+          .eq('id', biz.id);
+      } else {
+        console.log('[DASHBOARD API] No rating found in Google details for:', biz.google_place_id);
       }
     } catch (e) {
       console.error('[DASHBOARD API] Error refreshing rating:', e);
