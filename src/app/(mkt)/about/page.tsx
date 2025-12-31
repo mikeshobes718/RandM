@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { primaryButtonClass, secondaryButtonClass } from "@/lib/styles";
+import HomeCtaButtons from "@/components/HomeCtaButtons";
 
 const HIGHLIGHTS = [
   { value: '500+', label: 'Active Businesses' },
