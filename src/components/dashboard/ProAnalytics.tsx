@@ -133,15 +133,25 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
       {/* Conversion Funnel Row */}
       {data.funnel && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="premium-card p-6 rounded-2xl">
+          <div className="premium-card p-6 rounded-2xl group relative">
             <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Total Scans</div>
             <div className="text-2xl font-black">{data.funnel.scans}</div>
+            <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+              <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                All-time QR code and link opens.
+              </div>
+            </div>
           </div>
-          <div className="premium-card p-6 rounded-2xl">
+          <div className="premium-card p-6 rounded-2xl group relative">
             <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Interactions</div>
             <div className="text-2xl font-black">{data.funnel.selections}</div>
+            <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+              <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                Customers who clicked a star rating.
+              </div>
+            </div>
           </div>
-          <div className="premium-card p-6 rounded-2xl">
+          <div className="premium-card p-6 rounded-2xl group relative">
             <div className="flex justify-between items-start mb-1">
               <div className="text-[10px] font-bold text-muted uppercase tracking-widest">Total Leads</div>
               {data.growth !== undefined && (
@@ -151,10 +161,20 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
               )}
             </div>
             <div className="text-2xl font-black">{data.funnel.completions}</div>
+            <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+              <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                Successful conversions (Google opened or private message sent).
+              </div>
+            </div>
           </div>
-          <div className="premium-card p-6 rounded-2xl bg-brand/5 border-brand/10">
+          <div className="premium-card p-6 rounded-2xl bg-brand/5 border-brand/10 group relative">
             <div className="text-[10px] font-bold text-brand uppercase tracking-widest mb-1">Conversion</div>
             <div className="text-2xl font-black text-brand">{conversionRate}%</div>
+            <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+              <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                Percentage of scans that result in a lead.
+              </div>
+            </div>
           </div>
         </div>
       )}

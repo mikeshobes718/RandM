@@ -167,7 +167,7 @@ function DashboardContent() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="premium-card p-6 rounded-2xl">
+        <div className="premium-card p-6 rounded-2xl group relative">
           <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Google Rating</div>
           <div className="flex items-end gap-3">
             <div className="text-4xl font-black">
@@ -188,15 +188,33 @@ function DashboardContent() {
               )}
             </div>
           </div>
+          {/* Tooltip */}
+          <div className="absolute inset-x-0 -top-12 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+            <div className="bg-slate-900 text-white text-[10px] py-2 px-3 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+              Your live public rating pulled directly from Google Maps.
+            </div>
+          </div>
         </div>
-        <div className="premium-card p-6 rounded-2xl">
+        <div className="premium-card p-6 rounded-2xl group relative">
           <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Reviews This Month</div>
           <div className="text-4xl font-black">{stats.reviewsThisMonth}</div>
+          {/* Tooltip */}
+          <div className="absolute inset-x-0 -top-12 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+            <div className="bg-slate-900 text-white text-[10px] py-2 px-3 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+              Total customer interactions (Google redirects + private feedback) in the current calendar month.
+            </div>
+          </div>
         </div>
-                <div className="premium-card p-6 rounded-2xl">
-                  <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Link Scans This Month</div>
-                  <div className="text-4xl font-black">{stats.shareLinkScans}</div>
-                </div>
+        <div className="premium-card p-6 rounded-2xl group relative">
+          <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Link Scans This Month</div>
+          <div className="text-4xl font-black">{stats.shareLinkScans}</div>
+          {/* Tooltip */}
+          <div className="absolute inset-x-0 -top-12 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+            <div className="bg-slate-900 text-white text-[10px] py-2 px-3 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+              Total times your landing page has been opened via QR code or direct link this month.
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Advanced Analytics for Pro Users */}
@@ -220,7 +238,7 @@ function DashboardContent() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mt-12">
         {/* Main Toolkit Card */}
         <div className="lg:col-span-7 space-y-8">
-          <section className="premium-card p-8 rounded-3xl overflow-hidden relative">
+          <section className="premium-card p-8 rounded-3xl overflow-hidden relative group">
             <div className="absolute top-0 right-0 p-8 opacity-5">
               <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
@@ -230,7 +248,7 @@ function DashboardContent() {
             <h2 className="text-xl font-bold mb-6">Review Toolkit</h2>
             
             <div className="space-y-6">
-              <div>
+              <div className="relative">
                 <label className="text-xs font-bold text-muted uppercase tracking-wider block mb-3">Your Landing Link</label>
                 <div className="flex gap-2">
                   <div className="flex-1 h-11 bg-accent rounded-lg border border-border px-4 flex items-center text-sm font-mono truncate">
@@ -239,6 +257,11 @@ function DashboardContent() {
                   <button onClick={handleCopyLink} className="secondary-button !h-11 px-6 text-sm">
                     {copyState === 'copied' ? 'Copied' : 'Copy'}
                   </button>
+                </div>
+                <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+                  <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                    The public link customers visit to leave you feedback.
+                  </div>
                 </div>
               </div>
 
@@ -382,6 +405,77 @@ function DashboardContent() {
           </div>
         </div>
       </div>
+
+      {/* Legend Section */}
+      <section className="mt-24 pt-12 border-t border-border">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          <div>
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Metric Definitions</h4>
+            <ul className="space-y-3">
+              <li className="text-xs text-muted flex flex-col gap-1">
+                <strong className="text-slate-900">Google Rating</strong>
+                The current average star rating of your business on Google Maps.
+              </li>
+              <li className="text-xs text-muted flex flex-col gap-1">
+                <strong className="text-slate-900">Total Scans</strong>
+                Every time your unique QR code is scanned or the link is clicked.
+              </li>
+              <li className="text-xs text-muted flex flex-col gap-1">
+                <strong className="text-slate-900">Interactions</strong>
+                Customers who took action by clicking a star rating on your landing page.
+              </li>
+              <li className="text-xs text-muted flex flex-col gap-1">
+                <strong className="text-slate-900">Total Leads</strong>
+                The number of successful outcomes (Google redirects + private messages).
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Event Icons</h4>
+            <ul className="space-y-3">
+              <li className="text-xs text-muted flex items-center gap-3">
+                <span className="w-6 h-6 rounded bg-accent flex items-center justify-center text-sm italic">⭐</span>
+                <span>Customer redirected to your Google Profile</span>
+              </li>
+              <li className="text-xs text-muted flex items-center gap-3">
+                <span className="w-6 h-6 rounded bg-accent flex items-center justify-center text-sm italic">✉️</span>
+                <span>New private feedback or automation message</span>
+              </li>
+              <li className="text-xs text-muted flex items-center gap-3">
+                <span className="w-6 h-6 rounded bg-accent flex items-center justify-center text-sm italic">✨</span>
+                <span>A star rating was selected by a user</span>
+              </li>
+              <li className="text-xs text-muted flex items-center gap-3">
+                <span className="w-6 h-6 rounded bg-accent flex items-center justify-center text-sm italic">🌐</span>
+                <span>The landing page was opened in a browser</span>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Reputation Logic</h4>
+            <ul className="space-y-3">
+              <li className="text-xs text-muted flex flex-col gap-1 text-emerald-600 bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
+                <strong className="text-emerald-700">5-Star Workflow</strong>
+                Happy customers are instantly routed to Google to leave a public review.
+              </li>
+              <li className="text-xs text-muted flex flex-col gap-1 text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <strong className="text-slate-900">1-4 Star Workflow</strong>
+                Critical feedback is captured privately, giving you a chance to fix the issue before it goes public.
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted mb-4">System Status</h4>
+            <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-tight">System Operational</span>
+            </div>
+            <p className="mt-4 text-[10px] text-muted leading-relaxed">
+              All metrics are updated in real-time. Chart data shows performance trends over the last 30 days.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
