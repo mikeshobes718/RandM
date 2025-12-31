@@ -9,7 +9,7 @@ export function getPostmarkClient(): ServerClient {
   try {
     const { POSTMARK_SERVER_TOKEN } = getEnv();
     
-    if (!POSTMARK_SERVER_TOKEN || POSTMARK_SERVER_TOKEN.trim() === '') {
+    if (!POSTMARK_SERVER_TOKEN) {
       throw new Error('POSTMARK_SERVER_TOKEN is not configured. Please add it to your Vercel environment variables.');
     }
     

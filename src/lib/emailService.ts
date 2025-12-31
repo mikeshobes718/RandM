@@ -32,7 +32,7 @@ function getPostmarkClient(): ServerClient | null {
   
   try {
     const env = getEnv();
-    if (!env.POSTMARK_SERVER_TOKEN || env.POSTMARK_SERVER_TOKEN.trim() === '') {
+    if (!env.POSTMARK_SERVER_TOKEN) {
       console.warn('[EmailService] POSTMARK_SERVER_TOKEN not configured');
       return null;
     }
