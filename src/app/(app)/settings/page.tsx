@@ -66,7 +66,7 @@ function SettingsContent() {
     (async () => {
       try {
         const tok = localStorage.getItem('idToken');
-        const headers = tok ? { Authorization: `Bearer ${tok}` } : {};
+        const headers: Record<string, string> = tok ? { Authorization: `Bearer ${tok}` } : {};
 
         // Fetch entitlements
         try {
