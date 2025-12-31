@@ -1,5 +1,9 @@
 export function normalizePhone(value: string | null | undefined): string {
-  return (value || '').replace(/\D+/g, '');
+  let digits = (value || '').replace(/\D+/g, '');
+  if (digits.length === 11 && digits.startsWith('1')) {
+    digits = digits.slice(1);
+  }
+  return digits;
 }
 
 export function formatPhone(value: string | null | undefined): string {

@@ -90,8 +90,11 @@ export async function POST(req: Request) {
   }
   body.name = cleanedName;
   if (body.contact_phone !== undefined) {
-    const digits = normalizePhone(body.contact_phone).slice(0, 10);
-    body.contact_phone = digits ? digits : null;
+    let digits = normalizePhone(body.contact_phone);
+    if (digits.length === 11 && digits.startsWith('1')) {
+      digits = digits.slice(1);
+    }
+    body.contact_phone = digits.slice(0, 10) || null;
   }
   if (body.address !== undefined) {
     const trimmed = (body.address || '').trim();

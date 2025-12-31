@@ -23,9 +23,9 @@ const VALUES = [
 ];
 
 const MILESTONES = [
-  { year: '2023', text: 'Launched the first smart QR routing system for local businesses.' },
-  { year: '2024', text: 'Introduced automated follow-ups and multi-location dashboard controls.' },
-  { year: '2025', text: 'Expanding into deeper integrations with Square, Stripe, and Google APIs.' },
+  { year: '2024', text: 'Launched the first smart QR routing system for local businesses.' },
+  { year: '2025', text: 'Introduced automated follow-ups and multi-location dashboard controls.' },
+  { year: '2026', text: 'Expanding into deeper integrations with Square, Stripe, and Google APIs.' },
 ];
 
 export default function AboutPage() {

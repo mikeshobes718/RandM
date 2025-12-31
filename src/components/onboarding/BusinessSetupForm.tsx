@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, FormEvent } from 'react';
+import { formatPhone, normalizePhone } from '@/lib/phone';
 
 type PlaceSuggestion = {
   placeId: string;
@@ -24,6 +25,7 @@ function generateSessionToken(): string {
 
 export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => void }) {
   const [businessName, setBusinessName] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
   const [reviewLink, setReviewLink] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -119,6 +121,10 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
     }
   };
 
+  const handlePhoneChange = (value: string) => {
+    setContactPhone(formatPhone(value));
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!businessName.trim()) {
@@ -145,6 +151,7 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
         headers,
         body: JSON.stringify({
           name: businessName.trim(),
+          contact_phone: normalizePhone(contactPhone),
           review_link: reviewLink.trim() || null,
           google_place_id: selectedPlace?.id || null,
           google_maps_place_uri: selectedPlace?.googleMapsUri || null,
@@ -250,6 +257,19 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
             ))}
           </div>
         )}
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-xs font-bold text-muted uppercase tracking-wider">
+          Contact Phone
+        </label>
+        <input
+          type="tel"
+          value={contactPhone}
+          onChange={(e) => handlePhoneChange(e.target.value)}
+          className={inputClass}
+          placeholder="(555) 000-0000"
+        />
       </div>
 
       <div className="space-y-2">

@@ -86,8 +86,11 @@ export async function POST(req: Request) {
   }
   payload.name = cleanedName;
   if (payload.contact_phone !== undefined) {
-    const digits = normalizePhone(payload.contact_phone).slice(0, 10);
-    payload.contact_phone = digits ? digits : null;
+    let digits = normalizePhone(payload.contact_phone);
+    if (digits.length === 11 && digits.startsWith('1')) {
+      digits = digits.slice(1);
+    }
+    payload.contact_phone = digits.slice(0, 10) || null;
   }
   if (payload.address !== undefined) {
     const trimmed = (payload.address || '').trim();
@@ -152,7 +155,7 @@ export async function POST(req: Request) {
   // Fetch the business data we just created/updated to return it
   const { data: business, error: fetchError } = await supabase
     .from('businesses')
-    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id')
+    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
     .eq('owner_uid', uid!)
     .maybeSingle();
   

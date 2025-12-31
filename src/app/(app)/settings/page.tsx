@@ -41,7 +41,7 @@ export default function SettingsPage() {
   const [userName, setUserName] = useState('');
   const [savingAccount, setSavingAccount] = useState(false);
   const [debugInfo, setDebugInfo] = useState<any>(null);
-  const BUILD_VERSION = '2025-10-11-v11-mobile-responsive'; // Update this to force cache bust
+  const BUILD_VERSION = '2026-01-01-v12-business-profile-fix'; // Update this to force cache bust
   const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 
   // Google Places Autocomplete state
@@ -252,16 +252,17 @@ export default function SettingsPage() {
   };
 
   async function saveBusinessSettings() {
-    if (!businessId) return;
+    if (!businessName.trim()) return;
     setSavingBusiness(true);
     setError(null);
     try {
       const payload: any = {
-        id: businessId,
-        name: businessName,
+        name: businessName.trim(),
         contact_phone: normalizePhone(contactPhone), // Store normalized phone
-        review_link: reviewLink,
+        review_link: reviewLink.trim() || null,
       };
+
+      if (businessId) payload.id = businessId;
 
       // Include Google Place data if available
       if (selectedPlace) {
