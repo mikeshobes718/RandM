@@ -253,30 +253,43 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Recent Activity Feed
+  // Recent Activity Feed (Events + Automated Requests)
   let activityFeed: any[] = [];
   try {
     const { data: eventData } = await supa
       .from('review_events')
-      .select('event,created_at,rating,metadata')
+      .select('event,created_at')
       .eq('business_id', biz.id)
       .order('created_at', { ascending: false })
       .limit(10);
 
-    activityFeed = (eventData || []).map(e => {
-      let icon = '📱';
-      let label = e.event.replace(/_/g, ' ');
-      if (e.event === 'google_opened') { icon = '⭐'; label = 'Redirected to Google'; }
-      if (e.event === 'feedback_submitted') { icon = '✉️'; label = 'New Private Feedback'; }
-      if (e.event === 'rating_selected') { icon = '✨'; label = 'Rating Selected'; }
-      if (e.event === 'page_opened') { icon = '🌐'; label = 'Review Page Opened'; }
-      
-      return {
-        event: label,
-        time: e.created_at,
-        icon
-      };
-    });
+    const { data: requestData } = await supa
+      .from('review_requests')
+      .select('created_at, status')
+      .eq('business_id', biz.id)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    const mergedFeed = [
+      ...(eventData || []).map(e => {
+        let icon = '📱';
+        let label = e.event.replace(/_/g, ' ');
+        if (e.event === 'google_opened') { icon = '⭐'; label = 'Redirected to Google'; }
+        if (e.event === 'feedback_submitted') { icon = '✉️'; label = 'New Private Feedback'; }
+        if (e.event === 'rating_selected') { icon = '✨'; label = 'Rating Selected'; }
+        if (e.event === 'page_opened') { icon = '🌐'; label = 'Review Page Opened'; }
+        return { event: label, time: e.created_at, icon };
+      }),
+      ...(requestData || []).map(r => ({
+        event: `Review Request ${r.status}`,
+        time: r.created_at,
+        icon: '✉️'
+      }))
+    ];
+
+    activityFeed = mergedFeed
+      .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+      .slice(0, 10);
   } catch (e) {
     console.error('[DASHBOARD API] Activity feed error:', e);
   }
