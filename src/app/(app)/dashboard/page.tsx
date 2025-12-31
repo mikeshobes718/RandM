@@ -38,6 +38,7 @@ type FeedbackItem = {
   rating: number;
   marketing_consent: boolean | null;
   created_at: string;
+  type: 'feedback' | 'contact' | 'google' | 'event';
 };
 
 type ActivityItem = {
@@ -324,7 +325,7 @@ function DashboardContent() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {recentFeedback.map((item) => {
+                  {recentFeedback.map((item: any) => {
                     const isEvent = item.type === 'event';
                     return (
                       <div key={item.id} className="p-4 bg-accent/30 rounded-xl border border-border/50">
