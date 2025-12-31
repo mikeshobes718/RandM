@@ -62,6 +62,7 @@ function DashboardContent() {
   const [recentFeedback, setRecentFeedback] = useState<FeedbackItem[]>([]);
   const [activityFeed, setActivityFeed] = useState<ActivityItem[]>([]);
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
+  const [squareStatus, setSquareStatus] = useState<{ connected: boolean; lastBackfillAt?: string | null } | null>(null);
 
   const isFromEdit = searchParams?.get('from') === 'edit';
 
@@ -82,6 +83,7 @@ function DashboardContent() {
         setActivityFeed(data.activityFeed ?? []);
         setIsPro(data.isPro ?? false);
         setAnalytics(data.analytics ?? null);
+        setSquareStatus(data.squareConnection ?? null);
         
         // Onboarding redirect logic
         if (data.business && !data.business.google_place_id && !isFromEdit) {
@@ -327,26 +329,59 @@ function DashboardContent() {
             </section>
           )}
 
-          {/* Integrations Teaser */}
+          {/* Integrations Card */}
           <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed group relative">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">Square Integration</h2>
-              {isPro ? (
-                <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-1 rounded">Connected</span>
+              <h2 className="text-lg font-bold text-slate-900">Square Integration</h2>
+              {squareStatus?.connected ? (
+                <div className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Active</span>
+                </div>
+              ) : isPro ? (
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded">Ready to Connect</span>
               ) : (
                 <span className="text-[10px] font-bold uppercase tracking-widest text-brand bg-brand/5 px-2 py-1 rounded">Pro Feature</span>
               )}
             </div>
-            <p className="text-sm text-muted mb-6 leading-relaxed">
-              Automatically send review requests to your Square customers after they finish their purchase.
-            </p>
-            <Link href="/integrations/square" className="text-sm font-bold text-brand hover:underline">
-              {isPro ? 'Manage Connection' : 'Upgrade to Connect Square'} →
-            </Link>
+
+            {squareStatus?.connected ? (
+              <div className="space-y-4">
+                <p className="text-sm text-slate-600 leading-relaxed italic">
+                  "Reviews & Marketing is monitoring your Square account for new payments. Requests will be sent automatically."
+                </p>
+                <div className="flex items-center justify-between py-3 border-y border-border/50">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Last Sync</span>
+                    <span className="text-xs font-bold text-slate-700">
+                      {squareStatus.lastBackfillAt ? new Date(squareStatus.lastBackfillAt).toLocaleDateString() : 'Real-time monitoring active'}
+                    </span>
+                  </div>
+                  <Link href="/integrations/square" className="secondary-button !h-8 px-4 !text-[10px] font-black">
+                    Run Manual Backfill
+                  </Link>
+                </div>
+                <Link href="/integrations/square" className="text-[10px] font-bold text-brand hover:underline inline-flex items-center gap-1">
+                  Manage Integration Settings →
+                </Link>
+              </div>
+            ) : (
+              <>
+                <p className="text-sm text-muted mb-6 leading-relaxed">
+                  Automatically send review requests to your Square customers after they finish their purchase.
+                </p>
+                <Link href="/integrations/square" className="text-sm font-bold text-brand hover:underline">
+                  {isPro ? 'Connect Square Account' : 'Upgrade to Connect Square'} →
+                </Link>
+              </>
+            )}
+
             {/* Tooltip */}
             <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
               <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
-                Connect your Square POS to automatically email customers a review link after every transaction.
+                {squareStatus?.connected 
+                  ? "Your Square POS is connected. Every new sale will trigger an automated review request email."
+                  : "Connect your Square POS to automatically email customers a review link after every transaction."}
               </div>
             </div>
           </section>

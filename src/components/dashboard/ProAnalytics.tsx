@@ -259,7 +259,7 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
         )}
 
         {topSources.length > 0 && (
-          <div className="lg:col-span-6 premium-card p-8 rounded-3xl">
+          <div className="lg:col-span-6 premium-card p-8 rounded-3xl group relative">
             <h2 className="text-lg font-bold mb-2">Top Performing Sources</h2>
             <p className="text-xs text-muted font-medium mb-8">Which QR codes or links are driving results.</p>
             <div className="space-y-4">
@@ -275,6 +275,12 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
                   </div>
                 </div>
               ))}
+            </div>
+            {/* Tooltip */}
+            <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+              <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+                Ranked list of your QR codes and links, showing which ones generate the most customer leads.
+              </div>
             </div>
           </div>
         )}
