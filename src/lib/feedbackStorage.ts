@@ -61,9 +61,11 @@ export async function ensureFeedbackTables(): Promise<void> {
           phone text,
           comment text,
           marketing_consent boolean,
+          archived boolean default false,
           created_at timestamptz default now()
         );
         alter table feedback add column if not exists marketing_consent boolean;
+        alter table feedback add column if not exists archived boolean default false;
         create index if not exists ix_feedback_business_created on feedback (business_id, created_at desc);
       `);
       await client.query(`

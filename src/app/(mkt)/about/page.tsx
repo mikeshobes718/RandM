@@ -103,10 +103,10 @@ export default function AboutPage() {
         </div>
 
         {/* CTA */}
-        <div className="premium-card p-12 md:p-20 rounded-[48px] bg-foreground text-white overflow-hidden relative text-center">
+        <div className="p-12 md:p-20 rounded-[48px] bg-foreground text-white overflow-hidden relative text-center shadow-2xl">
           <div className="absolute top-0 right-0 w-1/2 h-full bg-brand/10 blur-[120px] -z-0"></div>
           <div className="relative z-10 max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-black mb-6">Ready to see it in action?</h2>
+            <h2 className="text-3xl md:text-4xl font-black mb-6 text-white">Ready to see it in action?</h2>
             <p className="text-slate-400 text-lg mb-10">
               Start free and collect your first reviews this week. Our team is ready to help you every step of the way.
             </p>

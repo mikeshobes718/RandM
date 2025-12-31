@@ -1,5 +1,6 @@
 "use client";
 import BusinessSetupForm from "@/components/onboarding/BusinessSetupForm";
+import ProAnalytics from "@/components/dashboard/ProAnalytics";
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
@@ -22,6 +23,11 @@ type Stats = {
   averageRating: number | null;
 };
 
+type Analytics = {
+  history: { date: string; reviews: number; scans: number }[];
+  sentiment: { positive: number; neutral: number; negative: number };
+};
+
 type FeedbackItem = {
   id: string;
   name: string | null;
@@ -38,7 +44,8 @@ function DashboardContent() {
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [planStatus, setPlanStatus] = useState<string>('loading');
+  const [isPro, setIsPro] = useState<boolean>(false);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [stats, setStats] = useState<Stats>({ reviewsThisMonth: 0, shareLinkScans: 0, averageRating: null });
   const [recentFeedback, setRecentFeedback] = useState<FeedbackItem[]>([]);
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
@@ -59,20 +66,13 @@ function DashboardContent() {
         setBusiness(data.business);
         setStats(data.stats ?? { reviewsThisMonth: 0, shareLinkScans: 0, averageRating: null });
         setRecentFeedback(data.recentFeedback ?? []);
+        setIsPro(data.isPro ?? false);
+        setAnalytics(data.analytics ?? null);
         
         // Onboarding redirect logic
         if (data.business && !data.business.google_place_id && !isFromEdit) {
           window.location.href = '/onboarding/business';
           return;
-        }
-
-        // Plan status check
-        const planRes = await fetch('/api/plan/status', { cache: 'no-store', credentials: 'include', headers });
-        if (planRes.ok) {
-          const planData = await planRes.json();
-          setPlanStatus(planData.status || 'none');
-        } else {
-          setPlanStatus('none');
         }
 
       } catch (err: any) {
@@ -176,7 +176,25 @@ function DashboardContent() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+      {/* Advanced Analytics for Pro Users */}
+      {isPro && analytics ? (
+        <ProAnalytics data={analytics} />
+      ) : !isPro && (
+        <div className="mt-12 premium-card p-10 rounded-3xl bg-brand/5 border-dashed flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-brand/10 text-brand rounded-2xl flex items-center justify-center mb-6">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+            </div>
+            <h2 className="text-xl font-bold mb-2">Unlock Advanced Analytics</h2>
+            <p className="text-sm text-muted mb-8 max-w-md">Get daily performance tracking, sentiment analysis, and customer behavior insights by upgrading to Pro.</p>
+            <Link href="/pricing" className="primary-button h-11 px-8">
+                Upgrade to Pro
+            </Link>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mt-12">
         {/* Main Toolkit Card */}
         <div className="lg:col-span-7 space-y-8">
           <section className="premium-card p-8 rounded-3xl overflow-hidden relative">
@@ -228,6 +246,31 @@ function DashboardContent() {
               </div>
             </div>
           </section>
+
+          {/* Recent Activity for Pro Users */}
+          {isPro && (
+            <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold">Recent Activity</h2>
+                <span className="text-[10px] font-bold text-brand bg-brand/5 px-2 py-1 rounded">Pro</span>
+              </div>
+              <div className="space-y-4">
+                {[
+                  { event: 'Review Link Scanned', time: '2 mins ago', icon: '📱' },
+                  { event: 'New 5-Star Feedback', time: '1 hour ago', icon: '⭐' },
+                  { event: 'Email Follow-up Sent', time: '3 hours ago', icon: '✉️' },
+                ].map((act, i) => (
+                  <div key={i} className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm">{act.icon}</span>
+                      <span className="font-medium">{act.event}</span>
+                    </div>
+                    <span className="text-muted">{act.time}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Integrations Teaser */}
           <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed">

@@ -129,10 +129,10 @@ export default function FeaturesPage() {
       {/* Pricing Teaser */}
       <section className="py-24 border-t border-border">
         <div className="container mx-auto px-6">
-          <div className="premium-card p-10 md:p-16 rounded-[40px] bg-foreground text-white flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden relative">
+          <div className="p-10 md:p-16 rounded-[40px] bg-foreground text-white flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden relative shadow-2xl">
             <div className="absolute top-0 right-0 w-1/2 h-full bg-brand/10 blur-[120px] -z-0"></div>
             <div className="relative z-10 max-w-xl">
-              <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6">Ready to scale your reputation?</h2>
+              <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6 text-white">Ready to scale your reputation?</h2>
               <p className="text-slate-400 text-lg mb-8 leading-relaxed">
                 Join 500+ businesses using our toolkit to dominate their local market. Start free and upgrade when you're ready for more.
               </p>
@@ -147,19 +147,19 @@ export default function FeaturesPage() {
             </div>
             <div className="relative z-10 grid grid-cols-2 gap-4 w-full md:w-auto">
               <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm text-center">
-                <div className="text-2xl font-black mb-1">500+</div>
+                <div className="text-2xl font-black mb-1 text-white">500+</div>
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Businesses</div>
               </div>
               <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm text-center">
-                <div className="text-2xl font-black mb-1">15K+</div>
+                <div className="text-2xl font-black mb-1 text-white">15K+</div>
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Reviews</div>
               </div>
               <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm text-center">
-                <div className="text-2xl font-black mb-1">4.9★</div>
+                <div className="text-2xl font-black mb-1 text-white">4.9★</div>
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Avg Rating</div>
               </div>
-              <div className="p-6 bg-brand rounded-2xl text-center">
-                <div className="text-2xl font-black mb-1">3x</div>
+              <div className="p-6 bg-brand rounded-2xl text-center shadow-lg shadow-brand/20">
+                <div className="text-2xl font-black mb-1 text-white">3x</div>
                 <div className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Growth</div>
               </div>
             </div>

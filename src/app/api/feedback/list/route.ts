@@ -26,6 +26,7 @@ export async function GET(req: Request) {
     phone: string | null;
     comment: string | null;
     marketing_consent: boolean | null;
+    archived: boolean;
     created_at: string;
   }[] = [];
   try {
@@ -33,7 +34,7 @@ export async function GET(req: Request) {
     since.setUTCHours(0,0,0,0); since.setUTCDate(since.getUTCDate() - days + 1);
     const { data } = await supa
       .from('feedback')
-      .select('id,business_id,rating,name,email,phone,comment,marketing_consent,created_at')
+      .select('id,business_id,rating,name,email,phone,comment,marketing_consent,archived,created_at')
       .in('business_id', ids)
       .gte('created_at', since.toISOString())
       .order('created_at', { ascending: false })

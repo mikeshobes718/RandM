@@ -81,12 +81,6 @@ export default function SiteHeader() {
               >
                 Log out
               </button>
-              <Link
-                href="/dashboard"
-                className="primary-button !h-9 !px-4 !text-xs"
-              >
-                Go to App
-              </Link>
             </div>
           ) : (
             <>

@@ -1,7 +1,9 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { formatPhone, normalizePhone } from '@/lib/phone';
+import Link from 'next/link';
+import { inputClass } from '@/lib/styles';
 
 type Biz = {
   id: string;
@@ -32,7 +34,7 @@ function normalizeHexColor(color?: string | null): string | null {
 }
 
 function mixWithWhite(color: string, ratio: number): string {
-  const normalized = normalizeHexColor(color) || '#2563eb';
+  const normalized = normalizeHexColor(color) || '#4f46e5';
   const clampRatio = Math.min(1, Math.max(0, ratio));
   const r = parseInt(normalized.slice(1, 3), 16);
   const g = parseInt(normalized.slice(3, 5), 16);
@@ -69,7 +71,7 @@ function isValidEmail(email: string): boolean {
   return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
 }
 
-export default function LandingClient({ id }: { id: string }) {
+function LandingClientContent({ id }: { id: string }) {
   const searchParams = useSearchParams();
   const [biz, setBiz] = useState<Biz | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,7 +89,6 @@ export default function LandingClient({ id }: { id: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [showContactCapture, setShowContactCapture] = useState(false);
-  const [lastRedirect, setLastRedirect] = useState<string | null>(null);
 
   const entrySource = useMemo(() => {
     if (!searchParams) return 'landing';
@@ -142,19 +143,9 @@ export default function LandingClient({ id }: { id: string }) {
       setHappyPhone('');
       setHappyConsent(true);
       setShowContactCapture(false);
-      // Immediately open Google when 5 stars selected
-      if (biz?.reviewLink) {
-        sendEvent('google_opened', { rating: 5 });
-        try {
-          window.open(biz.reviewLink, '_blank', 'noopener,noreferrer');
-        } catch (e) {
-          console.error('Failed to open Google review link:', e);
-        }
-        // Show contact capture form after opening Google
-        setTimeout(() => setShowContactCapture(true), 500);
-      }
+      setTimeout(() => setShowContactCapture(true), 500);
     }
-  }, [rating, biz?.reviewLink, sendEvent]);
+  }, [rating]);
 
   const pageOpened = useRef(false);
   useEffect(() => {
@@ -170,13 +161,24 @@ export default function LandingClient({ id }: { id: string }) {
     (value: number) => {
       setRating(value);
       sendEvent('rating_selected', { rating: value });
+      
+      if (value === 5 && biz?.reviewLink) {
+        sendEvent('google_opened', { rating: 5 });
+        try {
+          const url = biz.reviewLink.startsWith('http') ? biz.reviewLink : `https://${biz.reviewLink}`;
+          const win = window.open(url, '_blank', 'noopener,noreferrer');
+          if (!win) {
+            console.warn('Popup blocked or failed to open');
+          }
+        } catch (e) {
+          console.error('Failed to open Google review link:', e);
+        }
+      }
     },
-    [sendEvent],
+    [biz?.reviewLink, sendEvent],
   );
 
-  const primaryColor = useMemo(() => normalizeHexColor(biz?.brandColor) || '#2563eb', [biz?.brandColor]);
-  const buttonColor = useMemo(() => normalizeHexColor(biz?.buttonColor) || primaryColor, [biz?.buttonColor, primaryColor]);
-  const buttonTextColor = useMemo(() => getReadableTextColor(buttonColor), [buttonColor]);
+  const primaryColor = useMemo(() => normalizeHexColor(biz?.brandColor) || '#4f46e5', [biz?.brandColor]);
   const backgroundStyle = useMemo(
     () => ({
       background: `radial-gradient(circle at top, ${mixWithWhite(primaryColor, 0.92)} 0%, ${mixWithWhite(primaryColor, 0.97)} 45%, #ffffff 100%)`,
@@ -184,7 +186,6 @@ export default function LandingClient({ id }: { id: string }) {
     [primaryColor],
   );
   const cardBorderColor = useMemo(() => mixWithWhite(primaryColor, 0.85), [primaryColor]);
-  const starActiveColor = useMemo(() => mixWithWhite(primaryColor, 0.2), [primaryColor]);
 
   const headline = biz?.headline?.trim() || 'How was your experience today?';
   const subheading = biz?.subheading?.trim() || (biz?.name ? `Share your feedback with ${biz.name}.` : 'Your voice helps us improve.');
@@ -192,21 +193,14 @@ export default function LandingClient({ id }: { id: string }) {
 
   async function submitContactCapture() {
     if (!biz || submitting) return;
-
     const trimmedEmail = happyEmail.trim();
-    if (!trimmedEmail) {
-      setError('Please enter your email to receive rebates and promotions.');
-      return;
-    }
-    if (!isValidEmail(trimmedEmail)) {
+    if (!trimmedEmail || !isValidEmail(trimmedEmail)) {
       setError('Please enter a valid email address.');
       return;
     }
-
     try {
       setSubmitting(true);
       setError(null);
-      
       const payload = {
         businessId: biz.id,
         name: happyName.trim() || undefined,
@@ -215,21 +209,15 @@ export default function LandingClient({ id }: { id: string }) {
         consent: happyConsent,
         source: entrySource,
       };
-
       const res = await fetch('/api/feedback/contact-capture', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
-      if (!res.ok) {
-        throw new Error('Unable to save your information. Please try again.');
-      }
-
+      if (!res.ok) throw new Error('Unable to save your information.');
       setSubmitted(true);
     } catch (e) {
-      const message = e instanceof Error && e.message ? e.message : 'Something went wrong. Please try again.';
-      setError(message);
+      setError('Something went wrong. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -237,50 +225,33 @@ export default function LandingClient({ id }: { id: string }) {
 
   async function submit() {
     if (!biz || rating == null || submitting) return;
-
     if (rating < 5) {
-      const trimmedName = name.trim();
-      const trimmedEmail = email.trim();
-      const trimmedComment = comment.trim();
-      if (!trimmedComment || !trimmedName || !trimmedEmail) {
-        setError('Please share your name, email, and feedback so we can follow up.');
-        return;
-      }
-      if (!isValidEmail(trimmedEmail)) {
-        setError('Enter a valid email address so we can stay in touch.');
+      if (!comment.trim() || !name.trim() || !isValidEmail(email.trim())) {
+        setError('Please complete all required fields.');
         return;
       }
     }
-
     try {
       setSubmitting(true);
       setError(null);
-      const payload: Record<string, unknown> = {
-        businessId: biz.id,
-        rating,
-        source: entrySource,
-        name: name.trim(),
-        email: email.trim(),
-        phone: normalizePhone(phone).slice(0, 10) || undefined,
-        comment: comment.trim(),
-        consent: consent,
-      };
-      
       const res = await fetch('/api/feedback/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          businessId: biz.id,
+          rating,
+          source: entrySource,
+          name: name.trim(),
+          email: email.trim(),
+          phone: normalizePhone(phone).slice(0, 10) || undefined,
+          comment: comment.trim(),
+          consent: consent,
+        }),
       });
-      
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || 'Unable to submit right now. Please try again.');
-      }
-      
+      if (!res.ok) throw new Error('Unable to submit.');
       setSubmitted(true);
     } catch (e) {
-      const message = e instanceof Error && e.message ? e.message : 'Something went wrong. Please try again.';
-      setError(message);
+      setError('Something went wrong. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -289,173 +260,252 @@ export default function LandingClient({ id }: { id: string }) {
   const fiveStar = rating === 5;
   const ltFive = rating != null && rating < 5;
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
+        <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  if (error || !biz) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 text-center">
+        <div className="max-w-md">
+          <h1 className="text-xl font-bold mb-2 text-slate-900">This link is unavailable</h1>
+          <p className="text-slate-500 text-sm mb-6 font-medium">The business may have updated their link or it is no longer active.</p>
+          <Link href="/" className="primary-button !h-10 !text-xs">Return Home</Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <main className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6" style={backgroundStyle}>
-      <div className="w-full max-w-xl">
+    <main className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 relative overflow-hidden" style={backgroundStyle}>
+      <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 blur-3xl rounded-full -mr-32 -mt-32 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 blur-3xl rounded-full -ml-32 -mb-32 pointer-events-none"></div>
+
+      <div className="w-full max-w-xl relative z-10">
         <div
-          className="rounded-3xl border bg-white/90 backdrop-blur-sm p-6 sm:p-8 shadow-xl transition"
+          className="premium-card p-8 sm:p-12 rounded-[40px] shadow-2xl transition-all duration-500"
           style={{ borderColor: cardBorderColor }}
         >
-          {biz?.logoUrl && (
-            <div className="flex justify-center mb-4">
+          {biz?.logoUrl ? (
+            <div className="flex justify-center mb-8">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={biz.logoUrl} alt={`${displayName} logo`} className="h-16 w-auto object-contain" referrerPolicy="no-referrer" />
+              <img src={biz.logoUrl} alt={`${displayName} logo`} className="h-20 w-auto object-contain drop-shadow-sm" referrerPolicy="no-referrer" />
+            </div>
+          ) : (
+            <div className="flex justify-center mb-8">
+              <div className="w-16 h-16 rounded-2xl bg-brand/10 text-brand flex items-center justify-center text-2xl font-black tracking-tighter">
+                {biz.name.slice(0, 1).toUpperCase()}
+              </div>
             </div>
           )}
-          <div className="text-center space-y-2">
-            <div className="text-xs uppercase tracking-wide text-gray-500">{displayName}</div>
-            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">{headline}</h1>
-            <p className="text-gray-600 text-sm sm:text-base">{subheading}</p>
+
+          <div className="text-center space-y-3 mb-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
+              Verified Feedback
+            </div>
+            <h1 className="text-2xl sm:text-4xl font-black text-slate-900 leading-tight tracking-tight">{headline}</h1>
+            <p className="text-slate-500 text-sm sm:text-lg font-medium">{subheading}</p>
           </div>
 
-          <div className="mt-6 flex items-center justify-center gap-3">
-            {[1, 2, 3, 4, 5].map((n) => {
-              const active = rating != null && rating >= n;
-              return (
-                <button
-                  key={n}
-                  type="button"
-                  aria-label={`${n} star${n > 1 ? 's' : ''}`}
-                  aria-pressed={active}
-                  onClick={() => handleRating(n)}
-                  className={`p-2 rounded-full transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 ${active ? 'scale-110' : 'scale-100'}`}
-                  style={{ color: active ? starActiveColor : '#d1d5db' }}
-                >
-                  <svg className="w-12 h-12" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                </button>
-              );
-            })}
-          </div>
-
-          {rating == null && !loading && (
-            <p className="text-center text-gray-500 mt-5">Tap a star to continue.</p>
+          {!rating && !submitted && (
+            <div className="space-y-10 animate-fade-in">
+              <div className="flex items-center justify-center gap-2 sm:gap-4">
+                {[1, 2, 3, 4, 5].map((n) => {
+                  const active = rating != null && rating >= n;
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      aria-label={`${n} star${n > 1 ? 's' : ''}`}
+                      aria-pressed={active}
+                      onClick={() => handleRating(n)}
+                      className="group relative p-1 transition-all duration-200 hover:scale-110 active:scale-95"
+                    >
+                      <svg className={`w-12 h-12 sm:w-16 sm:h-16 transition-colors duration-200 ${active ? 'text-amber-400' : 'text-slate-200 group-hover:text-slate-300'}`} fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      {n === 5 && (
+                        <span className="absolute -top-2 -right-2 flex h-4 w-4">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-4 w-4 bg-brand"></span>
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-center text-slate-400 text-xs font-bold uppercase tracking-widest">Select your rating to continue</p>
+            </div>
           )}
 
           {fiveStar && showContactCapture && (
-            <div className="mt-6">
+            <div className="animate-fade-in">
               {submitted ? (
-                <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-6 text-center">
-                  <svg className="w-12 h-12 mx-auto text-emerald-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <h3 className="text-lg font-semibold mb-2">Thank you!</h3>
-                  <p className="text-sm">Your information has been saved. Watch your inbox for exclusive rebates and promotions!</p>
-                  <p className="text-xs mt-3 text-emerald-600">You can close this tab now.</p>
+                <div className="py-10 text-center">
+                  <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg className="w-10 h-10 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-900 mb-2">You're all set!</h3>
+                  <p className="text-slate-500 font-medium">Your info is saved. Keep an eye on your inbox for upcoming rewards.</p>
+                  <p className="text-[10px] text-slate-400 mt-12 font-bold uppercase tracking-widest">You can close this tab now</p>
                 </div>
               ) : (
-                <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); submitContactCapture(); }}>
-                  <div className="rounded-xl bg-gradient-to-r from-emerald-50 to-blue-50 px-4 py-4 text-center border border-emerald-200">
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">🎉 Thanks for your 5-star review!</h3>
-                    <p className="text-sm text-gray-700">
-                      Add your contact details below to receive <strong>rebates and promotions</strong> as our thank you!
+                <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); submitContactCapture(); }}>
+                  <div className="p-6 bg-brand/5 rounded-3xl border border-brand/10 text-center mb-8">
+                    <div className="text-2xl mb-2">🎁</div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">Claim Your Rewards</h3>
+                    <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                      Since you had a 5-star experience, we'd love to send you exclusive rebates and promotions!
                     </p>
                   </div>
                   
-                  <input
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="Your name (optional)"
-                    value={happyName}
-                    onChange={(e) => setHappyName(e.target.value)}
-                  />
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Name (Optional)</label>
+                      <input
+                        className={inputClass}
+                        placeholder="John Doe"
+                        value={happyName}
+                        onChange={(e) => setHappyName(e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address <span className="text-brand">*</span></label>
+                      <input
+                        className={inputClass}
+                        placeholder="name@company.com"
+                        type="email"
+                        value={happyEmail}
+                        onChange={(e) => setHappyEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number (Optional)</label>
+                      <input
+                        className={inputClass}
+                        placeholder="(555) 000-0000"
+                        value={happyPhone}
+                        onChange={(e) => setHappyPhone(formatPhone(normalizePhone(e.target.value).slice(0, 10)))}
+                      />
+                    </div>
+                  </div>
                   
-                  <input
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="Email address *"
-                    type="email"
-                    value={happyEmail}
-                    onChange={(e) => setHappyEmail(e.target.value)}
-                    required
-                  />
-                  
-                  <input
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="Phone number (optional)"
-                    value={happyPhone}
-                    onChange={(e) => setHappyPhone(formatPhone(normalizePhone(e.target.value).slice(0, 10)))}
-                  />
-                  
-                  <label className="flex items-start gap-2 text-xs text-gray-600 bg-gray-50 rounded-lg p-3">
+                  <label className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl cursor-pointer group transition-colors hover:bg-slate-100">
                     <input
                       type="checkbox"
-                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                      className="mt-1 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
                       checked={happyConsent}
                       onChange={(e) => setHappyConsent(e.target.checked)}
                     />
-                    <span>Yes, I want to receive exclusive promotions, rebates, and updates from {biz?.name || 'this business'}.</span>
+                    <span className="text-xs text-slate-500 leading-relaxed font-medium">Yes, I want to receive exclusive promotions, rebates, and updates from {biz?.name || 'this business'}.</span>
                   </label>
                   
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white px-4 py-4 text-base font-bold shadow-lg hover:from-emerald-700 hover:to-emerald-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="primary-button w-full h-14 rounded-2xl text-lg shadow-xl shadow-brand/20"
                   >
                     {submitting ? 'Saving...' : '🎁 Claim Your Rewards'}
                   </button>
-                  
-                  <p className="text-xs text-gray-500 text-center">
-                    By submitting, you'll be entered to receive special offers and discounts.
-                  </p>
                 </form>
               )}
             </div>
           )}
 
           {ltFive && (
-            <div className="mt-6">
+            <div className="animate-fade-in">
               {submitted ? (
-                <div className="rounded-xl bg-blue-50 text-blue-700 px-4 py-6 text-center text-sm">
-                  Thanks for sharing. We’ll review your note right away and, if you asked us to reach out, we’ll be in touch.
+                <div className="py-10 text-center">
+                  <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-black text-slate-900 mb-2">Thank you</h3>
+                  <p className="text-slate-500 font-medium">Your feedback has been sent directly to our management team for review.</p>
+                  <p className="text-[10px] text-slate-400 mt-12 font-bold uppercase tracking-widest">You can close this tab now</p>
                 </div>
               ) : (
-                <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); submit(); }}>
-                  <div className="text-center text-amber-700 text-sm">
-                    We’re sorry it wasn’t perfect. This note stays private with our team.
+                <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+                  <div className="p-6 bg-slate-50 rounded-3xl border border-dashed border-slate-200 text-center mb-8">
+                    <h3 className="text-lg font-bold text-slate-900 mb-1">Private Message</h3>
+                    <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                      We're sorry your experience wasn't perfect. This note goes directly to our management team so we can make it right.
+                    </p>
                   </div>
-                  <textarea
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 min-h-32 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
-                    placeholder="Tell us what happened so we can make it right."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    required
-                  />
-                  <input
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
-                    placeholder="Your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                  <input
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
-                    placeholder="Email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                  <input
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
-                    placeholder="Phone (optional)"
-                    value={phone}
-                    onChange={(e) => setPhone(formatPhone(normalizePhone(e.target.value).slice(0, 10)))}
-                  />
-                  <label className="flex items-start gap-2 text-sm text-gray-600">
+
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">What happened?</label>
+                      <textarea
+                        className={inputClass + " min-h-32 py-4 resize-none"}
+                        placeholder="Tell us more about your experience..."
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Your Name</label>
+                        <input
+                          className={inputClass}
+                          placeholder="John Doe"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                        <input
+                          className={inputClass}
+                          placeholder="name@email.com"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone (Optional)</label>
+                      <input
+                        className={inputClass}
+                        placeholder="(555) 000-0000"
+                        value={phone}
+                        onChange={(e) => setPhone(formatPhone(normalizePhone(e.target.value).slice(0, 10)))}
+                      />
+                    </div>
+                  </div>
+
+                  <label className="flex items-start gap-3 p-4 bg-slate-50 rounded-2xl cursor-pointer group transition-colors hover:bg-slate-100">
                     <input
                       type="checkbox"
-                      className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="mt-1 h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand"
                       checked={consent}
                       onChange={(e) => setConsent(e.target.checked)}
                     />
-                    <span>It’s okay to contact me about this experience.</span>
+                    <span className="text-xs text-slate-500 font-medium leading-relaxed">It's okay to contact me about this experience.</span>
                   </label>
+
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full rounded-2xl bg-gray-900 text-white px-4 py-3 text-base font-semibold shadow-md transition disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="primary-button w-full h-14 rounded-2xl text-lg shadow-xl shadow-slate-200"
                   >
-                    {submitting ? 'Sending…' : 'Send private feedback'}
+                    {submitting ? 'Sending...' : 'Send Private Feedback'}
                   </button>
                 </form>
               )}
@@ -463,12 +513,30 @@ export default function LandingClient({ id }: { id: string }) {
           )}
 
           {error && (
-            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm text-center">
+            <div className="mt-8 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-bold text-center animate-shake">
               {error}
             </div>
           )}
         </div>
+
+        <div className="mt-8 text-center">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Powered by <span className="text-slate-600">Reviews & Marketing</span>
+          </p>
+        </div>
       </div>
     </main>
+  );
+}
+
+export default function LandingClient({ id }: { id: string }) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
+        <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full"></div>
+      </div>
+    }>
+      <LandingClientContent id={id} />
+    </Suspense>
   );
 }

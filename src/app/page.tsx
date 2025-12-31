@@ -123,19 +123,20 @@ export default function Home() {
       </section>
 
       {/* Testimonial Section */}
-      <section className="py-24 bg-foreground text-white overflow-hidden">
-        <div className="container mx-auto px-6">
+      <section className="py-24 bg-foreground text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-brand/5 blur-[120px] -z-0"></div>
+        <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <svg className="w-12 h-12 text-brand mx-auto mb-8 opacity-50" fill="currentColor" viewBox="0 0 24 24">
               <path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H16.017C14.9124 8 14.017 7.10457 14.017 6V3L21.017 3V15C21.017 18.3137 18.3307 21 15.017 21H14.017ZM3.0166 21L3.0166 18C3.0166 16.8954 3.91203 16 5.0166 16H8.0166C8.56888 16 9.0166 15.5523 9.0166 15V9C9.0166 8.44772 8.56888 8 8.0166 8H5.0166C3.91203 8 3.0166 7.10457 3.0166 6V3L10.0166 3V15C10.0166 18.3137 7.3303 21 4.0166 21H3.0166Z" />
             </svg>
-            <p className="text-2xl md:text-3xl font-medium mb-10 leading-tight">
+            <p className="text-2xl md:text-3xl font-medium mb-10 leading-tight text-white">
               "Our Google rating went from 4.2 to 4.8 in just 3 months. The routing system is a lifesaver—we finally have control over our online reputation."
             </p>
             <div className="flex items-center justify-center gap-4">
               <div className="text-left">
-                <p className="font-bold">Camille Rivera</p>
-                <p className="text-sm text-muted">Director of Experience, Beacon Dental</p>
+                <p className="font-bold text-white">Camille Rivera</p>
+                <p className="text-sm text-slate-400">Director of Experience, Beacon Dental</p>
               </div>
             </div>
           </div>

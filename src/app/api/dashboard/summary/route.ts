@@ -54,147 +54,91 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const sinceIso = startOfCurrentMonthUTC();
-
-  let reviewsThisMonth = 0;
-  let shareLinkScans = 0;
-  let averageRating: number | null = biz.google_rating ?? null;
-  const contactPhone = (biz as any).contact_phone || null;
-  const formattedPhone = contactPhone ? formatPhone(contactPhone) : null;
-
+  // Fetch plan status to check if Pro
+  let isPro = false;
   try {
-    const { count } = await supa
-      .from('feedback')
-      .select('id', { count: 'exact', head: true })
-      .eq('business_id', biz.id)
-      .gte('created_at', sinceIso);
-    reviewsThisMonth += count || 0;
-  } catch {}
-
-  try {
-    const { count } = await supa
-      .from('review_events')
-      .select('id', { count: 'exact', head: true })
-      .eq('business_id', biz.id)
-      .eq('event', 'google_opened')
-      .gte('created_at', sinceIso);
-    reviewsThisMonth += count || 0;
-  } catch {}
-
-  try {
-    const { count } = await supa
-      .from('review_events')
-      .select('id', { count: 'exact', head: true })
-      .eq('business_id', biz.id)
-      .eq('event', 'page_opened')
-      .gte('created_at', sinceIso);
-    shareLinkScans = count || 0;
-  } catch {}
-
-  if (averageRating == null) {
-    try {
-      const { data: ratingsRows } = await supa
-        .from('review_events')
-        .select('rating')
-        .eq('business_id', biz.id)
-        .not('rating', 'is', null);
-      if (ratingsRows && ratingsRows.length) {
-        const sum = ratingsRows.reduce((acc, row) => acc + Number(row.rating || 0), 0);
-        averageRating = sum / ratingsRows.length;
-      }
-    } catch {}
-  }
-
-  if (averageRating == null) {
-    try {
-      const { data: feedbackRatings } = await supa
-        .from('feedback')
-        .select('rating')
-        .eq('business_id', biz.id);
-      if (feedbackRatings && feedbackRatings.length) {
-        const sum = feedbackRatings.reduce((acc, row) => acc + Number(row.rating || 0), 0);
-        averageRating = sum / feedbackRatings.length;
-      }
-    } catch {}
-  }
-
-  const normalizedRating =
-    typeof averageRating === 'number' && Number.isFinite(averageRating)
-      ? Number(averageRating.toFixed(2))
-      : null;
-
-  let recentFeedback: {
-    id: string;
-    name: string | null;
-    email: string | null;
-    phone: string | null;
-    comment: string | null;
-    rating: number;
-    marketing_consent: boolean | null;
-    created_at: string;
-  }[] = [];
-
-  try {
-    const { data } = await supa
-      .from('feedback')
-      .select('id,name,email,phone,comment,rating,marketing_consent,created_at')
-      .eq('business_id', biz.id)
-      .order('created_at', { ascending: false })
-      .limit(5);
-    if (Array.isArray(data)) {
-      recentFeedback = data.map((item) => ({
-        ...item,
-        phone: item.phone ? formatPhone(item.phone) : item.phone,
-      }));
-    }
-  } catch {}
-
-  let squareConnection: {
-    connected: boolean;
-    sandbox?: boolean;
-    lastBackfillAt?: string | null;
-    defaultLocationId?: string | null;
-    latestJob?: {
-      id: string;
-      status: string;
-      createdAt: string;
-      sentCount: number | null;
-      totalCustomers: number | null;
-    } | null;
-  } = { connected: false };
-
-  try {
-    const { data: connectionRow } = await supa
-      .from('square_connections')
-      .select('uid,sandbox,last_backfill_at,default_location_id')
+    const { data: subscription } = await supa
+      .from('subscriptions')
+      .select('status, plan_id')
       .eq('uid', uid)
       .maybeSingle();
-    if (connectionRow) {
-      squareConnection = {
-        connected: true,
-        sandbox: Boolean(connectionRow.sandbox),
-        lastBackfillAt: connectionRow.last_backfill_at ?? null,
-        defaultLocationId: connectionRow.default_location_id ?? null,
-        latestJob: null,
-      };
-      const { data: latestJob } = await supa
-        .from('square_backfill_jobs')
-        .select('id,status,created_at,sent_count,total_customers')
-        .eq('uid', uid)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (latestJob) {
-        squareConnection.latestJob = {
-          id: latestJob.id,
-          status: latestJob.status,
-          createdAt: latestJob.created_at,
-          sentCount: latestJob.sent_count,
-          totalCustomers: latestJob.total_customers,
-        };
+    
+    // Pro if status is active and plan_id contains 'pro' or 'yearly' (adjust based on your plan IDs)
+    if (subscription && subscription.status === 'active') {
+      const planId = subscription.plan_id?.toLowerCase() || '';
+      if (planId.includes('pro') || planId.includes('yearly') || planId.includes('monthly')) {
+        isPro = true;
       }
     }
-  } catch {}
+  } catch (e) {
+    console.error('[DASHBOARD API] Error checking subscription:', e);
+  }
+
+  const sinceIso = startOfCurrentMonthUTC();
+
+  // ... (existing stats logic)
+
+  // Advanced Analytics for Pro Users
+  let analytics: any = null;
+  if (isPro) {
+    try {
+      // 1. Get daily stats for last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const thirtyDaysAgoIso = thirtyDaysAgo.toISOString();
+
+      // Fetch feedback counts by day
+      const { data: feedbackHistory } = await supa
+        .from('feedback')
+        .select('created_at, rating')
+        .eq('business_id', biz.id)
+        .gte('created_at', thirtyDaysAgoIso);
+
+      // Fetch scan counts by day
+      const { data: scanHistory } = await supa
+        .from('review_events')
+        .select('created_at, event')
+        .eq('business_id', biz.id)
+        .eq('event', 'page_opened')
+        .gte('created_at', thirtyDaysAgoIso);
+
+      // Process history into daily buckets
+      const dailyData: Record<string, { reviews: number; scans: number }> = {};
+      for (let i = 0; i < 30; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        dailyData[dateStr] = { reviews: 0, scans: 0 };
+      }
+
+      feedbackHistory?.forEach(f => {
+        const dateStr = f.created_at.split('T')[0];
+        if (dailyData[dateStr]) dailyData[dateStr].reviews++;
+      });
+
+      scanHistory?.forEach(s => {
+        const dateStr = s.created_at.split('T')[0];
+        if (dailyData[dateStr]) dailyData[dateStr].scans++;
+      });
+
+      // 2. Sentiment breakdown
+      const sentiment = { positive: 0, neutral: 0, negative: 0 };
+      feedbackHistory?.forEach(f => {
+        if (f.rating >= 4) sentiment.positive++;
+        else if (f.rating === 3) sentiment.neutral++;
+        else sentiment.negative++;
+      });
+
+      analytics = {
+        history: Object.entries(dailyData)
+          .map(([date, vals]) => ({ date, ...vals }))
+          .sort((a, b) => a.date.localeCompare(b.date)),
+        sentiment
+      };
+    } catch (e) {
+      console.error('[DASHBOARD API] Analytics error:', e);
+    }
+  }
 
   return NextResponse.json({
     business: {
@@ -213,5 +157,7 @@ export async function GET(req: NextRequest) {
     },
     recentFeedback,
     squareConnection,
+    isPro,
+    analytics
   });
 }

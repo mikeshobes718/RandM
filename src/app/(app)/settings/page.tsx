@@ -304,7 +304,7 @@ function SettingsContent() {
       const payload: any = {
         name: businessName.trim(),
         contact_phone: normalizePhone(contactPhone),
-        review_link: reviewLink.trim() || null,
+        review_link: (reviewLink || '').trim() || null,
       };
       if (businessId) payload.id = businessId;
 
@@ -322,10 +322,16 @@ function SettingsContent() {
       });
       if (response.ok) {
         setSuccess('Settings saved successfully');
-        setInitialBusinessValues({ name: businessName, phone: contactPhone, link: reviewLink });
+        setInitialBusinessValues({ 
+          name: businessName.trim(), 
+          phone: contactPhone, 
+          link: (reviewLink || '').trim() 
+        });
+        setSelectedPlace(null); // Clear selected place since it's now saved
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError('Failed to save settings');
+        const errData = await response.json().catch(() => ({}));
+        setError(errData.error || 'Failed to save settings');
       }
     } catch (e) {
       setError('Failed to save settings');
@@ -382,9 +388,10 @@ function SettingsContent() {
     );
   }
 
-  const hasBusinessChanges = businessName !== initialBusinessValues.name || 
-                             contactPhone !== initialBusinessValues.phone || 
-                             reviewLink !== initialBusinessValues.link;
+  const hasBusinessChanges = businessName.trim() !== initialBusinessValues.name.trim() || 
+                             normalizePhone(contactPhone) !== normalizePhone(initialBusinessValues.phone) || 
+                             (reviewLink || '').trim() !== (initialBusinessValues.link || '').trim() ||
+                             selectedPlace !== null;
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-12">
