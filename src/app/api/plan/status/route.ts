@@ -17,8 +17,8 @@ export async function GET(request: Request) {
   if (!uid) return new NextResponse('Unauthorized', { status: 401 });
   let data = null;
   let error = null;
+  const supa = getSupabaseAdmin();
   try {
-    const supa = getSupabaseAdmin();
     const result = await supa
       .from('subscriptions')
       .select('status, plan_id, updated_at')
