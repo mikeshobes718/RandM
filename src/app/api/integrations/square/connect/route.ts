@@ -35,21 +35,21 @@ export async function GET() {
   }
   const supa = getSupabaseAdmin();
   
-  // First try with is_enabled column, fall back to without if column doesn't exist
+  // First try with all columns, fall back if any don't exist
   let data: any = null;
   let error: any = null;
   
   const result = await supa
     .from('square_connections')
-    .select('business_id,sandbox,last_backfill_at,default_location_id,merchant_id,is_enabled')
+    .select('business_id,sandbox,last_backfill_at,default_location_id,merchant_id,is_enabled,location_name, businesses(name)')
     .eq('uid', uid)
     .maybeSingle();
   
-  if (result.error?.message?.includes('is_enabled')) {
-    // Column doesn't exist yet, query without it
+  if (result.error?.message?.includes('is_enabled') || result.error?.message?.includes('location_name')) {
+    // Column(s) don't exist yet, query without them
     const fallback = await supa
       .from('square_connections')
-      .select('business_id,sandbox,last_backfill_at,default_location_id,merchant_id')
+      .select('business_id,sandbox,last_backfill_at,default_location_id,merchant_id, businesses(name)')
       .eq('uid', uid)
       .maybeSingle();
     data = fallback.data;
@@ -61,11 +61,16 @@ export async function GET() {
   
   if (error) return new NextResponse(error.message, { status: 500 });
   if (!data) return NextResponse.json({ connected: false });
+  
+  const businessName = Array.isArray(data.businesses) ? data.businesses[0]?.name : (data.businesses as any)?.name;
+
   return NextResponse.json({
     connected: true,
     businessId: data.business_id,
+    businessName: businessName || null,
     sandbox: data.sandbox,
-    isEnabled: data.is_enabled ?? true, // Default to true if column doesn't exist
+    isEnabled: data.is_enabled ?? true,
+    locationName: data.location_name || null,
     lastBackfillAt: data.last_backfill_at,
     defaultLocationId: data.default_location_id,
     merchantId: data.merchant_id,

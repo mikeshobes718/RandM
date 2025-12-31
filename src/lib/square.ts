@@ -9,6 +9,7 @@ export type SquareConnectionRow = {
   expires_at: string | null;
   merchant_id: string | null;
   default_location_id: string | null;
+  location_name: string | null;
   sandbox: boolean;
   is_enabled: boolean;
   created_at: string;

@@ -231,6 +231,11 @@ alter table square_connections add column if not exists is_enabled boolean defau
 `;
     await client.query(sql011); ran.push('011_square_is_enabled');
 
+    const sql012 = `
+alter table square_connections add column if not exists location_name text;
+`;
+    await client.query(sql012); ran.push('012_square_location_name');
+
     await client.query('commit');
     return { ran };
   } catch (e) {

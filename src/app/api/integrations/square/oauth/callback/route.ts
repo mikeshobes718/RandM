@@ -31,7 +31,7 @@ async function resolveBusinessId(uid: string, fallback?: string | null): Promise
   return data?.id ?? null;
 }
 
-async function fetchDefaultLocation(accessToken: string, sandbox: boolean): Promise<{ locationId: string | null; merchantId: string | null }> {
+async function fetchDefaultLocation(accessToken: string, sandbox: boolean): Promise<{ locationId: string | null; merchantId: string | null; locationName: string | null }> {
   const client = new Client({
     accessToken,
     environment: sandbox ? Environment.Sandbox : Environment.Production,
@@ -43,9 +43,10 @@ async function fetchDefaultLocation(accessToken: string, sandbox: boolean): Prom
     return {
       locationId: first?.id ?? null,
       merchantId: first?.merchantId ?? null,
+      locationName: first?.name ?? null,
     };
   } catch {
-    return { locationId: null, merchantId: null };
+    return { locationId: null, merchantId: null, locationName: null };
   }
 }
 
@@ -131,11 +132,11 @@ export async function GET(req: Request) {
     return redirect;
   }
 
-  const { locationId, merchantId } = await fetchDefaultLocation(tokenResponse.access_token, sandbox);
+  const { locationId, merchantId, locationName } = await fetchDefaultLocation(tokenResponse.access_token, sandbox);
 
   const supa = getSupabaseAdmin();
   
-  // Try with is_enabled column, fall back to without if it doesn't exist
+  // Try with location_name and is_enabled columns, fall back to without if they don't exist
   let error: any = null;
   const result = await supa.from('square_connections').upsert({
     uid,
@@ -145,14 +146,15 @@ export async function GET(req: Request) {
     expires_at: tokenResponse.expires_at || null,
     merchant_id: merchantId || tokenResponse.merchant_id || null,
     default_location_id: locationId,
+    location_name: locationName,
     sandbox,
     is_enabled: true,
     updated_at: new Date().toISOString(),
   }, { onConflict: 'uid' });
   
-  if (result.error?.message?.includes('is_enabled')) {
-    // Column doesn't exist, try without it
-    const fallback = await supa.from('square_connections').upsert({
+  if (result.error?.message?.includes('location_name') || result.error?.message?.includes('is_enabled')) {
+    // Column(s) don't exist yet, try without them
+    const fallbackData: any = {
       uid,
       business_id: businessId,
       access_token: tokenResponse.access_token,
@@ -162,7 +164,8 @@ export async function GET(req: Request) {
       default_location_id: locationId,
       sandbox,
       updated_at: new Date().toISOString(),
-    }, { onConflict: 'uid' });
+    };
+    const fallback = await supa.from('square_connections').upsert(fallbackData, { onConflict: 'uid' });
     error = fallback.error;
   } else {
     error = result.error;

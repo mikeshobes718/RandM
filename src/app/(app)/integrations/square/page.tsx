@@ -7,6 +7,8 @@ import { useSearchParams } from 'next/navigation';
 type SquareStatus = {
   connected: boolean;
   businessId?: string | null;
+  businessName?: string | null;
+  locationName?: string | null;
   sandbox?: boolean;
   defaultLocationId?: string | null;
   merchantId?: string | null;
@@ -424,7 +426,9 @@ function SquareIntegrationInner() {
                       </div>
                       <div>
                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Location</div>
-                        <div className="text-sm font-mono text-slate-700">{status?.defaultLocationId || '—'}</div>
+                        <div className="text-sm font-bold text-slate-700">
+                          {status?.locationName || status?.businessName || status?.defaultLocationId || '—'}
+                        </div>
                       </div>
                       <div>
                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Environment</div>
