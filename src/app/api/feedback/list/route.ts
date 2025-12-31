@@ -98,13 +98,13 @@ export async function GET(req: Request) {
 
     // Merge everything
     const merged = [
-      ...(feedbackData || []).map(f => ({ ...f, type: 'feedback', archived: f.archived ?? false })),
+      ...(feedbackData || []).map(f => ({ ...f, type: 'feedback', archived: false })),
       ...(contactData || []).map(c => ({ 
         ...c, 
         type: 'contact', 
         rating: 5, 
         comment: '5-star review (Contact form completed)', 
-        archived: c.archived ?? false
+        archived: false
       })),
       ...(googleEvents || []).map(e => ({
         id: e.id,
