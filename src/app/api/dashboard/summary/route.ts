@@ -74,12 +74,11 @@ export async function GET(req: NextRequest) {
     console.error('[DASHBOARD API] Error checking subscription:', e);
   }
 
-  const sinceIso = startOfCurrentMonthUTC();
-
   // Basic Stats
   let reviewsThisMonth = 0;
   let shareLinkScans = 0;
   let normalizedRating = biz.google_rating ?? null;
+  const now = new Date();
 
   try {
     const startOfMonth = startOfCurrentMonthUTC();
@@ -99,7 +98,6 @@ export async function GET(req: NextRequest) {
       .gte('created_at', startOfMonth);
 
     // 3. New Anonymous Redirects (Events)
-    // We only count these if they didn't fill out the contact form
     const { data: googleEvents } = await supa
       .from('review_events')
       .select('created_at')
@@ -123,7 +121,7 @@ export async function GET(req: NextRequest) {
 
     reviewsThisMonth = (feedbackCount || 0) + (contactCount || 0) + anonymousCount;
 
-    // Link scans THIS MONTH (Total page opens)
+    // Link scans THIS MONTH
     const { count: scanCount } = await supa
       .from('review_events')
       .select('*', { count: 'exact', head: true })
@@ -131,63 +129,50 @@ export async function GET(req: NextRequest) {
       .eq('event', 'page_opened')
       .gte('created_at', startOfMonth);
     shareLinkScans = scanCount || 0;
+  } catch (e) {
+    console.error('[DASHBOARD API] Error fetching stats:', e);
+  }
 
-    // --- Growth Metrics ---
-    const startOfPrevMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1, 0, 0, 0, 0));
-    const endOfPrevMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
-    const startOfPrevMonthIso = startOfPrevMonth.toISOString();
-    const endOfPrevMonthIso = endOfPrevMonth.toISOString();
+  // Attempt to refresh Google rating if missing or zero
+  if ((normalizedRating === null || normalizedRating === 0) && biz.google_place_id) {
+    try {
+      const { getPlaceDetails } = await import('@/lib/googlePlaces');
+      const details = await getPlaceDetails(biz.google_place_id);
+      if (details?.rating != null) {
+        normalizedRating = details.rating;
+        await supa.from('businesses').update({ google_rating: details.rating }).eq('id', biz.id);
+      }
+    } catch (e) {
+      console.error('[DASHBOARD API] Error refreshing rating:', e);
+    }
+  }
 
-    const { count: prevFeedbackCount } = await supa
-      .from('feedback')
-      .select('*', { count: 'exact', head: true })
-      .eq('business_id', biz.id)
-      .gte('created_at', startOfPrevMonthIso)
-      .lte('created_at', endOfPrevMonthIso);
-      
-    const { count: prevContactCount } = await supa
-      .from('review_contact_captures')
-      .select('*', { count: 'exact', head: true })
-      .eq('business_id', biz.id)
-      .gte('created_at', startOfPrevMonthIso)
-      .lte('created_at', endOfPrevMonthIso);
+  // Recent Feedback
+  let recentFeedback: any[] = [];
+  try {
+    const { data: feedbackData } = await supa.from('feedback').select('*').eq('business_id', biz.id).order('created_at', { ascending: false }).limit(5);
+    const { data: contactData } = await supa.from('review_contact_captures').select('*').eq('business_id', biz.id).order('created_at', { ascending: false }).limit(5);
+    const { data: googleEventsSidebar } = await supa.from('review_events').select('*').eq('business_id', biz.id).eq('event', 'google_opened').order('created_at', { ascending: false }).limit(5);
 
-    const { data: prevGoogleEvents } = await supa
-      .from('review_events')
-      .select('created_at')
-      .eq('business_id', biz.id)
-      .eq('event', 'google_opened')
-      .gte('created_at', startOfPrevMonthIso)
-      .lte('created_at', endOfPrevMonthIso);
+    const merged = [
+      ...(feedbackData || []).map(f => ({ ...f, type: 'feedback', archived: false })),
+      ...(contactData || []).map(c => ({ ...c, type: 'contact', rating: 5, comment: '5-star review (Contact form completed)', archived: false })),
+      ...(googleEventsSidebar || []).map(e => ({ id: e.id, rating: 5, name: 'Anonymous Customer', comment: 'Redirected to Google for review', created_at: e.created_at, type: 'event', archived: false }))
+    ];
     
-    let prevAnonymousCount = 0;
-    prevGoogleEvents?.forEach(e => {
-      // For growth we just count them all or simplified logic
-      prevAnonymousCount++;
-    });
+    recentFeedback = merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);
+  } catch (e) {}
 
-    const reviewsLastMonth = (prevFeedbackCount || 0) + (prevContactCount || 0) + prevAnonymousCount;
-    const growth = reviewsLastMonth === 0 ? 100 : Math.round(((reviewsThisMonth - reviewsLastMonth) / reviewsLastMonth) * 100);
-
-    // --- Analytics ---
-    if (isPro) {
+  // Pro Analytics
+  let analytics: any = null;
+  if (isPro) {
+    try {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const thirtyDaysAgoIso = thirtyDaysAgo.toISOString();
 
-      const { data: feedbackEvents } = await supa
-        .from('review_events')
-        .select('created_at, event, rating')
-        .eq('business_id', biz.id)
-        .in('event', ['feedback_submitted', 'google_opened'])
-        .gte('created_at', thirtyDaysAgoIso);
-
-      const { data: scanHistory } = await supa
-        .from('review_events')
-        .select('created_at, event')
-        .eq('business_id', biz.id)
-        .eq('event', 'page_opened')
-        .gte('created_at', thirtyDaysAgoIso);
+      const { data: feedbackEvents } = await supa.from('review_events').select('created_at, event, rating').eq('business_id', biz.id).in('event', ['feedback_submitted', 'google_opened']).gte('created_at', thirtyDaysAgoIso);
+      const { data: scanHistory } = await supa.from('review_events').select('created_at, event').eq('business_id', biz.id).eq('event', 'page_opened').gte('created_at', thirtyDaysAgoIso);
 
       const dailyData: Record<string, { reviews: number; scans: number }> = {};
       for (let i = 0; i < 30; i++) {
@@ -201,7 +186,6 @@ export async function GET(req: NextRequest) {
         const dateStr = e.created_at.split('T')[0];
         if (dailyData[dateStr]) dailyData[dateStr].reviews++;
       });
-
       scanHistory?.forEach(s => {
         const dateStr = s.created_at.split('T')[0];
         if (dailyData[dateStr]) dailyData[dateStr].scans++;
@@ -222,27 +206,8 @@ export async function GET(req: NextRequest) {
         }
       });
 
-      // Conversion Funnel Stats
-      const funnel = {
-        scans: scanHistory?.length || 0,
-        selections: 0, 
-        completions: feedbackEvents?.length || 0 
-      };
-
-      const { count: selectionCount } = await supa
-        .from('review_events')
-        .select('*', { count: 'exact', head: true })
-        .eq('business_id', biz.id)
-        .eq('event', 'rating_selected')
-        .gte('created_at', thirtyDaysAgoIso);
-      funnel.selections = selectionCount || 0;
-
-      const { data: sourceData } = await supa
-        .from('review_events')
-        .select('metadata')
-        .eq('business_id', biz.id)
-        .in('event', ['google_opened', 'feedback_submitted'])
-        .gte('created_at', thirtyDaysAgoIso);
+      const { count: selectionCount } = await supa.from('review_events').select('*', { count: 'exact', head: true }).eq('business_id', biz.id).eq('event', 'rating_selected').gte('created_at', thirtyDaysAgoIso);
+      const { data: sourceData } = await supa.from('review_events').select('metadata').eq('business_id', biz.id).in('event', ['google_opened', 'feedback_submitted']).gte('created_at', thirtyDaysAgoIso);
       
       const sources: Record<string, number> = {};
       sourceData?.forEach(s => {
@@ -250,78 +215,50 @@ export async function GET(req: NextRequest) {
         sources[src] = (sources[src] || 0) + 1;
       });
 
+      // Growth
+      const startOfPrevMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1, 0, 0, 0, 0));
+      const endOfPrevMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
+      const { count: prevFeedback } = await supa.from('feedback').select('*', { count: 'exact', head: true }).eq('business_id', biz.id).gte('created_at', startOfPrevMonth.toISOString()).lte('created_at', endOfPrevMonth.toISOString());
+      const reviewsLastMonth = prevFeedback || 0;
+      const growth = reviewsLastMonth === 0 ? 100 : Math.round(((reviewsThisMonth - reviewsLastMonth) / reviewsLastMonth) * 100);
+
       analytics = {
-        history: Object.entries(dailyData)
-          .map(([date, vals]) => ({ date, ...vals }))
-          .sort((a, b) => a.date.localeCompare(b.date)),
+        history: Object.entries(dailyData).map(([date, vals]) => ({ date, ...vals })).sort((a, b) => a.date.localeCompare(b.date)),
         sentiment,
         ratingDistribution,
-        funnel,
+        funnel: { scans: scanHistory?.length || 0, selections: selectionCount || 0, completions: feedbackEvents?.length || 0 },
         sources,
         growth
       };
+    } catch (e) {
+      console.error('[DASHBOARD API] Analytics error:', e);
     }
+  }
 
-  // Recent Activity Feed (Events + Automated Requests)
+  // Activity Feed
   let activityFeed: any[] = [];
   try {
-    const { data: eventData } = await supa
-      .from('review_events')
-      .select('event,created_at')
-      .eq('business_id', biz.id)
-      .order('created_at', { ascending: false })
-      .limit(10);
-
-    const { data: requestData } = await supa
-      .from('review_requests')
-      .select('created_at, status')
-      .eq('business_id', biz.id)
-      .order('created_at', { ascending: false })
-      .limit(10);
+    const { data: eventData } = await supa.from('review_events').select('event,created_at').eq('business_id', biz.id).order('created_at', { ascending: false }).limit(10);
+    const { data: requestData } = await supa.from('review_requests').select('created_at, status').eq('business_id', biz.id).order('created_at', { ascending: false }).limit(10);
 
     const mergedFeed = [
       ...(eventData || []).map(e => {
-        let icon = '📱';
-        let label = e.event.replace(/_/g, ' ');
+        let icon = '📱', label = e.event.replace(/_/g, ' ');
         if (e.event === 'google_opened') { icon = '⭐'; label = 'Redirected to Google'; }
         if (e.event === 'feedback_submitted') { icon = '✉️'; label = 'New Private Feedback'; }
         if (e.event === 'rating_selected') { icon = '✨'; label = 'Rating Selected'; }
         if (e.event === 'page_opened') { icon = '🌐'; label = 'Review Page Opened'; }
         return { event: label, time: e.created_at, icon };
       }),
-      ...(requestData || []).map(r => ({
-        event: `Review Request ${r.status}`,
-        time: r.created_at,
-        icon: '✉️'
-      }))
+      ...(requestData || []).map(r => ({ event: `Review Request ${r.status}`, time: r.created_at, icon: '✉️' }))
     ];
-
-    activityFeed = mergedFeed
-      .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-      .slice(0, 10);
-  } catch (e) {
-    console.error('[DASHBOARD API] Activity feed error:', e);
-  }
-
-  const formattedPhone = biz.contact_phone ? formatPhone(biz.contact_phone) : null;
+    activityFeed = mergedFeed.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 10);
+  } catch (e) {}
 
   return NextResponse.json({
-    business: {
-      id: biz.id,
-      name: biz.name,
-      review_link: biz.review_link,
-      google_maps_write_review_uri: biz.google_maps_write_review_uri,
-      contact_phone: formattedPhone,
-      google_rating: biz.google_rating,
-      google_place_id: biz.google_place_id,
-    },
-    stats: {
-      reviewsThisMonth,
-      shareLinkScans,
-      averageRating: normalizedRating,
-    },
+    business: { ...biz, contact_phone: biz.contact_phone ? formatPhone(biz.contact_phone) : null },
+    stats: { reviewsThisMonth, shareLinkScans, averageRating: normalizedRating },
     recentFeedback,
-    squareConnection,
     isPro,
     analytics,
     activityFeed
