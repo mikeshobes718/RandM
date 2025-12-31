@@ -182,7 +182,7 @@ export default function Pricing() {
             </div>
             <div>
               <h4 className="font-bold mb-3">Custom needs?</h4>
-              <p className="text-sm text-muted leading-relaxed">For enterprise features or multi-location setups (>10), please <a href="/contact" className="text-brand hover:underline">contact our sales team</a>.</p>
+              <p className="text-sm text-muted leading-relaxed">For enterprise features or multi-location setups (&gt;10), please <a href="/contact" className="text-brand hover:underline">contact our sales team</a>.</p>
             </div>
           </div>
         </div>
