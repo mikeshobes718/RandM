@@ -154,13 +154,19 @@ export function makeGoogleReviewLinkFromWriteUri(writeAReviewUri?: string, place
   if (writeAReviewUri && !writeAReviewUri.includes('placeid=Ei')) return writeAReviewUri;
   
   if (placeId) {
-    if (placeId.startsWith('Ei')) {
-      // Feature ID fallback: use a search link with the fid if we can, 
-      // but without the fid we can't easily make a direct "write review" link.
-      // The best we can do is a search link that often triggers the knowledge panel.
-      return `https://www.google.com/search?q=google+review+link&ludocid=${placeId}#lrd=0x0:0x0,3`;
+    let targetId = placeId;
+    
+    // If it's a long Feature ID containing a standard Place ID, extract it
+    if (placeId.startsWith('Ei') && placeId.includes('ChIJ')) {
+      const match = placeId.match(/ChIJ[a-zA-Z0-9_-]+/);
+      if (match) targetId = match[0];
     }
-    return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
+
+    if (targetId.startsWith('Ei')) {
+      // Feature ID fallback: use a search link with the ludocid
+      return `https://www.google.com/search?q=google+review+link&ludocid=${targetId}#lrd=0x0:0x0,3`;
+    }
+    return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(targetId)}`;
   }
   return '';
 }
