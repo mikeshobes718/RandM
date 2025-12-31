@@ -4,164 +4,165 @@ import Link from "next/link";
 import { FeatureTabs } from "@/components/FeatureTabs";
 import HomeCtaButtons from "@/components/HomeCtaButtons";
 
-const METRICS = [
-  { value: 'Instant', label: 'QR Setup', tone: 'from-indigo-500/80 to-violet-500/90' },
-  { value: 'Smart', label: 'Routing', tone: 'from-emerald-400/80 to-emerald-500/90' },
-  { value: 'Growth', label: 'Dashboard', tone: 'from-sky-400/80 to-blue-500/90' },
-];
-
 const PILLARS = [
   {
-    iconBg: 'from-blue-500 to-indigo-500',
-    title: 'Instant QR Codes',
-    copy: 'Link your Google Profile and we instantly generate a custom QR code that leads customers straight to your review page.',
+    icon: (
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+      </svg>
+    ),
+    title: 'Smart QR Routing',
+    copy: 'Protect your rating. Happy customers go to Google, while others are routed to a private feedback form for resolution.',
   },
   {
-    iconBg: 'from-purple-500 to-fuchsia-500',
-    title: 'Smart Routing Logic',
-    copy: 'We send 5-star experiences to Google. We route 4 stars or less to a private form so you can fix issues without hurting your rating.',
+    icon: (
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
+    title: 'Automated Requests',
+    copy: 'Send review requests automatically via SMS or Email. Optimized timing ensures the highest response rates possible.',
   },
   {
-    iconBg: 'from-emerald-500 to-teal-500',
-    title: 'Customer Growth',
-    copy: 'Collect contact info from every scan. Send promos to happy customers and win back the unhappy ones before they leave a bad review.',
+    icon: (
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    ),
+    title: 'Actionable Insights',
+    copy: 'Track scans, clicks, and review sentiment in real-time. Identify your best locations and top performers instantly.',
   },
 ];
 
-const HIGHLIGHTS = [
+const USE_CASES = [
   {
-    title: 'How it works',
-    bullets: [
-      'Place QR codes on tables, receipts, or front desk',
-      'Customers scan and rate their experience',
-      'Smart routing handles the rest automatically',
-    ],
+    title: 'For Restaurants',
+    text: 'Place QR codes on table tents or check folders. Turn a great meal into a 5-star Google review before the guest leaves.',
   },
   {
-    title: 'Why it works',
-    bullets: [
-      'Protect your Google rating from bad reviews',
-      'Capture customer emails for marketing',
-      'Turn happy customers into 5-star reviews',
-    ],
+    title: 'For Retail',
+    text: 'Print review links on receipts or display at checkout. Build a loyal customer base and boost your local search ranking.',
   },
   {
-    title: 'Manage it all',
-    bullets: [
-      'Track every scan and review in real-time',
-      'Reply to Google reviews from your dashboard',
-      'Export customer data for email campaigns',
-    ],
+    title: 'For Services',
+    text: 'Send automated follow-ups after a service appointment. Capture feedback and reviews while the experience is fresh.',
   },
 ];
 
 export default function FeaturesPage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-white via-indigo-50 to-white">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-x-0 top-[-300px] h-[520px] rounded-full bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.2),transparent_60%)] blur-3xl" />
-        <div className="absolute left-[-220px] top-1/3 h-[360px] w-[360px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.22),transparent_70%)] blur-3xl" />
-        <div className="absolute right-[-180px] bottom-[-120px] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,rgba(236,72,153,0.18),transparent_75%)] blur-3xl" />
-      </div>
-
-      <section className="relative px-4 pt-24 pb-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-indigo-700 shadow-sm shadow-slate-900/5 backdrop-blur">
-            Platform tour
-          </span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">
-            Everything you need to get more reviews
-          </h1>
-          <p className="mt-5 text-lg text-slate-700 md:text-xl">
-            Connect your profile, display QR codes, route feedback smartly, and manage everything from one dashboard.
-          </p>
-          <div className="mt-10 flex justify-center">
-            <HomeCtaButtons align="center" variant="full" theme="light" />
-          </div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-3">
-            {METRICS.map((metric) => (
-              <div key={metric.label} className="rounded-2xl border border-slate-200 bg-white/90 p-5 text-left shadow-lg shadow-slate-900/10 backdrop-blur">
-                <div className={`inline-flex items-center rounded-full bg-gradient-to-r ${metric.tone} px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-white`}>{metric.label}</div>
-                <div className="mt-3 text-3xl font-semibold text-slate-900">{metric.value}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-4 py-12 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-3">
-          {PILLARS.map((pillar) => (
-            <div
-              key={pillar.title}
-              className="group rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl"
-            >
-              <div className={`mb-6 grid h-12 w-12 place-content-center rounded-xl bg-gradient-to-br ${pillar.iconBg} text-white`}>
-                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M4 12h10M4 17h7" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold text-slate-900 capitalize">{pillar.title}</h2>
-              <p className="mt-3 text-sm text-slate-700 leading-relaxed">{pillar.copy}</p>
+    <main className="min-h-screen">
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 overflow-hidden border-b border-border bg-accent/30">
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/5 border border-brand/10 text-brand text-[10px] font-black uppercase tracking-widest mb-8">
+              Platform Overview
             </div>
-          ))}
+            <h1 className="text-balance mb-8">
+              Everything you need to <br className="hidden md:block" />
+              <span className="text-brand">master your reputation.</span>
+            </h1>
+            <p className="text-xl text-muted max-w-2xl mx-auto mb-10 text-balance leading-relaxed">
+              A complete toolkit designed to help modern businesses collect more reviews, filter private feedback, and grow faster.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <HomeCtaButtons variant="hero" />
+            </div>
+          </div>
+        </div>
+        
+        {/* Background Decorative Element */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-full -z-10 pointer-events-none opacity-[0.03]">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,var(--brand),transparent_70%)]"></div>
         </div>
       </section>
 
-      <section className="px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid gap-8 md:grid-cols-2">
-            {HIGHLIGHTS.map((section) => (
-              <div key={section.title} className="rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
-                <h3 className="text-2xl font-semibold text-slate-900">{section.title}</h3>
-                <ul className="mt-6 space-y-3 text-sm text-slate-700">
-                  {section.bullets.map((bullet) => (
-                    <li key={bullet} className="flex items-start gap-2">
-                      <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-indigo-500" />
-                      <span>{bullet}</span>
-                    </li>
-                  ))}
-                </ul>
+      {/* Core Pillars */}
+      <section className="py-24">
+        <div className="container mx-auto px-6">
+          <div className="grid md:grid-cols-3 gap-12">
+            {PILLARS.map((pillar) => (
+              <div key={pillar.title} className="group">
+                <div className="w-12 h-12 rounded-2xl bg-brand/10 text-brand flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <div className="w-6 h-6">{pillar.icon}</div>
+                </div>
+                <h3 className="text-xl font-bold mb-4">{pillar.title}</h3>
+                <p className="text-muted text-sm leading-relaxed">{pillar.copy}</p>
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="mt-12 rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
+      {/* Interactive Tabs */}
+      <section className="py-24 bg-accent/50 border-y border-border">
+        <div className="container mx-auto px-6">
+          <div className="max-w-2xl mx-auto text-center mb-16">
+            <h2 className="text-3xl font-black tracking-tight mb-4">Deep dive into the toolkit</h2>
+            <p className="text-muted">Explore the powerful features that make Reviews & Marketing the choice for top operators.</p>
+          </div>
+          <div className="max-w-5xl mx-auto">
             <FeatureTabs />
           </div>
         </div>
       </section>
 
-      <section className="px-4 pb-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-xl shadow-slate-900/10 backdrop-blur md:flex md:items-center md:justify-between md:gap-10 md:p-8">
-          <div>
-            <h3 className="text-2xl font-semibold text-slate-900">Compare plans</h3>
-            <p className="mt-2 text-sm text-slate-700">See which package pairs best with your growth stage—each plan includes live onboarding.</p>
+      {/* Use Cases */}
+      <section className="py-24">
+        <div className="container mx-auto px-6">
+          <div className="max-w-2xl mx-auto text-center mb-16">
+            <h2 className="text-3xl font-black tracking-tight mb-4">Built for every industry</h2>
+            <p className="text-muted">Whether you run a single shop or 100 locations, we have you covered.</p>
           </div>
-          <div className="mt-6 flex items-center gap-3 md:mt-0">
-            <div className="hidden items-center gap-3 rounded-full border border-slate-200/80 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-500 md:flex">
-              <span>Starter</span>
-              <span>•</span>
-              <span>Pro</span>
-              <span>•</span>
-              <span>Enterprise</span>
-            </div>
-            <Link
-              href="/pricing"
-              className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5"
-            >
-              Go to Pricing
-            </Link>
+          <div className="grid md:grid-cols-3 gap-8">
+            {USE_CASES.map((uc) => (
+              <div key={uc.title} className="premium-card p-8 rounded-3xl">
+                <h3 className="text-lg font-bold mb-4">{uc.title}</h3>
+                <p className="text-muted text-sm leading-relaxed">{uc.text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="px-4 pb-20 pt-12 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 p-10 text-center shadow-2xl shadow-indigo-900/30">
-          <h2 className="text-3xl font-bold text-white sm:text-4xl">Start growing today</h2>
-          <p className="mt-3 text-base text-indigo-100 sm:text-lg">Join thousands of businesses turning happy customers into 5-star reviews.</p>
-          <div className="mt-8">
-            <HomeCtaButtons align="center" variant="full" />
+      {/* Pricing Teaser */}
+      <section className="py-24 border-t border-border">
+        <div className="container mx-auto px-6">
+          <div className="premium-card p-10 md:p-16 rounded-[40px] bg-foreground text-white flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-brand/10 blur-[120px] -z-0"></div>
+            <div className="relative z-10 max-w-xl">
+              <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6">Ready to scale your reputation?</h2>
+              <p className="text-slate-400 text-lg mb-8 leading-relaxed">
+                Join 500+ businesses using our toolkit to dominate their local market. Start free and upgrade when you're ready for more.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Link href="/pricing" className="primary-button h-12 px-8">
+                  View Pricing
+                </Link>
+                <Link href="/register" className="secondary-button !bg-white/10 !text-white !border-white/20 h-12 px-8 hover:!bg-white/20">
+                  Get Started Free
+                </Link>
+              </div>
+            </div>
+            <div className="relative z-10 grid grid-cols-2 gap-4 w-full md:w-auto">
+              <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm text-center">
+                <div className="text-2xl font-black mb-1">500+</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Businesses</div>
+              </div>
+              <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm text-center">
+                <div className="text-2xl font-black mb-1">15K+</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Reviews</div>
+              </div>
+              <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm text-center">
+                <div className="text-2xl font-black mb-1">4.9★</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Avg Rating</div>
+              </div>
+              <div className="p-6 bg-brand rounded-2xl text-center">
+                <div className="text-2xl font-black mb-1">3x</div>
+                <div className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Growth</div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
