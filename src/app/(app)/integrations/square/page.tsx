@@ -41,6 +41,7 @@ function SquareIntegrationInner() {
   const [maxCustomers, setMaxCustomers] = useState(100);
   const [isBackfilling, setIsBackfilling] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   const isPro = useMemo(() => {
     if (!planStatus || planStatus === 'loading') return false;
@@ -52,12 +53,19 @@ function SquareIntegrationInner() {
     if (!searchParams) return;
     const connected = searchParams.get('connected');
     const errorParam = searchParams.get('error');
-    if (connected) {
+    if (connected && status?.connected) {
       setMessage('Square account connected successfully.');
+    } else if (connected && !status?.connected && !loading) {
+      // If URL says connected but API says no, and we aren't loading, show verifying
+      setVerifying(true);
+      const timer = setTimeout(() => {
+        window.location.reload(); // Force refresh if stuck in this state
+      }, 3000);
+      return () => clearTimeout(timer);
     } else if (errorParam) {
       setError(decodeURIComponent(errorParam));
     }
-  }, [searchParams]);
+  }, [searchParams, status, loading]);
 
   const loadStats = async () => {
     try {
@@ -281,9 +289,12 @@ function SquareIntegrationInner() {
           </Link>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin h-6 w-6 border-2 border-brand border-t-transparent rounded-full"></div>
+        {loading || verifying ? (
+          <div className="flex flex-col items-center justify-center py-24 gap-4">
+            <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full"></div>
+            <p className="text-sm font-bold text-muted animate-pulse">
+              {verifying ? 'Verifying connection...' : 'Loading Square status...'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
