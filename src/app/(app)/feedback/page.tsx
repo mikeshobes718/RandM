@@ -15,6 +15,7 @@ type Item = {
   marketing_consent: boolean | null;
   created_at: string;
   archived: boolean;
+  type: 'feedback' | 'contact' | 'google' | 'event';
 };
 
 function FeedbackContent({ business }: { business: any }) {
@@ -25,6 +26,7 @@ function FeedbackContent({ business }: { business: any }) {
   const [ratingFilter, setRatingFilter] = useState<'all' | '5' | '4+' | '3+' | '1-2'>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
   const [dateRange, setDateRange] = useState<'all' | '7' | '30' | '90'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'feedback' | 'google' | 'contact'>('all');
   const [showArchived, setShowArchived] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -66,6 +68,13 @@ function FeedbackContent({ business }: { business: any }) {
     if (!showArchived) x = x.filter(i => !i.archived);
     else x = x.filter(i => i.archived);
     
+    // Filter by type
+    if (typeFilter !== 'all') {
+      if (typeFilter === 'contact') x = x.filter(i => i.type === 'contact');
+      else if (typeFilter === 'google') x = x.filter(i => i.type === 'google');
+      else if (typeFilter === 'feedback') x = x.filter(i => i.type === 'feedback');
+    }
+
     // Filter by rating
     if (ratingFilter === '5') x = x.filter(i => i.rating === 5);
     else if (ratingFilter === '4+') x = x.filter(i => i.rating >= 4);
@@ -98,9 +107,10 @@ function FeedbackContent({ business }: { business: any }) {
     else if (sortBy === 'lowest') x.sort((a, b) => a.rating - b.rating);
     
     return x;
-  }, [items, q, ratingFilter, sortBy, dateRange, showArchived]);
+  }, [items, q, ratingFilter, sortBy, dateRange, showArchived, typeFilter]);
 
   async function toggleArchive(id: string, currentStatus: boolean) {
+    if (id.startsWith('google-')) return; // Cannot archive Google reviews yet
     try {
       const idToken = localStorage.getItem('idToken');
       const res = await fetch('/api/feedback/archive', {
@@ -121,9 +131,10 @@ function FeedbackContent({ business }: { business: any }) {
 
   function exportCsv() {
     const rows = [
-      ['Date', 'Rating', 'Name', 'Email', 'Phone', 'Comment', 'Marketing Consent'],
+      ['Date', 'Source', 'Rating', 'Name', 'Email', 'Phone', 'Comment', 'Marketing Consent'],
       ...filtered.map(i => [
         new Date(i.created_at).toLocaleString(),
+        i.type.toUpperCase(),
         String(i.rating),
         i.name || 'Anonymous',
         i.email || '',
@@ -208,8 +219,8 @@ function FeedbackContent({ business }: { business: any }) {
 
       {/* Filters */}
       <div className="premium-card p-6 rounded-3xl mb-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="md:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div>
             <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1 mb-2 block">Search</label>
             <input 
               value={q} 
@@ -217,6 +228,19 @@ function FeedbackContent({ business }: { business: any }) {
               placeholder="Name, email..." 
               className={inputClass + " !h-10 !text-xs"} 
             />
+          </div>
+          <div>
+            <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1 mb-2 block">Source</label>
+            <select 
+              value={typeFilter} 
+              onChange={e => setTypeFilter(e.target.value as any)}
+              className={inputClass + " !h-10 !text-xs appearance-none"}
+            >
+              <option value="all">All Sources</option>
+              <option value="google">Google Reviews</option>
+              <option value="feedback">Private Feedback</option>
+              <option value="contact">5-Star Contacts</option>
+            </select>
           </div>
           <div>
             <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1 mb-2 block">Rating</label>
@@ -292,7 +316,35 @@ function FeedbackContent({ business }: { business: any }) {
                       }`}>
                         {f.rating}★
                       </div>
-                      <h3 className="font-bold text-lg">{f.name || 'Anonymous Customer'}</h3>
+                      <h3 className="font-bold text-lg">{f.name || (f.type === 'google' ? 'Google Reviewer' : 'Anonymous Customer')}</h3>
+                      
+                      <div className="flex items-center gap-2 ml-4">
+                        {f.type === 'google' && (
+                          <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-blue-100 flex items-center gap-1">
+                            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-2.21 5.39-7.84 5.39-4.84 0-8.79-4.01-8.79-8.92s3.95-8.92 8.79-8.92c2.75 0 4.59 1.17 5.64 2.21l2.59-2.5c-1.66-1.55-3.82-2.5-8.23-2.5-6.62 0-12 5.38-12 12s5.38 12 12 12c6.92 0 11.52-4.87 11.52-11.72 0-.78-.08-1.38-.24-1.97h-11.28z"/></svg>
+                            Google
+                          </span>
+                        )}
+                        {f.type === 'feedback' && (
+                          <span className="px-2 py-0.5 bg-purple-50 text-purple-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-purple-100 flex items-center gap-1">
+                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            Private
+                          </span>
+                        )}
+                        {f.type === 'contact' && (
+                          <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-emerald-100 flex items-center gap-1">
+                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            Lead
+                          </span>
+                        )}
+                        {f.type === 'event' && (
+                          <span className="px-2 py-0.5 bg-slate-50 text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-full border border-slate-200 flex items-center gap-1">
+                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                            Redirect
+                          </span>
+                        )}
+                      </div>
+
                       <span className="text-xs text-muted font-medium ml-auto">
                         {new Date(f.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                       </span>
@@ -321,7 +373,7 @@ function FeedbackContent({ business }: { business: any }) {
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                         Follow-up Permitted
                                     </span>
-                                ) : (
+                                ) : f.type !== 'google' && (
                                     <span className="text-slate-400">No Follow-up</span>
                                 )}
                             </div>
@@ -330,20 +382,34 @@ function FeedbackContent({ business }: { business: any }) {
                   </div>
 
                   <div className="flex md:flex-col gap-2 justify-end md:w-40 border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6">
-                    {f.marketing_consent && f.email && (
+                    {f.type === 'google' ? (
                       <a 
-                        href={`mailto:${f.email}?subject=Follow-up from ${business?.name || 'our business'}`}
-                        className={primaryButtonClass + " !h-10 !px-0 w-full text-xs"}
+                        href={business?.review_link || `https://www.google.com/search?q=${encodeURIComponent(business?.name || '')}+reviews`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={primaryButtonClass + " !h-10 !px-0 w-full text-xs flex items-center justify-center gap-2"}
                       >
-                        Send Reply
+                        View on Google
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                       </a>
+                    ) : (
+                      <>
+                        {f.marketing_consent && f.email && (
+                          <a 
+                            href={`mailto:${f.email}?subject=Follow-up from ${business?.name || 'our business'}`}
+                            className={primaryButtonClass + " !h-10 !px-0 w-full text-xs"}
+                          >
+                            Send Reply
+                          </a>
+                        )}
+                        <button 
+                          onClick={() => toggleArchive(f.id, f.archived)}
+                          className={secondaryButtonClass + " !h-10 !px-0 w-full text-xs"}
+                        >
+                          {f.archived ? 'Unarchive' : 'Archive'}
+                        </button>
+                      </>
                     )}
-                    <button 
-                      onClick={() => toggleArchive(f.id, f.archived)}
-                      className={secondaryButtonClass + " !h-10 !px-0 w-full text-xs"}
-                    >
-                      {f.archived ? 'Unarchive' : 'Archive'}
-                    </button>
                   </div>
                 </div>
               </div>
