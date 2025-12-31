@@ -9,7 +9,7 @@ export async function GET(req: Request) {
   const id = searchParams.get('id') || '';
   if (!id) return new NextResponse('missing id', { status: 400 });
   const supa = getSupabaseAdmin();
-  const columns = 'id,name,google_maps_write_review_uri,review_link,landing_brand_color,landing_button_color,landing_logo_url,landing_headline,landing_subheading';
+  const columns = 'id,name,google_maps_write_review_uri,review_link,google_place_id,landing_brand_color,landing_button_color,landing_logo_url,landing_headline,landing_subheading';
   let { data, error } = await supa
     .from('businesses')
     .select(columns)
@@ -19,7 +19,7 @@ export async function GET(req: Request) {
   if (error && /column/.test(error.message || '')) {
     const fallback = await supa
       .from('businesses')
-      .select('id,name,review_link')
+      .select('id,name,review_link,google_place_id')
       .eq('id', id)
       .maybeSingle();
     if (fallback.data) data = { ...fallback.data } as typeof data;
