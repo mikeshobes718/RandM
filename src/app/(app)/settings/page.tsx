@@ -131,6 +131,33 @@ function SettingsContent() {
   const businessNameWrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const token = searchParams?.get('accept');
+    if (token) {
+      const handleAccept = async () => {
+        try {
+          const res = await fetch('/api/members/accept', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+          });
+          if (res.ok) {
+            setSuccess('Invitation accepted! You now have access.');
+            window.history.replaceState({}, '', '/settings');
+            // Refresh settings data
+            window.location.reload();
+          } else {
+            const data = await res.json();
+            setError(data.error || 'Failed to accept invitation');
+          }
+        } catch (e) {
+          setError('An error occurred while accepting invitation');
+        }
+      };
+      handleAccept();
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (businessNameWrapperRef.current && !businessNameWrapperRef.current.contains(event.target as Node)) {
         setShowPlaceSuggestions(false);
@@ -237,22 +264,18 @@ function SettingsContent() {
   };
 
   const handleSelectPlace = async (placeId: string) => {
-    console.log('Selecting place:', placeId);
     setShowPlaceSuggestions(false);
     setSearchingPlaces(true);
     try {
-      const response = await fetch('/api/places/details', {
-        method: 'POST',
+      const response = await fetch(`/api/places/details?placeId=${encodeURIComponent(placeId)}&sessionToken=${encodeURIComponent(sessionTokenRef.current)}`, {
+        method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ placeId, sessionToken: sessionTokenRef.current }),
       });
       if (response.ok) {
         const place = await response.json();
-        console.log('Place details received:', place);
         setSelectedPlace(place);
         setBusinessName(place.displayName || '');
         if (place.writeAReviewUri) {
-          console.log('Setting review link:', place.writeAReviewUri);
           setReviewLink(place.writeAReviewUri);
         }
         sessionTokenRef.current = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
