@@ -297,8 +297,8 @@ function LandingClientContent({ id }: { id: string }) {
             </div>
           ) : (
             <div className="flex justify-center mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-brand/10 text-brand flex items-center justify-center text-2xl font-black tracking-tighter">
-                {biz.name.slice(0, 1).toUpperCase()}
+              <div className="px-6 py-3 rounded-2xl bg-brand/10 text-brand flex items-center justify-center text-xl font-bold tracking-tight">
+                {biz?.name || 'Reviews & Marketing'}
               </div>
             </div>
           )}

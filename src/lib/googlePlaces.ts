@@ -130,7 +130,21 @@ export async function placesAutocomplete(input: string, sessionToken: string, in
 export async function getPlaceDetails(placeId: string, sessionToken?: string) {
   const { GOOGLE_MAPS_API_KEY } = getEnv();
   try {
-    return await v1Details(GOOGLE_MAPS_API_KEY, placeId, sessionToken);
+    const res = await v1Details(GOOGLE_MAPS_API_KEY, placeId, sessionToken);
+    // If the ID we got back starts with Ei, it's a feature ID, not a standard Place ID.
+    // Standard Place IDs start with ChIJ.
+    if (res.id && res.id.startsWith('Ei')) {
+      try {
+        const legacy = await legacyDetails(GOOGLE_MAPS_API_KEY, placeId);
+        if (legacy.id && legacy.id.startsWith('ChIJ')) {
+          // Merge legacy ID into v1 response
+          return { ...res, id: legacy.id };
+        }
+      } catch (e) {
+        console.error('Legacy fallback failed for feature ID:', e);
+      }
+    }
+    return res;
   } catch {
     return await legacyDetails(GOOGLE_MAPS_API_KEY, placeId);
   }

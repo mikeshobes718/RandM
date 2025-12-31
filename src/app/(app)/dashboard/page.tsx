@@ -171,10 +171,10 @@ function DashboardContent() {
           <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Reviews This Month</div>
           <div className="text-4xl font-black">{stats.reviewsThisMonth}</div>
         </div>
-        <div className="premium-card p-6 rounded-2xl">
-          <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Link Scans</div>
-          <div className="text-4xl font-black">{stats.shareLinkScans}</div>
-        </div>
+                <div className="premium-card p-6 rounded-2xl">
+                  <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Link Scans This Month</div>
+                  <div className="text-4xl font-black">{stats.shareLinkScans}</div>
+                </div>
       </div>
 
       {/* Advanced Analytics for Pro Users */}

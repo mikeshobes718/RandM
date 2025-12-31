@@ -140,14 +140,7 @@ export default function Home() {
               <path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H16.017C14.9124 8 14.017 7.10457 14.017 6V3L21.017 3V15C21.017 18.3137 18.3307 21 15.017 21H14.017ZM3.0166 21L3.0166 18C3.0166 16.8954 3.91203 16 5.0166 16H8.0166C8.56888 16 9.0166 15.5523 9.0166 15V9C9.0166 8.44772 8.56888 8 8.0166 8H5.0166C3.91203 8 3.0166 7.10457 3.0166 6V3L10.0166 3V15C10.0166 18.3137 7.3303 21 4.0166 21H3.0166Z" />
             </svg>
             <p className="text-2xl md:text-3xl font-medium mb-10 leading-tight text-white">
-              "Our <span className="inline-flex">
-                <span style={{ color: '#4285F4' }}>G</span>
-                <span style={{ color: '#EA4335' }}>o</span>
-                <span style={{ color: '#FBBC05' }}>o</span>
-                <span style={{ color: '#4285F4' }}>g</span>
-                <span style={{ color: '#34A853' }}>l</span>
-                <span style={{ color: '#EA4335' }}>e</span>
-              </span> rating went from 4.2 to 4.8 in just 3 months. The routing system is a lifesaver—we finally have control over our online reputation."
+              "Our Google rating went from 4.2 to 4.8 in just 3 months. The routing system is a lifesaver—we finally have control over our online reputation."
             </p>
             <div className="flex items-center justify-center gap-4">
               <div className="text-left">

@@ -82,36 +82,81 @@ export async function GET(req: NextRequest) {
   let normalizedRating = biz.google_rating ?? null;
 
   try {
-    // Current month reviews
-    const { count: reviewCount } = await supa
-      .from('feedback')
+    // Current month reviews (Feedback Submitted + Google Links Opened)
+    const { count: feedbackCount } = await supa
+      .from('review_events')
       .select('*', { count: 'exact', head: true })
       .eq('business_id', biz.id)
+      .eq('event', 'feedback_submitted')
       .gte('created_at', sinceIso);
-    reviewsThisMonth = reviewCount || 0;
+      
+    const { count: googleOpenedCount } = await supa
+      .from('review_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('business_id', biz.id)
+      .eq('event', 'google_opened')
+      .gte('created_at', sinceIso);
 
-    // Total scans
+    reviewsThisMonth = (feedbackCount || 0) + (googleOpenedCount || 0);
+
+    // Link scans THIS MONTH for consistency
     const { count: scanCount } = await supa
       .from('review_events')
       .select('*', { count: 'exact', head: true })
       .eq('business_id', biz.id)
-      .eq('event', 'page_opened');
+      .eq('event', 'page_opened')
+      .gte('created_at', sinceIso);
     shareLinkScans = scanCount || 0;
   } catch (e) {
     console.error('[DASHBOARD API] Error fetching stats:', e);
   }
 
-  // Recent Feedback
+  // Attempt to refresh Google rating if missing
+  if (normalizedRating === null && biz.google_place_id) {
+    try {
+      const { getPlaceDetails } = await import('@/lib/googlePlaces');
+      const details = await getPlaceDetails(biz.google_place_id);
+      if (details?.rating != null) {
+        normalizedRating = details.rating;
+        // Background update
+        supa.from('businesses')
+          .update({ google_rating: details.rating })
+          .eq('id', biz.id)
+          .then();
+      }
+    } catch (e) {
+      console.error('[DASHBOARD API] Error refreshing rating:', e);
+    }
+  }
+
+  // Recent Feedback & Contact Captures
   let recentFeedback: any[] = [];
   try {
-    const { data } = await supa
+    const { data: feedbackData } = await supa
       .from('feedback')
       .select('*')
       .eq('business_id', biz.id)
       .order('created_at', { ascending: false })
       .limit(5);
-    recentFeedback = data || [];
-  } catch (e) {}
+      
+    const { data: contactData } = await supa
+      .from('review_contact_captures')
+      .select('*')
+      .eq('business_id', biz.id)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    const merged = [
+      ...(feedbackData || []).map(f => ({ ...f, type: 'feedback' })),
+      ...(contactData || []).map(c => ({ ...c, type: 'contact', rating: 5 }))
+    ];
+    
+    recentFeedback = merged
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 5);
+  } catch (e) {
+    console.error('[DASHBOARD API] Error fetching feedback:', e);
+  }
 
   // Square connection status
   let squareConnection = { connected: false };
@@ -131,10 +176,11 @@ export async function GET(req: NextRequest) {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const thirtyDaysAgoIso = thirtyDaysAgo.toISOString();
 
-      const { data: feedbackHistory } = await supa
-        .from('feedback')
-        .select('created_at, rating')
+      const { data: feedbackEvents } = await supa
+        .from('review_events')
+        .select('created_at, event, rating')
         .eq('business_id', biz.id)
+        .in('event', ['feedback_submitted', 'google_opened'])
         .gte('created_at', thirtyDaysAgoIso);
 
       const { data: scanHistory } = await supa
@@ -152,8 +198,8 @@ export async function GET(req: NextRequest) {
         dailyData[dateStr] = { reviews: 0, scans: 0 };
       }
 
-      feedbackHistory?.forEach(f => {
-        const dateStr = f.created_at.split('T')[0];
+      feedbackEvents?.forEach(e => {
+        const dateStr = e.created_at.split('T')[0];
         if (dailyData[dateStr]) dailyData[dateStr].reviews++;
       });
 
@@ -163,10 +209,14 @@ export async function GET(req: NextRequest) {
       });
 
       const sentiment = { positive: 0, neutral: 0, negative: 0 };
-      feedbackHistory?.forEach(f => {
-        if (f.rating >= 4) sentiment.positive++;
-        else if (f.rating === 3) sentiment.neutral++;
-        else sentiment.negative++;
+      feedbackEvents?.forEach(e => {
+        if (e.event === 'google_opened') {
+          sentiment.positive++;
+        } else if (e.rating) {
+          if (e.rating >= 4) sentiment.positive++;
+          else if (e.rating === 3) sentiment.neutral++;
+          else sentiment.negative++;
+        }
       });
 
       analytics = {
