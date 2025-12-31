@@ -324,26 +324,36 @@ function DashboardContent() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {recentFeedback.map((item) => (
-                    <div key={item.id} className="p-4 bg-accent/30 rounded-xl border border-border/50">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold">{item.name || 'Anonymous'}</span>
-                          <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
-                            item.rating >= 4 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-                          }`}>
-                            {item.rating}★
+                  {recentFeedback.map((item) => {
+                    const isEvent = item.type === 'event';
+                    return (
+                      <div key={item.id} className="p-4 bg-accent/30 rounded-xl border border-border/50">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold">{isEvent ? 'Verified Redirect' : (item.name || 'Anonymous')}</span>
+                            {!isEvent && (
+                              <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
+                                item.rating >= 4 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                              }`}>
+                                {item.rating}★
+                              </span>
+                            )}
+                            {isEvent && (
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 uppercase tracking-tighter">
+                                Redirect
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-muted">
+                            {new Date(item.created_at).toLocaleDateString()}
                           </span>
                         </div>
-                        <span className="text-[10px] text-muted">
-                          {new Date(item.created_at).toLocaleDateString()}
-                        </span>
+                        <p className={`text-xs line-clamp-2 leading-relaxed italic ${isEvent ? 'text-slate-400' : 'text-muted'}`}>
+                          {isEvent ? 'Customer routed to Google profile' : `"${item.comment || 'No comment provided'}"`}
+                        </p>
                       </div>
-                      <p className="text-xs text-muted line-clamp-2 leading-relaxed italic">
-                        "{item.comment || 'No comment provided'}"
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </section>
