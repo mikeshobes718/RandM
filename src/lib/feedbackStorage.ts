@@ -64,6 +64,7 @@ export async function ensureFeedbackTables(): Promise<void> {
           archived boolean default false,
           created_at timestamptz default now()
         );
+        alter table feedback add column if not exists source text;
         alter table feedback add column if not exists marketing_consent boolean;
         alter table feedback add column if not exists archived boolean default false;
         create index if not exists ix_feedback_business_created on feedback (business_id, created_at desc);
@@ -79,6 +80,16 @@ export async function ensureFeedbackTables(): Promise<void> {
         );
         create index if not exists ix_review_events_business_created on review_events (business_id, created_at desc);
         create index if not exists ix_review_events_event_created on review_events (event, created_at desc);
+      `);
+      await client.query(`
+        create table if not exists review_sources (
+          id uuid primary key default gen_random_uuid(),
+          business_id uuid not null references businesses(id) on delete cascade,
+          name text not null,
+          slug text not null,
+          created_at timestamptz default now(),
+          unique(business_id, slug)
+        );
       `);
     } finally {
       client.release();

@@ -1,6 +1,7 @@
 "use client";
 import BusinessSetupForm from "@/components/onboarding/BusinessSetupForm";
 import ProAnalytics from "@/components/dashboard/ProAnalytics";
+import MultipleQrManager from "@/components/dashboard/MultipleQrManager";
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
@@ -246,6 +247,11 @@ function DashboardContent() {
               </div>
             </div>
           </section>
+
+          {/* Multiple QR Codes for Pro Users */}
+          {isPro && business?.id && landingUrl && (
+            <MultipleQrManager businessId={business.id} landingUrl={landingUrl} />
+          )}
 
           {/* Recent Activity for Pro Users */}
           {isPro && (
