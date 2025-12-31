@@ -32,16 +32,19 @@ export default function SecurityPage() {
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
           {CONTROLS.map((control) => (
-            <div key={control.title} className="rounded-3xl border border-indigo-100 bg-white/95 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
-              <h2 className="text-lg font-semibold text-slate-900">{control.title}</h2>
-              <p className="mt-3 text-sm text-slate-700 leading-relaxed">{control.body}</p>
+            <div key={control.title} className="premium-card p-8 rounded-3xl flex flex-col h-full">
+              <h2 className="text-lg font-bold text-slate-900 mb-4">{control.title}</h2>
+              <p className="text-sm text-muted leading-relaxed flex-1">{control.body}</p>
             </div>
           ))}
         </div>
-        <div className="mt-10 max-w-4xl rounded-3xl border border-indigo-100 bg-white/95 p-8 text-sm text-slate-700 shadow-lg shadow-slate-900/10 backdrop-blur">
-          <p>
-            See something concerning? Email <a href="mailto:security@reviewsandmarketing.com" className="font-semibold text-indigo-600 hover:underline">security@reviewsandmarketing.com</a>. We respond within one business day and coordinate disclosures responsibly.
-          </p>
+        <div className="mt-12 max-w-5xl mx-auto">
+          <div className="premium-card p-8 rounded-3xl bg-brand/5 border-brand/10">
+            <p className="text-sm text-slate-700 text-center">
+              See something concerning? Email <a href="mailto:security@reviewsandmarketing.com" className="font-bold text-brand hover:underline">security@reviewsandmarketing.com</a>. <br className="hidden sm:block" />
+              We respond within one business day and coordinate disclosures responsibly.
+            </p>
+          </div>
         </div>
       </section>
     </main>
