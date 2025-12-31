@@ -122,13 +122,31 @@ function SquareIntegrationInner() {
           return;
         }
 
-        // Get connection status
+        // Get headers for API calls
         const headers: Record<string, string> = {};
         try {
           const tok = localStorage.getItem('idToken');
           if (tok) headers.Authorization = `Bearer ${tok}`;
         } catch {}
+
+        // First, get business info from dashboard summary
+        try {
+          const dashRes = await fetch('/api/dashboard/summary', { 
+            cache: 'no-store', 
+            credentials: 'include', 
+            headers 
+          });
+          if (dashRes.ok) {
+            const dashData = await dashRes.json();
+            if (!cancelled && dashData?.business?.id) {
+              setBusinessId(String(dashData.business.id));
+            }
+          }
+        } catch (e) {
+          console.error('Failed to fetch business info:', e);
+        }
         
+        // Then get Square connection status
         const statusRes = await fetch('/api/integrations/square/connect', { 
           cache: 'no-store', 
           credentials: 'include', 
@@ -140,18 +158,29 @@ function SquareIntegrationInner() {
           if (!cancelled) {
             setStatus(s as SquareStatus);
             if (s.sandbox != null) setSandbox(Boolean(s.sandbox));
+            // If connected, use the businessId from the connection
             if (s.businessId) setBusinessId(String(s.businessId));
           }
+        } else if (statusRes.status === 401) {
+          // Auth issue - don't show error, just show disconnected state
+          if (!cancelled) setStatus({ connected: false });
+        } else if (statusRes.status === 403) {
+          // Not Pro - redirect handled above
+          if (!cancelled) setStatus({ connected: false });
         } else {
-          throw new Error('Failed to fetch connection status');
+          // Some other error
+          const errorText = await statusRes.text().catch(() => 'Unknown error');
+          console.error('Square connect status error:', statusRes.status, errorText);
+          if (!cancelled) setStatus({ connected: false });
         }
 
         await loadStats();
 
       } catch (err) {
+        console.error('Square integration load error:', err);
+        // Don't show error to user for load failures - just show disconnected state
         if (!cancelled) {
-          console.error('Square integration load error:', err);
-          setError(err instanceof Error ? err.message : 'Failed to load Square status');
+          setStatus({ connected: false });
         }
       } finally {
         if (!cancelled) setLoading(false);
