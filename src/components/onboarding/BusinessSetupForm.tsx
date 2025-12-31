@@ -261,7 +261,7 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
 
       <div className="space-y-2">
         <label className="block text-xs font-bold text-muted uppercase tracking-wider">
-          Contact Phone
+          Contact Phone <span className="text-red-500">*</span>
         </label>
         <input
           type="tel"
@@ -269,6 +269,7 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
           onChange={(e) => handlePhoneChange(e.target.value)}
           className={inputClass}
           placeholder="(555) 000-0000"
+          required
         />
       </div>
 

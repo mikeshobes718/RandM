@@ -58,7 +58,7 @@ export default function SiteFooter() {
 
         <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-slate-500 text-[10px] font-medium uppercase tracking-widest">
-            © {new Date().getFullYear()} REVIEWS & MARKETING. ALL RIGHTS RESERVED.
+            © 2026 REVIEWS & MARKETING. ALL RIGHTS RESERVED.
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
