@@ -627,7 +627,7 @@ function SquareIntegrationInner() {
               </section>
 
               {/* Job History */}
-              <section className="premium-card p-6 rounded-3xl">
+              <section className="premium-card p-6 rounded-3xl group relative">
                 <h2 className="text-sm font-bold text-slate-900 mb-6">Recent Activity</h2>
                 {jobs.length === 0 ? (
                   <div className="text-center py-8 border-2 border-dashed border-slate-100 rounded-2xl">
@@ -656,10 +656,16 @@ function SquareIntegrationInner() {
                     ))}
                   </div>
                 )}
+                {/* Tooltip */}
+                <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+                  <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                    A history of your manual backfill and import tasks.
+                  </div>
+                </div>
               </section>
 
               {/* Help Card */}
-              <div className="p-6 bg-slate-900 rounded-3xl text-white">
+              <div className="p-6 bg-slate-900 rounded-3xl text-white group relative">
                 <h4 className="text-xs font-bold uppercase tracking-widest mb-4">How it works</h4>
                 <div className="space-y-4">
                   <div className="flex gap-3">
@@ -673,6 +679,12 @@ function SquareIntegrationInner() {
                   <div className="flex gap-3">
                     <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold shrink-0">3</div>
                     <p className="text-[10px] leading-relaxed text-slate-400">Relax. Every future transaction automatically triggers a review request.</p>
+                  </div>
+                </div>
+                {/* Tooltip */}
+                <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+                  <div className="bg-white text-slate-900 text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                    A quick guide to setting up your Square automation.
                   </div>
                 </div>
               </div>
