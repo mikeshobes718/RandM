@@ -219,28 +219,52 @@ function DashboardContent() {
         </div>
       </div>
 
-      {/* Advanced Analytics for Pro Users */}
-      {isPro && analytics ? (
-        <ProAnalytics data={analytics} />
-      ) : !isPro && (
-        <div className="mt-12 premium-card p-10 rounded-3xl bg-brand/5 border-dashed flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-brand/10 text-brand rounded-2xl flex items-center justify-center mb-6">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+      {/* Advanced Analytics & Insights Section */}
+      <div className="mt-12 relative">
+        {!isPro && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-white/40 backdrop-blur-[6px] rounded-[40px] border-2 border-dashed border-brand/20">
+            <div className="w-20 h-20 bg-brand text-white rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-brand/40 animate-bounce">
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
             </div>
-            <h2 className="text-xl font-bold mb-2">Unlock Advanced Analytics</h2>
-            <p className="text-sm text-muted mb-8 max-w-md">Get daily performance tracking, sentiment analysis, and customer behavior insights by upgrading to Pro.</p>
-            <Link href="/pricing" className="primary-button h-11 px-8">
-                Upgrade to Pro
-            </Link>
+            <h2 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">Unlock Your Business Intelligence</h2>
+            <p className="text-slate-600 max-w-md mb-8 font-medium leading-relaxed">
+              You're currently seeing <strong>less than 20%</strong> of your available data. Upgrade to Pro to track daily trends, see where every lead comes from, and analyze customer sentiment.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
+              <Link href="/pricing" className="primary-button h-14 px-10 text-lg shadow-xl shadow-brand/20">
+                🚀 Upgrade to Pro Now
+              </Link>
+              <div className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/5 px-3 py-1.5 rounded-full border border-brand/10">
+                Join 500+ Top Rated Businesses
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* This renders real data for Pro, or dummy "blurred" layout for Free users */}
+        <div className={!isPro ? "opacity-40 grayscale pointer-events-none select-none" : ""}>
+          <ProAnalytics data={analytics || {
+            history: Array.from({ length: 30 }, (_, i) => ({ 
+              date: new Date(Date.now() - (30 - i) * 86400000).toISOString(),
+              reviews: Math.floor(Math.random() * 10) + 2,
+              scans: Math.floor(Math.random() * 30) + 10
+            })),
+            sentiment: { positive: 85, neutral: 10, negative: 5 },
+            ratingDistribution: { 1: 2, 2: 3, 3: 5, 4: 15, 5: 75 },
+            funnel: { scans: 450, selections: 320, completions: 180 },
+            sources: { "Main QR": 120, "Receipt": 45, "Instagram": 15 },
+            growth: 24
+          }} />
         </div>
-      )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mt-12">
         {/* Main Toolkit Card */}
         <div className="lg:col-span-7 space-y-8">
           <section className="premium-card p-8 rounded-3xl overflow-hidden relative group">
+            {/* ... rest of the card ... */}
             <div className="absolute top-0 right-0 p-8 opacity-5">
               <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
@@ -295,10 +319,28 @@ function DashboardContent() {
             </div>
           </section>
 
-          {/* Multiple QR Codes for Pro Users */}
-          {isPro && business?.id && landingUrl && (
-            <MultipleQrManager businessId={business.id} landingUrl={landingUrl} />
-          )}
+          {/* Multiple QR Codes for All Users (Locked for Free) */}
+          <div className="relative group/qr">
+            {!isPro && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-white/60 backdrop-blur-[4px] rounded-[40px] border border-border">
+                <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-1">Track Multiple Channels</h3>
+                <p className="text-[10px] text-slate-500 max-w-[200px] mb-4 font-medium leading-relaxed">
+                  Create unique QR codes for every table, staff member, or flyer to see exactly what drives your growth.
+                </p>
+                <Link href="/pricing" className="primary-button !h-9 px-6 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/20 transition-transform hover:scale-105 active:scale-95">
+                  Upgrade to Pro
+                </Link>
+              </div>
+            )}
+            <div className={!isPro ? "opacity-30 grayscale pointer-events-none blur-[1px]" : ""}>
+              <MultipleQrManager businessId={business.id!} landingUrl={landingUrl || ''} />
+            </div>
+          </div>
 
           {/* Recent Activity for Pro Users */}
           {isPro && (
@@ -330,51 +372,69 @@ function DashboardContent() {
           )}
 
           {/* Integrations Card */}
-          <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed group relative">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-slate-900">Square Integration</h2>
-              {squareStatus?.connected ? (
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Active</span>
+          <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed group relative overflow-hidden">
+            {!isPro && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-white/60 backdrop-blur-[4px]">
+                <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z" />
+                  </svg>
                 </div>
-              ) : isPro ? (
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded">Ready to Connect</span>
-              ) : (
-                <span className="text-[10px] font-bold uppercase tracking-widest text-brand bg-brand/5 px-2 py-1 rounded">Pro Feature</span>
-              )}
-            </div>
-
-            {squareStatus?.connected ? (
-              <div className="space-y-4">
-                <p className="text-sm text-slate-600 leading-relaxed italic">
-                  "Reviews & Marketing is monitoring your Square account for new payments. Requests will be sent automatically."
+                <h3 className="text-lg font-bold text-slate-900 mb-1">POS Automations</h3>
+                <p className="text-[10px] text-slate-500 max-w-[200px] mb-4 font-medium leading-relaxed">
+                  Automatically send review requests after every Square sale. Zero effort, maximum growth.
                 </p>
-                <div className="flex items-center justify-between py-3 border-y border-border/50">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Last Sync</span>
-                    <span className="text-xs font-bold text-slate-700">
-                      {squareStatus.lastBackfillAt ? new Date(squareStatus.lastBackfillAt).toLocaleDateString() : 'Real-time monitoring active'}
-                    </span>
-                  </div>
-                  <Link href="/integrations/square" className="secondary-button !h-8 px-4 !text-[10px] font-black">
-                    Run Manual Backfill
-                  </Link>
-                </div>
-                <Link href="/integrations/square" className="text-[10px] font-bold text-brand hover:underline inline-flex items-center gap-1">
-                  Manage Integration Settings →
+                <Link href="/pricing" className="primary-button !h-9 px-6 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/20 transition-transform hover:scale-105 active:scale-95">
+                  Unlock Automation
                 </Link>
               </div>
-            ) : (
-              <>
-                <p className="text-sm text-muted mb-6 leading-relaxed">
-                  Automatically send review requests to your Square customers after they finish their purchase.
-                </p>
-                <Link href="/integrations/square" className="text-sm font-bold text-brand hover:underline">
-                  {isPro ? 'Connect Square Account' : 'Upgrade to Connect Square'} →
-                </Link>
-              </>
             )}
+            <div className={!isPro ? "opacity-30 grayscale pointer-events-none blur-[1px]" : ""}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-slate-900">Square Integration</h2>
+                {squareStatus?.connected ? (
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Active</span>
+                  </div>
+                ) : isPro ? (
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded">Ready to Connect</span>
+                ) : (
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-brand bg-brand/5 px-2 py-1 rounded">Pro Feature</span>
+                )}
+              </div>
+
+              {squareStatus?.connected ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-600 leading-relaxed italic">
+                    "Reviews & Marketing is monitoring your Square account for new payments. Requests will be sent automatically."
+                  </p>
+                  <div className="flex items-center justify-between py-3 border-y border-border/50">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Last Sync</span>
+                      <span className="text-xs font-bold text-slate-700">
+                        {squareStatus.lastBackfillAt ? new Date(squareStatus.lastBackfillAt).toLocaleDateString() : 'Real-time monitoring active'}
+                      </span>
+                    </div>
+                    <Link href="/integrations/square" className="secondary-button !h-8 px-4 !text-[10px] font-black">
+                      Run Manual Backfill
+                    </Link>
+                  </div>
+                  <Link href="/integrations/square" className="text-[10px] font-bold text-brand hover:underline inline-flex items-center gap-1">
+                    Manage Integration Settings →
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm text-muted mb-6 leading-relaxed">
+                    Automatically send review requests to your Square customers after they finish their purchase.
+                  </p>
+                  <Link href="/integrations/square" className="text-sm font-bold text-brand hover:underline">
+                    {isPro ? 'Connect Square Account' : 'Upgrade to Connect Square'} →
+                  </Link>
+                </>
+              )}
+            </div>
 
             {/* Tooltip */}
             <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
