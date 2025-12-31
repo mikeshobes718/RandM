@@ -55,17 +55,23 @@ function SquareIntegrationInner() {
     const errorParam = searchParams.get('error');
     if (connected && status?.connected) {
       setMessage('Square account connected successfully.');
-    } else if (connected && !status?.connected && !loading) {
+    } else if (connected && !status?.connected && !loading && !verifying) {
       // If URL says connected but API says no, and we aren't loading, show verifying
+      // but don't loop forever. We'll let the load() function handle retries or just stop.
       setVerifying(true);
+      // Removed the reload loop. The initial load() already runs on mount.
+      // We can just wait a bit and if it still isn't connected, show a message.
       const timer = setTimeout(() => {
-        window.location.reload(); // Force refresh if stuck in this state
-      }, 3000);
+        setVerifying(false);
+        if (!status?.connected) {
+          setError('We couldn\'t verify your Square connection yet. Please refresh the page in a moment.');
+        }
+      }, 5000);
       return () => clearTimeout(timer);
     } else if (errorParam) {
       setError(decodeURIComponent(errorParam));
     }
-  }, [searchParams, status, loading]);
+  }, [searchParams, status, loading, verifying]);
 
   const loadStats = async () => {
     try {
@@ -86,63 +92,77 @@ function SquareIntegrationInner() {
       try {
         setLoading(true);
 
-        let proAllowed = false;
-        const planHeaders: Record<string, string> = {};
-        try {
-          const tok = localStorage.getItem('idToken');
-          if (tok) planHeaders.Authorization = `Bearer ${tok}`;
-        } catch {}
-        const planRes = await fetch('/api/plan/status', { cache: 'no-store', credentials: 'include', headers: planHeaders });
-        if (planRes.ok) {
-          const plan = await planRes.json().catch(() => null) as { status?: string } | null;
-          const statusValue = typeof plan?.status === 'string' ? plan.status : 'none';
-          if (!cancelled) setPlanStatus(statusValue);
-          const normalized = statusValue.toLowerCase();
-          proAllowed = normalized === 'active' || normalized === 'trialing';
-        } else if (!cancelled) {
-          setPlanStatus('none');
-        }
+        const isConnecting = searchParams?.get('connected') === '1';
+        let retries = isConnecting ? 3 : 1;
+        let success = false;
 
-        if (!proAllowed) {
-          if (!cancelled) {
-            setStatus(null);
-            setError(null);
-            setRedirecting(true);
+        while (retries > 0 && !success) {
+          let proAllowed = false;
+          const planHeaders: Record<string, string> = {};
+          try {
+            const tok = localStorage.getItem('idToken');
+            if (tok) planHeaders.Authorization = `Bearer ${tok}`;
+          } catch {}
+          
+          const planRes = await fetch('/api/plan/status', { cache: 'no-store', credentials: 'include', headers: planHeaders });
+          if (planRes.ok) {
+            const plan = await planRes.json().catch(() => null) as { status?: string } | null;
+            const statusValue = typeof plan?.status === 'string' ? plan.status : 'none';
+            if (!cancelled) setPlanStatus(statusValue);
+            const normalized = statusValue.toLowerCase();
+            proAllowed = normalized === 'active' || normalized === 'trialing';
           }
-          if (typeof window !== 'undefined') {
-            const params = new URLSearchParams();
-            params.set('welcome', '1');
-            params.set('from', 'square');
-            window.location.replace(`/pricing?${params.toString()}`);
-          }
-          return;
-        }
 
-        const headers: Record<string, string> = {};
-        try {
-          const tok = localStorage.getItem('idToken');
-          if (tok) headers.Authorization = `Bearer ${tok}`;
-        } catch {}
-        
-        const res = await fetch('/api/dashboard/summary', { cache: 'no-store', credentials: 'include', headers });
-        if (res.ok) {
-          const data = await res.json();
-          if (!cancelled) {
-            if (data?.business?.id) setBusinessId(String(data.business.id));
-            if (data?.squareConnection) {
-              const info = data.squareConnection as SquareStatus;
-              setStatus(info);
-              setSandbox(Boolean(info?.sandbox));
+          if (!proAllowed) {
+            if (!cancelled) {
+              setStatus(null);
+              setError(null);
+              setRedirecting(true);
+            }
+            if (typeof window !== 'undefined') {
+              window.location.replace(`/pricing?welcome=1&from=square`);
+            }
+            return;
+          }
+
+          const headers: Record<string, string> = {};
+          try {
+            const tok = localStorage.getItem('idToken');
+            if (tok) headers.Authorization = `Bearer ${tok}`;
+          } catch {}
+          
+          const statusRes = await fetch('/api/integrations/square/connect', { cache: 'no-store', credentials: 'include', headers });
+          if (statusRes.ok) {
+            const s = await statusRes.json();
+            if (s.connected) {
+              if (!cancelled) {
+                setStatus(s as SquareStatus);
+                if (s.sandbox != null) setSandbox(Boolean(s.sandbox));
+              }
+              success = true;
             }
           }
+
+          if (!success && retries > 1) {
+            await new Promise(r => setTimeout(r, 1500));
+          }
+          retries--;
         }
-        
-        const statusRes = await fetch('/api/integrations/square/connect', { cache: 'no-store', credentials: 'include', headers });
-        if (statusRes.ok) {
-          const s = await statusRes.json();
-          if (!cancelled) {
-            setStatus(s as SquareStatus);
-            if ((s as SquareStatus)?.sandbox != null) setSandbox(Boolean((s as SquareStatus)?.sandbox));
+
+        if (!success && !cancelled) {
+          // One final try for dashboard summary just in case
+          const headers: Record<string, string> = {};
+          try {
+            const tok = localStorage.getItem('idToken');
+            if (tok) headers.Authorization = `Bearer ${tok}`;
+          } catch {}
+          const res = await fetch('/api/dashboard/summary', { cache: 'no-store', credentials: 'include', headers });
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.business?.id) setBusinessId(String(data.business.id));
+            if (data?.squareConnection) {
+              setStatus(data.squareConnection as SquareStatus);
+            }
           }
         }
 
