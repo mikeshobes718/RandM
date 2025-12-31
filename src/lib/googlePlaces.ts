@@ -12,6 +12,7 @@ async function v1Autocomplete(GOOGLE_MAPS_API_KEY: string, params: {
     'suggestions.placePrediction.placeId',
     'suggestions.placePrediction.structuredFormat.mainText.text',
     'suggestions.placePrediction.structuredFormat.secondaryText.text',
+    'suggestions.placePrediction.types',
   ].join(',');
   const res = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
     method: 'POST',
@@ -25,6 +26,8 @@ async function v1Autocomplete(GOOGLE_MAPS_API_KEY: string, params: {
       sessionToken: params.sessionToken,
       includedRegionCodes: params.includedRegionCodes,
       languageCode: params.languageCode,
+      // Prefer business establishments over addresses
+      includedPrimaryTypes: ['establishment'],
       ...(params.locationBias
         ? { locationBias: { circle: { center: { latitude: params.locationBias.lat, longitude: params.locationBias.lng }, radius: params.locationBias.radiusMeters || 50000 } } }
         : {}),
@@ -82,6 +85,9 @@ async function v1Details(GOOGLE_MAPS_API_KEY: string, placeId: string, sessionTo
     'googleMapsLinks.placeUri',
     'googleMapsLinks.writeAReviewUri',
     'googleMapsLinks.reviewsUri',
+    'types',
+    'primaryType',
+    'businessStatus',
   ].join(',');
   const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`;
   const res = await fetch(url, {
@@ -100,7 +106,7 @@ async function legacyDetails(GOOGLE_MAPS_API_KEY: string, placeId: string) {
   const url = new URL('https://maps.googleapis.com/maps/api/place/details/json');
   url.searchParams.set('place_id', placeId);
   url.searchParams.set('key', GOOGLE_MAPS_API_KEY);
-  url.searchParams.set('fields', 'place_id,name,formatted_address,rating,user_ratings_total,url,geometry/location');
+  url.searchParams.set('fields', 'place_id,name,formatted_address,rating,user_ratings_total,url,geometry/location,types,business_status');
   const res = await fetch(url.toString());
   if (!res.ok) throw new Error(`legacy_details_${res.status}`);
   const j = await res.json();
@@ -114,6 +120,9 @@ async function legacyDetails(GOOGLE_MAPS_API_KEY: string, placeId: string) {
     googleMapsUri: r.url,
     googleMapsLinks: {},
     location: r.geometry?.location ? { latitude: r.geometry.location.lat, longitude: r.geometry.location.lng } : undefined,
+    types: r.types || [],
+    primaryType: r.types?.[0],
+    businessStatus: r.business_status,
   };
 }
 
@@ -199,4 +208,75 @@ export async function getPlaceReviews(placeId: string) {
     console.error('[GOOGLE PLACES] Failed to fetch reviews:', error);
     return [];
   }
+}
+
+/**
+ * Validates if a place is a legitimate business that can receive reviews.
+ * Returns { isValid: boolean, reason?: string, suggestion?: string }
+ */
+export function validateBusinessPlace(placeDetails: any): { 
+  isValid: boolean; 
+  reason?: string; 
+  suggestion?: string;
+  warningLevel?: 'error' | 'warning';
+} {
+  const types = placeDetails?.types || [];
+  const primaryType = placeDetails?.primaryType;
+  
+  // Definite non-businesses that should be blocked
+  const invalidTypes = [
+    'street_address',
+    'route',
+    'neighborhood',
+    'sublocality',
+    'locality',
+    'administrative_area_level_1',
+    'administrative_area_level_2',
+    'administrative_area_level_3',
+    'administrative_area_level_4',
+    'administrative_area_level_5',
+    'country',
+    'postal_code',
+    'postal_code_prefix',
+    'postal_town',
+    'premise',
+    'subpremise',
+    'natural_feature',
+    'park',
+    'intersection',
+    'political',
+  ];
+
+  // Check if it's primarily a non-business type
+  if (invalidTypes.includes(primaryType)) {
+    return {
+      isValid: false,
+      warningLevel: 'error',
+      reason: `This appears to be a ${primaryType.replace(/_/g, ' ')} rather than a business.`,
+      suggestion: 'Please search for and select an actual business name (e.g., "Joe\'s Pizza" instead of "123 Main St").',
+    };
+  }
+
+  // Check if any invalid type is present (softer warning)
+  const hasInvalidType = types.some((t: string) => invalidTypes.includes(t));
+  if (hasInvalidType && !types.includes('establishment') && !types.includes('point_of_interest')) {
+    return {
+      isValid: false,
+      warningLevel: 'error',
+      reason: 'This location doesn\'t appear to be a business establishment.',
+      suggestion: 'Please search for a specific business name that has a Google Business Profile.',
+    };
+  }
+
+  // Warn if no rating exists (could be new business or not a reviewable business)
+  if (placeDetails?.rating == null && placeDetails?.userRatingCount == null) {
+    return {
+      isValid: true,
+      warningLevel: 'warning',
+      reason: 'This business doesn\'t have any Google reviews yet.',
+      suggestion: 'You can still add it, but customers won\'t see a star rating until you receive your first review.',
+    };
+  }
+
+  return { isValid: true };
 }

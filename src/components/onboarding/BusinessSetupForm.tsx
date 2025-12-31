@@ -29,6 +29,7 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
   const [reviewLink, setReviewLink] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [warning, setWarning] = useState('');
   
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -80,6 +81,7 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
   const handleBusinessNameChange = (value: string) => {
     setBusinessName(value);
     setError('');
+    setWarning('');
     
     if (selectedPlace && value !== selectedPlace.displayName) {
       setSelectedPlace(null);
@@ -98,6 +100,8 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
     setBusinessName(suggestion.mainText);
     setShowSuggestions(false);
     setSearching(true);
+    setError('');
+    setWarning('');
 
     try {
       const response = await fetch(
@@ -106,6 +110,29 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
 
       if (response.ok) {
         const details: PlaceDetails = await response.json();
+        
+        // Validate the business before setting
+        const validationResponse = await fetch('/api/places/validate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ placeDetails: details }),
+        });
+
+        if (validationResponse.ok) {
+          const validation = await validationResponse.json();
+          
+          if (!validation.isValid) {
+            setError(`${validation.reason} ${validation.suggestion || ''}`);
+            setBusinessName(''); // Clear the invalid selection
+            sessionTokenRef.current = generateSessionToken();
+            return;
+          }
+          
+          if (validation.warningLevel === 'warning') {
+            setWarning(`${validation.reason} ${validation.suggestion || ''}`);
+          }
+        }
+        
         setSelectedPlace(details);
         
         if (details.writeAReviewUri) {
@@ -196,8 +223,13 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-sm text-red-600">
+        <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-sm text-red-600 font-medium">
           {error}
+        </div>
+      )}
+      {warning && !error && (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700 font-medium">
+          ⚠️ {warning}
         </div>
       )}
 
