@@ -10,6 +10,7 @@ export type SquareConnectionRow = {
   merchant_id: string | null;
   default_location_id: string | null;
   sandbox: boolean;
+  is_enabled: boolean;
   created_at: string;
   updated_at: string;
   last_backfill_at: string | null;

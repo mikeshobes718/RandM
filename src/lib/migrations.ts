@@ -226,6 +226,11 @@ alter table review_contact_captures add column if not exists archived boolean de
 `;
     await client.query(sql010); ran.push('010_archived_columns');
 
+    const sql011 = `
+alter table square_connections add column if not exists is_enabled boolean default true;
+`;
+    await client.query(sql011); ran.push('011_square_is_enabled');
+
     await client.query('commit');
     return { ran };
   } catch (e) {

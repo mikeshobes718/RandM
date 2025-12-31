@@ -249,13 +249,14 @@ export async function GET(req: NextRequest) {
   try {
     const { data: square } = await supa
       .from('square_connections')
-      .select('access_token, last_backfill_at')
+      .select('access_token, last_backfill_at, is_enabled')
       .eq('business_id', biz.id)
       .maybeSingle();
     
     if (square) {
       squareConnection = {
         connected: !!square.access_token,
+        isEnabled: square.is_enabled,
         lastBackfillAt: square.last_backfill_at
       };
     }

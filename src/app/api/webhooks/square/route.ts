@@ -57,6 +57,10 @@ export async function POST(req: Request) {
 
     if (!connection) return new NextResponse('No connection found', { status: 200 });
 
+    if (connection.is_enabled === false) {
+      return new NextResponse('Real-time monitoring disabled', { status: 200 });
+    }
+
     const businessId = connection.business_id;
     const { data: business } = await supa
       .from('businesses')

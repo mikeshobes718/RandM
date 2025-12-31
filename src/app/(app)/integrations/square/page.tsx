@@ -11,6 +11,7 @@ type SquareStatus = {
   defaultLocationId?: string | null;
   merchantId?: string | null;
   lastBackfillAt?: string | null;
+  isEnabled?: boolean;
 } | null;
 
 type BackfillJob = {
@@ -39,6 +40,7 @@ function SquareIntegrationInner() {
   const [customerCount, setCustomerCount] = useState<number | null>(null);
   const [maxCustomers, setMaxCustomers] = useState(100);
   const [isBackfilling, setIsBackfilling] = useState(false);
+  const [toggling, setToggling] = useState(false);
 
   const isPro = useMemo(() => {
     if (!planStatus || planStatus === 'loading') return false;
@@ -237,6 +239,31 @@ function SquareIntegrationInner() {
       setError(err instanceof Error ? err.message : 'Backfill failed');
     } finally {
       setIsBackfilling(false);
+    }
+  }
+
+  async function toggleMonitoring(enabled: boolean) {
+    if (!status?.connected) return;
+    try {
+      setToggling(true);
+      setError(null);
+      const tok = localStorage.getItem('idToken');
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (tok) headers.Authorization = `Bearer ${tok}`;
+
+      const res = await fetch('/api/integrations/square/connect', {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ isEnabled: enabled })
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+      setStatus(prev => prev ? { ...prev, isEnabled: enabled } : null);
+      setMessage(`Real-time monitoring ${enabled ? 'enabled' : 'disabled'}.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update monitoring');
+    } finally {
+      setToggling(false);
     }
   }
 
@@ -462,17 +489,42 @@ function SquareIntegrationInner() {
               )}
 
               {/* Automation Status */}
-              <section className="premium-card p-6 rounded-3xl bg-brand/5 border-dashed">
+              <section className="premium-card p-6 rounded-3xl bg-brand/5 border-dashed relative overflow-hidden">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-bold text-slate-900">Live Automation</h2>
-                  <span className={`h-2 w-2 rounded-full ${status?.connected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></span>
+                  <div className="flex items-center gap-2">
+                    <span className={`h-2 w-2 rounded-full ${status?.connected && status?.isEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></span>
+                    {status?.connected && (
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${status?.isEnabled ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        {status?.isEnabled ? 'Active' : 'Paused'}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">
+                <p className="text-xs text-slate-500 leading-relaxed mb-6">
                   {status?.connected 
-                    ? "Automatic review requests are ACTIVE. We'll send a request to every new customer who completes a transaction."
+                    ? status?.isEnabled 
+                      ? "Automatic review requests are ACTIVE. We'll send a request to every new customer who completes a transaction."
+                      : "Automatic review requests are PAUSED. Webhooks will be ignored until you re-enable monitoring."
                     : "Connect your Square account to enable live review request automation."
                   }
                 </p>
+
+                {status?.connected && (
+                  <div className="pt-4 border-t border-brand/10">
+                    <button
+                      onClick={() => toggleMonitoring(!status.isEnabled)}
+                      disabled={toggling}
+                      className={`w-full h-10 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                        status.isEnabled 
+                          ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' 
+                          : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-200'
+                      }`}
+                    >
+                      {toggling ? '...' : status.isEnabled ? 'Pause Monitoring' : 'Enable Monitoring'}
+                    </button>
+                  </div>
+                )}
               </section>
 
               {/* Job History */}

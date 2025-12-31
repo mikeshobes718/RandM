@@ -36,7 +36,7 @@ export async function GET() {
   const supa = getSupabaseAdmin();
   const { data, error } = await supa
     .from('square_connections')
-    .select('business_id,sandbox,last_backfill_at,default_location_id,merchant_id')
+    .select('business_id,sandbox,last_backfill_at,default_location_id,merchant_id,is_enabled')
     .eq('uid', uid)
     .maybeSingle();
   if (error) return new NextResponse(error.message, { status: 500 });
@@ -45,10 +45,34 @@ export async function GET() {
     connected: true,
     businessId: data.business_id,
     sandbox: data.sandbox,
+    isEnabled: data.is_enabled,
     lastBackfillAt: data.last_backfill_at,
     defaultLocationId: data.default_location_id,
     merchantId: data.merchant_id,
   });
+}
+
+export async function PATCH(req: Request) {
+  const uid = await requireUid().catch(() => null);
+  if (!uid) return new NextResponse('Unauthorized', { status: 401 });
+  const pro = await hasActivePro(uid);
+  if (!pro) return new NextResponse('Pro plan required', { status: 403 });
+
+  const body = await req.json().catch(() => ({}));
+  const isEnabled = body?.isEnabled;
+
+  if (typeof isEnabled !== 'boolean') {
+    return new NextResponse('Missing isEnabled boolean', { status: 400 });
+  }
+
+  const supa = getSupabaseAdmin();
+  const { error } = await supa
+    .from('square_connections')
+    .update({ is_enabled: isEnabled, updated_at: new Date().toISOString() })
+    .eq('uid', uid);
+
+  if (error) return new NextResponse(error.message, { status: 500 });
+  return NextResponse.json({ ok: true });
 }
 
 export async function POST(req: Request) {

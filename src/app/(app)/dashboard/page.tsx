@@ -62,7 +62,7 @@ function DashboardContent() {
   const [recentFeedback, setRecentFeedback] = useState<FeedbackItem[]>([]);
   const [activityFeed, setActivityFeed] = useState<ActivityItem[]>([]);
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
-  const [squareStatus, setSquareStatus] = useState<{ connected: boolean; lastBackfillAt?: string | null } | null>(null);
+  const [squareStatus, setSquareStatus] = useState<{ connected: boolean; isEnabled?: boolean; lastBackfillAt?: string | null } | null>(null);
 
   const isFromEdit = searchParams?.get('from') === 'edit';
 
@@ -388,8 +388,10 @@ function DashboardContent() {
                 <h2 className="text-lg font-bold text-slate-900">Square Integration</h2>
                 {squareStatus?.connected ? (
                   <div className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Active</span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${squareStatus.isEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></span>
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${squareStatus.isEnabled ? 'text-emerald-600' : 'text-slate-400'}`}>
+                      {squareStatus.isEnabled ? 'Active' : 'Paused'}
+                    </span>
                   </div>
                 ) : isPro ? (
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded">Ready to Connect</span>
@@ -434,7 +436,9 @@ function DashboardContent() {
             <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
               <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
                 {squareStatus?.connected 
-                  ? "Your Square POS is connected. Every new sale will trigger an automated review request email."
+                  ? squareStatus.isEnabled
+                    ? "Your Square POS is connected. Every new sale will trigger an automated review request email."
+                    : "Real-time monitoring is currently PAUSED. New Square sales will not trigger review requests."
                   : "Connect your Square POS to automatically email customers a review link after every transaction."}
               </div>
             </div>
