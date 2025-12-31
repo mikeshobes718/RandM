@@ -160,6 +160,7 @@ export async function GET(req: NextRequest) {
       .from('feedback')
       .select('*')
       .eq('business_id', biz.id)
+      .eq('archived', false) // Filter out archived items
       .order('created_at', { ascending: false })
       .limit(5);
       
