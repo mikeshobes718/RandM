@@ -6,7 +6,8 @@ import { ErrorBoundary } from "../components/ErrorBoundary";
 import ClientWidgets from "../components/ClientWidgets";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { getCurrentUser } from "../lib/auth-server";
+
+export const dynamic = 'force-dynamic';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,8 @@ export const metadata: Metadata = {
     "business reviews",
     "review automation",
     "customer feedback",
+    "review analytics",
+    "local business marketing",
     "review analytics",
     "local business marketing",
   ],
@@ -89,8 +92,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getCurrentUser();
-
   // Structured data for organization
   const organizationSchema = {
     "@context": "https://schema.org",
