@@ -151,7 +151,16 @@ export async function getPlaceDetails(placeId: string, sessionToken?: string) {
 }
 
 export function makeGoogleReviewLinkFromWriteUri(writeAReviewUri?: string, placeId?: string) {
-  if (writeAReviewUri) return writeAReviewUri;
-  if (placeId) return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
+  if (writeAReviewUri && !writeAReviewUri.includes('placeid=Ei')) return writeAReviewUri;
+  
+  if (placeId) {
+    if (placeId.startsWith('Ei')) {
+      // Feature ID fallback: use a search link with the fid if we can, 
+      // but without the fid we can't easily make a direct "write review" link.
+      // The best we can do is a search link that often triggers the knowledge panel.
+      return `https://www.google.com/search?q=google+review+link&ludocid=${placeId}#lrd=0x0:0x0,3`;
+    }
+    return `https://search.google.com/local/writereview?placeid=${encodeURIComponent(placeId)}`;
+  }
   return '';
 }

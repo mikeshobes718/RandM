@@ -28,10 +28,21 @@ export async function GET(req: Request) {
 
   if (error) return new NextResponse(error.message, { status: 500 });
   if (!data) return new NextResponse('not found', { status: 404 });
+
+  let reviewLink = data.google_maps_write_review_uri || data.review_link || '';
+  
+  // Robust check for broken Feature ID links
+  if (reviewLink.includes('placeid=Ei')) {
+    const { makeGoogleReviewLinkFromWriteUri } = await import('@/lib/googlePlaces');
+    // If it's a broken link, try to recreate it from the Place ID or just use it as is if we have to.
+    // Actually, let's just use the helper which now handles Ei... IDs better.
+    reviewLink = makeGoogleReviewLinkFromWriteUri(undefined, data.google_place_id || undefined);
+  }
+
   return NextResponse.json({
     id: data.id,
     name: data.name,
-    reviewLink: data.google_maps_write_review_uri || data.review_link || '',
+    reviewLink,
     brandColor: data.landing_brand_color || null,
     buttonColor: data.landing_button_color || null,
     logoUrl: data.landing_logo_url || null,
