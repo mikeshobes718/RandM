@@ -39,9 +39,10 @@ export async function GET(req: NextRequest) {
   const supa = getSupabaseAdmin();
   const { data: biz, error } = await supa
     .from('businesses')
-    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id')
+    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
     .eq('owner_uid', uid)
     .maybeSingle();
+
   if (error) return new NextResponse(error.message, { status: 500 });
   if (!biz) {
     return NextResponse.json({
@@ -49,7 +50,7 @@ export async function GET(req: NextRequest) {
       stats: {
         reviewsThisMonth: 0,
         shareLinkScans: 0,
-        averageRating: null as number | null,
+        averageRating: null,
       },
     });
   }
@@ -63,7 +64,6 @@ export async function GET(req: NextRequest) {
       .eq('uid', uid)
       .maybeSingle();
     
-    // Pro if status is active and plan_id contains 'pro' or 'yearly' (adjust based on your plan IDs)
     if (subscription && subscription.status === 'active') {
       const planId = subscription.plan_id?.toLowerCase() || '';
       if (planId.includes('pro') || planId.includes('yearly') || planId.includes('monthly')) {
@@ -76,25 +76,67 @@ export async function GET(req: NextRequest) {
 
   const sinceIso = startOfCurrentMonthUTC();
 
-  // ... (existing stats logic)
+  // Basic Stats
+  let reviewsThisMonth = 0;
+  let shareLinkScans = 0;
+  let normalizedRating = biz.google_rating ?? null;
+
+  try {
+    // Current month reviews
+    const { count: reviewCount } = await supa
+      .from('feedback')
+      .select('*', { count: 'exact', head: true })
+      .eq('business_id', biz.id)
+      .gte('created_at', sinceIso);
+    reviewsThisMonth = reviewCount || 0;
+
+    // Total scans
+    const { count: scanCount } = await supa
+      .from('review_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('business_id', biz.id)
+      .eq('event', 'page_opened');
+    shareLinkScans = scanCount || 0;
+  } catch (e) {
+    console.error('[DASHBOARD API] Error fetching stats:', e);
+  }
+
+  // Recent Feedback
+  let recentFeedback: any[] = [];
+  try {
+    const { data } = await supa
+      .from('feedback')
+      .select('*')
+      .eq('business_id', biz.id)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    recentFeedback = data || [];
+  } catch (e) {}
+
+  // Square connection status
+  let squareConnection = { connected: false };
+  try {
+    const { count } = await supa
+      .from('square_connections')
+      .select('*', { count: 'exact', head: true })
+      .eq('business_id', biz.id);
+    squareConnection.connected = (count || 0) > 0;
+  } catch (e) {}
 
   // Advanced Analytics for Pro Users
   let analytics: any = null;
   if (isPro) {
     try {
-      // 1. Get daily stats for last 30 days
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const thirtyDaysAgoIso = thirtyDaysAgo.toISOString();
 
-      // Fetch feedback counts by day
       const { data: feedbackHistory } = await supa
         .from('feedback')
         .select('created_at, rating')
         .eq('business_id', biz.id)
         .gte('created_at', thirtyDaysAgoIso);
 
-      // Fetch scan counts by day
       const { data: scanHistory } = await supa
         .from('review_events')
         .select('created_at, event')
@@ -102,7 +144,6 @@ export async function GET(req: NextRequest) {
         .eq('event', 'page_opened')
         .gte('created_at', thirtyDaysAgoIso);
 
-      // Process history into daily buckets
       const dailyData: Record<string, { reviews: number; scans: number }> = {};
       for (let i = 0; i < 30; i++) {
         const d = new Date();
@@ -121,7 +162,6 @@ export async function GET(req: NextRequest) {
         if (dailyData[dateStr]) dailyData[dateStr].scans++;
       });
 
-      // 2. Sentiment breakdown
       const sentiment = { positive: 0, neutral: 0, negative: 0 };
       feedbackHistory?.forEach(f => {
         if (f.rating >= 4) sentiment.positive++;
@@ -140,13 +180,15 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  const formattedPhone = biz.contact_phone ? formatPhone(biz.contact_phone) : null;
+
   return NextResponse.json({
     business: {
       id: biz.id,
       name: biz.name,
       review_link: biz.review_link,
       google_maps_write_review_uri: biz.google_maps_write_review_uri,
-      contact_phone: formattedPhone || null,
+      contact_phone: formattedPhone,
       google_rating: biz.google_rating,
       google_place_id: biz.google_place_id,
     },
