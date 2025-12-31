@@ -16,30 +16,46 @@ export async function GET(req: Request) {
   const { data: biz } = await supa.from('businesses').select('id').eq('owner_uid', uid);
   const ids = (biz || []).map((b: { id: string }) => b.id);
   if (ids.length === 0) return NextResponse.json({ items: [] });
-  // Feedback may or may not exist yet; handle gracefully
-  let items: {
-    id: string;
-    business_id: string;
-    rating: number;
-    name: string | null;
-    email: string | null;
-    phone: string | null;
-    comment: string | null;
-    marketing_consent: boolean | null;
-    archived: boolean;
-    created_at: string;
-  }[] = [];
+  // Feedback and Contact Captures may or may not exist yet; handle gracefully
+  let items: any[] = [];
   try {
     const since = new Date();
     since.setUTCHours(0,0,0,0); since.setUTCDate(since.getUTCDate() - days + 1);
-    const { data } = await supa
+    
+    // Fetch private feedback (1-4 stars)
+    const { data: feedbackData } = await supa
       .from('feedback')
       .select('id,business_id,rating,name,email,phone,comment,marketing_consent,archived,created_at')
       .in('business_id', ids)
       .gte('created_at', since.toISOString())
       .order('created_at', { ascending: false })
       .limit(limit);
-    items = (data as typeof items) || [];
-  } catch {}
+      
+    // Fetch 5-star contact captures
+    const { data: contactData } = await supa
+      .from('review_contact_captures')
+      .select('id,business_id,name,email,phone,marketing_consent:consent,created_at')
+      .in('business_id', ids)
+      .gte('created_at', since.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    const merged = [
+      ...(feedbackData || []).map(f => ({ ...f, type: 'feedback' })),
+      ...(contactData || []).map(c => ({ 
+        ...c, 
+        type: 'contact', 
+        rating: 5, 
+        comment: '5-star review lead', 
+        archived: false // Contact captures don't have an archived column yet, default to false
+      }))
+    ];
+    
+    items = merged
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, limit);
+  } catch (e) {
+    console.error('[FEEDBACK LIST API] Error:', e);
+  }
   return NextResponse.json({ items });
 }
