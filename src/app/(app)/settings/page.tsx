@@ -17,6 +17,84 @@ function SettingsContent() {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [canManage, setCanManage] = useState(false);
   const [role, setRole] = useState<string>('');
+  
+  // Team Management functions
+  async function inviteMember() {
+    if (!inviteEmail.trim() || !businessId) return;
+    setLoading(true);
+    try {
+      const tok = localStorage.getItem('idToken');
+      const res = await fetch('/api/members/invite', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${tok}`
+        },
+        body: JSON.stringify({ businessId, email: inviteEmail.trim(), role: 'member' })
+      });
+      if (res.ok) {
+        setSuccess('Invite sent successfully');
+        setInviteEmail('');
+        // Refresh lists
+        const listRes = await fetch(`/api/members/list?businessId=${businessId}`, {
+          headers: { 'Authorization': `Bearer ${tok}` }
+        });
+        if (listRes.ok) {
+          const data = await listRes.json();
+          setMembers(data.members || []);
+          setInvites(data.invites || []);
+        }
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to send invite');
+      }
+    } catch (e) {
+      setError('An error occurred while sending invite');
+    } finally {
+      setLoading(false);
+      setTimeout(() => { setSuccess(null); setError(null); }, 3000);
+    }
+  }
+
+  async function removeMember(uid: string) {
+    if (!businessId || !confirm('Are you sure you want to remove this member?')) return;
+    try {
+      const tok = localStorage.getItem('idToken');
+      const res = await fetch('/api/members/remove', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${tok}`
+        },
+        body: JSON.stringify({ businessId, uid })
+      });
+      if (res.ok) {
+        setMembers(members.filter(m => m.uid !== uid));
+        setSuccess('Member removed');
+      }
+    } catch (e) {}
+    setTimeout(() => setSuccess(null), 3000);
+  }
+
+  async function cancelInvite(token: string) {
+    if (!confirm('Cancel this invitation?')) return;
+    try {
+      const tok = localStorage.getItem('idToken');
+      const res = await fetch('/api/members/cancel-invite', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${tok}`
+        },
+        body: JSON.stringify({ token })
+      });
+      if (res.ok) {
+        setInvites(invites.filter(i => i.token !== token));
+        setSuccess('Invite cancelled');
+      }
+    } catch (e) {}
+    setTimeout(() => setSuccess(null), 3000);
+  }
   const [email, setEmail] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [loading, setLoading] = useState(true);
@@ -159,6 +237,7 @@ function SettingsContent() {
   };
 
   const handleSelectPlace = async (placeId: string) => {
+    console.log('Selecting place:', placeId);
     setShowPlaceSuggestions(false);
     setSearchingPlaces(true);
     try {
@@ -169,12 +248,19 @@ function SettingsContent() {
       });
       if (response.ok) {
         const place = await response.json();
+        console.log('Place details received:', place);
         setSelectedPlace(place);
         setBusinessName(place.displayName || '');
-        if (place.writeAReviewUri) setReviewLink(place.writeAReviewUri);
+        if (place.writeAReviewUri) {
+          console.log('Setting review link:', place.writeAReviewUri);
+          setReviewLink(place.writeAReviewUri);
+        }
         sessionTokenRef.current = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+      } else {
+        console.error('Failed to fetch place details:', response.status);
       }
     } catch (err) {
+      console.error('Error in handleSelectPlace:', err);
     } finally {
       setSearchingPlaces(false);
     }
@@ -432,10 +518,80 @@ function SettingsContent() {
                     </Link>
                   </div>
                 ) : (
-                  <div>
-                    <h2 className="text-xl font-bold mb-6">Team Management</h2>
-                    {/* Add team list/invite logic here if Pro */}
-                    <p className="text-sm text-muted italic">Team management features active.</p>
+                  <div className="space-y-8">
+                    <div>
+                      <h2 className="text-xl font-bold mb-6">Team Management</h2>
+                      
+                      {canManage && (
+                        <div className="mb-8 p-6 bg-accent/30 rounded-2xl border border-border">
+                          <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1 mb-2 block">Invite Member</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="email"
+                              value={inviteEmail}
+                              onChange={(e) => setInviteEmail(e.target.value)}
+                              placeholder="colleague@company.com"
+                              className={inputClass}
+                            />
+                            <button
+                              onClick={inviteMember}
+                              disabled={loading || !inviteEmail}
+                              className="primary-button !h-11 px-6 whitespace-nowrap"
+                            >
+                              Send Invite
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4">Active Members</h3>
+                          <div className="space-y-3">
+                            {members.map((m) => (
+                              <div key={m.uid} className="flex items-center justify-between p-4 bg-white border border-border rounded-xl">
+                                <div>
+                                  <div className="text-sm font-bold text-foreground">{m.email}</div>
+                                  <div className="text-[10px] text-muted uppercase font-black">{m.role}</div>
+                                </div>
+                                {canManage && m.role !== 'owner' && (
+                                  <button
+                                    onClick={() => removeMember(m.uid)}
+                                    className="text-[10px] font-bold text-red-500 hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {invites.length > 0 && (
+                          <div>
+                            <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4">Pending Invites</h3>
+                            <div className="space-y-3">
+                              {invites.map((i) => (
+                                <div key={i.token} className="flex items-center justify-between p-4 bg-accent/20 border border-dashed border-border rounded-xl">
+                                  <div>
+                                    <div className="text-sm font-bold text-muted">{i.email}</div>
+                                    <div className="text-[10px] text-muted uppercase">Sent {new Date(i.invited_at).toLocaleDateString()}</div>
+                                  </div>
+                                  {canManage && (
+                                    <button
+                                      onClick={() => cancelInvite(i.token)}
+                                      className="text-[10px] font-bold text-red-500 hover:underline"
+                                    >
+                                      Revoke
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

@@ -25,14 +25,10 @@ export default function ForgotPasswordPage() {
     }
 
     try {
-      // Use custom Postmark-based email API instead of Firebase
       const response = await fetch('/api/auth/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: email.trim(),
-          type: 'reset'
-        }),
+        body: JSON.stringify({ email: email.trim(), type: 'reset' }),
       });
 
       let result: any = null;
@@ -42,44 +38,23 @@ export default function ForgotPasswordPage() {
         result = null;
       }
 
-      if (result?.link) {
-        setResetLink(result.link);
-      }
+      if (result?.link) setResetLink(result.link);
 
       if (!response.ok) {
-        // Still show success for security (don't reveal if email exists)
-        const errorText = typeof result?.error === 'string' ? result.error : '';
-        if (errorText.includes('user-not-found') || errorText.includes('not found')) {
-          setSuccess(true);
+        const errorText = result?.error || 'Failed to send';
+        if (errorText.includes('user-not-found')) {
+          setSuccess(true); // Don't reveal if email exists
         } else {
-          throw new Error(errorText || 'Failed to send reset email');
+          throw new Error(errorText);
         }
       } else {
         setSuccess(true);
       }
     } catch (err: any) {
-      console.error('Password reset error:', err);
-      if (err.message && err.message.includes('too-many-requests')) {
-        setError('Too many requests. Please try again later.');
-      } else if (err.message && err.message.includes('invalid-email')) {
-        setError('Please enter a valid email address');
-      } else {
-        setSuccess(true);
-      }
+      setSuccess(true); // Always show success for security
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCopyLink = async () => {
-    if (!resetLink) return;
-    try {
-      await navigator.clipboard.writeText(resetLink);
-      setCopyStatus('Reset link copied!');
-    } catch {
-      setCopyStatus('Unable to copy.');
-    }
-    setTimeout(() => setCopyStatus(''), 2500);
   };
 
   const inputClass = "h-11 w-full rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all bg-white";
@@ -92,10 +67,11 @@ export default function ForgotPasswordPage() {
             R&M
           </Link>
           <h1 className="text-2xl font-bold tracking-tight">Reset password</h1>
+          <p className="text-xs text-muted mt-2">We'll send you a secure link to reset your access.</p>
         </div>
 
         <div className="premium-card p-8 rounded-3xl">
-          {error && (
+          {error && !success && (
             <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-red-600 font-medium">
               {error}
             </div>
@@ -109,9 +85,9 @@ export default function ForgotPasswordPage() {
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                   <div>
-                    <p className="text-sm font-bold text-emerald-900">Check your email</p>
-                    <p className="text-xs text-emerald-700 mt-1 leading-relaxed">
-                      If an account exists, you'll receive a password reset link shortly.
+                    <p className="text-sm font-bold text-emerald-900">Email sent</p>
+                    <p className="text-[10px] text-emerald-700 mt-1 leading-relaxed">
+                      If an account exists, you'll receive a reset link shortly. Check your spam if it doesn't arrive.
                     </p>
                   </div>
                 </div>
@@ -119,28 +95,12 @@ export default function ForgotPasswordPage() {
                 {resetLink && (
                   <div className="mt-4 pt-4 border-t border-emerald-200">
                     <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-widest mb-3">Development Link</p>
-                    <div className="flex flex-col gap-2">
-                      <a
-                        href={resetLink}
-                        className="primary-button !bg-emerald-600 !h-9 !text-xs w-full"
-                      >
-                        Open Reset Link
-                      </a>
-                      <button
-                        onClick={handleCopyLink}
-                        className="secondary-button !h-9 !text-xs w-full"
-                      >
-                        {copyStatus || 'Copy Link'}
-                      </button>
-                    </div>
+                    <a href={resetLink} className="primary-button !bg-emerald-600 !h-9 !text-xs w-full">Open Reset Link</a>
                   </div>
                 )}
               </div>
 
-              <Link
-                href="/login"
-                className="primary-button w-full h-11"
-              >
+              <Link href="/login" className="primary-button w-full h-11">
                 Back to sign in
               </Link>
             </div>
@@ -158,11 +118,7 @@ export default function ForgotPasswordPage() {
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="primary-button w-full h-11"
-              >
+              <button type="submit" disabled={loading} className="primary-button w-full h-11">
                 {loading ? '...' : 'Send Reset Link'}
               </button>
 
