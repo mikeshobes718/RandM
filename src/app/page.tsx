@@ -70,10 +70,10 @@ export default function Home() {
             <HomeCtaButtons variant="hero" />
             
             <div className="mt-16 flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-40 grayscale contrast-125">
-              <span className="font-bold text-xl tracking-tighter">GOOGLE</span>
-              <span className="font-bold text-xl tracking-tighter">SQUARE</span>
-              <span className="font-bold text-xl tracking-tighter">STRIPE</span>
-              <span className="font-bold text-xl tracking-tighter">POSTMARK</span>
+              <span className="font-bold text-xl tracking-tighter uppercase">Google</span>
+              <span className="font-bold text-xl tracking-tighter uppercase">Square</span>
+              <span className="font-bold text-xl tracking-tighter uppercase">Stripe <span className="text-[10px] font-black tracking-normal opacity-60">(Coming Soon)</span></span>
+              <span className="font-bold text-xl tracking-tighter uppercase">PayPal <span className="text-[10px] font-black tracking-normal opacity-60">(Coming Soon)</span></span>
             </div>
           </div>
         </div>

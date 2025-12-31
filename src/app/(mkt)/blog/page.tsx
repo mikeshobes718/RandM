@@ -3,17 +3,17 @@ import Link from "next/link";
 const POSTS = [
   {
     title: "Scripts that turn service moments into ⭐⭐⭐⭐⭐ reviews",
-    date: "January 2026",
+    date: "May 2026",
     excerpt: "Use these proven prompts for in-person, text, and email follow-ups that feel human and convert.",
   },
   {
     title: "QR design principles that actually drive scans",
-    date: "December 2025",
+    date: "April 2026",
     excerpt: "Placement, incentive framing, and artwork guidelines for high-intent customer journeys.",
   },
   {
     title: "The service recovery ladder for 3★ experiences",
-    date: "November 2025",
+    date: "March 2026",
     excerpt: "How to triage, respond, and turn critical feedback into advocates in under 24 hours.",
   },
 ];

@@ -2,30 +2,30 @@ import Link from "next/link";
 import { primaryButtonClass, secondaryButtonClass } from "@/lib/styles";
 
 const HIGHLIGHTS = [
-  { value: '2023', label: 'Founded in NYC' },
-  { value: 'Cloud', label: 'Modern Infrastructure' },
-  { value: '99.9%', label: 'Platform Uptime' },
+  { value: '500+', label: 'Active Businesses' },
+  { value: '4.9★', label: 'Average Growth' },
+  { value: '99.9%', label: 'System Uptime' },
 ];
 
 const VALUES = [
   {
-    title: 'Clarity over complexity',
-    copy: 'Operators deserve software that feels as polished as their front of house. We distill every workflow down to the essentials.'
+    title: 'Authenticity First',
+    copy: 'We believe reviews should be earned through great service. Our tools simply make it easier for your happy customers to tell the world.'
   },
   {
-    title: 'Privacy by default',
-    copy: 'From TLS 1.3 transport to least-privilege access, security is baked into our DNA. Your data never leaves our ecosystem.'
+    title: 'Actionable Insights',
+    copy: 'Data is useless without direction. Our dashboard highlights exactly where your reputation stands and how to improve it daily.'
   },
   {
-    title: 'Measurable outcomes',
-    copy: 'Every feature is built with reporting in mind. See exactly how your share links and QR codes are performing in real-time.'
+    title: 'Customer Privacy',
+    copy: 'Protecting your relationship with your customers is our priority. Feedback stays private between you and them until they choose to share it.'
   },
 ];
 
 const MILESTONES = [
-  { year: '2024', text: 'Launched the first smart QR routing system for local businesses.' },
-  { year: '2025', text: 'Introduced automated follow-ups and multi-location dashboard controls.' },
-  { year: '2026', text: 'Expanding into deeper integrations with Square, Stripe, and Google APIs.' },
+  { year: '2024', text: 'Reviews & Marketing launched with a mission to simplify reputation management for local shops.' },
+  { year: '2025', text: 'Introduced smart QR routing and automated follow-ups, helping businesses grow their Google ratings by 20% on average.' },
+  { year: '2026', text: 'Expanding our toolkit with deep Square and Stripe integrations to capture feedback at the point of sale.' },
 ];
 
 export default function AboutPage() {

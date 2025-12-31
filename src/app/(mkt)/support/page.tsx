@@ -1,15 +1,15 @@
 const FAQS = [
   {
-    q: "Where do I manage my Google Place ID?",
-    a: "Head to Dashboard → Settings. Our lookup tool searches Google Places and saves the ID instantly for every location.",
+    q: "How does the smart QR code work?",
+    a: "Our smart QR codes dynamically route customers based on their sentiment. Happy customers are sent directly to your Google Business Profile to leave a 5-star review, while others are directed to a private feedback form so you can resolve issues internally.",
   },
   {
-    q: "QR codes aren’t scanning on older phones—what should I change?",
-    a: "Increase contrast using the dark mode option and print at least four inches wide at 300 DPI. Table tent templates inside the QR library already meet those specs.",
+    q: "Is there a limit to how many review requests I can send?",
+    a: "The Starter plan includes 5 automated requests per month. Our Pro plan offers unlimited review requests, advanced analytics, and priority support for growing businesses.",
   },
   {
-    q: "Stripe checkout isn’t redirecting back to the app.",
-    a: "Verify your production redirect is set to https://reviewsandmarketing.com/api/integrations/square/oauth/callback and rerun the flow. Our team can confirm in minutes.",
+    q: "Can I connect multiple business locations?",
+    a: "Yes! Our Pro and Enterprise plans allow you to manage multiple locations from a single dashboard, with separate tracking and QR codes for each site.",
   },
 ];
 
@@ -86,14 +86,6 @@ export default function SupportPage() {
                 Request a Demo
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
               </a>
-            </div>
-
-            <div className="px-8 py-4 bg-accent rounded-full border border-border flex items-center justify-between">
-              <span className="text-[10px] font-bold text-muted uppercase tracking-widest">System Status</span>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span className="text-xs font-bold text-emerald-600 uppercase tracking-tight">Operational</span>
-              </div>
             </div>
           </div>
         </div>
