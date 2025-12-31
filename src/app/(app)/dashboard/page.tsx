@@ -276,7 +276,7 @@ function DashboardContent() {
           <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Square Integration</h2>
-              {planStatus === 'active' ? (
+              {isPro ? (
                 <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-1 rounded">Connected</span>
               ) : (
                 <span className="text-[10px] font-bold uppercase tracking-widest text-brand bg-brand/5 px-2 py-1 rounded">Pro Feature</span>
@@ -286,7 +286,7 @@ function DashboardContent() {
               Automatically send review requests to your Square customers after they finish their purchase.
             </p>
             <Link href="/integrations/square" className="text-sm font-bold text-brand hover:underline">
-              {planStatus === 'active' ? 'Manage Connection' : 'Upgrade to Connect Square'} →
+              {isPro ? 'Manage Connection' : 'Upgrade to Connect Square'} →
             </Link>
           </section>
         </div>
