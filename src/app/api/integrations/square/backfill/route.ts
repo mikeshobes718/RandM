@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { requireUid } from '@/lib/authServer';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getSquareConnectionForUser, getSquareClient, createBackfillJob, markBackfillCompleted, markBackfillFailed, touchSquareLastBackfill } from '@/lib/square';
+import { getSquareConnectionForUser, getSquareClient, createBackfillJob, markBackfillCompleted, markBackfillFailed, touchSquareLastBackfill, getBackfillJobsForUser } from '@/lib/square';
 import { hasActivePro } from '@/lib/entitlements';
 import { getPostmarkClient } from '@/lib/postmark';
 import { getEnv } from '@/lib/env';
@@ -11,6 +11,20 @@ import { Client, ApiError } from 'square';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  const uid = await requireUid().catch(() => null);
+  if (!uid) return new NextResponse('Unauthorized', { status: 401 });
+  const pro = await hasActivePro(uid);
+  if (!pro) return new NextResponse('Pro plan required', { status: 403 });
+  try {
+    const jobs = await getBackfillJobsForUser(uid);
+    return NextResponse.json({ jobs });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to load backfill jobs';
+    return new NextResponse(message, { status: 500 });
+  }
+}
 
 const DEFAULT_LIMIT = 200;
 const MAX_LIMIT = 500;

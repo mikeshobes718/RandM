@@ -163,8 +163,8 @@ function FeedbackContent({ business }: { business: any }) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-3xl font-black tracking-tight mb-2">Private Feedback</h1>
-          <p className="text-muted text-sm font-medium">Internal responses from your landing page.</p>
+          <h1 className="text-3xl font-black tracking-tight mb-2">Customer Feedback</h1>
+          <p className="text-muted text-sm font-medium">View all private feedback and 5-star reviews captured from your landing page.</p>
         </div>
         <div className="flex gap-3">
           <button 

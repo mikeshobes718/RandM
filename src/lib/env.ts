@@ -18,6 +18,7 @@ const ServerEnvSchema = z.object({
 
   SQUARE_APPLICATION_ID: z.string().min(1).optional(),
   SQUARE_APPLICATION_SECRET: z.string().min(1).optional(),
+  SQUARE_WEBHOOK_SIGNATURE_KEY: z.string().min(1).optional(),
 
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),

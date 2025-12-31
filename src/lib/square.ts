@@ -131,3 +131,15 @@ export async function touchSquareLastBackfill(uid: string) {
     .eq('uid', uid);
   if (error) throw error;
 }
+
+export async function getBackfillJobsForUser(uid: string, limit = 10): Promise<SquareBackfillJobRow[]> {
+  const supa = getSupabaseAdmin();
+  const { data, error } = await supa
+    .from('square_backfill_jobs')
+    .select('*')
+    .eq('uid', uid)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data as SquareBackfillJobRow[]) || [];
+}

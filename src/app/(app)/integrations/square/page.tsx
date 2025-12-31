@@ -13,6 +13,15 @@ type SquareStatus = {
   lastBackfillAt?: string | null;
 } | null;
 
+type BackfillJob = {
+  id: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  sent_count: number | null;
+  total_customers: number | null;
+  error_message: string | null;
+  created_at: string;
+};
+
 function SquareIntegrationInner() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -25,11 +34,17 @@ function SquareIntegrationInner() {
   const [message, setMessage] = useState<string | null>(null);
   const [planStatus, setPlanStatus] = useState<string>('loading');
   const [redirecting, setRedirecting] = useState(false);
+  const [backfillLoading, setBackfillLoading] = useState(false);
+  const [jobs, setJobs] = useState<BackfillJob[]>([]);
+  const [maxCustomers, setMaxCustomers] = useState(100);
+  const [isBackfilling, setIsBackfilling] = useState(false);
+
   const isPro = useMemo(() => {
     if (!planStatus || planStatus === 'loading') return false;
     const normalized = planStatus.toLowerCase();
     return normalized === 'active' || normalized === 'trialing';
   }, [planStatus]);
+
   useEffect(() => {
     if (!searchParams) return;
     const connected = searchParams.get('connected');
@@ -40,6 +55,18 @@ function SquareIntegrationInner() {
       setError(decodeURIComponent(errorParam));
     }
   }, [searchParams]);
+
+  const loadJobs = async () => {
+    try {
+      const tok = localStorage.getItem('idToken');
+      const headers: Record<string, string> = tok ? { Authorization: `Bearer ${tok}` } : {};
+      const res = await fetch('/api/integrations/square/backfill', { headers });
+      if (res.ok) {
+        const data = await res.json();
+        setJobs(data.jobs || []);
+      }
+    } catch {}
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -84,6 +111,7 @@ function SquareIntegrationInner() {
           const tok = localStorage.getItem('idToken');
           if (tok) headers.Authorization = `Bearer ${tok}`;
         } catch {}
+        
         const res = await fetch('/api/dashboard/summary', { cache: 'no-store', credentials: 'include', headers });
         if (res.ok) {
           const data = await res.json();
@@ -96,23 +124,18 @@ function SquareIntegrationInner() {
             }
           }
         }
+        
         const statusRes = await fetch('/api/integrations/square/connect', { cache: 'no-store', credentials: 'include', headers });
-        if (statusRes.status === 403) {
-          if (!cancelled) {
-            setStatus(null);
-            setError('Square automations require a Pro subscription.');
-          }
-        } else if (statusRes.ok) {
+        if (statusRes.ok) {
           const s = await statusRes.json();
           if (!cancelled) {
             setStatus(s as SquareStatus);
             if ((s as SquareStatus)?.sandbox != null) setSandbox(Boolean((s as SquareStatus)?.sandbox));
-            setError(null);
           }
-        } else if (!cancelled) {
-          const fallback = await statusRes.text().catch(() => 'Failed to load Square status');
-          setError(fallback || 'Failed to load Square status');
         }
+
+        await loadJobs();
+
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load Square status');
       } finally {
@@ -184,130 +207,325 @@ function SquareIntegrationInner() {
     }
   }
 
+  async function runBackfill() {
+    if (!status?.connected) return;
+    try {
+      setIsBackfilling(true);
+      setError(null);
+      setMessage(null);
+      const tok = localStorage.getItem('idToken');
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (tok) headers.Authorization = `Bearer ${tok}`;
+      
+      const res = await fetch('/api/integrations/square/backfill', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          businessId,
+          maxCustomers,
+          dryRun: false
+        })
+      });
+      
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setMessage(`Backfill complete: Sent ${data.sent} requests, skipped ${data.skipped}.`);
+      await loadJobs();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Backfill failed');
+    } finally {
+      setIsBackfilling(false);
+    }
+  }
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 py-10">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        {redirecting && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            Square automations are available on Pro. Redirecting you to pricing…
-          </div>
-        )}
-        <div className="flex items-center justify-between">
+    <main className="min-h-screen bg-[#fafafa] py-12 px-6">
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Square integration</h1>
-            <p className="text-sm text-gray-600 mt-1">Connect your Square account to import past customers and send review requests.</p>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900">Square Integration</h1>
+            <p className="text-slate-500 text-sm font-medium mt-1">Automate review requests for every Square transaction.</p>
           </div>
-          <Link href="/dashboard" className="text-sm text-blue-600 hover:text-blue-700 underline">Back to dashboard</Link>
+          <Link href="/dashboard" className="secondary-button !h-10 text-xs font-bold">
+            Back to Dashboard
+          </Link>
         </div>
 
-        {loading && <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">Loading Square status…</div>}
-        {message && <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{message}</div>}
-        {error && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin h-6 w-6 border-2 border-brand border-t-transparent rounded-full"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left Column: Settings & Status */}
+            <div className="lg:col-span-7 space-y-6">
+              {message && (
+                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3 text-emerald-700 text-sm font-medium">
+                  <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  {message}
+                </div>
+              )}
 
-        {!loading && planStatus !== 'loading' && !isPro && (
-          <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-sm space-y-4">
-            <div>
-              <h2 className="text-lg font-semibold text-amber-900">Square automations are a Pro feature</h2>
-              <p className="text-sm text-amber-800 mt-1">
-                Upgrade to the Pro plan to connect Square, sync customers, and trigger automated review requests.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <Link href="/pricing?from=square" className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-amber-400/50 transition hover:-translate-y-0.5 hover:bg-amber-400">
-                View Pro plans
-              </Link>
-              <Link href="/dashboard" className="text-sm font-semibold text-amber-700 underline">
-                Back to dashboard
-              </Link>
-            </div>
-          </section>
-        )}
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-700 text-sm font-medium">
+                  <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  {error}
+                </div>
+              )}
 
-        {isPro && (
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-5">
-          <div className="space-y-2">
-            <div className="text-sm font-semibold text-gray-900">Connection status</div>
-            {status?.connected ? (
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li><span className="font-medium text-gray-800">Mode:</span> {status?.sandbox ? 'Sandbox' : 'Production'}</li>
-                {status?.defaultLocationId && (
-                  <li><span className="font-medium text-gray-800">Default location:</span> {status.defaultLocationId}</li>
-                )}
-                {status?.merchantId && (
-                  <li><span className="font-medium text-gray-800">Merchant ID:</span> {status.merchantId}</li>
-                )}
-                {status?.lastBackfillAt && (
-                  <li><span className="font-medium text-gray-800">Last backfill:</span> {new Date(status.lastBackfillAt).toLocaleString()}</li>
-                )}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-600">Square isn’t connected yet.</p>
+              {/* Connection Card */}
+              <section className="premium-card p-8 rounded-3xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-5">
+                  <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                  </svg>
+                </div>
+
+                <div className="flex items-center justify-between mb-8">
+                  <div className="h-12 w-12 bg-slate-900 rounded-xl flex items-center justify-center text-white">
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z" />
+                    </svg>
+                  </div>
+                  {status?.connected ? (
+                    <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-emerald-100">
+                      Connected
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-full border border-slate-200">
+                      Disconnected
+                    </span>
+                  )}
+                </div>
+
+                {!status?.connected ? (
+                  <form onSubmit={startOAuth} className="space-y-6">
+                    <div>
+                      <h2 className="text-xl font-bold mb-2">Connect Square Account</h2>
+                      <p className="text-sm text-slate-500 leading-relaxed mb-6">
+                        Link your Square account to automatically import customers and send review requests after every sale.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Business ID</label>
+                        <input
+                          value={businessId}
+                          onChange={(e) => setBusinessId(e.target.value)}
+                          placeholder="Your Business ID"
+                          required
+                          className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition"
+                        />
+                      </div>
+
+                      <label className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={sandbox}
+                            onChange={(e) => setSandbox(e.target.checked)}
+                            className="sr-only"
+                          />
+                          <div className={`w-10 h-6 rounded-full transition ${sandbox ? 'bg-brand' : 'bg-slate-200'}`}></div>
+                          <div className={`absolute left-1 w-4 h-4 bg-white rounded-full shadow-sm transition transform ${sandbox ? 'translate-x-4' : ''}`}></div>
+                        </div>
+                        <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition">
+                          Use Sandbox Mode (Developer)
+                        </span>
+                      </label>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={saving}
+                      className="primary-button w-full !h-12 text-sm font-bold"
+                    >
+                      {saving ? 'Connecting...' : 'Continue to Square'}
+                    </button>
+                  </form>
+                ) : (
+                  <div className="space-y-8">
+                    <div className="grid grid-cols-2 gap-8">
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Merchant ID</div>
+                        <div className="text-sm font-mono text-slate-700">{status?.merchantId || '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Location</div>
+                        <div className="text-sm font-mono text-slate-700">{status?.defaultLocationId || '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Environment</div>
+                        <div className="text-sm font-bold text-slate-700 capitalize">{status?.sandbox ? 'Sandbox' : 'Production'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Last Backfill</div>
+                        <div className="text-sm font-bold text-slate-700">
+                          {status?.lastBackfillAt ? new Date(status.lastBackfillAt).toLocaleDateString() : 'Never'}
+                        </div>
+                      </div>
+                    </div>
+
+                  <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
+                    <button
+                      onClick={disconnectSquare}
+                      disabled={disconnecting}
+                      className="text-xs font-bold text-red-500 hover:text-red-600 transition disabled:opacity-50"
+                    >
+                      {disconnecting ? 'Disconnecting...' : 'Disconnect Account'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            {/* Webhook Configuration Instructions */}
+            {status?.connected && (
+              <section className="premium-card p-8 rounded-3xl bg-slate-50 border-slate-200">
+                <h3 className="text-sm font-bold text-slate-900 mb-4">Webhook Configuration</h3>
+                <p className="text-xs text-slate-500 leading-relaxed mb-4">
+                  To enable live automation, you must configure a webhook in your Square Developer Dashboard. This allows us to receive notifications whenever a payment is completed.
+                </p>
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Target URL</div>
+                    <div className="text-xs font-mono bg-white p-2 border border-slate-200 rounded-lg truncate select-all">
+                      {typeof window !== 'undefined' ? `${window.location.origin}/api/webhooks/square` : 'https://www.reviewsandmarketing.com/api/webhooks/square'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Events to Subscribe</div>
+                    <div className="text-xs font-bold text-slate-700">payment.created, payment.updated</div>
+                  </div>
+                  <p className="text-[10px] text-slate-400">
+                    Once configured, copy the "Signature Key" from Square and add it to your environment variables as <code className="bg-slate-100 px-1 rounded">SQUARE_WEBHOOK_SIGNATURE_KEY</code>.
+                  </p>
+                </div>
+              </section>
             )}
+
+            {/* Backfill Actions */}
+              {status?.connected && (
+                <section className="premium-card p-8 rounded-3xl">
+                  <h2 className="text-xl font-bold mb-2">Backfill Customers</h2>
+                  <p className="text-sm text-slate-500 leading-relaxed mb-8">
+                    Import your existing Square customers and send them a review request. We'll automatically skip anyone who has received a request recently.
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row items-end gap-4">
+                    <div className="flex-1">
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Import Limit</label>
+                      <select 
+                        value={maxCustomers}
+                        onChange={(e) => setMaxCustomers(Number(e.target.value))}
+                        className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition"
+                      >
+                        <option value={50}>Latest 50 Customers</option>
+                        <option value={100}>Latest 100 Customers</option>
+                        <option value={200}>Latest 200 Customers</option>
+                        <option value={500}>Latest 500 Customers</option>
+                      </select>
+                    </div>
+                    <button
+                      onClick={runBackfill}
+                      disabled={isBackfilling}
+                      className="primary-button !h-11 px-8 text-sm font-bold whitespace-nowrap"
+                    >
+                      {isBackfilling ? 'Running...' : 'Run Backfill'}
+                    </button>
+                  </div>
+                </section>
+              )}
+            </div>
+
+            {/* Right Column: History & Automation */}
+            <div className="lg:col-span-5 space-y-6">
+              {/* Automation Status */}
+              <section className="premium-card p-6 rounded-3xl bg-brand/5 border-dashed">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-bold text-slate-900">Live Automation</h2>
+                  <span className={`h-2 w-2 rounded-full ${status?.connected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></span>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  {status?.connected 
+                    ? "Automatic review requests are ACTIVE. We'll send a request to every new customer who completes a transaction."
+                    : "Connect your Square account to enable live review request automation."
+                  }
+                </p>
+              </section>
+
+              {/* Job History */}
+              <section className="premium-card p-6 rounded-3xl">
+                <h2 className="text-sm font-bold text-slate-900 mb-6">Recent Activity</h2>
+                {jobs.length === 0 ? (
+                  <div className="text-center py-8 border-2 border-dashed border-slate-100 rounded-2xl">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No recent jobs</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {jobs.map((job) => (
+                      <div key={job.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${
+                            job.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 
+                            job.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {job.status}
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-400">
+                            {new Date(job.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="text-xs font-bold text-slate-700">
+                          {job.status === 'completed' ? `Sent ${job.sent_count} / ${job.total_customers} requests` : 
+                           job.status === 'failed' ? job.error_message : 'In progress...'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              {/* Help Card */}
+              <div className="p-6 bg-slate-900 rounded-3xl text-white">
+                <h4 className="text-xs font-bold uppercase tracking-widest mb-4">How it works</h4>
+                <div className="space-y-4">
+                  <div className="flex gap-3">
+                    <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold shrink-0">1</div>
+                    <p className="text-[10px] leading-relaxed text-slate-400">Authorize connection between Square and Reviews & Marketing.</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold shrink-0">2</div>
+                    <p className="text-[10px] leading-relaxed text-slate-400">Optionally run a backfill to capture your most recent customers.</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold shrink-0">3</div>
+                    <p className="text-[10px] leading-relaxed text-slate-400">Relax. Every future transaction automatically triggers a review request.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-
-          {status?.connected && (
-            <button
-              type="button"
-              onClick={disconnectSquare}
-              disabled={disconnecting}
-              className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
-            >
-              {disconnecting ? 'Disconnecting…' : 'Disconnect Square'}
-            </button>
-          )}
-        </section>
-        )}
-
-        {isPro && (
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">Connect with Square</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Click below to open the Square consent screen. After you approve access, we’ll return you here and finish linking your account.
-            </p>
-          </div>
-          <form onSubmit={startOAuth} className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Business ID
-              <input
-                value={businessId}
-                onChange={(e) => setBusinessId(e.target.value)}
-                required
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </label>
-            <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-              <input
-                type="checkbox"
-                checked={sandbox}
-                onChange={(e) => setSandbox(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              Use Square sandbox environment (developers only)
-            </label>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 disabled:opacity-50"
-            >
-              {saving ? 'Redirecting…' : 'Connect with Square'}
-            </button>
-          </form>
-        </section>
-        )}
-
-        {isPro && (
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-3 text-sm text-gray-600">
-          <div className="font-semibold text-gray-900">Need help?</div>
-          <p>1. When prompted by Square, log in and grant Reviews & Marketing access to your customer data.</p>
-          <p>2. After approving, you’ll return here with the connection confirmed automatically.</p>
-          <p>3. Head back to the <Link href="/dashboard" className="text-blue-600 hover:text-blue-700">dashboard</Link> to run a backfill.</p>
-        </section>
         )}
       </div>
     </main>
   );
 }
+
+export default function SquareIntegrationPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full"></div></div>}>
+      <SquareIntegrationInner />
+    </Suspense>
+  );
+}
+
 
 export default function SquareIntegrationPage() {
   return (
