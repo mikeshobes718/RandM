@@ -126,7 +126,7 @@ export default async function RootLayout({
           />
         ) : null}
         <ErrorBoundary>
-          <SiteHeader initialUser={user} />
+          <SiteHeader />
           {children}
           <SiteFooter />
           {/* Client-only widgets mounted after hydration */}
