@@ -244,6 +244,25 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // Fetch Square Connection status
+  let squareConnection: any = null;
+  try {
+    const { data: square } = await supa
+      .from('square_connections')
+      .select('access_token, last_backfill_at')
+      .eq('business_id', biz.id)
+      .maybeSingle();
+    
+    if (square) {
+      squareConnection = {
+        connected: !!square.access_token,
+        lastBackfillAt: square.last_backfill_at
+      };
+    }
+  } catch (e) {
+    console.error('[DASHBOARD API] Square status error:', e);
+  }
+
   // Activity Feed
   let activityFeed: any[] = [];
   try {
@@ -270,6 +289,7 @@ export async function GET(req: NextRequest) {
     recentFeedback,
     isPro,
     analytics,
+    squareConnection,
     activityFeed
   });
 }

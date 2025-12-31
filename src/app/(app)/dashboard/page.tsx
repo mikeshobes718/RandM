@@ -265,8 +265,8 @@ function DashboardContent() {
         <div className="lg:col-span-7 space-y-8">
           <section className="premium-card p-8 rounded-3xl overflow-hidden relative group">
             {/* ... rest of the card ... */}
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-              <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24">
+            <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+              <svg className="w-32 h-32 transform translate-x-12 -translate-y-12" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
               </svg>
             </div>
