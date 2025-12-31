@@ -146,13 +146,22 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(5);
 
-    const { data: eventData } = await supa
-      .from('review_events')
-      .select('id,created_at,metadata')
-      .eq('business_id', biz.id)
-      .eq('event', 'google_opened')
-      .order('created_at', { ascending: false })
-      .limit(5);
+    // Fetch actual Google Reviews for sidebar
+    let googleReviews: any[] = [];
+    if (biz.google_place_id) {
+      try {
+        const { getPlaceReviews } = await import('@/lib/googlePlaces');
+        const reviews = await getPlaceReviews(biz.google_place_id);
+        googleReviews = (reviews || []).map((r: any) => ({
+          id: `google-${r.name || Math.random()}`,
+          rating: r.rating || 5,
+          name: r.authorAttribution?.displayName || 'Google Reviewer',
+          comment: r.text?.text || '(No comment)',
+          created_at: r.publishTime || new Date().toISOString(),
+          type: 'google'
+        }));
+      } catch (err) {}
+    }
 
     const merged = [
       ...(feedbackData || []).map(f => ({ ...f, type: 'feedback' })),
@@ -162,16 +171,7 @@ export async function GET(req: NextRequest) {
         rating: 5, 
         comment: '5-star review (Contact form completed)' 
       })),
-      ...(eventData || [])
-        .filter(e => !e.metadata?.feedback_id)
-        .map(e => ({
-          id: e.id,
-          rating: 5,
-          name: 'Anonymous Customer',
-          comment: '5-star review (Redirected to Google)',
-          created_at: e.created_at,
-          type: 'event'
-        }))
+      ...googleReviews
     ];
     
     recentFeedback = merged

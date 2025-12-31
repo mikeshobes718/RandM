@@ -34,12 +34,13 @@ export async function GET(req: Request) {
   const days = Math.min(10000, Math.max(1, Number(url.searchParams.get('days') || '90')));
   const limit = Math.min(5000, Math.max(10, Number(url.searchParams.get('limit') || '500')));
   // User's businesses
-  const { data: biz } = await supa.from('businesses').select('id').eq('owner_uid', uid);
+  const { data: biz } = await supa.from('businesses').select('id, google_place_id').eq('owner_uid', uid);
   const ids = (biz || []).map((b: { id: string }) => b.id);
   if (ids.length === 0) return NextResponse.json({ items: [] });
   // Feedback and Contact Captures may or may not exist yet; handle gracefully
   let items: any[] = [];
   try {
+    const { getPlaceReviews } = await import('@/lib/googlePlaces');
     const since = new Date();
     since.setUTCHours(0,0,0,0); since.setUTCDate(since.getUTCDate() - days + 1);
     
@@ -61,15 +62,30 @@ export async function GET(req: Request) {
       .order('created_at', { ascending: false })
       .limit(limit);
 
-    // Fetch anonymous 5-star reviews (google_opened events without a corresponding capture)
-    const { data: eventData } = await supa
-      .from('review_events')
-      .select('id,business_id,created_at,metadata')
-      .in('business_id', ids)
-      .eq('event', 'google_opened')
-      .gte('created_at', since.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(limit);
+    // Fetch actual Google Reviews for each business
+    const googleReviews: any[] = [];
+    for (const b of (biz || [])) {
+      if (b.google_place_id) {
+        try {
+          const reviews = await getPlaceReviews(b.google_place_id);
+          googleReviews.push(...(reviews || []).map((r: any) => ({
+            id: `google-${r.name || Math.random()}`,
+            business_id: b.id,
+            rating: r.rating || 5,
+            name: r.authorAttribution?.displayName || 'Google Reviewer',
+            email: null,
+            phone: null,
+            comment: r.text?.text || '(No comment)',
+            marketing_consent: false,
+            archived: false,
+            created_at: r.publishTime || new Date().toISOString(),
+            type: 'google'
+          })));
+        } catch (err) {
+          console.error(`[FEEDBACK LIST] Failed to fetch Google reviews for ${b.id}:`, err);
+        }
+      }
+    }
 
     const merged = [
       ...(feedbackData || []).map(f => ({ ...f, type: 'feedback' })),
@@ -80,27 +96,7 @@ export async function GET(req: Request) {
         comment: '5-star review (Contact form completed)', 
         archived: false
       })),
-      ...(eventData || [])
-        .filter(e => {
-          // Avoid duplicates: if this event is linked to a capture we already have, skip it.
-          // In practice, contact captures are separate rows, but we can check if any capture exists 
-          // for the same business around the same time if we wanted to be perfect.
-          // For now, let's just show all google_opened as "Anonymous 5-star review" if they don't have metadata linked to a feedback_id.
-          return !e.metadata?.feedback_id;
-        })
-        .map(e => ({
-          id: e.id,
-          business_id: e.business_id,
-          rating: 5,
-          name: 'Anonymous Customer',
-          email: null,
-          phone: null,
-          comment: '5-star review (Redirected to Google)',
-          marketing_consent: false,
-          archived: false,
-          created_at: e.created_at,
-          type: 'event'
-        }))
+      ...googleReviews
     ];
     
     items = merged

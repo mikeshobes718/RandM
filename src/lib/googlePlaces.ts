@@ -170,3 +170,33 @@ export function makeGoogleReviewLinkFromWriteUri(writeAReviewUri?: string, place
   }
   return '';
 }
+
+/**
+ * Fetches actual customer reviews from Google for a given place.
+ */
+export async function getPlaceReviews(placeId: string) {
+  const { GOOGLE_MAPS_API_KEY } = getEnv();
+  // Standard IDs are required for reviews fetch
+  let targetId = placeId;
+  if (placeId.startsWith('Ei') && placeId.includes('ChIJ')) {
+    const match = placeId.match(/ChIJ[a-zA-Z0-9_-]+/);
+    if (match) targetId = match[0];
+  }
+
+  const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(targetId)}`;
+  const mask = 'reviews';
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
+        'X-Goog-FieldMask': mask,
+      },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.reviews || [];
+  } catch (error) {
+    console.error('[GOOGLE PLACES] Failed to fetch reviews:', error);
+    return [];
+  }
+}
