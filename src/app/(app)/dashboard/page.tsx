@@ -68,7 +68,7 @@ function DashboardContent() {
         const tok = localStorage.getItem('idToken');
         const headers: Record<string, string> = tok ? { Authorization: `Bearer ${tok}` } : {};
         
-        const res = await fetch('/api/dashboard/summary', { cache: 'no-store', credentials: 'include', headers });
+        const res = await fetch(`/api/dashboard/summary?t=${Date.now()}`, { cache: 'no-store', credentials: 'include', headers });
         if (!res.ok) throw new Error('Failed to load dashboard data');
         
         const data = await res.json();

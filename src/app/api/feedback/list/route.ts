@@ -47,7 +47,7 @@ export async function GET(req: Request) {
     // 1. Fetch private feedback (1-4 stars)
     const { data: feedbackData } = await supa
       .from('feedback')
-      .select('id,business_id,rating,name,email,phone,comment,marketing_consent,archived,created_at')
+      .select('id,business_id,rating,name,email,phone,comment,marketing_consent,created_at')
       .in('business_id', ids)
       .gte('created_at', since.toISOString())
       .order('created_at', { ascending: false })
@@ -98,13 +98,13 @@ export async function GET(req: Request) {
 
     // Merge everything
     const merged = [
-      ...(feedbackData || []).map(f => ({ ...f, type: 'feedback' })),
+      ...(feedbackData || []).map(f => ({ ...f, type: 'feedback', archived: f.archived ?? false })),
       ...(contactData || []).map(c => ({ 
         ...c, 
         type: 'contact', 
         rating: 5, 
         comment: '5-star review (Contact form completed)', 
-        archived: false
+        archived: c.archived ?? false
       })),
       ...(googleEvents || []).map(e => ({
         id: e.id,

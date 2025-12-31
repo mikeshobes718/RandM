@@ -185,6 +185,47 @@ alter table businesses add column if not exists landing_headline text;
 alter table businesses add column if not exists landing_subheading text;
 `;
     await client.query(sql008); ran.push('008_business_landing_branding');
+    
+    const sql009 = `
+create table if not exists feedback (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  rating integer not null,
+  name text,
+  email text,
+  phone text,
+  comment text,
+  marketing_consent boolean default false,
+  created_at timestamptz default now()
+);
+
+create table if not exists review_contact_captures (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  name text,
+  email text,
+  phone text,
+  consent boolean default false,
+  created_at timestamptz default now()
+);
+
+create table if not exists review_events (
+  id uuid primary key default gen_random_uuid(),
+  business_id uuid not null references businesses(id) on delete cascade,
+  event text not null,
+  rating integer,
+  metadata jsonb,
+  created_at timestamptz default now()
+);
+`;
+    await client.query(sql009); ran.push('009_feedback_tables');
+
+    const sql010 = `
+alter table feedback add column if not exists archived boolean default false;
+alter table review_contact_captures add column if not exists archived boolean default false;
+`;
+    await client.query(sql010); ran.push('010_archived_columns');
+
     await client.query('commit');
     return { ran };
   } catch (e) {

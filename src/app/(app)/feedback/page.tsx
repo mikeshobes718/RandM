@@ -41,7 +41,7 @@ function FeedbackContent({ business }: { business: any }) {
       const idToken = localStorage.getItem('idToken');
       const headers: HeadersInit = idToken ? { Authorization: `Bearer ${idToken}` } : {};
       
-      const res = await fetch('/api/feedback/list?days=9999&limit=5000', { 
+      const res = await fetch(`/api/feedback/list?days=9999&limit=5000&t=${Date.now()}`, { 
         cache: 'no-store', 
         credentials: 'include', 
         headers 

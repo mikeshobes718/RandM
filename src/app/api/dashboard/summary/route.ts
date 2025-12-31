@@ -160,7 +160,6 @@ export async function GET(req: NextRequest) {
       .from('feedback')
       .select('*')
       .eq('business_id', biz.id)
-      .eq('archived', false) // Filter out archived items
       .order('created_at', { ascending: false })
       .limit(5);
       
@@ -198,12 +197,13 @@ export async function GET(req: NextRequest) {
       .limit(5);
 
     const merged = [
-      ...(feedbackData || []).map(f => ({ ...f, type: 'feedback' })),
+      ...(feedbackData || []).map(f => ({ ...f, type: 'feedback', archived: f.archived ?? false })),
       ...(contactData || []).map(c => ({ 
         ...c, 
         type: 'contact', 
         rating: 5, 
-        comment: '5-star review (Contact form completed)' 
+        comment: '5-star review (Contact form completed)',
+        archived: c.archived ?? false
       })),
       ...(googleEventsSidebar || []).map(e => ({
         id: e.id,
@@ -211,7 +211,8 @@ export async function GET(req: NextRequest) {
         name: 'Anonymous Customer',
         comment: 'Redirected to Google for review',
         created_at: e.created_at,
-        type: 'event'
+        type: 'event',
+        archived: false
       })),
       ...googleReviews
     ];
