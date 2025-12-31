@@ -134,7 +134,10 @@ export async function GET(req: Request) {
   const { locationId, merchantId } = await fetchDefaultLocation(tokenResponse.access_token, sandbox);
 
   const supa = getSupabaseAdmin();
-  const { error } = await supa.from('square_connections').upsert({
+  
+  // Try with is_enabled column, fall back to without if it doesn't exist
+  let error: any = null;
+  const result = await supa.from('square_connections').upsert({
     uid,
     business_id: businessId,
     access_token: tokenResponse.access_token,
@@ -146,6 +149,24 @@ export async function GET(req: Request) {
     is_enabled: true,
     updated_at: new Date().toISOString(),
   }, { onConflict: 'uid' });
+  
+  if (result.error?.message?.includes('is_enabled')) {
+    // Column doesn't exist, try without it
+    const fallback = await supa.from('square_connections').upsert({
+      uid,
+      business_id: businessId,
+      access_token: tokenResponse.access_token,
+      refresh_token: tokenResponse.refresh_token || null,
+      expires_at: tokenResponse.expires_at || null,
+      merchant_id: merchantId || tokenResponse.merchant_id || null,
+      default_location_id: locationId,
+      sandbox,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'uid' });
+    error = fallback.error;
+  } else {
+    error = result.error;
+  }
   if (error) {
     const redirect = NextResponse.redirect(new URL(`/integrations/square?error=${encodeURIComponent(error.message)}`, req.url));
     redirect.cookies.set('square_oauth_state', '', { maxAge: 0, path: '/', httpOnly: true, secure: true, sameSite: 'lax' });

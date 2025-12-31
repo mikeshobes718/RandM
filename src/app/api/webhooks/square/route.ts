@@ -57,6 +57,7 @@ export async function POST(req: Request) {
 
     if (!connection) return new NextResponse('No connection found', { status: 200 });
 
+    // Check if monitoring is disabled (default to enabled if column doesn't exist)
     if (connection.is_enabled === false) {
       return new NextResponse('Real-time monitoring disabled', { status: 200 });
     }

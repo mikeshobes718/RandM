@@ -34,18 +34,38 @@ export async function GET() {
     return new NextResponse('Pro plan required', { status: 403 });
   }
   const supa = getSupabaseAdmin();
-  const { data, error } = await supa
+  
+  // First try with is_enabled column, fall back to without if column doesn't exist
+  let data: any = null;
+  let error: any = null;
+  
+  const result = await supa
     .from('square_connections')
     .select('business_id,sandbox,last_backfill_at,default_location_id,merchant_id,is_enabled')
     .eq('uid', uid)
     .maybeSingle();
+  
+  if (result.error?.message?.includes('is_enabled')) {
+    // Column doesn't exist yet, query without it
+    const fallback = await supa
+      .from('square_connections')
+      .select('business_id,sandbox,last_backfill_at,default_location_id,merchant_id')
+      .eq('uid', uid)
+      .maybeSingle();
+    data = fallback.data;
+    error = fallback.error;
+  } else {
+    data = result.data;
+    error = result.error;
+  }
+  
   if (error) return new NextResponse(error.message, { status: 500 });
   if (!data) return NextResponse.json({ connected: false });
   return NextResponse.json({
     connected: true,
     businessId: data.business_id,
     sandbox: data.sandbox,
-    isEnabled: data.is_enabled,
+    isEnabled: data.is_enabled ?? true, // Default to true if column doesn't exist
     lastBackfillAt: data.last_backfill_at,
     defaultLocationId: data.default_location_id,
     merchantId: data.merchant_id,
@@ -71,6 +91,10 @@ export async function PATCH(req: Request) {
     .update({ is_enabled: isEnabled, updated_at: new Date().toISOString() })
     .eq('uid', uid);
 
+  // If the column doesn't exist, just return success (feature not available yet)
+  if (error?.message?.includes('is_enabled')) {
+    return NextResponse.json({ ok: true, note: 'Feature pending database migration' });
+  }
   if (error) return new NextResponse(error.message, { status: 500 });
   return NextResponse.json({ ok: true });
 }

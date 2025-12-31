@@ -247,16 +247,30 @@ export async function GET(req: NextRequest) {
   // Fetch Square Connection status
   let squareConnection: any = null;
   try {
-    const { data: square } = await supa
+    // Try with is_enabled column first
+    let square: any = null;
+    const result = await supa
       .from('square_connections')
       .select('access_token, last_backfill_at, is_enabled')
       .eq('business_id', biz.id)
       .maybeSingle();
     
+    if (result.error?.message?.includes('is_enabled')) {
+      // Column doesn't exist yet, query without it
+      const fallback = await supa
+        .from('square_connections')
+        .select('access_token, last_backfill_at')
+        .eq('business_id', biz.id)
+        .maybeSingle();
+      square = fallback.data;
+    } else {
+      square = result.data;
+    }
+    
     if (square) {
       squareConnection = {
         connected: !!square.access_token,
-        isEnabled: square.is_enabled,
+        isEnabled: square.is_enabled ?? true, // Default to true if column doesn't exist
         lastBackfillAt: square.last_backfill_at
       };
     }
