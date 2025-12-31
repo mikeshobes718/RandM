@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { primaryButtonClass, secondaryButtonClass, inputClass } from "@/lib/styles";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -16,7 +17,11 @@ export default function ContactPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!valid.name || !valid.email || !valid.message) { setStatus("error"); setError("Please complete all fields"); return; }
+    if (!valid.name || !valid.email || !valid.message) { 
+      setStatus("error"); 
+      setError("Please complete all fields correctly."); 
+      return; 
+    }
     setStatus("sending");
     setError(null);
     try {
@@ -45,71 +50,128 @@ export default function ContactPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-20">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-x-0 top-[-320px] h-[480px] rounded-full bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.35),transparent_60%)] blur-3xl animate-float-blob" />
-        <div className="absolute inset-y-0 right-[-200px] w-[460px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.28),transparent_70%)] blur-3xl animate-float-blob" style={{ animationDelay: '2s' }} />
-      </div>
-      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-indigo-700 shadow-lg backdrop-blur">Say hello</span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl">Let's build your review engine together</h1>
-          <p className="mt-4 text-lg text-slate-700 md:text-xl">Reach the team directly—our specialists typically respond within one business day.</p>
+    <main className="min-h-screen pt-32 pb-20 px-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/5 border border-brand/10 text-brand text-[10px] font-black uppercase tracking-widest mb-8">
+            Contact Us
+          </div>
+          <h1 className="text-balance mb-6">
+            Let's build your review <br className="hidden md:block" />
+            <span className="text-brand">engine together.</span>
+          </h1>
+          <p className="text-xl text-muted max-w-2xl mx-auto leading-relaxed">
+            Reach our specialists directly—we typically respond within one business day.
+          </p>
         </div>
 
-        <div className="mt-16 grid gap-8 lg:grid-cols-[minmax(0,1.4fr),minmax(0,1fr)]">
-          <div className="rounded-3xl border border-white/70 bg-white/90 p-8 shadow-xl shadow-slate-900/10 backdrop-blur-xl ring-1 ring-slate-200/70">
-            <form onSubmit={submit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Name</label>
-                <input aria-label="Name" className={`w-full rounded-2xl border px-4 py-3 text-sm shadow-inner transition focus:outline-none focus:ring-2 placeholder:text-slate-400 ${valid.name ? 'border-slate-200 focus:ring-indigo-400' : 'border-rose-300 focus:ring-rose-400'}`} value={name} onChange={(e) => setName(e.target.value)} required minLength={2} placeholder="Your full name" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Email</label>
-                <input aria-label="Email" type="email" className={`w-full rounded-2xl border px-4 py-3 text-sm shadow-inner transition focus:outline-none focus:ring-2 placeholder:text-slate-400 ${valid.email ? 'border-slate-200 focus:ring-indigo-400' : 'border-rose-300 focus:ring-rose-400'}`} value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="your.email@example.com" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Message</label>
-                <textarea aria-label="Message" className={`h-44 w-full rounded-2xl border px-4 py-3 text-sm leading-relaxed shadow-inner transition focus:outline-none focus:ring-2 placeholder:text-slate-400 ${valid.message ? 'border-slate-200 focus:ring-indigo-400' : 'border-rose-300 focus:ring-rose-400'}`} value={message} onChange={(e) => setMessage(e.target.value)} required minLength={10} placeholder="Tell us about your business and what you'd like to achieve..." />
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <button disabled={status === "sending"} className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/40 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60">
-                  {status === "sending" ? "Sending…" : "Send message"}
-                </button>
-                <p className="text-xs text-slate-500">We’ll follow up by email. You can expect a response within one business day.</p>
-              </div>
-              {status === "sent" && <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">Thanks! We received your message.</div>}
-              {status === "error" && <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
-            </form>
+        <div className="grid lg:grid-cols-12 gap-12 items-start">
+          <div className="lg:col-span-7">
+            <div className="premium-card p-8 md:p-10 rounded-[32px]">
+              <form onSubmit={submit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1">Full Name</label>
+                    <input 
+                      className={`${inputClass} ${!valid.name && name ? 'border-red-300' : ''}`}
+                      value={name} 
+                      onChange={(e) => setName(e.target.value)} 
+                      required 
+                      placeholder="Jane Doe" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1">Email Address</label>
+                    <input 
+                      type="email" 
+                      className={`${inputClass} ${!valid.email && email ? 'border-red-300' : ''}`}
+                      value={email} 
+                      onChange={(e) => setEmail(e.target.value)} 
+                      required 
+                      placeholder="jane@company.com" 
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1">Your Message</label>
+                  <textarea 
+                    className={`${inputClass} h-40 py-4 resize-none ${!valid.message && message ? 'border-red-300' : ''}`}
+                    value={message} 
+                    onChange={(e) => setMessage(e.target.value)} 
+                    required 
+                    placeholder="Tell us about your business goals..." 
+                  />
+                </div>
+                
+                <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
+                  <button 
+                    disabled={status === "sending"} 
+                    className="primary-button h-14 px-10 w-full sm:w-auto"
+                  >
+                    {status === "sending" ? "Sending..." : "Send Message"}
+                  </button>
+                  <p className="text-xs text-muted text-center sm:text-left leading-relaxed">
+                    Expected response time: <br className="hidden sm:block" />
+                    <span className="font-bold text-foreground">Under 24 hours</span>
+                  </p>
+                </div>
+
+                {status === "sent" && (
+                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-sm text-emerald-700 font-medium animate-fade-in">
+                    Success! We've received your message and will be in touch shortly.
+                  </div>
+                )}
+                {status === "error" && (
+                  <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700 font-medium animate-fade-in">
+                    {error}
+                  </div>
+                )}
+              </form>
+            </div>
           </div>
-          <div className="space-y-5 rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-lg shadow-slate-900/10 backdrop-blur">
-            <h2 className="text-lg font-semibold text-slate-900">Connect with a specialist</h2>
-            <p className="text-sm text-slate-700">Prefer email? Reach us at
-              <a href="mailto:support@reviewsandmarketing.com" className="mt-1 block font-semibold text-indigo-600 hover:underline break-all whitespace-normal">support@reviewsandmarketing.com</a>
-            </p>
-            <div className="grid gap-4 rounded-2xl border border-slate-200/80 bg-slate-50 p-4 text-sm text-slate-700 shadow-inner">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Sales</div>
-                <a href="mailto:sales@reviewsandmarketing.com" className="mt-1 block font-medium text-slate-900 hover:text-indigo-600">sales@reviewsandmarketing.com</a>
-                <p className="text-xs text-slate-600">Strategy consults, pricing, custom onboarding</p>
-              </div>
-              <div className="border-t border-slate-200 pt-4">
-                <div className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500">Support</div>
-                <a href="mailto:support@reviewsandmarketing.com" className="mt-1 block font-medium text-slate-900 hover:text-indigo-600">support@reviewsandmarketing.com</a>
-                <p className="text-xs text-slate-600">Response within one business day, Mon–Fri 9a–6p ET</p>
+
+          <div className="lg:col-span-5 space-y-8">
+            <div className="premium-card p-8 rounded-[32px] bg-accent/30 border-dashed">
+              <h2 className="text-lg font-bold mb-6">Direct Channels</h2>
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Support</div>
+                    <a href="mailto:support@reviewsandmarketing.com" className="text-sm font-bold text-brand hover:underline">support@reviewsandmarketing.com</a>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Sales</div>
+                    <a href="mailto:sales@reviewsandmarketing.com" className="text-sm font-bold text-emerald-600 hover:underline">sales@reviewsandmarketing.com</a>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="rounded-2xl border border-indigo-200/70 bg-gradient-to-br from-indigo-500/15 via-indigo-500/5 to-transparent p-5 text-sm text-slate-700 shadow-lg shadow-indigo-500/20">
-              <div className="text-xs font-semibold uppercase tracking-[0.3em] text-indigo-600">Live demo</div>
-              <p className="mt-2">Want to see the dashboard in action? We’ll tailor a 15 minute session to your workflow.</p>
-              <a href="mailto:sales@reviewsandmarketing.com?subject=Demo%20request" className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-500">
-                Request a demo
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M5 12h14m-6-6l6 6-6 6"/></svg>
+
+            <div className="p-8 bg-brand/5 rounded-[32px] border border-brand/10">
+              <h2 className="text-lg font-bold text-brand mb-4">Live Demo</h2>
+              <p className="text-sm text-brand/80 leading-relaxed mb-6">
+                Want to see how it works for your specific industry? Book a 15-minute walkthrough with our strategy team.
+              </p>
+              <a href="mailto:sales@reviewsandmarketing.com?subject=Demo%20Request" className="text-sm font-black text-brand hover:underline inline-flex items-center gap-2">
+                Request a Demo
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
               </a>
             </div>
-            <div className="rounded-2xl border border-slate-200/80 bg-slate-50 p-4 text-xs text-slate-600 shadow-inner">
-              <div className="font-semibold text-slate-700">Status</div>
-              <p className="mt-1">All systems operational. Check <a href="https://status.reviewsandmarketing.com" className="text-indigo-600 hover:underline">status.reviewsandmarketing.com</a> for live updates.</p>
+
+            <div className="px-8 py-4 bg-accent rounded-full border border-border flex items-center justify-between">
+              <span className="text-[10px] font-bold text-muted uppercase tracking-widest">System Status</span>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span className="text-xs font-bold text-emerald-600 uppercase tracking-tight">Operational</span>
+              </div>
             </div>
           </div>
         </div>
