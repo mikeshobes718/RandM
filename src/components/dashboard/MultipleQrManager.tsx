@@ -93,13 +93,20 @@ export default function MultipleQrManager({ businessId, landingUrl }: Props) {
   if (fetching) return <div className="animate-pulse h-20 bg-slate-50 rounded-xl" />;
 
   return (
-    <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed">
+    <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed group relative">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-bold">Multiple QR Codes</h2>
           <p className="text-xs text-muted">Create custom links for tables, flyers, or staff to track performance.</p>
         </div>
         <span className="text-[10px] font-bold text-brand bg-brand/5 px-2 py-1 rounded">Pro</span>
+      </div>
+
+      {/* Tooltip */}
+      <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+        <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+          Track exactly where reviews are coming from (e.g. Table 1, Front Desk) with unique QR codes.
+        </div>
       </div>
 
       <form onSubmit={createSource} className="flex gap-2 mb-8">

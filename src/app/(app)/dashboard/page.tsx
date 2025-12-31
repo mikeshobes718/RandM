@@ -328,7 +328,7 @@ function DashboardContent() {
           )}
 
           {/* Integrations Teaser */}
-          <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed">
+          <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed group relative">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold">Square Integration</h2>
               {isPro ? (
@@ -343,6 +343,12 @@ function DashboardContent() {
             <Link href="/integrations/square" className="text-sm font-bold text-brand hover:underline">
               {isPro ? 'Manage Connection' : 'Upgrade to Connect Square'} →
             </Link>
+            {/* Tooltip */}
+            <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+              <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                Connect your Square POS to automatically email customers a review link after every transaction.
+              </div>
+            </div>
           </section>
         </div>
 
