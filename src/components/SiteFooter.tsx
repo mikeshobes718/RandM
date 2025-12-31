@@ -61,10 +61,6 @@ export default function SiteFooter() {
             © 2026 REVIEWS & MARKETING. ALL RIGHTS RESERVED.
           </div>
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Systems Normal</span>
-            </div>
             <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
               Built in NYC
             </div>

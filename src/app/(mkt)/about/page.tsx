@@ -62,9 +62,7 @@ export default function AboutPage() {
               Our founders spent a decade in hospitality and home services chasing reviews manually. We designed a platform that blends premium branding with deep automation, letting teams focus on the guest experience while the software handles the follow-through.
             </p>
             <div className="pt-4">
-              <Link href="/register" className={primaryButtonClass}>
-                Join the Journey
-              </Link>
+              <HomeCtaButtons align="start" />
             </div>
           </div>
           <div className="space-y-6">
@@ -111,9 +109,7 @@ export default function AboutPage() {
               Start free and collect your first reviews this week. Our team is ready to help you every step of the way.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/register" className="primary-button h-14 px-10 w-full sm:w-auto">
-                Get Started Free
-              </Link>
+              <HomeCtaButtons />
               <Link href="/contact" className="secondary-button !bg-white/10 !text-white !border-white/20 h-14 px-10 hover:!bg-white/20 w-full sm:w-auto">
                 Talk to Sales
               </Link>

@@ -167,7 +167,7 @@ export default function Home() {
             Join 500+ businesses using Reviews & Marketing to grow their online presence.
           </p>
           <div className="flex flex-col items-center gap-6">
-            <HomeCtaButtons variant="full" />
+            <HomeCtaButtons variant="hero" />
             <p className="text-xs text-muted">No credit card required • Setup in 5 minutes</p>
           </div>
         </div>

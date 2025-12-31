@@ -137,12 +137,7 @@ export default function FeaturesPage() {
                 Join 500+ businesses using our toolkit to dominate their local market. Start free and upgrade when you're ready for more.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link href="/pricing" className="primary-button h-12 px-8">
-                  View Pricing
-                </Link>
-                <Link href="/register" className="secondary-button !bg-white/10 !text-white !border-white/20 h-12 px-8 hover:!bg-white/20">
-                  Get Started Free
-                </Link>
+                <HomeCtaButtons align="start" />
               </div>
             </div>
             <div className="relative z-10 grid grid-cols-2 gap-4 w-full md:w-auto">
