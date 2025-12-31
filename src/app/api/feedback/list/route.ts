@@ -33,18 +33,18 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const days = Math.min(10000, Math.max(1, Number(url.searchParams.get('days') || '90')));
   const limit = Math.min(5000, Math.max(10, Number(url.searchParams.get('limit') || '500')));
+  
   // User's businesses
   const { data: biz } = await supa.from('businesses').select('id, google_place_id').eq('owner_uid', uid);
   const ids = (biz || []).map((b: { id: string }) => b.id);
   if (ids.length === 0) return NextResponse.json({ items: [] });
-  // Feedback and Contact Captures may or may not exist yet; handle gracefully
+
   let items: any[] = [];
   try {
-    const { getPlaceReviews } = await import('@/lib/googlePlaces');
     const since = new Date();
     since.setUTCHours(0,0,0,0); since.setUTCDate(since.getUTCDate() - days + 1);
     
-    // Fetch private feedback (1-4 stars)
+    // 1. Fetch private feedback (1-4 stars)
     const { data: feedbackData } = await supa
       .from('feedback')
       .select('id,business_id,rating,name,email,phone,comment,marketing_consent,archived,created_at')
@@ -53,7 +53,7 @@ export async function GET(req: Request) {
       .order('created_at', { ascending: false })
       .limit(limit);
       
-    // Fetch 5-star contact captures
+    // 2. Fetch 5-star contact captures
     const { data: contactData } = await supa
       .from('review_contact_captures')
       .select('id,business_id,name,email,phone,marketing_consent:consent,created_at')
@@ -62,11 +62,22 @@ export async function GET(req: Request) {
       .order('created_at', { ascending: false })
       .limit(limit);
 
-    // Fetch actual Google Reviews for each business
+    // 3. Fetch "google_opened" events for anonymous entries
+    const { data: googleEvents } = await supa
+      .from('review_events')
+      .select('id,business_id,created_at')
+      .in('business_id', ids)
+      .eq('event', 'google_opened')
+      .gte('created_at', since.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    // 4. Fetch actual Google Reviews
     const googleReviews: any[] = [];
     for (const b of (biz || [])) {
       if (b.google_place_id) {
         try {
+          const { getPlaceReviews } = await import('@/lib/googlePlaces');
           const reviews = await getPlaceReviews(b.google_place_id);
           googleReviews.push(...(reviews || []).map((r: any) => ({
             id: `google-${r.name || Math.random()}`,
@@ -81,12 +92,11 @@ export async function GET(req: Request) {
             created_at: r.publishTime || new Date().toISOString(),
             type: 'google'
           })));
-        } catch (err) {
-          console.error(`[FEEDBACK LIST] Failed to fetch Google reviews for ${b.id}:`, err);
-        }
+        } catch (err) {}
       }
     }
 
+    // Merge everything
     const merged = [
       ...(feedbackData || []).map(f => ({ ...f, type: 'feedback' })),
       ...(contactData || []).map(c => ({ 
@@ -96,14 +106,40 @@ export async function GET(req: Request) {
         comment: '5-star review (Contact form completed)', 
         archived: false
       })),
+      ...(googleEvents || []).map(e => ({
+        id: e.id,
+        business_id: e.business_id,
+        rating: 5,
+        name: 'Anonymous Customer',
+        email: null,
+        phone: null,
+        comment: 'Redirected to Google for review',
+        marketing_consent: false,
+        archived: false,
+        created_at: e.created_at,
+        type: 'event'
+      })),
       ...googleReviews
     ];
     
-    items = merged
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, limit);
+    // Deduplicate: If an event and a contact capture happen within 10s, skip the event
+    const finalItems = [];
+    const sorted = merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    for (const item of sorted) {
+      if (item.type === 'event') {
+        const hasContact = contactData?.some(c => 
+          Math.abs(new Date(c.created_at).getTime() - new Date(item.created_at).getTime()) < 10000
+        );
+        if (hasContact) continue;
+      }
+      finalItems.push(item);
+    }
+
+    items = finalItems.slice(0, limit);
   } catch (e) {
     console.error('[FEEDBACK LIST API] Error:', e);
   }
+  
   return NextResponse.json({ items });
 }

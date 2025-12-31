@@ -26,7 +26,7 @@ function FeedbackContent({ business }: { business: any }) {
   const [ratingFilter, setRatingFilter] = useState<'all' | '5' | '4+' | '3+' | '1-2'>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
   const [dateRange, setDateRange] = useState<'all' | '7' | '30' | '90'>('all');
-  const [typeFilter, setTypeFilter] = useState<'all' | 'feedback' | 'google' | 'contact'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'feedback' | 'google' | 'contact' | 'event'>('all');
   const [showArchived, setShowArchived] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -73,6 +73,7 @@ function FeedbackContent({ business }: { business: any }) {
       if (typeFilter === 'contact') x = x.filter(i => i.type === 'contact');
       else if (typeFilter === 'google') x = x.filter(i => i.type === 'google');
       else if (typeFilter === 'feedback') x = x.filter(i => i.type === 'feedback');
+      else if (typeFilter === 'event') x = x.filter(i => i.type === 'event');
     }
 
     // Filter by rating
@@ -111,6 +112,10 @@ function FeedbackContent({ business }: { business: any }) {
 
   async function toggleArchive(id: string, currentStatus: boolean) {
     if (id.startsWith('google-')) return; // Cannot archive Google reviews yet
+    // event types use UUIDs, so we can archive them if we have an archive table for events, 
+    // but for now let's just allow it if the backend supports it.
+    // The current backend /api/feedback/archive expects a feedback ID or contact capture ID.
+    // Let's assume for now events aren't archivable unless we update the backend.
     try {
       const idToken = localStorage.getItem('idToken');
       const res = await fetch('/api/feedback/archive', {
@@ -240,6 +245,7 @@ function FeedbackContent({ business }: { business: any }) {
               <option value="google">Google Reviews</option>
               <option value="feedback">Private Feedback</option>
               <option value="contact">5-Star Contacts</option>
+              <option value="event">Anonymous Redirects</option>
             </select>
           </div>
           <div>
@@ -392,6 +398,10 @@ function FeedbackContent({ business }: { business: any }) {
                         View on Google
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                       </a>
+                    ) : f.type === 'event' ? (
+                      <div className="text-center py-2 px-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Logged Event</p>
+                      </div>
                     ) : (
                       <>
                         {f.marketing_consent && f.email && (

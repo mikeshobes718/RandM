@@ -82,30 +82,54 @@ export async function GET(req: NextRequest) {
   let normalizedRating = biz.google_rating ?? null;
 
   try {
-    // Current month reviews (Feedback Submitted + Google Links Opened)
+    const startOfMonth = startOfCurrentMonthUTC();
+    
+    // 1. New Feedback (Private)
     const { count: feedbackCount } = await supa
-      .from('review_events')
+      .from('feedback')
       .select('*', { count: 'exact', head: true })
       .eq('business_id', biz.id)
-      .eq('event', 'feedback_submitted')
-      .gte('created_at', sinceIso);
+      .gte('created_at', startOfMonth);
       
-    const { count: googleOpenedCount } = await supa
-      .from('review_events')
+    // 2. New Contact Captures (Leads)
+    const { count: contactCount } = await supa
+      .from('review_contact_captures')
       .select('*', { count: 'exact', head: true })
+      .eq('business_id', biz.id)
+      .gte('created_at', startOfMonth);
+
+    // 3. New Anonymous Redirects (Events)
+    // We only count these if they didn't fill out the contact form
+    const { data: googleEvents } = await supa
+      .from('review_events')
+      .select('created_at')
       .eq('business_id', biz.id)
       .eq('event', 'google_opened')
-      .gte('created_at', sinceIso);
+      .gte('created_at', startOfMonth);
+    
+    const { data: contactCaptures } = await supa
+      .from('review_contact_captures')
+      .select('created_at')
+      .eq('business_id', biz.id)
+      .gte('created_at', startOfMonth);
 
-    reviewsThisMonth = (feedbackCount || 0) + (googleOpenedCount || 0);
+    let anonymousCount = 0;
+    googleEvents?.forEach(e => {
+      const hasContact = contactCaptures?.some(c => 
+        Math.abs(new Date(c.created_at).getTime() - new Date(e.created_at).getTime()) < 10000
+      );
+      if (!hasContact) anonymousCount++;
+    });
 
-    // Link scans THIS MONTH for consistency
+    reviewsThisMonth = (feedbackCount || 0) + (contactCount || 0) + anonymousCount;
+
+    // Link scans THIS MONTH (Total page opens)
     const { count: scanCount } = await supa
       .from('review_events')
       .select('*', { count: 'exact', head: true })
       .eq('business_id', biz.id)
       .eq('event', 'page_opened')
-      .gte('created_at', sinceIso);
+      .gte('created_at', startOfMonth);
     shareLinkScans = scanCount || 0;
   } catch (e) {
     console.error('[DASHBOARD API] Error fetching stats:', e);
@@ -163,6 +187,15 @@ export async function GET(req: NextRequest) {
       } catch (err) {}
     }
 
+    // Fetch "google_opened" events for sidebar
+    const { data: googleEventsSidebar } = await supa
+      .from('review_events')
+      .select('*')
+      .eq('business_id', biz.id)
+      .eq('event', 'google_opened')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
     const merged = [
       ...(feedbackData || []).map(f => ({ ...f, type: 'feedback' })),
       ...(contactData || []).map(c => ({ 
@@ -171,12 +204,31 @@ export async function GET(req: NextRequest) {
         rating: 5, 
         comment: '5-star review (Contact form completed)' 
       })),
+      ...(googleEventsSidebar || []).map(e => ({
+        id: e.id,
+        rating: 5,
+        name: 'Anonymous Customer',
+        comment: 'Redirected to Google for review',
+        created_at: e.created_at,
+        type: 'event'
+      })),
       ...googleReviews
     ];
     
-    recentFeedback = merged
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 5);
+    // Deduplicate event vs contact
+    const finalRecent = [];
+    const sortedRecent = merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    for (const item of sortedRecent) {
+      if (item.type === 'event') {
+        const hasContact = contactData?.some(c => 
+          Math.abs(new Date(c.created_at).getTime() - new Date(item.created_at).getTime()) < 10000
+        );
+        if (hasContact) continue;
+      }
+      finalRecent.push(item);
+    }
+
+    recentFeedback = finalRecent.slice(0, 5);
   } catch (e) {
     console.error('[DASHBOARD API] Error fetching feedback:', e);
   }
