@@ -174,6 +174,7 @@ create unique index if not exists businesses_owner_uid_key on businesses(owner_u
 alter table businesses add column if not exists google_maps_place_uri text;
 alter table businesses add column if not exists google_maps_write_review_uri text;
 alter table businesses add column if not exists address text;
+alter table businesses add column if not exists contact_phone text;
 `;
     await client.query(sql007); ran.push('007_business_google_columns');
     const sql008 = `

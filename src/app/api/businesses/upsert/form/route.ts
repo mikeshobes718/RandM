@@ -152,7 +152,7 @@ export async function POST(req: Request) {
   // Fetch the business data we just created/updated to return it
   const { data: business, error: fetchError } = await supabase
     .from('businesses')
-    .select('id,name,review_link,google_maps_write_review_uri,contact_phone,google_rating,google_place_id')
+    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id')
     .eq('owner_uid', uid!)
     .maybeSingle();
   

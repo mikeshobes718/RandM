@@ -15,15 +15,27 @@ export async function GET(request: Request) {
     }
   }
   if (!uid) return new NextResponse('Unauthorized', { status: 401 });
-  const supa = getSupabaseAdmin();
-  const { data, error } = await supa
-    .from('subscriptions')
-    .select('status, plan_id, updated_at')
-    .eq('uid', uid)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) return new NextResponse(error.message, { status: 500 });
+  let data = null;
+  let error = null;
+  try {
+    const supa = getSupabaseAdmin();
+    const result = await supa
+      .from('subscriptions')
+      .select('status, plan_id, updated_at')
+      .eq('uid', uid)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    data = result.data;
+    error = result.error;
+  } catch (err) {
+    console.error('[API/PLAN/STATUS] Supabase error:', err);
+  }
+  
+  if (error) {
+    console.error('[API/PLAN/STATUS] Subscriptions fetch error:', error);
+    // Don't return 500, just continue to fallbacks
+  }
   const rawStatus = (data?.status as string | undefined) || 'none';
   const planId = (data?.plan_id as string | undefined) || null;
   

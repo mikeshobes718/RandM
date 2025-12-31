@@ -42,7 +42,10 @@ export async function GET(req: Request) {
       const row = Array.isArray(data) ? (data[0] || null) : (data as unknown as null);
       return NextResponse.json({ business: row });
     }
-  } catch {}
+    console.error('[API/BUSINESSES/ME] Supabase error:', error);
+  } catch (err) {
+    console.error('[API/BUSINESSES/ME] Supabase fetch failed:', err);
+  }
   // Fallback to direct Postgres if REST fetch fails (e.g., egress blocked)
   try {
     const pool = getPgPool();

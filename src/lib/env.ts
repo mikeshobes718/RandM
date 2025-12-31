@@ -7,10 +7,10 @@ const ServerEnvSchema = z.object({
   STRIPE_PUBLISHABLE_KEY: z.string().min(1),
   STRIPE_PRICE_ID: z.string().min(1),
   STRIPE_YEARLY_PRICE_ID: z.string().optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().min(1),
+  STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
   STRIPE_PORTAL_CONFIGURATION_ID: z.string().optional(),
 
-  POSTMARK_SERVER_TOKEN: z.string().min(1),
+  POSTMARK_SERVER_TOKEN: z.string().min(1).optional(),
   RESEND_API_KEY: z.string().min(1).optional(),
   EMAIL_FROM: z.string().email(),
 
@@ -62,6 +62,7 @@ export function getEnv(): ServerEnv {
     const issues = parsed.error.issues
       .map((i) => `${i.path.join('.')}: ${i.message}`)
       .join(', ');
+    console.error(`❌ Missing/invalid server env: ${issues}`);
     throw new Error(`Missing/invalid server env: ${issues}`);
   }
   _env = parsed.data;

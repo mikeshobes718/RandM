@@ -20,12 +20,10 @@ export default function HomeCtaButtons({ align = "center", variant = "full", the
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Check localStorage for idToken
         const idToken = localStorage.getItem('idToken');
         const isAuthenticated = Boolean(idToken);
         setAuthed(isAuthenticated);
 
-        // Only check entitlements if authenticated
         if (isAuthenticated) {
           try {
             const response = await fetch('/api/entitlements');
@@ -53,70 +51,61 @@ export default function HomeCtaButtons({ align = "center", variant = "full", the
     ? "justify-center sm:justify-start"
     : "justify-center";
 
-  // Styles based on theme
-  const primaryButtonClass = theme === "light"
-    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl"
-    : "bg-white text-blue-600 hover:bg-gray-100 shadow-lg";
+  // Using the new global utility classes
+  const primaryBtn = "primary-button h-12 px-8";
+  const secondaryBtn = "secondary-button h-12 px-8";
 
-  const secondaryButtonClass = theme === "light"
-    ? "border-2 border-slate-200 text-slate-700 hover:border-indigo-600 hover:text-indigo-600 bg-white"
-    : "border-2 border-white/30 text-white hover:bg-white/10";
-
-  // Hero variant: Only show primary CTA
   if (variant === "hero") {
     return (
       <div className={`flex flex-col sm:flex-row gap-4 items-center ${alignmentClass}`}>
         <Link
           href={authed ? '/dashboard' : '/register'}
-          className={`inline-flex items-center justify-center px-8 py-4 font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 ${primaryButtonClass}`}
+          className={primaryBtn}
         >
           {loading ? 'Loading...' : (authed ? 'Open dashboard' : 'Get Started Free')}
-          <svg aria-hidden className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg aria-hidden className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
           </svg>
         </Link>
         {!loading && !authed && (
           <Link
             href="/login"
-            className="inline-flex items-center justify-center px-6 py-3 text-sm text-slate-700 font-medium rounded-xl hover:text-indigo-600 transition-all duration-200"
+            className="text-sm font-medium text-muted hover:text-foreground transition-colors"
           >
-            Already have an account? <span className="ml-1 underline">Sign in</span>
+            Already have an account? <span className="text-brand hover:underline">Sign in</span>
           </Link>
         )}
       </div>
     );
   }
 
-  // Full variant: Show all CTAs
   return (
-    <>
-      <div className={`flex flex-col sm:flex-row gap-4 items-center ${alignmentClass}`}>
+    <div className={`flex flex-col sm:flex-row gap-4 items-center ${alignmentClass}`}>
+      <Link
+        href={authed ? '/dashboard' : '/register'}
+        className={primaryBtn}
+      >
+        {loading ? 'Loading...' : (authed ? 'Open dashboard' : 'Get Started Free')}
+        <svg aria-hidden className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
+      </Link>
+      {!loading && !authed && (
         <Link
-          href={authed ? '/dashboard' : '/register'}
-          className={`inline-flex items-center justify-center px-8 py-4 font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 ${primaryButtonClass}`}
+          href="/login"
+          className={secondaryBtn}
         >
-          {loading ? 'Loading...' : (authed ? 'Open dashboard' : 'Get Started Free')}
-          <svg aria-hidden className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-          </svg>
+          Sign in
         </Link>
-        {!loading && !authed && (
-          <Link
-            href="/login"
-            className={`inline-flex items-center justify-center px-8 py-4 font-semibold rounded-xl transition-all duration-200 ${secondaryButtonClass}`}
-          >
-            Sign in
-          </Link>
-        )}
-        {!loading && authed && pro === false && (
-          <Link
-            href="/pricing"
-            className={`inline-flex items-center justify-center px-8 py-4 font-semibold rounded-xl transition-all duration-200 ${secondaryButtonClass}`}
-          >
-            Upgrade to Pro
-          </Link>
-        )}
-      </div>
-    </>
+      )}
+      {!loading && authed && pro === false && (
+        <Link
+          href="/pricing"
+          className={secondaryBtn}
+        >
+          Upgrade to Pro
+        </Link>
+      )}
+    </div>
   );
 }

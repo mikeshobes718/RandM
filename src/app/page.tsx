@@ -4,605 +4,164 @@ import Link from "next/link";
 import HomeCtaButtons from "../components/HomeCtaButtons";
 import NewsletterSignup from "../components/NewsletterSignup";
 
-const heroMetrics = [
-  { value: "5 min", label: "Setup time", detail: "Connect your business and start collecting reviews in minutes." },
-  { value: "3x", label: "More reviews", detail: "Businesses using our system collect 3x more Google reviews on average.", badge: "Proven" },
-  { value: "Free", label: "Starter plan", detail: "Send 5 branded review requests monthly—no credit card required.", badge: "Always free" },
-  { value: "Live", label: "Real-time tracking", detail: "Watch reviews and feedback arrive instantly in your dashboard." },
+const features = [
+  {
+    title: "Review Routing",
+    description: "Happy customers are sent to Google. Unhappy customers give you private feedback first.",
+    icon: (
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8M8 12h5m4 7h1a2 2 0 012-2v12l-4-2-4 2-4-2-4 2V7a2 2 0 012-2h1" />
+    )
+  },
+  {
+    title: "Smart QR Codes",
+    description: "Custom branded QR codes for your physical location that track every scan in real-time.",
+    icon: (
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+    )
+  },
+  {
+    title: "Reputation Dashboard",
+    description: "Monitor your rating, track new reviews, and organize customer leads from one place.",
+    icon: (
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002 2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    )
+  }
 ];
 
-const journeyHighlights = [
+const steps = [
   {
-    number: "1",
-    title: "Connect your business",
-    description: "Link your Google Business Profile in seconds. We'll instantly generate a QR code that leads customers to your Google review page.",
+    num: "01",
+    title: "Connect Profile",
+    text: "Link your Google Business Profile in seconds with our smart search."
   },
   {
-    number: "2",
-    title: "Share your QR code",
-    description: "Display the QR code throughout your business. When customers scan it and choose five stars, they're automatically directed to your Google Reviews page to leave a 5-star review, and also invited to share their contact information for special offers and promotions.",
+    num: "02",
+    title: "Deploy Toolkit",
+    text: "Print your QR codes or send automated email requests to your customers."
   },
   {
-    number: "3",
-    title: "Handle lower ratings",
-    description: "If they choose four stars or fewer, they won't be directed to Google. Instead, they'll be asked what went wrong and how to contact them so you can follow up with support, promotions or an apology.",
-  },
-  {
-    number: "4",
-    title: "Manage everything in one place",
-    description: "Track new reviews, watch ratings increase, organize customer contact info, and reply directly from a simple, easy-to-use dashboard.",
-  },
-];
-
-const capabilities = [
-  {
-    title: "Turn happy customers into reviews",
-    description: "Send branded emails that convert satisfied customers into 5-star Google reviews automatically.",
-    gradient: "from-sky-500 to-indigo-500",
-    icon: (
-      <path d="M4 7a3 3 0 013-3h3l2 2h4a3 3 0 013 3v6a3 3 0 01-3 3H7a3 3 0 01-3-3z" strokeLinecap="round" strokeLinejoin="round" />
-    ),
-  },
-  {
-    title: "Capture reviews on the spot",
-    description: "Print QR codes that let customers leave reviews instantly—no apps or complicated steps required.",
-    gradient: "from-emerald-500 to-teal-500",
-    icon: (
-      <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
-    ),
-  },
-  {
-    title: "See your reputation improve",
-    description: "Watch your Google rating climb as reviews arrive in real-time with clear, actionable insights.",
-    gradient: "from-purple-500 to-fuchsia-500",
-    icon: (
-      <path d="M5 12l3 3 6-6m4-1v10a2 2 0 01-2 2H8l-4-4V6a2 2 0 012-2h5" strokeLinecap="round" strokeLinejoin="round" />
-    ),
-  },
-  {
-    title: "Stop negative reviews before they happen",
-    description: "Get private feedback from unhappy customers so you can fix issues before they go public.",
-    gradient: "from-amber-400 to-orange-500",
-    icon: (
-      <path d="M8 7h8M8 12h5m4-7h1a2 2 0 012 2v12l-4-2-4 2-4-2-4 2V7a2 2 0 012-2h1" strokeLinecap="round" strokeLinejoin="round" />
-    ),
-  },
-  {
-    title: "Scale across all locations",
-    description: "Manage multiple locations from one dashboard and ensure consistent review collection everywhere.",
-    gradient: "from-slate-900 to-slate-700",
-    icon: (
-      <path d="M12 6l6 3-6 3-6-3 6-3zm0 6v6" strokeLinecap="round" strokeLinejoin="round" />
-    ),
-  },
-  {
-    title: "Get expert support when you need it",
-    description: "Pro customers get priority support and proven strategies to maximize review collection.",
-    gradient: "from-rose-500 to-violet-500",
-    icon: (
-      <path d="M4 6h16M4 10h10m-6 4h12m-9 4h5" strokeLinecap="round" strokeLinejoin="round" />
-    ),
-  },
-];
-
-const timelineEntries = [
-  {
-    time: "08:10",
-    title: "Review request sent",
-    description: "Branded email delivered to customer with direct link to Google review page.",
-    metric: "Email sent",
-    tooltip: "Automated review request from your custom template",
-  },
-  {
-    time: "11:45",
-    title: "QR scan captured",
-    description: "Guest scanned front desk QR code and was routed to your review form.",
-    metric: "QR scan",
-    tooltip: "Physical QR code scan tracked in real-time",
-  },
-  {
-    time: "14:02",
-    title: "Location trend updated",
-    description: "Multi-location dashboard refreshed with today's average rating change.",
-    metric: "+0.2★",
-    tooltip: "Rating improvement across all tracked locations",
-  },
-  {
-    time: "17:36",
-    title: "Feedback assigned to team",
-    description: "Private customer note shared with team member for follow-up action.",
-    metric: "Assigned",
-    tooltip: "Feedback ownership set for accountability",
-  },
-];
-
-const integrationLogos = [
-  { name: "Google Reviews", logo: "🔍" },
-  { name: "Square", logo: "⬜" },
-  { name: "Stripe", logo: "💳" },
-  { name: "Postmark", logo: "📧" },
-];
-
-const businessLogos = [
-  { name: "Beacon Dental", industry: "Healthcare" },
-  { name: "Skyline Fitness", industry: "Fitness" },
-  { name: "Tech Solutions", industry: "Technology" },
-  { name: "Boutique Hotel", industry: "Hospitality" },
-  { name: "Local Restaurant", industry: "Food & Beverage" },
-  { name: "Wellness Center", industry: "Wellness" },
-];
-
-const testimonials = [
-  {
-    name: "Camille Rivera",
-    role: "Director of Experience, Beacon Dental",
-    quote:
-      "Our Google rating went from 4.2 to 4.8 in just 3 months. The email templates work like magic—customers actually want to leave reviews now.",
-    rating: 5,
-  },
-  {
-    name: "Jordan Blake",
-    role: "GM, Skyline Fitness",
-    quote:
-      "We're collecting 5x more reviews than before. The QR codes at our front desk are constantly being scanned—it's incredible.",
-    rating: 5,
-  },
-  {
-    name: "Lisa Thompson",
-    role: "CEO, Tech Solutions",
-    quote:
-      "The private feedback feature saved us from 3 negative reviews this month alone. We can fix issues before they go public.",
-    rating: 5,
-  },
+    num: "03",
+    title: "Boost Rating",
+    text: "Watch your 5-star review count climb as we filter out the noise."
+  }
 ];
 
 export default function Home() {
   return (
-    <main className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 text-slate-900">
-      <div className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.15),transparent_60%)]" />
-      <div className="pointer-events-none absolute inset-x-0 top-1/3 -z-20 h-[540px] bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.12),transparent_70%)]" />
-
-      {/* Quick Navigation - Anchor Links */}
-      <nav className="sticky top-20 z-40 border-b border-indigo-100 bg-white/80 backdrop-blur-md hidden md:block">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center gap-8 py-3 text-sm font-medium text-slate-700">
-            <a href="#features" className="hover:text-indigo-600 transition">Features</a>
-            <a href="#journey" className="hover:text-indigo-600 transition">How It Works</a>
-            <a href="#dashboard" className="hover:text-indigo-600 transition">Live Dashboard</a>
-            <a href="#testimonials" className="hover:text-indigo-600 transition">Testimonials</a>
-            <a href="#pricing" className="hover:text-indigo-600 transition">Pricing</a>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <section id="hero" className="relative px-4 pb-20 pt-24 sm:px-6 lg:px-8 lg:pb-24 lg:pt-28">
-        <div className="absolute inset-x-0 -top-24 -z-10 flex justify-center">
-          <div className="h-[640px] w-[640px] rounded-full bg-gradient-to-r from-indigo-400 via-sky-400 to-purple-400 opacity-25 blur-3xl sm:w-[760px]" />
-        </div>
-        <div className="absolute left-8 top-32 -z-10 hidden h-32 w-32 animate-pulse rounded-full bg-emerald-400/30 blur-2xl lg:block" />
-
-        <div className="relative mx-auto grid max-w-7xl gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:items-center">
-          <div className="space-y-10">
-            {/* Trust Badge */}
-            <div className="inline-flex items-center gap-3 rounded-full border border-indigo-200 bg-indigo-100 px-5 py-2 text-xs font-semibold text-indigo-700">
-              <svg className="h-4 w-4 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span className="uppercase tracking-[0.3em]">Trusted by businesses worldwide</span>
+    <main className="min-h-screen selection:bg-brand/20">
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 overflow-hidden">
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/5 border border-brand/10 text-brand text-xs font-semibold mb-8 animate-fade-in">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
+              </span>
+              REPUTATION TOOLKIT FOR MODERN BUSINESSES
             </div>
-
-            <header className="space-y-6">
-              <h1 className="text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                Turn every great experience into a <span className="inline-flex"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">o</span><span className="text-[#FBBC05]">o</span><span className="text-[#4285F4]">g</span><span className="text-[#34A853]">l</span><span className="text-[#EA4335]">e</span></span> review
-              </h1>
-              <p className="max-w-2xl text-xl text-slate-700 sm:text-2xl font-medium">
-                The fastest way to collect more reviews and boost your online reputation.
-              </p>
-              <p className="max-w-2xl text-lg text-slate-600">
-                Send branded review requests, print QR codes, and watch your rating climb—all from one simple dashboard.
-              </p>
-            </header>
-
-            <div className="space-y-4">
-              <HomeCtaButtons align="start" variant="hero" />
-              <p className="flex items-center gap-2 text-sm text-slate-600">
-                <svg className="h-5 w-5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-                Free Starter plan • No credit card • Upgrade anytime
-              </p>
-            </div>
-          </div>
-
-          {/* Dashboard Preview */}
-          <div className="relative">
-            <div className="absolute -left-10 top-10 hidden h-32 w-32 rounded-full bg-purple-500/20 blur-3xl lg:block" />
-            <div className="absolute -right-10 bottom-0 hidden h-36 w-36 rounded-full bg-sky-500/30 blur-3xl lg:block" />
-            <div className="relative overflow-hidden rounded-[32px] border border-slate-200/80 bg-white/90 p-6 shadow-[0_60px_160px_rgba(15,23,42,0.3)] backdrop-blur">
-              <div className="flex items-center justify-between text-xs uppercase tracking-[0.35em] text-slate-500">
-                <span>Dashboard Preview</span>
-                <span className="flex items-center gap-2 text-emerald-600 font-semibold">
-                  <span className="flex h-2 w-2 animate-ping rounded-full bg-emerald-500" />
-                  Live
-                </span>
-              </div>
-
-              <div className="mt-8 space-y-4">
-                <div className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm hover:shadow-md transition group">
-                  <div className="flex items-center justify-between text-sm text-slate-800">
-                    <span className="font-medium">Review requests</span>
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                      3 remaining this week
-                    </span>
-                  </div>
-                  <p className="mt-3 text-xs text-slate-600">
-                    Track remaining request allowance and schedule automated follow-ups
-                  </p>
-                </div>
-
-                <div className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm hover:shadow-md transition group">
-                  <div className="flex items-center justify-between text-sm text-slate-800">
-                    <span className="font-medium">QR code generator</span>
-                    <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
-                      Ready to print
-                    </span>
-                  </div>
-                  <p className="mt-3 text-xs text-slate-600">
-                    Export branded codes that route customers to your Google review page
-                  </p>
-                </div>
-
-                <div className="rounded-3xl border border-slate-200 bg-white/95 p-4 shadow-sm hover:shadow-md transition group">
-                  <div className="flex items-center justify-between text-sm text-slate-800">
-                    <span className="font-medium">Team assignments</span>
-                    <span className="flex items-center gap-2 text-xs font-semibold text-amber-700">
-                      <span className="flex h-2 w-2 animate-pulse rounded-full bg-amber-500" />
-                      2 pending responses
-                    </span>
-                  </div>
-                  <p className="mt-3 text-xs text-slate-600">
-                    Assign feedback to teammates for follow-up—nothing slips through
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-8 flex items-center justify-between rounded-3xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50 p-5 text-sm shadow-sm">
-                <div>
-                  <div className="text-xs uppercase tracking-[0.3em] text-slate-500">Average rating</div>
-                  <div className="mt-2 flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-slate-900">4.8</span>
-                    <span className="flex gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <svg key={i} className="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.08 3.33a1 1 0 00.96.7h3.4c.96 0 1.36 1.23.58 1.79l-2.75 1.99a1 1 0 00-.36 1.11l1.08 3.33c.3.92-.76 1.68-1.54 1.11l-2.75-1.99a1 1 0 00-1.18 0l-2.75 1.99c-.78.57-1.84-.19-1.54-1.11l1.08-3.33a1 1 0 00-.36-1.11L2.99 8.78c-.78-.56-.38-1.79.58-1.79h3.4a1 1 0 00.96-.7l1.08-3.33z" />
-                        </svg>
-                      ))}
-                    </span>
-                  </div>
-                </div>
-                <div className="text-right text-xs text-emerald-700 font-semibold">
-                  ↗ Across all locations
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Teaser */}
-      <section id="pricing" className="relative bg-white py-16 border-y border-indigo-100">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-indigo-700">
-              Simple, transparent pricing
-            </span>
-            <h2 className="mt-6 text-3xl font-bold text-slate-900 sm:text-4xl">Choose your plan</h2>
-            <p className="mt-4 text-lg text-slate-600">Start free and upgrade when you need more</p>
-          </div>
-
-          <dl className="grid gap-4 sm:gap-6 text-left sm:grid-cols-2 lg:grid-cols-4">
-            {heroMetrics.map((metric) => (
-              <div
-                key={metric.label}
-                className="relative rounded-2xl sm:rounded-3xl border-2 border-slate-200/80 bg-gradient-to-br from-white via-white/95 to-slate-50/90 p-4 sm:p-6 shadow-xl hover:shadow-2xl transition hover:-translate-y-1"
-              >
-                {metric.badge && (
-                  <div className="absolute -top-2 sm:-top-3 right-3 sm:right-4 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-2 sm:px-3 py-1 text-xs font-bold text-white shadow-lg">
-                    {metric.badge}
-                  </div>
-                )}
-                <dt className="text-xs uppercase tracking-[0.35em] text-slate-500 font-semibold">{metric.label}</dt>
-                <dd className="mt-2 sm:mt-3 text-3xl sm:text-4xl font-bold text-slate-900">{metric.value}</dd>
-                <p className="mt-2 sm:mt-3 text-sm text-slate-600 leading-relaxed">{metric.detail}</p>
-              </div>
-            ))}
-          </dl>
-
-          <div className="mt-12 text-center">
-            <Link
-              href="/pricing"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-4 text-sm font-semibold text-white shadow-lg hover:shadow-xl transition transform hover:scale-105"
-            >
-              View full pricing details
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Journey Spotlight - Numbered Steps */}
-      <section id="journey" className="relative overflow-hidden border-y border-indigo-100 bg-white py-24 sm:py-32">
-        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-32 bg-gradient-to-b from-indigo-50/50 via-white/0" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-purple-50/40 via-transparent" />
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-indigo-700">
-              Customer journey
-            </span>
-            <h2 className="mt-6 text-4xl font-bold text-slate-900 sm:text-5xl">
-              A simple flow from connection to growth
-            </h2>
-            <p className="mt-6 text-xl text-slate-600 max-w-3xl mx-auto">
-              Connect your Google Business Profile, display QR codes, route feedback smartly, and watch your reviews grow—all from one simple dashboard.
+            <h1 className="text-balance mb-8">
+              The smartest way to get <br className="hidden md:block" />
+              <span className="text-brand">5-star Google reviews.</span>
+            </h1>
+            <p className="text-xl text-muted max-w-2xl mx-auto mb-10 text-balance leading-relaxed">
+              Automated review requests, smart QR codes, and a private feedback filter to protect your public rating.
             </p>
+            <HomeCtaButtons variant="hero" />
+            
+            <div className="mt-16 flex flex-wrap justify-center items-center gap-x-12 gap-y-8 opacity-40 grayscale contrast-125">
+              <span className="font-bold text-xl tracking-tighter">GOOGLE</span>
+              <span className="font-bold text-xl tracking-tighter">SQUARE</span>
+              <span className="font-bold text-xl tracking-tighter">STRIPE</span>
+              <span className="font-bold text-xl tracking-tighter">POSTMARK</span>
+            </div>
           </div>
+        </div>
+        
+        {/* Subtle background element */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-full -z-10 pointer-events-none opacity-[0.03]">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,var(--brand),transparent_70%)]"></div>
+        </div>
+      </section>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {journeyHighlights.map((item, index) => (
-              <div key={item.title} className="relative flex">
-                {/* Connection line for desktop */}
-                {index < journeyHighlights.length - 1 && (
-                  <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-indigo-300 to-transparent -z-10" />
-                )}
-                <div className="group rounded-3xl border-2 border-slate-200/70 bg-white p-6 shadow-lg hover:shadow-2xl transition hover:-translate-y-1 flex flex-col h-full w-full">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white text-xl font-bold shadow-lg">
-                      {item.number}
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">{item.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{item.description}</p>
-                </div>
+      {/* Steps Section */}
+      <section className="py-24 bg-accent/50 border-y border-border">
+        <div className="container mx-auto px-6">
+          <div className="max-w-2xl mx-auto text-center mb-16">
+            <h2 className="mb-4">How it works</h2>
+            <p className="text-muted">A simple 3-step system designed for busy operators.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+            {steps.map((step) => (
+              <div key={step.num} className="relative group">
+                <div className="text-5xl font-black text-brand/10 mb-4 group-hover:text-brand/20 transition-colors">{step.num}</div>
+                <h3 className="mb-3">{step.title}</h3>
+                <p className="text-muted text-sm leading-relaxed">{step.text}</p>
               </div>
             ))}
           </div>
-
-          <div className="mt-12 text-center">
-            <Link
-              href="/features"
-              className="inline-flex items-center gap-2 rounded-full border border-indigo-300 bg-white px-8 py-3 text-sm font-semibold text-indigo-700 shadow-md hover:bg-indigo-50 transition"
-            >
-              Explore all product features
-              <svg aria-hidden className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* Capabilities */}
-      <section id="features" className="bg-gradient-to-b from-white to-indigo-50/30 py-24 text-slate-900 sm:py-32">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 sm:text-5xl">Everything you need to invite, track, and respond</h2>
-            <p className="mt-6 text-xl text-slate-600">
-              Send review requests, share QR codes, monitor analytics, and collaborate with your team—all from Reviews & Marketing.
-            </p>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-            {capabilities.map((capability) => (
-              <article key={capability.title} className="group relative overflow-hidden rounded-3xl border-2 border-slate-200 bg-white p-8 shadow-xl transition hover:-translate-y-2 hover:shadow-2xl hover:border-indigo-300">
-                <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${capability.gradient} text-white shadow-lg`}>
-                  <svg aria-hidden className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                    {capability.icon}
+      {/* Features Grid */}
+      <section className="py-24">
+        <div className="container mx-auto px-6">
+          <div className="grid md:grid-cols-3 gap-8">
+            {features.map((f) => (
+              <div key={f.title} className="premium-card p-8 rounded-2xl">
+                <div className="w-12 h-12 rounded-xl bg-brand/10 text-brand flex items-center justify-center mb-6">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {f.icon}
                   </svg>
                 </div>
-                <h3 className="mt-6 text-xl font-bold text-slate-900">{capability.title}</h3>
-                <p className="mt-4 text-slate-600 leading-relaxed">{capability.description}</p>
-                <div className="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-gradient-to-br from-indigo-500/10 via-transparent to-transparent blur-2xl transition group-hover:scale-150" />
-              </article>
+                <h3 className="mb-3 text-lg font-bold">{f.title}</h3>
+                <p className="text-muted text-sm leading-relaxed">{f.description}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Live Dashboard Feed with Tooltips */}
-      <section id="dashboard" className="relative overflow-hidden bg-white py-24 sm:py-32 border-t border-indigo-100">
-        <div className="pointer-events-none absolute inset-y-0 left-0 -z-10 w-1/2 bg-[radial-gradient(circle_at_left,rgba(99,102,241,0.10),transparent_75%)]" />
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <span className="inline-flex items-center rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-indigo-700">
-              Live Activity
-            </span>
-            <h2 className="mt-6 text-4xl font-bold text-slate-900 sm:text-5xl">Watch your reputation grow in real-time</h2>
-            <p className="mt-6 text-xl text-slate-600 max-w-3xl mx-auto">
-              See reviews, QR scans, and feedback arrive instantly. No more guessing what's happening.
+      {/* Testimonial Section */}
+      <section className="py-24 bg-foreground text-white overflow-hidden">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto text-center">
+            <svg className="w-12 h-12 text-brand mx-auto mb-8 opacity-50" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H16.017C14.9124 8 14.017 7.10457 14.017 6V3L21.017 3V15C21.017 18.3137 18.3307 21 15.017 21H14.017ZM3.0166 21L3.0166 18C3.0166 16.8954 3.91203 16 5.0166 16H8.0166C8.56888 16 9.0166 15.5523 9.0166 15V9C9.0166 8.44772 8.56888 8 8.0166 8H5.0166C3.91203 8 3.0166 7.10457 3.0166 6V3L10.0166 3V15C10.0166 18.3137 7.3303 21 4.0166 21H3.0166Z" />
+            </svg>
+            <p className="text-2xl md:text-3xl font-medium mb-10 leading-tight">
+              "Our Google rating went from 4.2 to 4.8 in just 3 months. The routing system is a lifesaver—we finally have control over our online reputation."
             </p>
-          </div>
-
-          <div className="relative overflow-hidden rounded-[32px] border-2 border-slate-200 bg-white/95 p-8 shadow-[0_60px_180px_rgba(99,102,241,0.25)] backdrop-blur mb-12">
-            <ol className="space-y-6">
-              {timelineEntries.map((entry) => (
-                <li key={entry.title} className="group rounded-3xl border-2 border-slate-200 bg-gradient-to-r from-slate-50 to-white p-6 hover:shadow-lg hover:border-indigo-200 transition">
-                  <div className="flex items-center justify-between text-xs uppercase tracking-[0.35em] text-slate-500 font-semibold mb-3">
-                    <span>{entry.time}</span>
-                    <span className="rounded-full bg-indigo-100 px-3 py-1 text-indigo-700">{entry.metric}</span>
-                  </div>
-                  <p className="text-lg font-bold text-slate-900 mb-2">{entry.title}</p>
-                  <p className="text-sm text-slate-600 leading-relaxed">{entry.description}</p>
-                  {entry.tooltip && (
-                    <p className="mt-3 text-xs text-slate-500 italic border-l-2 border-indigo-200 pl-3">
-                      💡 {entry.tooltip}
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ol>
-
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-3xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-6">
-                <div className="text-xs uppercase tracking-[0.35em] text-slate-500 font-semibold">Today's activity</div>
-                <p className="mt-3 text-3xl font-bold text-slate-900">14 responses</p>
-                <p className="mt-2 text-sm text-slate-600">Email sends + QR scans recorded so far</p>
-              </div>
-              <div className="rounded-3xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white p-6">
-                <div className="text-xs uppercase tracking-[0.35em] text-slate-500 font-semibold">Next follow-up</div>
-                <p className="mt-3 text-3xl font-bold text-slate-900">In 2h</p>
-                <p className="mt-2 text-sm text-slate-600">Reminder set for pending private feedback</p>
+            <div className="flex items-center justify-center gap-4">
+              <div className="text-left">
+                <p className="font-bold">Camille Rivera</p>
+                <p className="text-sm text-muted">Director of Experience, Beacon Dental</p>
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="text-center">
+      {/* Final CTA */}
+      <section className="py-24 border-t border-border">
+        <div className="container mx-auto px-6 text-center">
+          <h2 className="mb-6">Ready to fix your reputation?</h2>
+          <p className="text-muted mb-10 max-w-xl mx-auto">
+            Join 500+ businesses using Reviews & Marketing to grow their online presence.
+          </p>
+          <div className="flex flex-col items-center gap-6">
             <HomeCtaButtons variant="full" />
-            <p className="mt-4 text-sm text-slate-600">Try it yourself • No credit card required</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Integrations */}
-      <section className="border-y border-indigo-100 bg-gradient-to-b from-white to-indigo-50/30 py-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center mb-12">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-500 font-semibold">Connect your essentials</p>
-            <h2 className="mt-4 text-3xl font-bold text-slate-900 sm:text-4xl">Built to work with the tools you already use</h2>
-          </div>
-          <div className="grid gap-4 text-center sm:grid-cols-2 lg:grid-cols-4">
-            {integrationLogos.map((integration) => (
-              <div key={integration.name} className="group rounded-2xl border-2 border-slate-200 bg-white px-6 py-4 font-bold tracking-wide text-slate-800 shadow-lg hover:shadow-xl hover:border-indigo-300 transition transform hover:scale-105">
-                <div className="text-2xl mb-2">{integration.logo}</div>
-                <div className="text-sm">{integration.name}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Business Logos */}
-      <section className="border-y border-indigo-100 bg-gradient-to-b from-indigo-50/30 to-white py-16">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center mb-12">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-500 font-semibold">Trusted by businesses like yours</p>
-            <h2 className="mt-4 text-2xl font-bold text-slate-900 sm:text-3xl">Join 500+ businesses already collecting more reviews</h2>
-          </div>
-          <div className="grid gap-4 text-center sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            {businessLogos.map((business) => (
-              <div key={business.name} className="group rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm hover:shadow-md hover:border-indigo-300 transition">
-                <div className="text-sm font-semibold text-slate-800">{business.name}</div>
-                <div className="text-xs text-slate-500">{business.industry}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Social Proof - Testimonials */}
-      <section id="testimonials" className="bg-gradient-to-b from-indigo-50/50 via-white to-purple-50/50 py-24 sm:py-32">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center mb-16">
-            <h2 className="text-4xl font-bold text-slate-900 sm:text-5xl">Operators who lead with experience trust Reviews & Marketing</h2>
-            <p className="mt-6 text-xl text-slate-700">
-              Hospitality, healthcare, and boutique fitness teams rely on our dashboard to collect reviews and stay in sync.
-            </p>
-          </div>
-
-          <div className="grid gap-8 lg:grid-cols-3 mb-12">
-            {testimonials.map((testimonial) => (
-              <article key={testimonial.name} className="group rounded-3xl border-2 border-slate-200 bg-white p-8 shadow-xl hover:shadow-2xl hover:border-indigo-300 transition hover:-translate-y-1 backdrop-blur">
-                <div className="flex items-center gap-1 text-amber-500 mb-4">
-                  {Array.from({ length: testimonial.rating }).map((_, idx) => (
-                    <svg key={idx} aria-hidden className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.08 3.33a1 1 0 00.96.7h3.4c.96 0 1.36 1.23.58 1.79l-2.75 1.99a1 1 0 00-.36 1.11l1.08 3.33c.3.92-.76 1.68-1.54 1.11l-2.75-1.99a1 1 0 00-1.18 0l-2.75 1.99c-.78.57-1.84-.19-1.54-1.11l1.08-3.33a1 1 0 00-.36-1.11L2.99 8.78c-.78-.56-.38-1.79.58-1.79h3.4a1 1 0 00.96-.7l1.08-3.33z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="text-lg text-slate-900 leading-relaxed mb-6">"{testimonial.quote}"</p>
-                <footer className="text-sm border-t border-slate-200 pt-4">
-                  <p className="font-bold text-slate-900">{testimonial.name}</p>
-                  <p className="text-slate-600">{testimonial.role}</p>
-                </footer>
-              </article>
-            ))}
-          </div>
-
-          <div className="text-center px-4">
-            <div className="inline-flex flex-col sm:flex-row items-center gap-4 sm:gap-6 rounded-2xl border-2 border-indigo-200 bg-white px-6 sm:px-8 py-6 sm:py-4 shadow-lg w-full sm:w-auto max-w-2xl mx-auto">
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-slate-900">4.8/5</div>
-                <div className="text-xs sm:text-sm text-slate-600 whitespace-nowrap">Average rating</div>
-              </div>
-              <div className="hidden sm:block h-12 w-px bg-slate-200" />
-              <div className="block sm:hidden h-px w-full bg-slate-200" />
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-slate-900">500+</div>
-                <div className="text-xs sm:text-sm text-slate-600 whitespace-nowrap">Active businesses</div>
-              </div>
-              <div className="hidden sm:block h-12 w-px bg-slate-200" />
-              <div className="block sm:hidden h-px w-full bg-slate-200" />
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-slate-900">15K+</div>
-                <div className="text-xs sm:text-sm text-slate-600 whitespace-nowrap">Reviews collected</div>
-              </div>
-            </div>
+            <p className="text-xs text-muted">No credit card required • Setup in 5 minutes</p>
           </div>
         </div>
       </section>
 
       {/* Newsletter Section */}
-      <section className="relative overflow-hidden bg-white py-20 border-y border-indigo-100">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center mb-6">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
-            </svg>
-          </div>
-          <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl mb-4">
-            Get review collection tips delivered to your inbox
-          </h2>
-          <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
-            Join 500+ business owners getting monthly strategies, proven templates, and exclusive offers. No spam, unsubscribe anytime.
-          </p>
+      <section className="py-16 bg-accent border-t border-border">
+        <div className="container mx-auto px-6 text-center">
+          <p className="text-sm font-semibold mb-4 tracking-wider uppercase text-muted">STAY UPDATED</p>
+          <h3 className="mb-8">Weekly tips to collect more reviews.</h3>
           <NewsletterSignup variant="inline" />
-        </div>
-      </section>
-
-      {/* Final CTA with reduced contrast */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-600 py-24 sm:py-28">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent)]" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.15),transparent)]" />
-        <div className="relative mx-auto max-w-4xl px-4 text-center text-white sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold sm:text-5xl">Start collecting more reviews today</h2>
-          <p className="mt-6 text-xl text-indigo-50">
-            Launch your free Starter account, send your first requests, and see results in the dashboard before you upgrade.
-          </p>
-          <div className="mt-10">
-            <HomeCtaButtons variant="full" />
-          </div>
-          <p className="mt-8 flex items-center justify-center gap-8 text-sm text-indigo-100">
-            <span className="flex items-center gap-2">
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              Free forever starter plan
-            </span>
-            <span className="flex items-center gap-2">
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              No credit card required
-            </span>
-            <span className="flex items-center gap-2">
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              Setup in 5 minutes
-            </span>
-          </p>
         </div>
       </section>
     </main>

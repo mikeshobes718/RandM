@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
   const supa = getSupabaseAdmin();
   const { data: biz, error } = await supa
     .from('businesses')
-    .select('id,name,review_link,google_maps_write_review_uri,contact_phone,google_rating,google_place_id')
+    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id')
     .eq('owner_uid', uid)
     .maybeSingle();
   if (error) return new NextResponse(error.message, { status: 500 });
@@ -59,7 +59,8 @@ export async function GET(req: NextRequest) {
   let reviewsThisMonth = 0;
   let shareLinkScans = 0;
   let averageRating: number | null = biz.google_rating ?? null;
-  const formattedPhone = formatPhone(biz.contact_phone);
+  const contactPhone = (biz as any).contact_phone || null;
+  const formattedPhone = contactPhone ? formatPhone(contactPhone) : null;
 
   try {
     const { count } = await supa

@@ -4,19 +4,11 @@ import { clientAuth } from '@/lib/firebaseClient';
 import Link from 'next/link';
 import PasswordStrengthMeter from '@/components/PasswordStrengthMeter';
 
-// Format phone number as user types
 function formatPhoneNumber(value: string): string {
-  // Remove all non-digit characters
-  const phoneNumber = value.replace(/\D/g, '');
-  
-  // Limit to 10 digits
-  const limitedPhoneNumber = phoneNumber.slice(0, 10);
-  
-  // Format as (XXX) XXX-XXXX
-  if (limitedPhoneNumber.length === 0) return '';
-  if (limitedPhoneNumber.length <= 3) return `(${limitedPhoneNumber}`;
-  if (limitedPhoneNumber.length <= 6) return `(${limitedPhoneNumber.slice(0, 3)}) ${limitedPhoneNumber.slice(3)}`;
-  return `(${limitedPhoneNumber.slice(0, 3)}) ${limitedPhoneNumber.slice(3, 6)}-${limitedPhoneNumber.slice(6)}`;
+  const digits = value.replace(/\D/g, '').slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
 export default function RegisterPage() {
@@ -26,19 +18,11 @@ export default function RegisterPage() {
   const [businessPhone, setBusinessPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
-    // Basic validation
-    if (!email || !password || !businessName) {
-      setError('Please fill in all required fields');
-      setLoading(false);
-      return;
-    }
 
     if (password.length < 8) {
       setError('Password must be at least 8 characters');
@@ -46,16 +30,7 @@ export default function RegisterPage() {
       return;
     }
 
-    // Validate phone number only if provided
-    const phoneDigits = businessPhone.replace(/\D/g, '');
-    if (phoneDigits.length > 0 && phoneDigits.length !== 10) {
-      setError('Please enter a valid 10-digit phone number or leave it blank');
-      setLoading(false);
-      return;
-    }
-
     try {
-      // Use server-side registration API (prevents Firebase auto-emails)
       const registrationResponse = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -72,17 +47,13 @@ export default function RegisterPage() {
       }
 
       const registrationData = await registrationResponse.json();
-      const { customToken, uid, verificationLink } = registrationData as { customToken: string; uid: string; verificationLink?: string | null };
+      const { customToken } = registrationData;
 
-      // Sign in with custom token
       const { signInWithCustomToken } = await import('firebase/auth');
       const userCredential = await signInWithCustomToken(clientAuth, customToken);
       const user = userCredential.user;
-
-      // Get ID token
       const token = await user.getIdToken();
       
-      // Set session cookie
       await fetch('/api/auth/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -90,167 +61,94 @@ export default function RegisterPage() {
         credentials: 'include',
       });
 
-      // Store business info for onboarding (but don't create record yet)
-      // User will create it during onboarding flow
       localStorage.setItem('pendingBusinessName', businessName.trim());
-      localStorage.setItem('pendingBusinessPhone', phoneDigits || '');
-
-      // Store email for verification page
+      localStorage.setItem('pendingBusinessPhone', businessPhone.replace(/\D/g, '') || '');
       localStorage.setItem('userEmail', email);
       localStorage.setItem('idToken', token);
-      try {
-        if (verificationLink) {
-          localStorage.setItem('pendingVerificationLink', verificationLink);
-        }
-      } catch {}
 
-      // Redirect to verification page (email was already sent by server)
       window.location.href = '/verify-email';
     } catch (err: any) {
-      console.error('Registration error:', err);
-      
-      // Handle specific Firebase errors
-      if (err.code === 'auth/email-already-in-use') {
-        setError('This email is already registered. Please sign in instead.');
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Please enter a valid email address');
-      } else if (err.code === 'auth/weak-password') {
-        setError('Password is too weak. Please use a stronger password.');
-      } else {
-        setError(err.message || 'Failed to create account. Please try again.');
-      }
+      setError(err.message || 'Failed to create account.');
       setLoading(false);
     }
   };
 
-  const formatPhoneNumber = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 10);
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
-  };
+  const inputClass = "h-11 w-full rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all bg-white";
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-3xl shadow-xl border border-indigo-100 p-8">
-          {/* Header */}
-        <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center mb-4 shadow-lg">
-            <svg className="w-8 h-8 text-white" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Create your account</h1>
-          <p className="text-slate-600">Start collecting reviews in minutes</p>
+    <main className="min-h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-10">
+          <Link href="/" className="inline-block text-2xl font-black tracking-tighter text-brand mb-8">
+            R&M
+          </Link>
+          <h1 className="text-2xl font-bold tracking-tight">Create your account</h1>
         </div>
 
-          {/* Error Message */}
+        <div className="premium-card p-8 rounded-3xl">
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-red-600 font-medium">
+              {error}
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-12"
-                  placeholder="Create a strong password"
-                  required
-                  minLength={8}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              
-              {/* Password Strength Meter */}
-              <PasswordStrengthMeter password={password} />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Business Name
-              </label>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted uppercase tracking-widest">Business Name</label>
               <input
                 type="text"
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={inputClass}
                 placeholder="Acme Dental"
                 required
               />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Business Phone <span className="text-xs font-normal text-gray-500">(optional)</span>
-              </label>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted uppercase tracking-widest">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+                placeholder="name@company.com"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted uppercase tracking-widest">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={inputClass}
+                required
+                minLength={8}
+              />
+              <PasswordStrengthMeter password={password} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted uppercase tracking-widest">Business Phone (Optional)</label>
               <input
                 type="tel"
                 value={businessPhone}
                 onChange={(e) => setBusinessPhone(formatPhoneNumber(e.target.value))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="(optional)"
+                className={inputClass}
+                placeholder="(555) 000-0000"
               />
             </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Creating account...' : 'Create account'}
+            <button type="submit" disabled={loading} className="primary-button w-full h-11">
+              {loading ? '...' : 'Create Account'}
             </button>
           </form>
+        </div>
 
-          {/* Footer */}
-          <div className="mt-6 text-center text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-              Sign in
-            </Link>
-          </div>
+        <div className="mt-8 text-center">
+          <p className="text-xs text-muted">
+            Already have an account? <Link href="/login" className="text-brand font-bold hover:underline">Sign in</Link>
+          </p>
         </div>
       </div>
     </main>
   );
 }
-// Cache bust Tue Oct  7 21:07:36 -05 2025
