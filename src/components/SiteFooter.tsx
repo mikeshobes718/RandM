@@ -5,58 +5,72 @@ import { usePathname } from 'next/navigation';
 export default function SiteFooter() {
   const pathname = usePathname();
   if (pathname?.startsWith('/r/')) return null;
+
   return (
-    <footer className="bg-gray-900 text-white mt-0">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid md:grid-cols-4 gap-8 mb-12">
-          <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-                  <path fillRule="evenodd" clipRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold">Reviews & Marketing</span>
-            </div>
-            <p className="text-gray-400 leading-relaxed">
-              The complete toolkit for growing your business through customer reviews and reputation management.
+    <footer className="bg-foreground text-white border-t border-white/5 mt-0">
+      <div className="container mx-auto px-6 py-20">
+        <div className="grid md:grid-cols-12 gap-12 mb-20">
+          <div className="md:col-span-4">
+            <Link href="/" className="inline-block mb-6">
+              <span className="text-2xl font-black tracking-tighter text-brand">R&M</span>
+            </Link>
+            <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+              The smartest way to collect 5-star Google reviews. One connected workspace for review links, QR codes, and real-time customer feedback.
             </p>
           </div>
 
-          <div>
-            <h3 className="font-semibold mb-4">Product</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li><Link href="/features" className="hover:text-white transition-colors">Features</Link></li>
-              <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-              <li><Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link></li>
+          <div className="md:col-span-2">
+            <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-6">Product</h3>
+            <ul className="space-y-4">
+              <li><Link href="/features" className="text-sm text-slate-400 hover:text-brand transition-colors">Features</Link></li>
+              <li><Link href="/pricing" className="text-sm text-slate-400 hover:text-brand transition-colors">Pricing</Link></li>
+              <li><Link href="/dashboard" className="text-sm text-slate-400 hover:text-brand transition-colors">Dashboard</Link></li>
             </ul>
           </div>
 
-          <div>
-            <h3 className="font-semibold mb-4">Company</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
-              <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-              <li><Link href="/support" className="hover:text-white transition-colors">Support</Link></li>
-              <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+          <div className="md:col-span-2">
+            <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-6">Company</h3>
+            <ul className="space-y-4">
+              <li><Link href="/about" className="text-sm text-slate-400 hover:text-brand transition-colors">About</Link></li>
+              <li><Link href="/blog" className="text-sm text-slate-400 hover:text-brand transition-colors">Blog</Link></li>
+              <li><Link href="/support" className="text-sm text-slate-400 hover:text-brand transition-colors">Support</Link></li>
+              <li><Link href="/contact" className="text-sm text-slate-400 hover:text-brand transition-colors">Contact</Link></li>
             </ul>
           </div>
 
-          <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link></li>
-              <li><Link href="/terms" className="hover:text-white transition-colors">Terms</Link></li>
-              <li><Link href="/security" className="hover:text-white transition-colors">Security</Link></li>
+          <div className="md:col-span-2">
+            <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-6">Legal</h3>
+            <ul className="space-y-4">
+              <li><Link href="/privacy" className="text-sm text-slate-400 hover:text-brand transition-colors">Privacy</Link></li>
+              <li><Link href="/terms" className="text-sm text-slate-400 hover:text-brand transition-colors">Terms</Link></li>
+              <li><Link href="/security" className="text-sm text-slate-400 hover:text-brand transition-colors">Security</Link></li>
+            </ul>
+          </div>
+
+          <div className="md:col-span-2">
+            <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-6">Connect</h3>
+            <ul className="space-y-4">
+              <li><a href="https://twitter.com/reviewsandmkt" className="text-sm text-slate-400 hover:text-brand transition-colors">Twitter</a></li>
+              <li><a href="https://linkedin.com/company/reviewsandmkt" className="text-sm text-slate-400 hover:text-brand transition-colors">LinkedIn</a></li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="text-gray-400 text-sm">© {new Date().getFullYear()} Reviews & Marketing. All rights reserved.</div>
+        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-slate-500 text-[10px] font-medium uppercase tracking-widest">
+            © {new Date().getFullYear()} REVIEWS & MARKETING. ALL RIGHTS RESERVED.
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Systems Normal</span>
+            </div>
+            <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+              Built in NYC
+            </div>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
-
