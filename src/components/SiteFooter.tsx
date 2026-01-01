@@ -53,7 +53,6 @@ export default function SiteFooter() {
             <ul className="space-y-4">
               <li><a href="https://www.instagram.com/reviews5marketing?igsh=dHIwbmNqd2w2enVy" target="_blank" rel="noopener noreferrer" className="text-sm text-slate-400 hover:text-brand transition-colors">Instagram</a></li>
               <li><a href="https://twitter.com/reviewsandmkt" className="text-sm text-slate-400 hover:text-brand transition-colors">Twitter</a></li>
-              <li><a href="https://linkedin.com/company/reviewsandmkt" className="text-sm text-slate-400 hover:text-brand transition-colors">LinkedIn</a></li>
             </ul>
           </div>
         </div>

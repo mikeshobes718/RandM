@@ -32,10 +32,7 @@ export function getPgPool(): Pool | null {
       user,
       password,
       database,
-      ssl: { 
-        rejectUnauthorized: false,
-        // Adding more explicit SSL config to help with SCRAM/SASL handshake
-      },
+      ssl: true,
       max: 3,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,

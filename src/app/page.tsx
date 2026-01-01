@@ -100,7 +100,14 @@ export default function Home() {
       <section className="py-24 bg-accent/50 border-y border-border">
         <div className="container mx-auto px-6">
           <div className="max-w-2xl mx-auto text-center mb-16">
-            <h2 className="mb-4">How it works</h2>
+            <Link href="/how-it-works" className="group inline-block">
+              <h2 className="mb-4 group-hover:text-brand transition-colors flex items-center justify-center gap-3">
+                How it works
+                <svg className="w-6 h-6 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </h2>
+            </Link>
             <p className="text-muted">A simple 4-step system designed for busy operators.</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 max-w-6xl mx-auto mb-16">
