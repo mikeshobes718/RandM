@@ -113,7 +113,9 @@ export default function SiteHeader() {
               </Link>
             </div>
           )}
-          <MobileMenu />
+          <div className="relative z-[150]">
+            <MobileMenu />
+          </div>
         </div>
       </div>
     </header>

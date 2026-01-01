@@ -46,8 +46,9 @@ export default function MobileMenu() {
       <div className={`fixed top-0 right-0 z-[101] h-full w-[280px] bg-white shadow-2xl transition-transform duration-300 ease-out transform ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
-        <div className="flex flex-col h-full p-6">
-          <div className="flex items-center justify-between mb-10">
+        <div className="flex flex-col h-full">
+          {/* Menu Header - Solid white to cover site header */}
+          <div className="flex items-center justify-between p-6 border-b border-slate-50 bg-white">
             <span className="text-xl font-black tracking-tighter text-brand">R&M</span>
             <button
               onClick={() => setIsOpen(false)}
@@ -59,37 +60,39 @@ export default function MobileMenu() {
             </button>
           </div>
 
-          <nav className="flex flex-col gap-2">
-            {[
-              { href: '/how-it-works', label: 'How it works' },
-              { href: '/features', label: 'Features' },
-              { href: '/pricing', label: 'Pricing' },
-              { href: '/blog', label: 'Blog' },
-            ].map((link) => (
-              <Link 
-                key={link.href}
-                href={link.href} 
-                className={`flex items-center px-4 py-3 rounded-xl text-base font-bold transition-all ${
-                  pathname === link.href 
-                  ? 'bg-brand/5 text-brand border border-brand/10' 
-                  : 'text-slate-600 hover:bg-slate-50 border border-transparent'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <div className="flex-1 overflow-y-auto p-6">
+            <nav className="flex flex-col gap-2">
+              {[
+                { href: '/how-it-works', label: 'How it works' },
+                { href: '/features', label: 'Features' },
+                { href: '/pricing', label: 'Pricing' },
+                { href: '/blog', label: 'Blog' },
+              ].map((link) => (
+                <Link 
+                  key={link.href}
+                  href={link.href} 
+                  className={`flex items-center px-4 py-4 rounded-xl text-lg font-bold transition-all ${
+                    pathname === link.href 
+                    ? 'bg-brand text-white shadow-lg shadow-brand/20' 
+                    : 'text-slate-600 hover:bg-slate-50 border border-transparent'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
-          <div className="mt-auto pt-8 border-t border-slate-100 space-y-3">
+          <div className="p-6 border-t border-slate-100 space-y-3 bg-white">
             <Link
               href="/register"
-              className="primary-button w-full h-12 flex items-center justify-center text-sm font-black uppercase tracking-widest shadow-lg shadow-brand/20"
+              className="primary-button w-full h-14 flex items-center justify-center text-base font-black uppercase tracking-widest shadow-lg shadow-brand/20"
             >
               Get Started Free
             </Link>
             <Link
               href="/login"
-              className="secondary-button w-full h-12 flex items-center justify-center text-sm font-bold border border-slate-200 bg-white shadow-sm"
+              className="secondary-button w-full h-14 flex items-center justify-center text-base font-bold border border-slate-200 bg-white shadow-sm"
             >
               Sign In
             </Link>
