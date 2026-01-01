@@ -66,6 +66,7 @@ export default function Home() {
               REPUTATION TOOLKIT FOR MODERN BUSINESSES
             </div>
             <h1 className="text-balance mb-8">
+              CHECKING DEPLOYMENT <br className="hidden md:block" />
               The smartest way to get <br className="hidden md:block" />
               <span className="text-brand">5-star </span>
               <span className="inline-flex">
