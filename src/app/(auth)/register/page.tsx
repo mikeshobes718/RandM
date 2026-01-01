@@ -55,7 +55,7 @@ export default function RegisterPage() {
       }
 
       const registrationData = await registrationResponse.json();
-      const { customToken } = registrationData;
+      const { customToken, verificationLink } = registrationData;
 
       const { signInWithCustomToken } = await import('firebase/auth');
       const userCredential = await signInWithCustomToken(clientAuth, customToken);
@@ -73,6 +73,10 @@ export default function RegisterPage() {
       localStorage.setItem('pendingBusinessPhone', businessPhone.replace(/\D/g, '') || '');
       localStorage.setItem('userEmail', email);
       localStorage.setItem('idToken', token);
+      
+      if (verificationLink) {
+        localStorage.setItem('pendingVerificationLink', verificationLink);
+      }
 
       window.location.href = '/verify-email';
     } catch (err: any) {

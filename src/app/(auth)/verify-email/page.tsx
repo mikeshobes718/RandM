@@ -180,7 +180,8 @@ export default function VerifyEmailPage() {
 
           {verificationLink && (
             <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-100">
-              <p className="text-[10px] font-bold text-amber-900 uppercase tracking-widest mb-3">Development Link</p>
+              <p className="text-[10px] font-bold text-amber-900 uppercase tracking-widest mb-1">Backup Verification</p>
+              <p className="text-[10px] text-amber-700 mb-3 leading-tight">If the email didn't arrive, you can use this link to verify instantly.</p>
               <div className="flex flex-col gap-2">
                 <a
                   href={verificationLink}
