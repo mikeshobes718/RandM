@@ -98,6 +98,37 @@ export async function POST(req: Request) {
   }
 
   const supabase = getSupabaseAdmin();
+
+  // Check plan status before allowing business creation
+  try {
+    const { data: sub } = await supabase
+      .from('subscriptions')
+      .select('status, plan_id')
+      .eq('uid', uid!)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    
+    // If no active plan found, block unless it's an edit request
+    const referer = req.headers.get('referer') || '';
+    const isEditRequest = referer.includes('edit=1');
+    
+    if (!isEditRequest && (!sub || sub.status.toLowerCase() !== 'active')) {
+      // One final check: does the business already exist? If so, allow updates.
+      const { data: existingBiz } = await supabase
+        .from('businesses')
+        .select('id')
+        .eq('owner_uid', uid!)
+        .maybeSingle();
+      
+      if (!existingBiz) {
+        return new NextResponse('Please select a plan first', { status: 403 });
+      }
+    }
+  } catch (err) {
+    console.error('[upsert/form] Plan check error:', err);
+  }
+
   // Ensure users row exists
   try {
     if (uid) {

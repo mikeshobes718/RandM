@@ -63,6 +63,7 @@ function DashboardContent() {
   const [activityFeed, setActivityFeed] = useState<ActivityItem[]>([]);
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
   const [squareStatus, setSquareStatus] = useState<{ connected: boolean; isEnabled?: boolean; lastBackfillAt?: string | null } | null>(null);
+  const [planStatus, setPlanStatus] = useState<string>('none');
 
   const isFromEdit = searchParams?.get('from') === 'edit';
 
@@ -82,10 +83,17 @@ function DashboardContent() {
         setRecentFeedback(data.recentFeedback ?? []);
         setActivityFeed(data.activityFeed ?? []);
         setIsPro(data.isPro ?? false);
+        setPlanStatus(data.planStatus ?? 'none');
         setAnalytics(data.analytics ?? null);
         setSquareStatus(data.squareConnection ?? null);
         
         // Onboarding redirect logic
+        // If no business AND no active plan, redirect to select-plan
+        if (!data.business && data.planStatus === 'none') {
+          window.location.href = '/select-plan';
+          return;
+        }
+
         if (data.business && !data.business.google_place_id && !isFromEdit) {
           window.location.href = '/onboarding/business';
           return;

@@ -57,16 +57,20 @@ export async function GET(req: NextRequest) {
 
   // Fetch plan status to check if Pro
   let isPro = false;
+  let planStatus = 'none';
   try {
     const { data: subscription } = await supa
       .from('subscriptions')
       .select('status, plan_id')
       .eq('uid', uid)
+      .order('updated_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
     
-    if (subscription && subscription.status === 'active') {
+    if (subscription) {
+      planStatus = subscription.status.toLowerCase();
       const planId = subscription.plan_id?.toLowerCase() || '';
-      if (planId.includes('pro') || planId.includes('yearly') || planId.includes('monthly')) {
+      if (planStatus === 'active' && (planId.includes('pro') || planId.includes('yearly') || planId.includes('monthly'))) {
         isPro = true;
       }
     }
@@ -303,6 +307,7 @@ export async function GET(req: NextRequest) {
     stats: { reviewsThisMonth, shareLinkScans, averageRating: normalizedRating },
     recentFeedback,
     isPro,
+    planStatus,
     analytics,
     squareConnection,
     activityFeed

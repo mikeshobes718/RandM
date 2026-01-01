@@ -26,47 +26,39 @@ export default function MobileMenu() {
     <div className="md:hidden">
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 text-slate-600 hover:text-brand transition-colors focus:outline-none bg-slate-50 rounded-xl border border-slate-200 shadow-sm"
+        className="p-2.5 text-slate-600 hover:text-brand transition-all focus:outline-none bg-slate-50 rounded-2xl border border-slate-200 active:scale-95"
         aria-label="Open menu"
       >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
 
-      {/* Backdrop */}
+      {/* Fullscreen Menu Overlay */}
       <div 
-        className={`fixed inset-0 z-[99998] bg-slate-900/60 backdrop-blur-md transition-opacity duration-500 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={() => setIsOpen(false)}
-      />
-
-      {/* Fullscreen Menu */}
-      <div 
-        className={`fixed inset-0 z-[99999] bg-white transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] transform ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed inset-0 z-[99999] bg-white transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="flex flex-col h-full bg-white relative">
-          {/* Menu Header */}
-          <div className="flex items-center justify-between px-8 h-24 border-b border-slate-50 flex-shrink-0">
+        <div className="flex flex-col h-full bg-white relative overflow-hidden">
+          {/* Menu Header - Solid & Fixed */}
+          <div className="flex items-center justify-between px-8 h-20 border-b border-slate-100 bg-white flex-shrink-0">
             <div className="flex flex-col">
-              <span className="text-3xl font-black tracking-tighter text-brand leading-none">R&M</span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Navigation</span>
+              <span className="text-2xl font-black tracking-tighter text-brand leading-none">R&M</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Navigation Menu</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-3 text-slate-400 hover:text-brand transition-all rounded-2xl bg-slate-50 border border-slate-100 active:scale-90"
+              className="p-2.5 text-slate-400 hover:text-brand transition-all rounded-xl bg-slate-50 border border-slate-100 active:scale-90"
             >
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
-          {/* Nav Links */}
-          <div className="flex-1 overflow-y-auto px-6 py-12 flex flex-col justify-center">
+          {/* Main Links - Centered and Large */}
+          <div className="flex-1 overflow-y-auto px-6 flex flex-col justify-center bg-white">
             <nav className="flex flex-col gap-4">
               {[
                 { href: '/how-it-works', label: 'How it works', icon: 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
@@ -77,37 +69,43 @@ export default function MobileMenu() {
                 <Link 
                   key={link.href}
                   href={link.href} 
-                  className={`flex items-center gap-6 px-6 py-6 rounded-[32px] text-2xl font-black transition-all ${
+                  className={`flex items-center gap-5 px-6 py-5 rounded-[24px] text-xl font-black transition-all ${
                     pathname === link.href 
-                    ? 'bg-brand text-white shadow-2xl shadow-brand/30 scale-[1.02]' 
-                    : 'text-slate-900 hover:bg-slate-50'
+                    ? 'bg-brand text-white shadow-xl shadow-brand/30 scale-[1.02]' 
+                    : 'text-slate-900 bg-slate-50 border border-slate-100 hover:bg-slate-100 active:scale-95'
                   }`}
                 >
-                  <div className={`p-3 rounded-2xl ${pathname === link.href ? 'bg-white/20' : 'bg-slate-100'}`}>
-                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d={link.icon} />
+                  <div className={`p-2.5 rounded-xl transition-colors ${pathname === link.href ? 'bg-white/20' : 'bg-white shadow-sm'}`}>
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={link.icon} />
                     </svg>
                   </div>
-                  {link.label}
+                  <span>{link.label}</span>
                 </Link>
               ))}
             </nav>
           </div>
 
-          {/* Footer Actions */}
-          <div className="p-8 border-t border-slate-100 bg-white space-y-4 pb-12">
+          {/* Footer Actions - Solid Background */}
+          <div className="p-8 border-t border-slate-100 bg-slate-50/50 space-y-4 pb-12 flex-shrink-0">
             <Link
               href="/register"
-              className="primary-button w-full h-20 flex items-center justify-center text-lg font-black uppercase tracking-widest shadow-2xl shadow-brand/40 active:scale-[0.98] transition-all"
+              className="primary-button w-full h-16 flex items-center justify-center text-lg font-black uppercase tracking-widest shadow-xl shadow-brand/30 active:scale-[0.98] transition-all"
             >
               Get Started Free
             </Link>
             <Link
               href="/login"
-              className="secondary-button w-full h-20 flex items-center justify-center text-lg font-black border-2 border-slate-200 bg-white active:scale-[0.98] transition-all"
+              className="secondary-button w-full h-16 flex items-center justify-center text-lg font-black border-2 border-slate-200 bg-white hover:border-brand/20 active:scale-[0.98] transition-all"
             >
               Sign In
             </Link>
+            <div className="flex items-center justify-center gap-2 pt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              Secure SSL Platform
+            </div>
           </div>
         </div>
       </div>

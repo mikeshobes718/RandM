@@ -66,17 +66,19 @@ export default function SiteHeader() {
           <nav className="flex items-center gap-3 md:gap-6">
             <Link 
               href="/how-it-works" 
-              className={`text-[10px] md:text-sm font-bold transition-all px-2.5 md:px-3 py-1.5 rounded-full flex items-center gap-1.5 ${
+              className={`text-[11px] md:text-sm font-black transition-all px-3 md:px-4 py-2 rounded-full flex items-center gap-2 shadow-sm ${
                 pathname === '/how-it-works' 
-                ? 'bg-brand text-white shadow-lg shadow-brand/20' 
-                : 'text-brand bg-brand/5 hover:bg-brand/10 border border-brand/10'
+                ? 'bg-brand text-white shadow-brand/20' 
+                : 'bg-brand/5 text-brand border border-brand/10 hover:bg-brand/10'
               }`}
             >
-              <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>How it works</span>
+              <div className="relative flex items-center justify-center">
+                <svg className="w-3.5 h-3.5 md:w-4 md:h-4 relative z-10" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                <span className="absolute inset-0 bg-brand/20 rounded-full animate-ping opacity-40"></span>
+              </div>
+              <span className="uppercase tracking-tight">How it works</span>
             </Link>
             <div className="hidden md:flex items-center gap-6">
               <Link href="/features" className="text-sm font-medium text-muted hover:text-foreground transition-colors">Features</Link>

@@ -1,46 +1,114 @@
 "use client";
 import BusinessSetupForm from "@/components/onboarding/BusinessSetupForm";
-import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import Link from 'next/link';
 
 function OnboardingContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const isEditMode = searchParams?.get('edit') === '1';
+  const [loading, setLoading] = useState(!isEditMode);
+
+  useEffect(() => {
+    if (isEditMode) return;
+
+    const checkPlan = async () => {
+      try {
+        const response = await fetch('/api/plan/status');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.status === 'none') {
+            router.replace('/select-plan');
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check plan status:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkPlan();
+  }, [isEditMode, router]);
+
+  if (loading) {
+    return (
+      <div className="w-full max-w-xl flex flex-col items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
+        <p className="mt-4 text-slate-500 font-medium">Verifying plan status...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="w-full max-w-xl">
-      <div className="text-center mb-10">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-brand/10 text-brand mb-6 font-bold">
-          {isEditMode ? 'Edit' : '1'}
+    <div className="w-full max-w-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Step Indicator */}
+      {!isEditMode && (
+        <div className="flex items-center justify-between mb-16 px-2 max-w-md mx-auto">
+          {[
+            { label: 'Register', status: 'complete' },
+            { label: 'Verify', status: 'complete' },
+            { label: 'Plan', status: 'complete' },
+            { label: 'Setup', status: 'active' }
+          ].map((step, i) => (
+            <div key={step.label} className="flex flex-col items-center gap-2">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all ${
+                step.status === 'complete' ? 'bg-emerald-500 border-emerald-500 text-white' :
+                step.status === 'active' ? 'bg-white border-brand text-brand shadow-lg shadow-brand/20' :
+                'bg-white border-slate-200 text-slate-400'
+              }`}>
+                {step.status === 'complete' ? (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                ) : i + 1}
+              </div>
+              <span className={`text-[9px] font-black uppercase tracking-widest ${
+                step.status === 'active' ? 'text-brand' : 'text-slate-400'
+              }`}>{step.label}</span>
+            </div>
+          ))}
         </div>
-        <h1 className="text-3xl font-black tracking-tight mb-3">
-          {isEditMode ? 'Business Details' : 'Connect your business'}
+      )}
+
+      <div className="text-center mb-10">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/5 border border-brand/10 text-brand text-[10px] font-black uppercase tracking-widest mb-6">
+          {isEditMode ? 'Settings' : 'Final Step'}
+        </div>
+        <h1 className="text-4xl font-black tracking-tight text-slate-900 leading-tight mb-3">
+          {isEditMode ? 'Business Details' : 'Connect Your Business'}
         </h1>
-        <p className="text-muted text-sm max-w-sm mx-auto leading-relaxed">
+        <p className="text-slate-500 font-medium max-w-sm mx-auto leading-relaxed">
           {isEditMode 
             ? 'Update your business information and review link.' 
             : 'Search for your business on Google to automatically sync your review link and details.'}
         </p>
       </div>
 
-      <div className="premium-card p-8 rounded-3xl shadow-xl">
+      <div className="premium-card p-10 rounded-[40px] shadow-2xl shadow-slate-200/60 bg-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full blur-3xl -mr-16 -mt-16 animate-pulse"></div>
         <BusinessSetupForm />
       </div>
 
-      <div className="mt-8 text-center">
-        <p className="text-xs text-muted">
-          Secure connection via Google Places API. <br />
-          Need help? <a href="/contact" className="text-brand hover:underline font-medium">Contact support</a>
-        </p>
-      </div>
+      {!isEditMode && (
+        <div className="mt-12 text-center">
+          <p className="text-xs text-slate-400 font-medium">
+            Having trouble? <Link href="/contact" className="text-brand font-black hover:underline uppercase tracking-widest ml-1">Contact Support</Link>
+          </p>
+        </div>
+      )}
     </div>
   );
 }
 
 export default function OnboardingBusinessPage() {
   return (
-    <main className="min-h-[80vh] flex flex-col items-center justify-center py-20 px-6">
-      <Suspense fallback={<div className="animate-pulse bg-accent rounded-3xl h-[500px] w-full max-w-xl" />}>
+    <main className="min-h-screen bg-slate-50 flex flex-col items-center justify-center py-20 px-6">
+      <Suspense fallback={
+        <div className="flex flex-col items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand"></div>
+        </div>
+      }>
         <OnboardingContent />
       </Suspense>
     </main>
