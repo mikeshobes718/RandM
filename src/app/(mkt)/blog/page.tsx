@@ -2,6 +2,18 @@ import Link from "next/link";
 
 const POSTS = [
   {
+    title: "Scripts that turn service moments into ⭐⭐⭐⭐⭐ reviews",
+    slug: "scripts-that-convert",
+    date: "May 2026",
+    excerpt: "Use these proven prompts for in-person, text, and email follow-ups that feel human and convert.",
+  },
+  {
+    title: "QR design principles that actually drive scans",
+    slug: "qr-design",
+    date: "April 2026",
+    excerpt: "Placement, incentive framing, and artwork guidelines for high-intent customer journeys.",
+  },
+  {
     title: "Reputation on Autopilot: Scaling Your 5-Star Growth",
     slug: "reputation-on-autopilot",
     date: "Feb 2026",
@@ -14,18 +26,6 @@ const POSTS = [
     date: "Jan 2026",
     excerpt: "Analysis of the fundamental shift from simply managing reviews to engineering perfect outcomes through smart filtering.",
     isLive: true
-  },
-  {
-    title: "Scripts that turn service moments into ⭐⭐⭐⭐⭐ reviews",
-    slug: "scripts-that-convert",
-    date: "May 2026",
-    excerpt: "Use these proven prompts for in-person, text, and email follow-ups that feel human and convert.",
-  },
-  {
-    title: "QR design principles that actually drive scans",
-    slug: "qr-design",
-    date: "April 2026",
-    excerpt: "Placement, incentive framing, and artwork guidelines for high-intent customer journeys.",
   },
 ];
 
