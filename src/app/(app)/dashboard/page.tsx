@@ -264,50 +264,86 @@ function DashboardContent() {
         {/* Main Toolkit Card */}
         <div className="lg:col-span-7 space-y-8">
           <section className="premium-card p-8 rounded-3xl overflow-hidden relative group">
-            {/* ... rest of the card ... */}
-            <h2 className="text-xl font-bold mb-6">Review Toolkit</h2>
+            <h2 className="text-xl font-bold mb-2">Review Toolkit</h2>
+            <p className="text-sm text-muted mb-8 font-medium">Your core tools for collecting customer reviews.</p>
             
-            <div className="space-y-6">
-              <div className="relative">
-                <label className="text-xs font-bold text-muted uppercase tracking-wider block mb-3">Your Landing Link</label>
-                <div className="flex gap-2">
-                  <div className="flex-1 h-11 bg-accent rounded-lg border border-border px-4 flex items-center text-sm font-mono truncate">
+            <div className="space-y-8">
+              <div className="relative group/copy">
+                <label className="text-[10px] font-black text-muted uppercase tracking-widest block mb-2">Your Smart Landing Link</label>
+                <div className="flex gap-2 p-1 bg-slate-50 border border-border rounded-2xl">
+                  <div className="flex-1 h-11 bg-white rounded-xl px-4 flex items-center text-sm font-mono truncate text-slate-600 border border-slate-100 shadow-sm">
                     {landingUrl}
                   </div>
-                  <button onClick={handleCopyLink} className="secondary-button !h-11 px-6 text-sm">
-                    {copyState === 'copied' ? 'Copied' : 'Copy'}
+                  <button onClick={handleCopyLink} className={`primary-button !h-11 px-8 text-xs font-black uppercase tracking-widest transition-all ${copyState === 'copied' ? '!bg-emerald-500 !shadow-emerald-100' : ''}`}>
+                    {copyState === 'copied' ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                        Copied
+                      </span>
+                    ) : 'Copy Link'}
                   </button>
                 </div>
-                <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                  <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
-                    The public link customers visit to leave you feedback.
+                <div className="absolute inset-x-0 -top-10 opacity-0 group-hover/copy:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+                  <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+                    The smart link that filters reviews before they reach Google.
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-8 items-start pt-4 border-t border-border">
-                <div className="bg-white p-3 border border-border rounded-xl shadow-sm shrink-0">
-                  <img
-                    src={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=8`}
-                    alt="QR Code"
-                    className="w-32 h-32"
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start pt-8 border-t border-border/50">
+                <div className="md:col-span-4 flex flex-col items-center gap-4">
+                  <div className="bg-white p-4 border-4 border-slate-50 rounded-[32px] shadow-2xl shadow-slate-200/50 group-hover:scale-[1.02] transition-transform">
+                    <img
+                      src={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=8`}
+                      alt="QR Code"
+                      className="w-full aspect-square max-w-[160px]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2 w-full">
+                    <a
+                      href={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=12`}
+                      download={`${business.name.replace(/\s+/g, '-').toLowerCase()}-qr.png`}
+                      className="secondary-button !h-10 text-[10px] font-black uppercase tracking-widest bg-white shadow-sm hover:shadow-md transition-all"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Download PNG
+                    </a>
+                    <button 
+                      onClick={() => window.print()}
+                      className="text-[10px] font-black text-slate-400 hover:text-brand uppercase tracking-widest text-center py-2 transition-colors"
+                    >
+                      Print for display
+                    </button>
+                  </div>
                 </div>
-                <div className="space-y-4">
-                  <h3 className="text-lg font-bold">Smart QR Code</h3>
-                  <p className="text-sm text-muted leading-relaxed">
-                    Display this QR code at your checkout or tables. Happy customers are routed to Google, while others provide private feedback.
-                  </p>
-                  <a
-                    href={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=8`}
-                    download
-                    className="text-brand text-sm font-bold hover:underline inline-flex items-center gap-2"
-                  >
-                    Download PNG
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                  </a>
+                <div className="md:col-span-8 space-y-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-lg bg-brand/10 text-brand flex items-center justify-center text-xs">✨</span>
+                      Smart Rep Engine
+                    </h3>
+                    <p className="text-sm text-slate-500 leading-relaxed font-medium">
+                      This QR code identifies happy customers automatically. If they pick 5 stars, they go to Google. If they pick less, they send you a private lead.
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Best Place to Display</div>
+                      <p className="text-xs text-slate-600 font-bold">Checkout Counter</p>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Expected Conversion</div>
+                      <p className="text-xs text-emerald-600 font-bold">+40% Review Rate</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 items-center text-[10px] font-black text-slate-400 uppercase tracking-widest bg-amber-50 p-3 rounded-xl border border-amber-100">
+                    <span className="text-amber-500 text-sm">💡</span>
+                    <span>Pro Tip: Add this code to your printed receipts for the highest scan rate.</span>
+                  </div>
                 </div>
               </div>
             </div>
