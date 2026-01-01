@@ -21,6 +21,44 @@ export default function HowItWorks() {
           </p>
         </div>
 
+        {/* YouTube Explainer Video */}
+        <div className="max-w-5xl mx-auto mb-24">
+          <div className="relative aspect-video rounded-[40px] overflow-hidden shadow-2xl shadow-brand/20 border-8 border-white bg-slate-100 group">
+            <iframe 
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/w1DEmxfCy6A?autoplay=0&rel=0"
+              title="Reviews & Marketing Explainer Video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+            <div className="absolute inset-0 pointer-events-none border border-brand/5 rounded-[32px]"></div>
+          </div>
+          <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-6 px-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <h4 className="font-bold text-slate-900">Watch the Walkthrough</h4>
+                <p className="text-xs text-muted font-medium">See how we engineer 5-star reputations.</p>
+              </div>
+            </div>
+            <div className="flex -space-x-3">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400">
+                  {String.fromCharCode(64 + i)}
+                </div>
+              ))}
+              <div className="w-10 h-10 rounded-full border-2 border-white bg-brand flex items-center justify-center text-[10px] font-black text-white">
+                +500
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Visual Explainer Image */}
         <div className="relative mb-24 rounded-[40px] overflow-hidden border-8 border-white shadow-2xl shadow-brand/10 bg-slate-50 group">
           <img 

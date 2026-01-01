@@ -96,49 +96,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Explainer Video Section */}
-      <section className="pb-24">
-        <div className="container mx-auto px-6">
-          <div className="max-w-5xl mx-auto">
-            <div className="relative aspect-video rounded-[32px] overflow-hidden shadow-2xl shadow-brand/20 border-8 border-white bg-slate-100 group">
-              <video 
-                className="w-full h-full object-cover"
-                controls
-                poster="/api/qr?data=https://reviewsandmarketing.com&format=png&scale=1" // Placeholder poster
-              >
-                <source src="/explainer.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-              <div className="absolute inset-0 pointer-events-none border border-brand/5 rounded-[24px]"></div>
-            </div>
-            <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-6 px-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900">Product Walkthrough</h4>
-                  <p className="text-xs text-muted font-medium">See the Smart Routing engine in action.</p>
-                </div>
-              </div>
-              <div className="flex -space-x-3">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400">
-                    {String.fromCharCode(64 + i)}
-                  </div>
-                ))}
-                <div className="w-10 h-10 rounded-full border-2 border-white bg-brand flex items-center justify-center text-[10px] font-black text-white">
-                  +500
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Steps Section */}
       <section className="py-24 bg-accent/50 border-y border-border">
         <div className="container mx-auto px-6">
