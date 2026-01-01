@@ -167,10 +167,21 @@ export default function Home() {
           <p className="text-muted mb-10 max-w-xl mx-auto">
             Join 500+ businesses using Reviews & Marketing to grow their online presence.
           </p>
-          <div className="flex flex-col items-center gap-6">
-            <HomeCtaButtons variant="hero" />
-            <p className="text-xs text-muted">No credit card required • Setup in 5 minutes</p>
-          </div>
+            <div className="flex flex-col items-center gap-6">
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <HomeCtaButtons variant="hero" />
+                <Link 
+                  href="/how-it-works" 
+                  className="secondary-button !h-12 px-8 flex items-center gap-2 group"
+                >
+                  See How It Works
+                  <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </Link>
+              </div>
+              <p className="text-xs text-muted">No credit card required • Setup in 5 minutes</p>
+            </div>
         </div>
       </section>
 

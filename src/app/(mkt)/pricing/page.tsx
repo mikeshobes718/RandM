@@ -124,6 +124,14 @@ export default function Pricing() {
                   {f}
                 </li>
               ))}
+              <li className="pt-2">
+                <Link href="/how-it-works" className="text-[10px] font-bold text-brand uppercase tracking-widest hover:underline flex items-center gap-1">
+                  How the free plan works
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </li>
             </ul>
             <button 
               onClick={handleStarterCta}
@@ -156,6 +164,14 @@ export default function Pricing() {
                   {f}
                 </li>
               ))}
+              <li className="pt-2">
+                <Link href="/how-it-works" className="text-[10px] font-bold text-brand uppercase tracking-widest hover:underline flex items-center gap-1">
+                  See Pro in action
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </li>
             </ul>
             <button 
               onClick={handleProCta}
