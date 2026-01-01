@@ -63,6 +63,7 @@ export default function SiteHeader() {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
+            <Link href="/how-it-works" className="text-sm font-medium text-muted hover:text-foreground transition-colors">How it works</Link>
             <Link href="/features" className="text-sm font-medium text-muted hover:text-foreground transition-colors">Features</Link>
             <Link href="/pricing" className="text-sm font-medium text-muted hover:text-foreground transition-colors">Pricing</Link>
           </nav>

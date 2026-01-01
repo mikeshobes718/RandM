@@ -22,6 +22,7 @@ export default function SiteFooter() {
           <div className="md:col-span-2">
             <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-6">Product</h3>
             <ul className="space-y-4">
+              <li><Link href="/how-it-works" className="text-sm text-slate-400 hover:text-brand transition-colors">How it works</Link></li>
               <li><Link href="/features" className="text-sm text-slate-400 hover:text-brand transition-colors">Features</Link></li>
               <li><Link href="/pricing" className="text-sm text-slate-400 hover:text-brand transition-colors">Pricing</Link></li>
               <li><Link href="/dashboard" className="text-sm text-slate-400 hover:text-brand transition-colors">Dashboard</Link></li>
