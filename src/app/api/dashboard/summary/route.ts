@@ -37,25 +37,8 @@ export async function GET(req: NextRequest) {
   if (!uid) return new NextResponse('Unauthorized', { status: 401 });
 
   const supa = getSupabaseAdmin();
-  const { data: biz, error } = await supa
-    .from('businesses')
-    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
-    .eq('owner_uid', uid)
-    .maybeSingle();
 
-  if (error) return new NextResponse(error.message, { status: 500 });
-  if (!biz) {
-    return NextResponse.json({
-      business: null,
-      stats: {
-        reviewsThisMonth: 0,
-        shareLinkScans: 0,
-        averageRating: null,
-      },
-    });
-  }
-
-  // Fetch plan status to check if Pro
+  // Fetch plan status regardless of business existence
   let isPro = false;
   let planStatus = 'none';
   try {
@@ -76,6 +59,27 @@ export async function GET(req: NextRequest) {
     }
   } catch (e) {
     console.error('[DASHBOARD API] Error checking subscription:', e);
+  }
+
+  const { data: biz, error } = await supa
+    .from('businesses')
+    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
+    .eq('owner_uid', uid)
+    .maybeSingle();
+
+  if (error) return new NextResponse(error.message, { status: 500 });
+  
+  if (!biz) {
+    return NextResponse.json({
+      business: null,
+      stats: {
+        reviewsThisMonth: 0,
+        shareLinkScans: 0,
+        averageRating: null,
+      },
+      isPro,
+      planStatus
+    });
   }
 
   // Basic Stats

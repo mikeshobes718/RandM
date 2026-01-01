@@ -1,20 +1,42 @@
 import { NextResponse } from 'next/server';
 import { requireUid, verifyIdTokenViaRest } from '@/lib/authServer';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getAuthAdmin } from '@/lib/firebaseAdmin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   let uid = await requireUid().catch(() => null);
+  let email = '';
+
   if (!uid) {
     const authHeader = request.headers.get('authorization') || '';
     const token = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7) : '';
     if (token) {
-      uid = await verifyIdTokenViaRest(token).then((r) => r.uid).catch(() => null);
+      try {
+        const decoded = await verifyIdTokenViaRest(token);
+        uid = decoded.uid;
+        email = (decoded as any).email || '';
+      } catch {}
     }
   }
+
+  if (uid && !email) {
+    try {
+      const auth = getAuthAdmin();
+      const user = await auth.getUser(uid);
+      email = user.email || '';
+    } catch {}
+  }
+
   if (!uid) return new NextResponse('Unauthorized', { status: 401 });
+
+  // Co-founder override
+  if (email && email.toLowerCase() === 'bladespindler@gmail.com') {
+    return NextResponse.json({ status: 'active', plan: 'pro' });
+  }
+
   let data = null;
   let error = null;
   const supa = getSupabaseAdmin();

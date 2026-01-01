@@ -25,7 +25,18 @@ async function getPostVerificationRedirect(): Promise<string> {
       }
     }
     
-    // Default fallback: if they have a plan but no business, go to onboarding
+    // Default fallback: if we reach here and status wasn't 'none', but no business exists
+    // it usually means they have a plan but haven't setup business.
+    // However, to be safe, if we can't confirm plan, redirect to /select-plan
+    const planFinalCheck = await fetch('/api/plan/status', { credentials: 'include' });
+    if (planFinalCheck.ok) {
+      const finalData = await planFinalCheck.json();
+      if (finalData.status === 'none') return '/select-plan';
+    } else {
+      // If we can't even check plan, assume they need one
+      return '/select-plan';
+    }
+
     return '/onboarding/business';
   } catch (error) {
     console.error('[VERIFY] Redirect check failed:', error);
