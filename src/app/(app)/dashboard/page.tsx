@@ -88,14 +88,15 @@ function DashboardContent() {
         setSquareStatus(data.squareConnection ?? null);
         
         // Onboarding redirect logic
-        // If no business AND no active plan, redirect to select-plan
-        if (!data.business && data.planStatus === 'none') {
-          window.location.href = '/select-plan';
+        // 1. If no active plan, must pick one
+        if (data.planStatus === 'none') {
+          window.location.replace('/select-plan');
           return;
         }
 
-        if (data.business && !data.business.google_place_id && !isFromEdit) {
-          window.location.href = '/onboarding/business';
+        // 2. If no business OR business exists but Google not connected, go to setup
+        if (!data.business || (!data.business.google_place_id && !isFromEdit)) {
+          window.location.replace('/onboarding/business');
           return;
         }
 
@@ -131,23 +132,8 @@ function DashboardContent() {
     );
   }
 
-  if (!business) {
-    return (
-      <div className="max-w-xl mx-auto py-12 px-6">
-        <div className="premium-card p-10 rounded-3xl text-center">
-          <div className="w-16 h-16 bg-brand/10 text-brand rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold mb-4">Welcome! Let's get started.</h1>
-          <p className="text-muted mb-8 text-balance text-sm leading-relaxed">
-            Connect your business to start collecting 5-star Google reviews and private feedback from your customers.
-          </p>
-          <BusinessSetupForm />
-        </div>
-      </div>
-    );
+  if (!business || !business.id) {
+    return null; // The useEffect will handle redirecting to /onboarding/business
   }
 
   return (

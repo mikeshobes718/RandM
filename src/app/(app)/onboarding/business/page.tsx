@@ -15,11 +15,15 @@ function OnboardingContent() {
 
     const checkPlan = async () => {
       try {
-        const response = await fetch('/api/plan/status');
+        const response = await fetch('/api/dashboard/summary');
         if (response.ok) {
           const data = await response.json();
-          if (data.status === 'none') {
+          if (data.planStatus === 'none') {
             router.replace('/select-plan');
+            return;
+          }
+          if (data.business?.google_place_id) {
+            router.replace('/dashboard');
             return;
           }
         }
