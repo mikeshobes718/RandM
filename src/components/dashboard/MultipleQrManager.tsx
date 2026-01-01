@@ -207,6 +207,5 @@ export default function MultipleQrManager({ businessId, landingUrl }: Props) {
       </div>
     </section>
   );
-  );
 }
 
