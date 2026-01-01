@@ -2,6 +2,13 @@ import Link from "next/link";
 
 const POSTS = [
   {
+    title: "Reputation on Autopilot: Scaling Your 5-Star Growth",
+    slug: "reputation-on-autopilot",
+    date: "Feb 2026",
+    excerpt: "Discover the power of POS integration and how to automate your entire review request workflow for consistent results.",
+    isLive: true
+  },
+  {
     title: "The 'Review Filter': How Businesses Are Engineering 5-Star Google Ratings",
     slug: "the-review-filter",
     date: "Jan 2026",
