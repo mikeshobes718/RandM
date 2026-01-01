@@ -86,7 +86,17 @@ export default function VerifyEmailPage() {
     setMessageType('info');
     try {
       await applyActionCode(clientAuth, code);
-      if (clientAuth.currentUser) await clientAuth.currentUser.reload();
+      if (clientAuth.currentUser) {
+        await clientAuth.currentUser.reload();
+        // Refresh session cookie after verification
+        const token = await clientAuth.currentUser.getIdToken(true);
+        await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken: token, days: 7 }),
+          credentials: 'include',
+        });
+      }
       setMessage('✅ Email verified successfully! Redirecting...');
       setMessageType('success');
       const url = await getPostVerificationRedirect();
@@ -183,12 +193,27 @@ export default function VerifyEmailPage() {
               <p className="text-[10px] font-bold text-amber-900 uppercase tracking-widest mb-1">Backup Verification</p>
               <p className="text-[10px] text-amber-700 mb-3 leading-tight">If the email didn't arrive, you can use this link to verify instantly.</p>
               <div className="flex flex-col gap-2">
-                <a
-                  href={verificationLink}
-                  className="primary-button !bg-amber-600 !h-9 !text-xs w-full"
+                <button
+                  onClick={() => {
+                    try {
+                      const url = new URL(verificationLink);
+                      const oobCode = url.searchParams.get('oobCode');
+                      if (oobCode) {
+                        handleVerificationCode(oobCode);
+                      } else {
+                        setMessage('Invalid verification link format.');
+                        setMessageType('error');
+                      }
+                    } catch (e) {
+                      setMessage('Failed to parse verification link.');
+                      setMessageType('error');
+                    }
+                  }}
+                  disabled={verifying}
+                  className="primary-button !bg-amber-600 !h-9 !text-xs w-full disabled:opacity-50"
                 >
-                  Verify Instantly
-                </a>
+                  {verifying ? 'Verifying...' : 'Verify Instantly'}
+                </button>
                 <button
                   onClick={handleCopyLink}
                   className="secondary-button !h-9 !text-xs w-full"
