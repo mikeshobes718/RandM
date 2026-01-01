@@ -2,19 +2,23 @@ import Link from "next/link";
 
 const POSTS = [
   {
+    title: "The 'Review Filter': How Businesses Are Engineering 5-Star Google Ratings",
+    slug: "the-review-filter",
+    date: "Jan 2026",
+    excerpt: "Analysis of the fundamental shift from simply managing reviews to engineering perfect outcomes through smart filtering.",
+    isLive: true
+  },
+  {
     title: "Scripts that turn service moments into ⭐⭐⭐⭐⭐ reviews",
+    slug: "scripts-that-convert",
     date: "May 2026",
     excerpt: "Use these proven prompts for in-person, text, and email follow-ups that feel human and convert.",
   },
   {
     title: "QR design principles that actually drive scans",
+    slug: "qr-design",
     date: "April 2026",
     excerpt: "Placement, incentive framing, and artwork guidelines for high-intent customer journeys.",
-  },
-  {
-    title: "The service recovery ladder for 3★ experiences",
-    date: "March 2026",
-    excerpt: "How to triage, respond, and turn critical feedback into advocates in under 24 hours.",
   },
 ];
 
@@ -39,17 +43,31 @@ export default function BlogPage() {
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
           {POSTS.map((post) => (
-            <article key={post.title} className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl">
-              <div className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-indigo-600">
-                {post.date}
-              </div>
-              <h2 className="mt-4 text-xl font-semibold text-slate-900 group-hover:text-indigo-600">{post.title}</h2>
-              <p className="mt-3 text-sm text-slate-700 leading-relaxed flex-1">{post.excerpt}</p>
-              <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-400">
-                Coming soon
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              </div>
-            </article>
+            <Link 
+              key={post.title} 
+              href={post.isLive ? `/blog/${post.slug}` : "#"}
+              className={`group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl ${!post.isLive ? 'cursor-default' : ''}`}
+            >
+              <article>
+                <div className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-indigo-600">
+                  {post.date}
+                </div>
+                <h2 className="mt-4 text-xl font-semibold text-slate-900 group-hover:text-indigo-600">{post.title}</h2>
+                <p className="mt-3 text-sm text-slate-700 leading-relaxed flex-1">{post.excerpt}</p>
+                <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-400">
+                  {post.isLive ? 'Read Analysis' : 'Coming soon'}
+                  {post.isLive ? (
+                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  ) : (
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                </div>
+              </article>
+            </Link>
           ))}
         </div>
       </section>
