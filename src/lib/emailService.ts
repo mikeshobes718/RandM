@@ -104,8 +104,10 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
           message: error?.message,
           code: error?.code,
           statusCode: error?.statusCode,
+          fullError: JSON.stringify(error)
         });
 
+        lastError = `Postmark Error: ${error?.message || 'Unknown'} (Code: ${error?.code || 'None'})`;
         const statusCode = Number(error?.statusCode);
         const isSuppressed = statusCode === 422 && Number(error?.code) === 406;
         const isClientError = statusCode >= 400 && statusCode < 500;

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import MobileMenu from "./MobileMenu";
 
 export default function SiteHeader() {
   const [authed, setAuthed] = useState(false);
@@ -62,10 +63,10 @@ export default function SiteHeader() {
             <span className="text-xl font-black tracking-tighter text-brand">R&M</span>
           </Link>
           
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="flex items-center gap-4 md:gap-6">
             <Link 
               href="/how-it-works" 
-              className={`text-sm font-bold transition-all px-3 py-1.5 rounded-full ${
+              className={`text-[10px] md:text-sm font-bold transition-all px-2 md:px-3 py-1 md:py-1.5 rounded-full ${
                 pathname === '/how-it-works' 
                 ? 'bg-brand text-white shadow-lg shadow-brand/20' 
                 : 'text-muted hover:text-brand bg-brand/5 hover:bg-brand/10 border border-brand/10'
@@ -73,12 +74,15 @@ export default function SiteHeader() {
             >
               How it works
             </Link>
-            <Link href="/features" className="text-sm font-medium text-muted hover:text-foreground transition-colors">Features</Link>
-            <Link href="/pricing" className="text-sm font-medium text-muted hover:text-foreground transition-colors">Pricing</Link>
+            <div className="hidden md:flex items-center gap-6">
+              <Link href="/features" className="text-sm font-medium text-muted hover:text-foreground transition-colors">Features</Link>
+              <Link href="/pricing" className="text-sm font-medium text-muted hover:text-foreground transition-colors">Pricing</Link>
+            </div>
           </nav>
         </div>
 
         <div className="flex items-center gap-4">
+          <MobileMenu />
           {loading ? (
             <div className="h-8 w-20 animate-pulse rounded-md bg-accent" />
           ) : authed ? (
