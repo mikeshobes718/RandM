@@ -10,8 +10,18 @@ function isProPlanId(planId: string | null | undefined): boolean {
 }
 
 export async function hasActivePro(uid: string): Promise<boolean> {
+  // Co-founder safety net: Bladespindler@gmail.com is always PRO
+  const FOUNDER_EMAIL = 'Bladespindler@gmail.com';
+
   try {
     const supa = getSupabaseAdmin();
+    
+    // Check if this UID belongs to the founder
+    const { data: userData } = await supa.from('users').select('email').eq('uid', uid).maybeSingle();
+    if (userData?.email?.toLowerCase() === FOUNDER_EMAIL.toLowerCase()) {
+      return true;
+    }
+
     const { data } = await supa
       .from('subscriptions')
       .select('status, plan_id')
