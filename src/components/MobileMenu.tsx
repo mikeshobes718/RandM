@@ -25,78 +25,77 @@ export default function MobileMenu() {
   return (
     <div className="md:hidden">
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-muted hover:text-brand transition-colors focus:outline-none"
-        aria-label="Toggle menu"
+        onClick={() => setIsOpen(true)}
+        className="p-2 text-slate-600 hover:text-brand transition-colors focus:outline-none bg-slate-50 rounded-xl border border-slate-200 shadow-sm"
+        aria-label="Open menu"
       >
-        {isOpen ? (
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        )}
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
       </button>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] bg-background animate-in fade-in slide-in-from-top-4 duration-200">
-          <div className="container mx-auto px-6 pt-20 h-full flex flex-col">
-            <nav className="flex flex-col gap-6 py-8">
-              <Link 
-                href="/how-it-works" 
-                className={`text-2xl font-black transition-all ${
-                  pathname === '/how-it-works' ? 'text-brand' : 'text-slate-900'
-                }`}
-              >
-                How it works
-              </Link>
-              <Link 
-                href="/features" 
-                className={`text-2xl font-black transition-all ${
-                  pathname === '/features' ? 'text-brand' : 'text-slate-900'
-                }`}
-              >
-                Features
-              </Link>
-              <Link 
-                href="/pricing" 
-                className={`text-2xl font-black transition-all ${
-                  pathname === '/pricing' ? 'text-brand' : 'text-slate-900'
-                }`}
-              >
-                Pricing
-              </Link>
-            </nav>
+      {/* Backdrop */}
+      <div 
+        className={`fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsOpen(false)}
+      />
 
-            <div className="mt-auto pb-12 space-y-4">
-              <Link
-                href="/register"
-                className="primary-button w-full h-14 text-lg flex items-center justify-center"
-              >
-                Get Started Free
-              </Link>
-              <Link
-                href="/login"
-                className="secondary-button w-full h-14 text-lg flex items-center justify-center"
-              >
-                Sign In
-              </Link>
-            </div>
-            
+      {/* Side Sheet */}
+      <div className={`fixed top-0 right-0 z-[101] h-full w-[280px] bg-white shadow-2xl transition-transform duration-300 ease-out transform ${
+        isOpen ? 'translate-x-0' : 'translate-x-full'
+      }`}>
+        <div className="flex flex-col h-full p-6">
+          <div className="flex items-center justify-between mb-10">
+            <span className="text-xl font-black tracking-tighter text-brand">R&M</span>
             <button
               onClick={() => setIsOpen(false)}
-              className="absolute top-5 right-6 p-2 text-muted hover:text-brand transition-colors"
+              className="p-2 text-slate-400 hover:text-brand transition-colors rounded-lg bg-slate-50 border border-slate-100"
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
+
+          <nav className="flex flex-col gap-2">
+            {[
+              { href: '/how-it-works', label: 'How it works' },
+              { href: '/features', label: 'Features' },
+              { href: '/pricing', label: 'Pricing' },
+              { href: '/blog', label: 'Blog' },
+            ].map((link) => (
+              <Link 
+                key={link.href}
+                href={link.href} 
+                className={`flex items-center px-4 py-3 rounded-xl text-base font-bold transition-all ${
+                  pathname === link.href 
+                  ? 'bg-brand/5 text-brand border border-brand/10' 
+                  : 'text-slate-600 hover:bg-slate-50 border border-transparent'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="mt-auto pt-8 border-t border-slate-100 space-y-3">
+            <Link
+              href="/register"
+              className="primary-button w-full h-12 flex items-center justify-center text-sm font-black uppercase tracking-widest shadow-lg shadow-brand/20"
+            >
+              Get Started Free
+            </Link>
+            <Link
+              href="/login"
+              className="secondary-button w-full h-12 flex items-center justify-center text-sm font-bold border border-slate-200 bg-white shadow-sm"
+            >
+              Sign In
+            </Link>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
-
