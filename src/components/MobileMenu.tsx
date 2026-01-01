@@ -57,29 +57,64 @@ export default function MobileMenu() {
             </button>
           </div>
 
-          {/* Main Links - Large Area */}
           <div className="flex-1 px-6 py-8 overflow-y-auto bg-white flex flex-col gap-4">
             {[
-              { href: '/how-it-works', label: 'How it works', icon: 'M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-              { href: '/features', label: 'Features', icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z' },
-              { href: '/pricing', label: 'Pricing', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-              { href: '/blog', label: 'Blog', icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z' },
+              { 
+                href: '/how-it-works', 
+                label: 'How it works', 
+                icon: (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                ),
+                color: 'text-blue-600',
+                bg: 'bg-blue-50'
+              },
+              { 
+                href: '/features', 
+                label: 'Features', 
+                icon: (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
+                ),
+                color: 'text-brand',
+                bg: 'bg-brand/5'
+              },
+              { 
+                href: '/pricing', 
+                label: 'Pricing', 
+                icon: (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                ),
+                color: 'text-emerald-600',
+                bg: 'bg-emerald-50'
+              },
+              { 
+                href: '/blog', 
+                label: 'Blog', 
+                icon: (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                ),
+                color: 'text-purple-600',
+                bg: 'bg-purple-50'
+              },
             ].map((link) => (
               <Link 
                 key={link.href}
                 href={link.href} 
-                className={`flex items-center gap-5 px-6 py-5 rounded-[24px] text-xl font-black transition-all ${
+                className={`flex items-center gap-5 px-6 py-5 rounded-[24px] transition-all group ${
                   pathname === link.href 
-                  ? 'bg-brand text-white shadow-xl shadow-brand/30 scale-[1.02]' 
-                  : 'text-slate-900 bg-slate-50 border border-slate-100 hover:bg-slate-100 active:scale-95'
+                  ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/20 scale-[1.02]' 
+                  : 'text-slate-900 bg-slate-50 border border-slate-100 hover:bg-white hover:border-brand/20 active:scale-95'
                 }`}
               >
-                <div className={`p-2.5 rounded-xl transition-colors ${pathname === link.href ? 'bg-white/20' : 'bg-white shadow-sm'}`}>
+                <div className={`w-12 h-12 flex items-center justify-center rounded-2xl transition-all ${
+                  pathname === link.href 
+                  ? 'bg-white/10 text-white' 
+                  : `${link.bg} ${link.color} group-hover:scale-110`
+                }`}>
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={link.icon} />
+                    {link.icon}
                   </svg>
                 </div>
-                <span>{link.label}</span>
+                <span className="text-xl font-black">{link.label}</span>
               </Link>
             ))}
           </div>
