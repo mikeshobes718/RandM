@@ -8,12 +8,15 @@ async function getPostVerificationRedirect(): Promise<string> {
   try {
     // 1. Check if user has an active subscription
     const planRes = await fetch('/api/plan/status', { credentials: 'include' });
-    if (planRes.ok) {
-      const planData = await planRes.json();
-      // If status is 'none', they definitely need a plan first
-      if (planData.status === 'none') {
-        return '/select-plan';
-      }
+    if (!planRes.ok) {
+      // If we can't check plan (e.g. 401), they MUST go to select-plan to be safe
+      console.warn('[VERIFY] Plan check failed or unauthorized, redirecting to /select-plan');
+      return '/select-plan';
+    }
+    
+    const planData = await planRes.json();
+    if (planData.status === 'none') {
+      return '/select-plan';
     }
 
     // 2. Check if they already have a business setup
@@ -25,18 +28,7 @@ async function getPostVerificationRedirect(): Promise<string> {
       }
     }
     
-    // Default fallback: if we reach here and status wasn't 'none', but no business exists
-    // it usually means they have a plan but haven't setup business.
-    // However, to be safe, if we can't confirm plan, redirect to /select-plan
-    const planFinalCheck = await fetch('/api/plan/status', { credentials: 'include' });
-    if (planFinalCheck.ok) {
-      const finalData = await planFinalCheck.json();
-      if (finalData.status === 'none') return '/select-plan';
-    } else {
-      // If we can't even check plan, assume they need one
-      return '/select-plan';
-    }
-
+    // If they have a plan but no business, go to onboarding
     return '/onboarding/business';
   } catch (error) {
     console.error('[VERIFY] Redirect check failed:', error);

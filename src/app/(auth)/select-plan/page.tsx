@@ -25,6 +25,29 @@ export default function SelectPlanPage() {
         return;
       }
 
+      // Check if they already have a plan to skip this step
+      try {
+        const res = await fetch('/api/plan/status');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status !== 'none') {
+            // Already have a plan, check if they also have a business
+            const bizRes = await fetch('/api/businesses/me');
+            if (bizRes.ok) {
+              const bizData = await bizRes.json();
+              if (bizData.business?.google_place_id) {
+                router.replace('/dashboard');
+              } else {
+                router.replace('/onboarding/business');
+              }
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Plan check error:', err);
+      }
+
       setAuthLoading(false);
     });
 

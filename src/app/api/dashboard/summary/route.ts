@@ -50,7 +50,12 @@ export async function GET(req: NextRequest) {
       .limit(1)
       .maybeSingle();
     
-    if (subscription) {
+    // Co-founder override: always PRO
+    const { data: userData } = await supa.from('users').select('email').eq('uid', uid).maybeSingle();
+    if (userData?.email?.toLowerCase() === 'bladespindler@gmail.com') {
+      isPro = true;
+      planStatus = 'active';
+    } else if (subscription) {
       planStatus = subscription.status.toLowerCase();
       const planId = subscription.plan_id?.toLowerCase() || '';
       if (planStatus === 'active' && (planId.includes('pro') || planId.includes('yearly') || planId.includes('monthly'))) {

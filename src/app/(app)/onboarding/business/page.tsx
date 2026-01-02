@@ -15,20 +15,32 @@ function OnboardingContent() {
 
     const checkPlan = async () => {
       try {
-        const response = await fetch('/api/dashboard/summary');
+        const response = await fetch('/api/plan/status');
         if (response.ok) {
           const data = await response.json();
-          if (data.planStatus === 'none') {
+          console.log('[ONBOARDING] Plan status check:', data);
+          if (data.status === 'none') {
+            console.log('[ONBOARDING] No plan found, redirecting to /select-plan');
             router.replace('/select-plan');
             return;
           }
-          if (data.business?.google_place_id) {
+        } else if (response.status === 401) {
+          console.log('[ONBOARDING] Unauthorized, redirecting to login');
+          router.replace('/login?redirect=/onboarding/business');
+          return;
+        }
+
+        // Also check if business is already setup
+        const bizRes = await fetch('/api/businesses/me');
+        if (bizRes.ok) {
+          const bizData = await bizRes.json();
+          if (bizData.business?.google_place_id) {
             router.replace('/dashboard');
             return;
           }
         }
       } catch (err) {
-        console.error('Failed to check plan status:', err);
+        console.error('[ONBOARDING] Failed to check status:', err);
       } finally {
         setLoading(false);
       }
