@@ -238,8 +238,9 @@ alter table square_connections add column if not exists location_name text;
 
     const sql013 = `
 alter table businesses add column if not exists google_photo_url text;
+alter table businesses add column if not exists business_type text;
 `;
-    await client.query(sql013); ran.push('013_business_photo_url');
+    await client.query(sql013); ran.push('013_business_photo_url_and_type');
 
     await client.query('commit');
     return { ran };

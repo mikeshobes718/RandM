@@ -72,12 +72,12 @@ export async function GET(req: NextRequest) {
     let biz: any = null;
     const bizResult = await supa
       .from('businesses')
-      .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone,google_photo_url,address')
+      .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone,google_photo_url,address,business_type')
       .eq('owner_uid', uid)
       .maybeSingle();
 
     if (bizResult.error) {
-      if (bizResult.error.message.includes('google_photo_url') || bizResult.error.message.includes('address')) {
+      if (bizResult.error.message.includes('google_photo_url') || bizResult.error.message.includes('address') || bizResult.error.message.includes('business_type')) {
         const fallbackResult = await supa
           .from('businesses')
           .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
@@ -164,11 +164,12 @@ export async function GET(req: NextRequest) {
       console.error('[DASHBOARD API] Error fetching stats:', e);
     }
 
-    // Attempt to refresh Google rating if missing or zero, OR fetch missing photo/address
+    // Attempt to refresh Google rating if missing or zero, OR fetch missing photo/address/type
     const needsDataFromGoogle = 
       ((normalizedRating === null || normalizedRating === 0) || 
        !biz.google_photo_url || 
-       !biz.address) && 
+       !biz.address ||
+       !biz.business_type) && 
       biz.google_place_id;
     
     if (needsDataFromGoogle) {
@@ -190,6 +191,11 @@ export async function GET(req: NextRequest) {
         if (!biz.address && details?.formattedAddress) {
           updateData.address = details.formattedAddress;
           biz.address = details.formattedAddress;
+        }
+
+        if (!biz.business_type && details?.businessType) {
+          updateData.business_type = details.businessType;
+          biz.business_type = details.businessType;
         }
 
         if (Object.keys(updateData).length > 0) {

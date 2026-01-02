@@ -140,6 +140,7 @@ async function legacyDetails(GOOGLE_MAPS_API_KEY: string, placeId: string) {
     photos: photos,
     legacyPhotos: r.photos, // Keep original just in case
     photoUrl: photoUrl,
+    businessType: r.types?.[0] ? r.types[0].replace(/_/g, ' ') : undefined,
   };
 }
 
@@ -160,6 +161,8 @@ export async function getPlaceDetails(placeId: string, sessionToken?: string) {
     
     // Add a convenient photoUrl property if photos exist
     let photoUrl: string | undefined = undefined;
+    let businessType: string | undefined = res.primaryType ? res.primaryType.replace(/_/g, ' ') : (res.types?.[0] ? res.types[0].replace(/_/g, ' ') : undefined);
+    
     if (res.photos && res.photos.length > 0) {
       const photoName = res.photos[0].name;
       photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${GOOGLE_MAPS_API_KEY}&maxWidthPx=800`;
@@ -173,7 +176,7 @@ export async function getPlaceDetails(placeId: string, sessionToken?: string) {
       }
     }
 
-    return { ...res, photoUrl };
+    return { ...res, photoUrl, businessType };
   } catch (err) {
     console.error('[GOOGLE PLACES] v1 details failed, falling back to legacy:', err);
     return await legacyDetails(GOOGLE_MAPS_API_KEY, placeId);

@@ -18,6 +18,7 @@ type Business = {
   google_place_id?: string | null;
   google_photo_url?: string | null;
   address?: string | null;
+  business_type?: string | null;
 };
 
 type Stats = {
@@ -66,6 +67,7 @@ function DashboardContent() {
   const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
   const [squareStatus, setSquareStatus] = useState<{ connected: boolean; isEnabled?: boolean; lastBackfillAt?: string | null } | null>(null);
   const [planStatus, setPlanStatus] = useState<string>('none');
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
 
   const isFromEdit = searchParams?.get('from') === 'edit';
 
@@ -161,12 +163,27 @@ function DashboardContent() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="flex items-center gap-5">
           {business.google_photo_url && (
-            <div className="hidden sm:block w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-2xl flex-shrink-0 group relative cursor-pointer">
+            <div 
+              onClick={() => setIsPhotoModalOpen(true)}
+              className="hidden sm:block w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-2xl flex-shrink-0 group relative cursor-pointer"
+            >
               <img src={business.google_photo_url} alt={business.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+              </div>
             </div>
           )}
           <div>
-            <h1 className="text-3xl font-black tracking-tight mb-2">Dashboard</h1>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-3xl font-black tracking-tight">Dashboard</h1>
+              {business.business_type && (
+                <span className="bg-brand/5 text-brand text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-brand/10">
+                  {business.business_type}
+                </span>
+              )}
+            </div>
             <p className="text-muted text-sm font-medium flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Connected to {business.name}
@@ -636,6 +653,30 @@ function DashboardContent() {
           </div>
         </div>
       </section>
+
+      {/* Photo Modal */}
+      {isPhotoModalOpen && business.google_photo_url && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 bg-slate-900/90 backdrop-blur-sm animate-fade-in"
+          onClick={() => setIsPhotoModalOpen(false)}
+        >
+          <div className="relative max-w-4xl w-full aspect-square sm:aspect-video rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10">
+            <img 
+              src={business.google_photo_url} 
+              alt={business.name} 
+              className="w-full h-full object-contain"
+            />
+            <button 
+              className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
+              onClick={(e) => { e.stopPropagation(); setIsPhotoModalOpen(false); }}
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

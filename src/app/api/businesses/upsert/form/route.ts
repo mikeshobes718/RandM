@@ -17,6 +17,7 @@ type Payload = {
   google_rating?: number | null;
   google_photo_url?: string | null;
   address?: string | null;
+  business_type?: string | null;
   contact_phone?: string | null;
   idToken?: string;
   email?: string;
@@ -37,6 +38,7 @@ async function readPayload(req: Request): Promise<Payload> {
       google_rating: num('google_rating'),
       google_photo_url: get('google_photo_url'),
       address: get('address'),
+      business_type: get('business_type'),
       contact_phone: get('contact_phone'),
       idToken: get('idToken'),
       email: get('email'),
@@ -156,15 +158,17 @@ export async function POST(req: Request) {
   maybeAssign('google_rating', 'google_rating');
   maybeAssign('google_photo_url', 'google_photo_url');
   maybeAssign('address', 'address');
+  maybeAssign('business_type', 'business_type');
   maybeAssign('contact_phone', 'contact_phone');
 
   let { error }: { error: PostgrestError | null } = await supabase.from('businesses').upsert(payloadRow, { onConflict: 'owner_uid' });
   
-  if (error && (error.message.includes('google_photo_url') || error.message.includes('address'))) {
+  if (error && (error.message.includes('google_photo_url') || error.message.includes('address') || error.message.includes('business_type'))) {
     // Retry without the new columns if they are causing schema cache errors
     const fallbackRow = { ...payloadRow };
     delete fallbackRow.google_photo_url;
     delete fallbackRow.address;
+    delete fallbackRow.business_type;
     const retry = await supabase.from('businesses').upsert(fallbackRow, { onConflict: 'owner_uid' });
     error = retry.error;
   }
@@ -199,12 +203,12 @@ export async function POST(req: Request) {
   let business: any = null;
   const bizFetch = await supabase
     .from('businesses')
-    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone,google_photo_url,address')
+    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone,google_photo_url,address,business_type')
     .eq('owner_uid', uid!)
     .maybeSingle();
   
   if (bizFetch.error) {
-    if (bizFetch.error.message.includes('google_photo_url') || bizFetch.error.message.includes('address')) {
+    if (bizFetch.error.message.includes('google_photo_url') || bizFetch.error.message.includes('address') || bizFetch.error.message.includes('business_type')) {
       const fallback = await supabase
         .from('businesses')
         .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')

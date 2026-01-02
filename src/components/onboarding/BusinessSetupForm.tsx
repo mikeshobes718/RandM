@@ -16,6 +16,7 @@ type PlaceDetails = {
   writeAReviewUri?: string;
   googleMapsUri?: string;
   photoUrl?: string;
+  businessType?: string;
   lat?: number;
   lng?: number;
 };
@@ -191,6 +192,8 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
           google_maps_write_review_uri: selectedPlace?.writeAReviewUri || null,
           google_rating: selectedPlace?.rating || null,
           google_photo_url: selectedPlace?.photoUrl || null,
+          address: selectedPlace?.formattedAddress || null,
+          business_type: selectedPlace?.businessType || null,
           idToken,
         }),
         credentials: 'include',

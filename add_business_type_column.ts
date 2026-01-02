@@ -10,8 +10,8 @@ async function main() {
   }
   const client = await pool.connect();
   try {
-    console.log('Adding google_photo_url column to businesses table...');
-    await client.query('ALTER TABLE businesses ADD COLUMN IF NOT EXISTS google_photo_url text;');
+    console.log('Adding business_type column to businesses table...');
+    await client.query('ALTER TABLE businesses ADD COLUMN IF NOT EXISTS business_type text;');
     console.log('✅ Success!');
   } catch (e: any) {
     console.error('❌ Error:', e.message);
