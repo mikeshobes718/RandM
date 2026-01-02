@@ -178,9 +178,24 @@ function FeedbackContent({ business }: { business: any }) {
     <div className="max-w-6xl mx-auto px-6 py-12">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight mb-2">Customer Feedback</h1>
-          <p className="text-muted text-sm font-medium">View all private feedback and 5-star reviews captured from your landing page.</p>
+        <div className="flex items-center gap-5">
+          {business?.google_photo_url && (
+            <div className="hidden sm:block w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-2xl flex-shrink-0 group relative cursor-pointer">
+              <img src={business.google_photo_url} alt={business.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
+            </div>
+          )}
+          <div>
+            <h1 className="text-3xl font-black tracking-tight mb-2">Customer Feedback</h1>
+            <p className="text-muted text-sm font-medium flex items-center gap-2">
+              Connected to {business?.name}
+              {business?.address && (
+                <span className="text-slate-400 font-normal border-l border-slate-200 pl-2 ml-1">
+                  {business.address.split(',')[0]}
+                </span>
+              )}
+            </p>
+          </div>
         </div>
         <div className="flex gap-3">
           <button 

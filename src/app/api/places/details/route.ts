@@ -19,8 +19,9 @@ export async function GET(req: Request) {
     location?: { latitude?: number; longitude?: number };
     googleMapsUri?: string;
     googleMapsLinks?: { writeAReviewUri?: string; reviewsUri?: string };
+    photoUrl?: string;
   };
-  const links = (p as unknown as { googleMapsLinks?: { writeAReviewUri?: string; reviewsUri?: string } }).googleMapsLinks || {};
+  const links = (p as any).googleMapsLinks || {};
   return NextResponse.json({
     id: p.id,
     displayName: p.displayName?.text,
@@ -28,6 +29,7 @@ export async function GET(req: Request) {
     rating: p.rating,
     userRatingCount: p.userRatingCount,
     googleMapsUri: p.googleMapsUri,
+    photoUrl: p.photoUrl,
     writeAReviewUri: makeGoogleReviewLinkFromWriteUri(links.writeAReviewUri, p.id),
     reviewsUri: links.reviewsUri,
     lat: p.location?.latitude,

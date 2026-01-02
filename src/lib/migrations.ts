@@ -236,6 +236,11 @@ alter table square_connections add column if not exists location_name text;
 `;
     await client.query(sql012); ran.push('012_square_location_name');
 
+    const sql013 = `
+alter table businesses add column if not exists google_photo_url text;
+`;
+    await client.query(sql013); ran.push('013_business_photo_url');
+
     await client.query('commit');
     return { ran };
   } catch (e) {

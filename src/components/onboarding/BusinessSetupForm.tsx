@@ -15,6 +15,7 @@ type PlaceDetails = {
   rating?: number;
   writeAReviewUri?: string;
   googleMapsUri?: string;
+  photoUrl?: string;
   lat?: number;
   lng?: number;
 };
@@ -139,6 +140,11 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
           setReviewLink(details.writeAReviewUri);
         }
 
+        if (details.photoUrl) {
+          // Store it in the details object so it's included in handleSubmit
+          details.photoUrl = details.photoUrl;
+        }
+
         sessionTokenRef.current = generateSessionToken();
       }
     } catch (err) {
@@ -184,6 +190,7 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
           google_maps_place_uri: selectedPlace?.googleMapsUri || null,
           google_maps_write_review_uri: selectedPlace?.writeAReviewUri || null,
           google_rating: selectedPlace?.rating || null,
+          google_photo_url: selectedPlace?.photoUrl || null,
           idToken,
         }),
         credentials: 'include',

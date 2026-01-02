@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
 
   const { data: biz, error } = await supa
     .from('businesses')
-    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
+    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone,google_photo_url,address')
     .eq('owner_uid', uid)
     .maybeSingle();
 

@@ -15,6 +15,7 @@ type Payload = {
   google_maps_write_review_uri?: string | null;
   review_link?: string | null;
   google_rating?: number | null;
+  google_photo_url?: string | null;
   address?: string | null;
   contact_phone?: string | null;
   idToken?: string;
@@ -34,6 +35,7 @@ async function readPayload(req: Request): Promise<Payload> {
       google_maps_write_review_uri: get('google_maps_write_review_uri'),
       review_link: get('review_link'),
       google_rating: num('google_rating'),
+      google_photo_url: get('google_photo_url'),
       address: get('address'),
       contact_phone: get('contact_phone'),
       idToken: get('idToken'),
@@ -153,6 +155,7 @@ export async function POST(req: Request) {
   maybeAssign('google_maps_write_review_uri', 'google_maps_write_review_uri');
   maybeAssign('review_link', 'review_link');
   maybeAssign('google_rating', 'google_rating');
+  maybeAssign('google_photo_url', 'google_photo_url');
   maybeAssign('address', 'address');
   maybeAssign('contact_phone', 'contact_phone');
 
@@ -186,7 +189,7 @@ export async function POST(req: Request) {
   // Fetch the business data we just created/updated to return it
   const { data: business, error: fetchError } = await supabase
     .from('businesses')
-    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
+    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone,google_photo_url')
     .eq('owner_uid', uid!)
     .maybeSingle();
   

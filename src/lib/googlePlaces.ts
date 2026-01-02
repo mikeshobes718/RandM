@@ -88,6 +88,7 @@ async function v1Details(GOOGLE_MAPS_API_KEY: string, placeId: string, sessionTo
     'types',
     'primaryType',
     'businessStatus',
+    'photos',
   ].join(',');
   const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`;
   const res = await fetch(url, {
@@ -140,6 +141,13 @@ export async function getPlaceDetails(placeId: string, sessionToken?: string) {
   const { GOOGLE_MAPS_API_KEY } = getEnv();
   try {
     const res = await v1Details(GOOGLE_MAPS_API_KEY, placeId, sessionToken);
+    
+    // Add a convenient photoUrl property if photos exist
+    if (res.photos && res.photos.length > 0) {
+      const photoName = res.photos[0].name;
+      res.photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${GOOGLE_MAPS_API_KEY}&maxWidthPx=800`;
+    }
+
     // If the ID we got back starts with Ei, it's a feature ID, not a standard Place ID.
     // Standard Place IDs start with ChIJ.
     if (res.id && res.id.startsWith('Ei')) {
