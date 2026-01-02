@@ -22,6 +22,7 @@ async function reloadSchema() {
         'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({}),
     });
     
     console.log('Response status:', response.status);

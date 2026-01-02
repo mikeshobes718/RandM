@@ -32,7 +32,7 @@ export function getPgPool(): Pool | null {
       user,
       password,
       database,
-      ssl: true,
+      ssl: { rejectUnauthorized: false },
       max: 3,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 10000,
