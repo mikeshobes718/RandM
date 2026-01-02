@@ -7,7 +7,7 @@ export default function SiteFooter() {
   if (pathname?.startsWith('/r/')) return null;
 
   return (
-    <footer className="bg-foreground text-white border-t border-white/5 mt-0">
+    <footer className="bg-foreground text-white border-t border-[rgba(255,255,255,0.05)] mt-0">
       <div className="container mx-auto px-6 py-20">
         <div className="grid md:grid-cols-12 gap-12 mb-20">
           <div className="md:col-span-4">
@@ -57,7 +57,7 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="pt-10 border-t border-[rgba(255,255,255,0.05)] flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-slate-500 text-[10px] font-medium uppercase tracking-widest">
             © 2026 REVIEWS & MARKETING. ALL RIGHTS RESERVED.
           </div>

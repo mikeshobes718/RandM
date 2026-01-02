@@ -167,7 +167,7 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
               </div>
             </div>
           </div>
-          <div className="premium-card p-6 rounded-2xl bg-brand/5 border-brand/10 group relative">
+          <div className="premium-card p-6 rounded-2xl bg-brand/5 border-[#e2e8f0] group relative">
             <div className="text-[10px] font-bold text-brand uppercase tracking-widest mb-1">Conversion</div>
             <div className="text-2xl font-black text-brand">{conversionRate}%</div>
             <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
@@ -264,9 +264,9 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
             <p className="text-xs text-muted font-medium mb-8">Which QR codes or links are driving results.</p>
             <div className="space-y-4">
               {topSources.map(([src, count], i) => (
-                <div key={src} className="flex items-center justify-between p-3 bg-accent/30 rounded-xl border border-border/50">
+                <div key={src} className="flex items-center justify-between p-3 bg-accent/30 rounded-xl border border-[#e2e8f0]/50">
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 flex items-center justify-center bg-white rounded-full text-[10px] font-black border border-border">{i+1}</span>
+                    <span className="w-6 h-6 flex items-center justify-center bg-white rounded-full text-[10px] font-black border border-[#e2e8f0]">{i+1}</span>
                     <span className="text-sm font-bold capitalize">{src.replace(/-/g, ' ')}</span>
                   </div>
                   <div className="flex items-center gap-2">

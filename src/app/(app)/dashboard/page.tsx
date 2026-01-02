@@ -171,7 +171,7 @@ function DashboardContent() {
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Connected to {business.name}
               {business.address && (
-                <span className="text-slate-400 font-normal border-l border-slate-200 pl-2 ml-1">
+                <span className="text-slate-400 font-normal border-l border-[#e2e8f0] pl-2 ml-1">
                   {business.address.split(',')[0]}
                 </span>
               )}
@@ -295,8 +295,8 @@ function DashboardContent() {
             <div className="space-y-8">
               <div className="relative group/copy">
                 <label className="text-[10px] font-black text-muted uppercase tracking-widest block mb-2">Your Smart Landing Link</label>
-                <div className="flex gap-2 p-1 bg-slate-50 border border-border rounded-2xl">
-                  <div className="flex-1 h-11 bg-white rounded-xl px-4 flex items-center text-sm font-mono truncate text-slate-600 border border-slate-100 shadow-sm">
+                <div className="flex gap-2 p-1 bg-slate-50 border border-[#e2e8f0] rounded-2xl">
+                  <div className="flex-1 h-11 bg-white rounded-xl px-4 flex items-center text-sm font-mono truncate text-slate-600 border border-[#f1f5f9] shadow-sm">
                     {landingUrl}
                   </div>
                   <button onClick={handleCopyLink} className={`primary-button !h-11 px-8 text-xs font-black uppercase tracking-widest transition-all ${copyState === 'copied' ? '!bg-emerald-500 !shadow-emerald-100' : ''}`}>
@@ -315,7 +315,7 @@ function DashboardContent() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start pt-8 border-t border-border/50">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start pt-8 border-t border-[#e2e8f0]/50">
                 <div className="md:col-span-4 flex flex-col items-center gap-4">
                   <div className="bg-white p-4 border-4 border-slate-50 rounded-[32px] shadow-2xl shadow-slate-200/50 group-hover:scale-[1.02] transition-transform">
                     <img
@@ -355,11 +355,11 @@ function DashboardContent() {
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-[#f1f5f9]">
                       <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Best Place to Display</div>
                       <p className="text-xs text-slate-600 font-bold">Checkout Counter</p>
                     </div>
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-[#f1f5f9]">
                       <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Expected Conversion</div>
                       <p className="text-xs text-emerald-600 font-bold">+40% Review Rate</p>
                     </div>
@@ -377,7 +377,7 @@ function DashboardContent() {
           {/* Multiple QR Codes for All Users (Locked for Free) */}
           <div className="relative group/qr">
             {!isPro && (
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-white/60 backdrop-blur-[4px] rounded-[40px] border border-border">
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-white/60 backdrop-blur-[4px] rounded-[40px] border border-[#e2e8f0]">
                 <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -466,7 +466,7 @@ function DashboardContent() {
                   <p className="text-sm text-slate-600 leading-relaxed italic">
                     "Reviews & Marketing is monitoring your Square account for new payments. Requests will be sent automatically."
                   </p>
-                  <div className="flex items-center justify-between py-3 border-y border-border/50">
+                  <div className="flex items-center justify-between py-3 border-y border-[#e2e8f0]/50">
                     <div className="flex flex-col">
                       <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Last Sync</span>
                       <span className="text-xs font-bold text-slate-700">
@@ -516,7 +516,7 @@ function DashboardContent() {
               </div>
 
               {recentFeedback.length === 0 ? (
-                <div className="text-center py-12 px-4 border-2 border-dashed border-border rounded-2xl">
+                <div className="text-center py-12 px-4 border-2 border-dashed border-[#e2e8f0] rounded-2xl">
                   <p className="text-xs text-muted">No feedback yet. Share your link to start collecting responses.</p>
                 </div>
               ) : (
@@ -524,7 +524,7 @@ function DashboardContent() {
                   {recentFeedback.map((item: any) => {
                     const isEvent = item.type === 'event';
                     return (
-                      <div key={item.id} className="p-4 bg-accent/30 rounded-xl border border-border/50">
+                      <div key={item.id} className="p-4 bg-accent/30 rounded-xl border border-[#e2e8f0]/50">
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-bold">{isEvent ? 'Verified Redirect' : (item.name || 'Anonymous')}</span>
@@ -567,7 +567,7 @@ function DashboardContent() {
       </div>
 
       {/* Legend Section */}
-      <section className="mt-24 pt-12 border-t border-border">
+      <section className="mt-24 pt-12 border-t border-[#e2e8f0]">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           <div>
             <h4 className="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Metric Definitions</h4>
@@ -618,7 +618,7 @@ function DashboardContent() {
                 <strong className="text-emerald-700">5-Star Workflow</strong>
                 Happy customers are instantly routed to Google to leave a public review.
               </li>
-              <li className="text-xs text-muted flex flex-col gap-1 text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200">
+              <li className="text-xs text-muted flex flex-col gap-1 text-slate-600 bg-slate-50 p-3 rounded-xl border border-[#e2e8f0]">
                 <strong className="text-slate-900">1-4 Star Workflow</strong>
                 Critical feedback is captured privately, giving you a chance to fix the issue before it goes public.
               </li>

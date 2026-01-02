@@ -92,7 +92,7 @@ export default function Home() {
       </section>
 
       {/* Steps Section */}
-      <section className="py-24 bg-accent/50 border-y border-border">
+      <section className="py-24 bg-accent/50 border-y border-[#e2e8f0]">
         <div className="container mx-auto px-6">
           <div className="max-w-2xl mx-auto text-center mb-16">
             <Link href="/how-it-works" className="group inline-block">
@@ -163,7 +163,7 @@ export default function Home() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 border-t border-border">
+      <section className="py-24 border-t border-[#e2e8f0]">
         <div className="container mx-auto px-6 text-center">
           <h2 className="mb-6">Ready to fix your reputation?</h2>
           <p className="text-muted mb-10 max-w-xl mx-auto">
@@ -188,7 +188,7 @@ export default function Home() {
       </section>
 
       {/* Newsletter Section */}
-      <section className="py-16 bg-accent border-t border-border">
+      <section className="py-16 bg-accent border-t border-[#e2e8f0]">
         <div className="container mx-auto px-6 text-center">
           <p className="text-sm font-semibold mb-4 tracking-wider uppercase text-muted">STAY UPDATED</p>
           <h3 className="mb-8">Weekly tips to collect more reviews.</h3>
