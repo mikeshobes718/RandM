@@ -119,6 +119,12 @@ async function legacyDetails(GOOGLE_MAPS_API_KEY: string, placeId: string) {
     heightPx: p.height,
   }));
 
+  let photoUrl: string | undefined = undefined;
+  if (r.photos && r.photos.length > 0) {
+    const ref = r.photos[0].photo_reference;
+    photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${ref}&key=${GOOGLE_MAPS_API_KEY}`;
+  }
+
   return {
     id: r.place_id,
     displayName: { text: r.name },
@@ -133,6 +139,7 @@ async function legacyDetails(GOOGLE_MAPS_API_KEY: string, placeId: string) {
     businessStatus: r.business_status,
     photos: photos,
     legacyPhotos: r.photos, // Keep original just in case
+    photoUrl: photoUrl,
   };
 }
 
@@ -150,31 +157,25 @@ export async function getPlaceDetails(placeId: string, sessionToken?: string) {
   const { GOOGLE_MAPS_API_KEY } = getEnv();
   try {
     const res = await v1Details(GOOGLE_MAPS_API_KEY, placeId, sessionToken);
-    console.log('[GOOGLE PLACES] v1 response keys:', Object.keys(res));
     
     // Add a convenient photoUrl property if photos exist
     let photoUrl: string | undefined = undefined;
     if (res.photos && res.photos.length > 0) {
       const photoName = res.photos[0].name;
       photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${GOOGLE_MAPS_API_KEY}&maxWidthPx=800`;
-      console.log('[GOOGLE PLACES] Set photoUrl from v1:', photoUrl);
     } else {
-      console.log('[GOOGLE PLACES] No photos in v1, trying legacy...');
       // Try legacy fallback for photos if v1 didn't return any
       try {
         const legacy = await legacyDetails(GOOGLE_MAPS_API_KEY, placeId);
-        if (legacy.legacyPhotos && legacy.legacyPhotos.length > 0) {
-          const ref = legacy.legacyPhotos[0].photo_reference;
-          photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${ref}&key=${GOOGLE_MAPS_API_KEY}`;
-          console.log('[GOOGLE PLACES] Set photoUrl from legacy:', photoUrl);
-        }
+        photoUrl = legacy.photoUrl;
       } catch (e) {
         console.error('[GOOGLE PLACES] Legacy fallback failed:', e);
       }
     }
 
     return { ...res, photoUrl };
-  } catch {
+  } catch (err) {
+    console.error('[GOOGLE PLACES] v1 details failed, falling back to legacy:', err);
     return await legacyDetails(GOOGLE_MAPS_API_KEY, placeId);
   }
 }
