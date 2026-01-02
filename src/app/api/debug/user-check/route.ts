@@ -11,9 +11,16 @@ export async function GET(req: Request) {
     const supa = getSupabaseAdmin();
     const { data: user } = await supa.from('users').select('uid').eq('email', email).maybeSingle();
     if (!user) return NextResponse.json({ error: 'User not found' });
-    const { data: biz } = await supa.from('businesses').select('*').eq('owner_uid', user.uid).maybeSingle();
-    return NextResponse.json({ biz });
+    
+    // Explicitly select the new columns to see if they exist
+    const { data: biz, error: bizError } = await supa.from('businesses')
+      .select('id, name, google_photo_url, address')
+      .eq('owner_uid', user.uid)
+      .maybeSingle();
+    
+    return NextResponse.json({ uid: user.uid, biz, bizError });
   } catch (err: any) {
     return NextResponse.json({ error: err.message });
   }
 }
+// deployment retry
