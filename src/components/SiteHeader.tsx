@@ -115,7 +115,7 @@ export default function SiteHeader() {
               </Link>
             </div>
           )}
-          <MobileMenu />
+          <MobileMenu authed={authed} onLogout={handleLogout} />
         </div>
       </div>
     </header>

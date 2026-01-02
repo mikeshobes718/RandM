@@ -4,7 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function MobileMenu() {
+interface MobileMenuProps {
+  authed: boolean;
+  onLogout: () => void;
+}
+
+export default function MobileMenu({ authed, onLogout }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -121,18 +126,40 @@ export default function MobileMenu() {
 
           {/* Footer Actions - Solid Background */}
           <div className="p-8 border-t border-slate-100 bg-slate-50 space-y-4 pb-12 flex-shrink-0">
-            <Link
-              href="/register"
-              className="primary-button w-full h-16 flex items-center justify-center text-lg font-black uppercase tracking-widest shadow-xl shadow-brand/30 active:scale-[0.98] transition-all"
-            >
-              Get Started Free
-            </Link>
-            <Link
-              href="/login"
-              className="secondary-button w-full h-16 flex items-center justify-center text-lg font-black border-2 border-slate-200 bg-white hover:border-brand/20 active:scale-[0.98] transition-all"
-            >
-              Sign In
-            </Link>
+            {authed ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="primary-button w-full h-16 flex items-center justify-center text-lg font-black uppercase tracking-widest shadow-xl shadow-brand/30 active:scale-[0.98] transition-all"
+                >
+                  Go to Dashboard
+                </Link>
+                <button
+                  onClick={() => {
+                    onLogout();
+                    setIsOpen(false);
+                  }}
+                  className="secondary-button w-full h-16 flex items-center justify-center text-lg font-black border-2 border-slate-200 bg-white hover:border-red-500/10 hover:text-red-600 hover:border-red-200 active:scale-[0.98] transition-all"
+                >
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/register"
+                  className="primary-button w-full h-16 flex items-center justify-center text-lg font-black uppercase tracking-widest shadow-xl shadow-brand/30 active:scale-[0.98] transition-all"
+                >
+                  Get Started Free
+                </Link>
+                <Link
+                  href="/login"
+                  className="secondary-button w-full h-16 flex items-center justify-center text-lg font-black border-2 border-slate-200 bg-white hover:border-brand/20 active:scale-[0.98] transition-all"
+                >
+                  Sign In
+                </Link>
+              </>
+            )}
             <div className="flex items-center justify-center gap-2 pt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />

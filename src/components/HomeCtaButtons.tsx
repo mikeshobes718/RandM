@@ -20,21 +20,19 @@ export default function HomeCtaButtons({ align = "center", variant = "full", the
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const idToken = localStorage.getItem('idToken');
-        const isAuthenticated = Boolean(idToken);
-        setAuthed(isAuthenticated);
-
-        if (isAuthenticated) {
-          try {
-            const response = await fetch('/api/entitlements');
-            if (response.ok) {
-              const data = await response.json();
-              setPro(Boolean(data?.pro));
-            }
-          } catch (error) {
-            console.log('Entitlements check failed:', error);
-            setPro(null);
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const data = await response.json();
+          setAuthed(true);
+          // Check entitlements if authed
+          const entRes = await fetch('/api/entitlements');
+          if (entRes.ok) {
+            const entData = await entRes.json();
+            setPro(Boolean(entData?.pro));
           }
+        } else {
+          setAuthed(false);
+          setPro(null);
         }
       } catch (error) {
         console.log('Auth check failed:', error);
