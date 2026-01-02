@@ -107,11 +107,18 @@ async function legacyDetails(GOOGLE_MAPS_API_KEY: string, placeId: string) {
   const url = new URL('https://maps.googleapis.com/maps/api/place/details/json');
   url.searchParams.set('place_id', placeId);
   url.searchParams.set('key', GOOGLE_MAPS_API_KEY);
-  url.searchParams.set('fields', 'place_id,name,formatted_address,rating,user_ratings_total,url,geometry/location,types,business_status');
+  url.searchParams.set('fields', 'place_id,name,formatted_address,rating,user_ratings_total,url,geometry/location,types,business_status,photos');
   const res = await fetch(url.toString());
   if (!res.ok) throw new Error(`legacy_details_${res.status}`);
   const j = await res.json();
   const r = j.result || {};
+  
+  const photos = (r.photos || []).map((p: any) => ({
+    name: p.photo_reference, // Map to a similar structure as v1 if needed, but legacy uses photo_reference
+    widthPx: p.width,
+    heightPx: p.height,
+  }));
+
   return {
     id: r.place_id,
     displayName: { text: r.name },
@@ -124,6 +131,8 @@ async function legacyDetails(GOOGLE_MAPS_API_KEY: string, placeId: string) {
     types: r.types || [],
     primaryType: r.types?.[0],
     businessStatus: r.business_status,
+    photos: photos,
+    legacyPhotos: r.photos, // Keep original just in case
   };
 }
 
@@ -146,6 +155,15 @@ export async function getPlaceDetails(placeId: string, sessionToken?: string) {
     if (res.photos && res.photos.length > 0) {
       const photoName = res.photos[0].name;
       res.photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${GOOGLE_MAPS_API_KEY}&maxWidthPx=800`;
+    } else {
+      // Try legacy fallback for photos if v1 didn't return any
+      try {
+        const legacy = await legacyDetails(GOOGLE_MAPS_API_KEY, placeId);
+        if (legacy.legacyPhotos && legacy.legacyPhotos.length > 0) {
+          const ref = legacy.legacyPhotos[0].photo_reference;
+          res.photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${ref}&key=${GOOGLE_MAPS_API_KEY}`;
+        }
+      } catch (e) {}
     }
 
     // If the ID we got back starts with Ei, it's a feature ID, not a standard Place ID.
