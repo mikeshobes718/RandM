@@ -4,6 +4,7 @@ import { getPlaceDetails, makeGoogleReviewLinkFromWriteUri } from '@/lib/googleP
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// Force redeploy to sync photoUrl
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const placeId = searchParams.get('placeId');

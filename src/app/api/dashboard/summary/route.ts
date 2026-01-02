@@ -13,6 +13,7 @@ function startOfCurrentMonthUTC(): string {
   return utc.toISOString();
 }
 
+// Force redeploy for dashboard summary sync
 export async function GET(req: NextRequest) {
   // Try cookie-based auth first, then fallback to Authorization header
   let uid = await requireUid().catch(() => null);
