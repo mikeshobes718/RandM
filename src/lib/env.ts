@@ -10,15 +10,15 @@ const ServerEnvSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
   STRIPE_PORTAL_CONFIGURATION_ID: z.string().optional(),
 
-  POSTMARK_SERVER_TOKEN: z.string().min(1).optional(),
-  RESEND_API_KEY: z.string().min(1).optional(),
+  POSTMARK_SERVER_TOKEN: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
+  RESEND_API_KEY: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
   EMAIL_FROM: z.string().email(),
 
   GOOGLE_MAPS_API_KEY: z.string().min(1),
 
-  SQUARE_APPLICATION_ID: z.string().min(1).optional(),
-  SQUARE_APPLICATION_SECRET: z.string().min(1).optional(),
-  SQUARE_WEBHOOK_SIGNATURE_KEY: z.string().min(1).optional(),
+  SQUARE_APPLICATION_ID: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
+  SQUARE_APPLICATION_SECRET: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
+  SQUARE_WEBHOOK_SIGNATURE_KEY: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
 
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
