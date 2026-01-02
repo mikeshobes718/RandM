@@ -26,12 +26,12 @@ export function getPgPool(): Pool | null {
     const port = env.SUPABASE_DB_PORT ? Number(env.SUPABASE_DB_PORT) : 5432;
     const user = env.SUPABASE_DB_USER || 'postgres';
     const database = env.SUPABASE_DB_NAME || 'postgres';
+    
+    // Use connection string for better compatibility with some poolers
+    const connectionString = `postgresql://${user}:${encodeURIComponent(password)}@${host}:${port}/${database}`;
+    
     _pgPool = new Pool({
-      host,
-      port,
-      user,
-      password,
-      database,
+      connectionString,
       ssl: { rejectUnauthorized: false },
       max: 3,
       idleTimeoutMillis: 30000,
