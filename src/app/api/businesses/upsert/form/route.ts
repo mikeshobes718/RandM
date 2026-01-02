@@ -116,7 +116,6 @@ export async function POST(req: Request) {
     const isEditRequest = referer.includes('edit=1');
     
     if (!isEditRequest && (!sub || sub.status.toLowerCase() !== 'active')) {
-      // One final check: does the business already exist? If so, allow updates.
       const { data: existingBiz } = await supabase
         .from('businesses')
         .select('id')
@@ -210,11 +209,6 @@ export async function POST(req: Request) {
   }
   
   const ct = req.headers.get('content-type') || '';
-  
-  // Log for debugging
-  console.log('[upsert/form] Returning business data:', business ? `${business.name} (id: ${business.id})` : 'null');
-  
-  // Check if this is an edit request by looking for edit parameter in referer
   const referer = req.headers.get('referer') || '';
   const isEditRequest = referer.includes('edit=1');
   

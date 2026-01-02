@@ -75,13 +75,11 @@ export async function GET(req: NextRequest) {
 
   if (bizResult.error) {
     if (bizResult.error.message.includes('google_photo_url') || bizResult.error.message.includes('address')) {
-      // Fallback: the columns probably don't exist in the DB yet
       const fallbackResult = await supa
         .from('businesses')
         .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
         .eq('owner_uid', uid)
         .maybeSingle();
-      
       if (fallbackResult.error) return new NextResponse(fallbackResult.error.message, { status: 500 });
       biz = fallbackResult.data;
     } else {
@@ -168,18 +166,24 @@ export async function GET(req: NextRequest) {
     try {
       const { getPlaceDetails } = await import('@/lib/googlePlaces');
       const details = await getPlaceDetails(biz.google_place_id);
-      console.log('[DASHBOARD API] Place details for rating refresh:', { 
-        placeId: biz.google_place_id, 
-        rating: details?.rating,
-        displayName: details?.displayName?.text,
-        types: details?.types 
-      });
+      
       if (details?.rating != null) {
         normalizedRating = details.rating;
-        await supa.from('businesses').update({ google_rating: details.rating }).eq('id', biz.id);
-        console.log('[DASHBOARD API] Successfully updated rating:', details.rating);
-      } else {
-        console.log('[DASHBOARD API] No rating available - place may not be a business or has no reviews yet');
+        const updateData: any = { google_rating: details.rating };
+        
+        if (!biz.google_photo_url && details.photoUrl) {
+          updateData.google_photo_url = details.photoUrl;
+          biz.google_photo_url = details.photoUrl;
+        }
+        
+        if (!biz.address && details.formattedAddress) {
+          updateData.address = details.formattedAddress;
+          biz.address = details.formattedAddress;
+        }
+
+        try {
+          await supa.from('businesses').update(updateData).eq('id', biz.id);
+        } catch (dbErr) {}
       }
     } catch (e) {
       console.error('[DASHBOARD API] Error refreshing rating:', e);
@@ -254,7 +258,6 @@ export async function GET(req: NextRequest) {
         sources[src] = (sources[src] || 0) + 1;
       });
 
-      // Growth
       const startOfPrevMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1, 0, 0, 0, 0));
       const endOfPrevMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
       const { count: prevFeedback } = await supa.from('feedback').select('*', { count: 'exact', head: true }).eq('business_id', biz.id).gte('created_at', startOfPrevMonth.toISOString()).lte('created_at', endOfPrevMonth.toISOString());
@@ -277,7 +280,6 @@ export async function GET(req: NextRequest) {
   // Fetch Square Connection status
   let squareConnection: any = null;
   try {
-    // Try with is_enabled column first
     let square: any = null;
     const result = await supa
       .from('square_connections')
@@ -286,7 +288,6 @@ export async function GET(req: NextRequest) {
       .maybeSingle();
     
     if (result.error?.message?.includes('is_enabled')) {
-      // Column doesn't exist yet, query without it
       const fallback = await supa
         .from('square_connections')
         .select('access_token, last_backfill_at')
@@ -300,7 +301,7 @@ export async function GET(req: NextRequest) {
     if (square) {
       squareConnection = {
         connected: !!square.access_token,
-        isEnabled: square.is_enabled ?? true, // Default to true if column doesn't exist
+        isEnabled: square.is_enabled ?? true,
         lastBackfillAt: square.last_backfill_at
       };
     }
