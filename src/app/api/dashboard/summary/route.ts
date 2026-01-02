@@ -161,32 +161,42 @@ export async function GET(req: NextRequest) {
     console.error('[DASHBOARD API] Error fetching stats:', e);
   }
 
-  // Attempt to refresh Google rating if missing or zero
-  if ((normalizedRating === null || normalizedRating === 0) && biz.google_place_id) {
+  // Attempt to refresh Google rating if missing or zero, OR fetch missing photo/address
+  const needsDataFromGoogle = 
+    ((normalizedRating === null || normalizedRating === 0) || 
+     !biz.google_photo_url || 
+     !biz.address) && 
+    biz.google_place_id;
+  
+  if (needsDataFromGoogle) {
     try {
       const { getPlaceDetails } = await import('@/lib/googlePlaces');
       const details = await getPlaceDetails(biz.google_place_id);
       
-      if (details?.rating != null) {
+      const updateData: any = {};
+      
+      if (details?.rating != null && (normalizedRating === null || normalizedRating === 0)) {
         normalizedRating = details.rating;
-        const updateData: any = { google_rating: details.rating };
-        
-        if (!biz.google_photo_url && details.photoUrl) {
-          updateData.google_photo_url = details.photoUrl;
-          biz.google_photo_url = details.photoUrl;
-        }
-        
-        if (!biz.address && details.formattedAddress) {
-          updateData.address = details.formattedAddress;
-          biz.address = details.formattedAddress;
-        }
+        updateData.google_rating = details.rating;
+      }
+      
+      if (!biz.google_photo_url && details.photoUrl) {
+        updateData.google_photo_url = details.photoUrl;
+        biz.google_photo_url = details.photoUrl;
+      }
+      
+      if (!biz.address && details.formattedAddress) {
+        updateData.address = details.formattedAddress;
+        biz.address = details.formattedAddress;
+      }
 
+      if (Object.keys(updateData).length > 0) {
         try {
           await supa.from('businesses').update(updateData).eq('id', biz.id);
         } catch (dbErr) {}
       }
     } catch (e) {
-      console.error('[DASHBOARD API] Error refreshing rating:', e);
+      console.error('[DASHBOARD API] Error syncing Google data:', e);
     }
   }
 
