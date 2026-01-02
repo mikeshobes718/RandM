@@ -33,6 +33,8 @@ export default function HomeCtaButtons({ align = "center", variant = "full", the
         } else {
           setAuthed(false);
           setPro(null);
+          // Sync local storage if server session is gone
+          localStorage.removeItem('idToken');
         }
       } catch (error) {
         console.log('Auth check failed:', error);

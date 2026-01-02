@@ -26,6 +26,8 @@ export default function SiteHeader() {
         } else {
           setAuthed(false);
           setEmail(null);
+          // If server says not authed, clear local token to stay in sync
+          localStorage.removeItem('idToken');
         }
       } catch (err) {
         setAuthed(false);
