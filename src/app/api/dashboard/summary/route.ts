@@ -66,13 +66,30 @@ export async function GET(req: NextRequest) {
     console.error('[DASHBOARD API] Error checking subscription:', e);
   }
 
-  const { data: biz, error } = await supa
+  let biz: any = null;
+  const bizResult = await supa
     .from('businesses')
     .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone,google_photo_url,address')
     .eq('owner_uid', uid)
     .maybeSingle();
 
-  if (error) return new NextResponse(error.message, { status: 500 });
+  if (bizResult.error) {
+    if (bizResult.error.message.includes('google_photo_url') || bizResult.error.message.includes('address')) {
+      // Fallback: the columns probably don't exist in the DB yet
+      const fallbackResult = await supa
+        .from('businesses')
+        .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
+        .eq('owner_uid', uid)
+        .maybeSingle();
+      
+      if (fallbackResult.error) return new NextResponse(fallbackResult.error.message, { status: 500 });
+      biz = fallbackResult.data;
+    } else {
+      return new NextResponse(bizResult.error.message, { status: 500 });
+    }
+  } else {
+    biz = bizResult.data;
+  }
   
   if (!biz) {
     return NextResponse.json({

@@ -187,14 +187,26 @@ export async function POST(req: Request) {
   if (error) return new NextResponse(error.message, { status: 500 });
   
   // Fetch the business data we just created/updated to return it
-  const { data: business, error: fetchError } = await supabase
+  let business: any = null;
+  const bizFetch = await supabase
     .from('businesses')
     .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone,google_photo_url')
     .eq('owner_uid', uid!)
     .maybeSingle();
   
-  if (fetchError) {
-    console.error('[upsert/form] Failed to fetch business after save:', fetchError);
+  if (bizFetch.error) {
+    if (bizFetch.error.message.includes('google_photo_url')) {
+      const fallback = await supabase
+        .from('businesses')
+        .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
+        .eq('owner_uid', uid!)
+        .maybeSingle();
+      business = fallback.data;
+    } else {
+      console.error('[upsert/form] Failed to fetch business after save:', bizFetch.error);
+    }
+  } else {
+    business = bizFetch.data;
   }
   
   const ct = req.headers.get('content-type') || '';
