@@ -59,7 +59,7 @@ export default function SiteFooter() {
 
         <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-slate-500 text-[10px] font-medium uppercase tracking-widest">
-            © 2026 REVIEWS & MARKETING. ALL RIGHTS RESERVED. [v1.0.5]
+            © 2026 REVIEWS & MARKETING. ALL RIGHTS RESERVED.
           </div>
           <div className="flex items-center gap-6">
             <div className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">
