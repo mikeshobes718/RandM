@@ -3,6 +3,7 @@ import { requireUid, verifyIdTokenViaRest } from '@/lib/authServer';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { formatPhone } from '@/lib/phone';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
+import { getPlaceDetails } from '@/lib/googlePlaces';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -171,7 +172,6 @@ export async function GET(req: NextRequest) {
   
   if (needsDataFromGoogle) {
     try {
-      const { getPlaceDetails } = await import('@/lib/googlePlaces');
       const details = await getPlaceDetails(biz.google_place_id);
       
       const updateData: any = {};
@@ -181,12 +181,12 @@ export async function GET(req: NextRequest) {
         updateData.google_rating = details.rating;
       }
       
-      if (!biz.google_photo_url && details.photoUrl) {
+      if (!biz.google_photo_url && details?.photoUrl) {
         updateData.google_photo_url = details.photoUrl;
         biz.google_photo_url = details.photoUrl;
       }
       
-      if (!biz.address && details.formattedAddress) {
+      if (!biz.address && details?.formattedAddress) {
         updateData.address = details.formattedAddress;
         biz.address = details.formattedAddress;
       }
@@ -194,7 +194,9 @@ export async function GET(req: NextRequest) {
       if (Object.keys(updateData).length > 0) {
         try {
           await supa.from('businesses').update(updateData).eq('id', biz.id);
-        } catch (dbErr) {}
+        } catch (dbErr) {
+          console.error('[DASHBOARD API] Error updating business from Google data:', dbErr);
+        }
       }
     } catch (e) {
       console.error('[DASHBOARD API] Error syncing Google data:', e);
