@@ -150,20 +150,26 @@ export async function getPlaceDetails(placeId: string, sessionToken?: string) {
   const { GOOGLE_MAPS_API_KEY } = getEnv();
   try {
     const res = await v1Details(GOOGLE_MAPS_API_KEY, placeId, sessionToken);
+    console.log('[GOOGLE PLACES] v1 response keys:', Object.keys(res));
     
     // Add a convenient photoUrl property if photos exist
     if (res.photos && res.photos.length > 0) {
       const photoName = res.photos[0].name;
       res.photoUrl = `https://places.googleapis.com/v1/${photoName}/media?key=${GOOGLE_MAPS_API_KEY}&maxWidthPx=800`;
+      console.log('[GOOGLE PLACES] Set photoUrl from v1:', res.photoUrl);
     } else {
+      console.log('[GOOGLE PLACES] No photos in v1, trying legacy...');
       // Try legacy fallback for photos if v1 didn't return any
       try {
         const legacy = await legacyDetails(GOOGLE_MAPS_API_KEY, placeId);
         if (legacy.legacyPhotos && legacy.legacyPhotos.length > 0) {
           const ref = legacy.legacyPhotos[0].photo_reference;
           res.photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${ref}&key=${GOOGLE_MAPS_API_KEY}`;
+          console.log('[GOOGLE PLACES] Set photoUrl from legacy:', res.photoUrl);
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error('[GOOGLE PLACES] Legacy fallback failed:', e);
+      }
     }
 
     // If the ID we got back starts with Ei, it's a feature ID, not a standard Place ID.
