@@ -11,29 +11,22 @@ export async function GET(req: Request) {
   const sessionToken = searchParams.get('sessionToken') || undefined;
 
   if (!placeId) return new NextResponse('Missing placeId', { status: 400 });
-  const p = await getPlaceDetails(placeId, sessionToken) as {
-    id: string;
-    displayName?: { text?: string };
-    formattedAddress?: string;
-    rating?: number;
-    userRatingCount?: number;
-    location?: { latitude?: number; longitude?: number };
-    googleMapsUri?: string;
-    googleMapsLinks?: { writeAReviewUri?: string; reviewsUri?: string };
-    photoUrl?: string;
-  };
+  const p = await getPlaceDetails(placeId, sessionToken);
+  console.log('[API/PLACES/DETAILS] p keys:', Object.keys(p));
+  console.log('[API/PLACES/DETAILS] photoUrl present:', !!(p as any).photoUrl);
+  
   const links = (p as any).googleMapsLinks || {};
   return NextResponse.json({
-    id: p.id,
-    displayName: p.displayName?.text,
-    formattedAddress: p.formattedAddress,
-    rating: p.rating,
-    userRatingCount: p.userRatingCount,
-    googleMapsUri: p.googleMapsUri,
-    photoUrl: p.photoUrl,
-    writeAReviewUri: makeGoogleReviewLinkFromWriteUri(links.writeAReviewUri, p.id),
+    id: (p as any).id,
+    displayName: (p as any).displayName?.text,
+    formattedAddress: (p as any).formattedAddress,
+    rating: (p as any).rating,
+    userRatingCount: (p as any).userRatingCount,
+    googleMapsUri: (p as any).googleMapsUri,
+    photoUrl: (p as any).photoUrl,
+    writeAReviewUri: makeGoogleReviewLinkFromWriteUri(links.writeAReviewUri, (p as any).id),
     reviewsUri: links.reviewsUri,
-    lat: p.location?.latitude,
-    lng: p.location?.longitude,
+    lat: (p as any).location?.latitude,
+    lng: (p as any).location?.longitude,
   });
 }
