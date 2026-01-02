@@ -7,3 +7,4 @@ export const secondaryButtonClass = "secondary-button h-12 px-8 text-sm font-bol
 export const premiumCardClass = "premium-card bg-white border border-border/60 shadow-sm hover:shadow-md transition-all duration-300";
 
 
+

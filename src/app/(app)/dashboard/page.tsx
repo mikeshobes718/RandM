@@ -163,7 +163,6 @@ function DashboardContent() {
           {business.google_photo_url && (
             <div className="hidden sm:block w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-2xl flex-shrink-0 group relative cursor-pointer">
               <img src={business.google_photo_url} alt={business.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
             </div>
           )}
           <div>

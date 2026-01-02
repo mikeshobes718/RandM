@@ -28,3 +28,4 @@ export async function GET(req: Request) {
   return NextResponse.json({ success: true, message: `Subscription updated for ${email}` });
 }
 
+
