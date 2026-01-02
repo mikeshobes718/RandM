@@ -358,5 +358,4 @@ export async function GET(req: NextRequest) {
     return new NextResponse(`Dashboard API Error: ${err.message || 'Unknown error'}`, { status: 500 });
   }
 }
-}
 // Deployment check Fri Jan  2 15:22:05 -03 2026
