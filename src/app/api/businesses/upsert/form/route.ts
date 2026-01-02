@@ -159,6 +159,16 @@ export async function POST(req: Request) {
   maybeAssign('contact_phone', 'contact_phone');
 
   let { error }: { error: PostgrestError | null } = await supabase.from('businesses').upsert(payloadRow, { onConflict: 'owner_uid' });
+  
+  if (error && (error.message.includes('google_photo_url') || error.message.includes('address'))) {
+    // Retry without the new columns if they are causing schema cache errors
+    const fallbackRow = { ...payloadRow };
+    delete fallbackRow.google_photo_url;
+    delete fallbackRow.address;
+    const retry = await supabase.from('businesses').upsert(fallbackRow, { onConflict: 'owner_uid' });
+    error = retry.error;
+  }
+
   if (error && /ON CONFLICT/.test((error as { message?: string }).message || '')) {
     try {
       const inserted = await supabase
@@ -189,12 +199,12 @@ export async function POST(req: Request) {
   let business: any = null;
   const bizFetch = await supabase
     .from('businesses')
-    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone,google_photo_url')
+    .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone,google_photo_url,address')
     .eq('owner_uid', uid!)
     .maybeSingle();
   
   if (bizFetch.error) {
-    if (bizFetch.error.message.includes('google_photo_url')) {
+    if (bizFetch.error.message.includes('google_photo_url') || bizFetch.error.message.includes('address')) {
       const fallback = await supabase
         .from('businesses')
         .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')

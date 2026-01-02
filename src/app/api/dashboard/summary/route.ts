@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
     if (bizResult.error.message.includes('google_photo_url') || bizResult.error.message.includes('address')) {
       const fallbackResult = await supa
         .from('businesses')
-        .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone,google_photo_url,address')
+        .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
         .eq('owner_uid', uid)
         .maybeSingle();
       if (fallbackResult.error) return new NextResponse(fallbackResult.error.message, { status: 500 });
