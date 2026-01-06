@@ -95,7 +95,7 @@ export async function POST(req: Request) {
 
     try {
       const initialLineItem = preferredLineItem ?? fallbackLineItem;
-      console.log('[STRIPE CHECKOUT] Creating session with preferred line item', { uid, plan, priceId });
+      console.log('[STRIPE CHECKOUT] Creating session with preferred line item', { uid, billing, priceId });
       session = await createSession(initialLineItem);
     } catch (error) {
       const stripeError = error as Stripe.errors.StripeError;
@@ -109,7 +109,7 @@ export async function POST(req: Request) {
 
       if (!isPriceError && preferredLineItem) {
         console.error('[STRIPE CHECKOUT] Failed to create session with preferred price ID', {
-          plan,
+          billing,
           priceId,
           code: stripeError?.code,
           message,
@@ -118,7 +118,7 @@ export async function POST(req: Request) {
       }
 
       console.warn('[STRIPE CHECKOUT] Falling back to inline price data for checkout', {
-        plan,
+        billing,
         priceId,
         code: stripeError?.code,
         message,
@@ -127,7 +127,7 @@ export async function POST(req: Request) {
       usedFallback = true;
     }
 
-    console.log('[STRIPE CHECKOUT] Session created', { sessionId: session.id, usedFallback, plan, uid });
+    console.log('[STRIPE CHECKOUT] Session created', { sessionId: session.id, usedFallback, billing, uid });
 
     return NextResponse.json({ url: session.url, id: session.id });
   } catch (error) {
