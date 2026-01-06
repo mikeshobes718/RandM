@@ -33,8 +33,8 @@ export function getPgPool(): Pool | null {
     _pgPool = new Pool({
       connectionString,
       ssl: { rejectUnauthorized: false },
-      max: 3,
-      idleTimeoutMillis: 30000,
+      max: 1, // Minimize connections
+      idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 10000,
     });
     return _pgPool;
