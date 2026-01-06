@@ -9,7 +9,8 @@ export async function POST(req: Request) {
   const tokenQ = url.searchParams.get('token') || '';
   const tokenH = req.headers.get('x-admin-token') || '';
   const token = tokenH || tokenQ;
-  if (!process.env.MIGRATIONS_ONCE_TOKEN || token !== process.env.MIGRATIONS_ONCE_TOKEN) {
+  const { ADMIN_TOKEN } = getEnv();
+  if (!ADMIN_TOKEN || token !== ADMIN_TOKEN) {
     return new NextResponse('forbidden', { status: 403 });
   }
   try {

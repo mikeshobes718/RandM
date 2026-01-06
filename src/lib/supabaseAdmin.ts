@@ -28,7 +28,7 @@ export function getPgPool(): Pool | null {
     const database = env.SUPABASE_DB_NAME || 'postgres';
     
     // Use connection string for better compatibility with some poolers
-    const connectionString = `postgresql://${user}:${encodeURIComponent(password)}@${host}:${port}/${database}?sslmode=require`;
+    const connectionString = `postgresql://${user}:${encodeURIComponent(password)}@${host}:${port}/${database}`;
     
     _pgPool = new Pool({
       connectionString,
