@@ -19,25 +19,56 @@ const ASSETS = [
   { name: "Reputation Control Automated.pdf", description: "Deep dive into Square & POS automation.", link: "/Reputation_Control_Automated.pdf" }
 ];
 
+const CATEGORIES = [
+  { label: "Bars", value: "bar" },
+  { label: "Gyms", value: "gym" },
+  { label: "Restaurants", value: "restaurant" },
+  { label: "Spas", value: "spa" },
+  { label: "Dentists", value: "dental_clinic" },
+];
+
 export default function SalesPortal() {
-  const [query, setQuery] = useState("");
+  const [city, setCity] = useState("");
+  const [type, setType] = useState("bar");
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [leads, setLeads] = useState<any[]>([]);
   const [searched, setSearched] = useState(false);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (!city.trim()) return;
     setLoading(true);
     setSearched(true);
     try {
-      const res = await fetch(`/api/sales/lead-finder?query=${encodeURIComponent(query)}`);
+      const res = await fetch(`/api/sales/lead-finder?city=${encodeURIComponent(city)}&type=${type}`);
       const data = await res.json();
       setLeads(data.leads || []);
     } catch (err) {
       console.error("Lead search failed:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSync = async () => {
+    if (!city.trim()) return;
+    setSyncing(true);
+    try {
+      const res = await fetch('/api/sales/leads/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city, type })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`Database updated! Found ${data.count} new leads for ${city}.`);
+        handleSearch({ preventDefault: () => {} } as any);
+      }
+    } catch (err) {
+      console.error("Sync failed:", err);
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -66,24 +97,43 @@ export default function SalesPortal() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-black text-slate-900">Reputation Lead Finder</h2>
-                  <p className="text-sm text-muted">Search industries and cities to find businesses with low ratings (≤ 4.2).</p>
+                  <p className="text-sm text-muted">Select a category and city to find businesses with low ratings (≤ 4.2).</p>
                 </div>
               </div>
 
               <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-8">
+                <select 
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  className="h-14 px-6 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-lg shadow-sm bg-white"
+                >
+                  {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                </select>
                 <input 
                   type="text"
-                  placeholder="e.g., Restaurants in Miami, Gyms in Brooklyn"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Enter City (e.g., Miami, Brooklyn)"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
                   className="flex-1 h-14 px-6 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-lg shadow-sm"
                 />
                 <button 
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || syncing}
                   className="h-14 px-8 bg-brand hover:bg-brand-strong text-white font-black rounded-2xl shadow-xl shadow-brand/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap"
                 >
                   {loading ? 'Searching...' : 'Find Warm Leads'}
+                </button>
+                <button 
+                  type="button"
+                  onClick={handleSync}
+                  disabled={loading || syncing || !city}
+                  className="h-14 px-6 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold rounded-2xl border border-indigo-100 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  title="Import fresh data from Google into our lead database"
+                >
+                  <svg className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  {syncing ? 'Syncing...' : 'Sync DB'}
                 </button>
               </form>
 

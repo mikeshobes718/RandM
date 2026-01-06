@@ -242,6 +242,23 @@ alter table businesses add column if not exists business_type text;
 `;
     await client.query(sql013); ran.push('013_business_photo_url_and_type');
 
+    const sql014 = `
+create table if not exists leads (
+  id uuid primary key default gen_random_uuid(),
+  google_place_id text unique not null,
+  name text not null,
+  address text,
+  rating numeric,
+  review_count integer default 0,
+  business_type text,
+  city text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+create index if not exists leads_city_type_idx on leads(city, business_type);
+`;
+    await client.query(sql014); ran.push('014_leads_table');
+
     await client.query('commit');
     return { ran };
   } catch (e) {
