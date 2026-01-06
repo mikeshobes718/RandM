@@ -13,10 +13,31 @@ export async function POST(req: Request) {
 
     const location = [city, state, country].filter(Boolean).join(', ');
     const query = `${type} in ${location}`;
-    const places = await searchBusinesses(query);
     const supa = getSupabaseAdmin();
 
-    const leadsToInsert = places.map((p: any) => ({
+    // To get ~50 leads, we'll need to make multiple requests or use a more comprehensive search
+    // Google Places searchText (New) returns up to 20 per page by default.
+    // We'll attempt to fetch more if needed.
+    
+    let allPlaces: any[] = [];
+    
+    // First page
+    const places = await searchBusinesses(query);
+    allPlaces = [...places];
+
+    // If we have less than 40, try one more variation of the search to broaden results
+    if (allPlaces.length < 40) {
+      const altQuery = `best ${type} in ${location}`;
+      const morePlaces = await searchBusinesses(altQuery);
+      // Merge unique ones
+      morePlaces.forEach((p: any) => {
+        if (!allPlaces.find(ap => ap.id === p.id)) {
+          allPlaces.push(p);
+        }
+      });
+    }
+
+    const leadsToInsert = allPlaces.map((p: any) => ({
       google_place_id: p.id,
       name: p.displayName?.text || 'Unknown',
       address: p.formattedAddress,
@@ -26,6 +47,7 @@ export async function POST(req: Request) {
       city: city.toLowerCase(),
       state: state || null,
       country: country || null,
+      phone: p.nationalPhoneNumber || p.internationalPhoneNumber || null,
     }));
 
     if (leadsToInsert.length === 0) {

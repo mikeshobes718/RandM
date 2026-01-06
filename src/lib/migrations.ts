@@ -264,6 +264,7 @@ create index if not exists leads_city_type_idx on leads(city, business_type);
     const sql015 = `
 alter table leads add column if not exists state text;
 alter table leads add column if not exists country text;
+alter table leads add column if not exists phone text;
 `;
     await client.query(sql015); ran.push('015_leads_location_columns');
 

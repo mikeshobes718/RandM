@@ -40,6 +40,7 @@ export async function GET(req: Request) {
           rating: l.rating,
           reviewCount: l.review_count,
           type: l.business_type,
+          phone: l.phone,
         }));
       }
     }
@@ -60,6 +61,7 @@ export async function GET(req: Request) {
           rating: p.rating,
           reviewCount: p.userRatingCount || 0,
           type: type || (p.primaryType ? p.primaryType.replace(/_/g, ' ') : p.types?.[0]?.replace(/_/g, ' ')),
+          phone: p.nationalPhoneNumber || p.internationalPhoneNumber || 'No Phone',
         }))
         .sort((a: any, b: any) => a.rating - b.rating);
     }

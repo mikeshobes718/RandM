@@ -244,6 +244,8 @@ export async function searchBusinesses(query: string) {
     'places.userRatingCount',
     'places.types',
     'places.primaryType',
+    'places.nationalPhoneNumber',
+    'places.internationalPhoneNumber',
   ].join(',');
 
   try {
@@ -274,6 +276,7 @@ export async function searchBusinesses(query: string) {
         formattedAddress: r.formatted_address,
         rating: r.rating,
         userRatingCount: r.user_ratings_total,
+        nationalPhoneNumber: r.formatted_phone_number, // Legacy might not have this in text search, usually requires details
       }));
     }
 
