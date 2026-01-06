@@ -6,12 +6,13 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const { city, type } = await req.json();
+    const { city, state, country, type } = await req.json();
     if (!city || !type) {
       return new NextResponse('Missing city or type', { status: 400 });
     }
 
-    const query = `${type} in ${city}`;
+    const location = [city, state, country].filter(Boolean).join(', ');
+    const query = `${type} in ${location}`;
     const places = await searchBusinesses(query);
     const supa = getSupabaseAdmin();
 
@@ -23,6 +24,8 @@ export async function POST(req: Request) {
       review_count: p.userRatingCount || 0,
       business_type: type,
       city: city.toLowerCase(),
+      state: state || null,
+      country: country || null,
     }));
 
     if (leadsToInsert.length === 0) {

@@ -27,8 +27,44 @@ const CATEGORIES = [
   { label: "Dentists", value: "dental_clinic" },
 ];
 
+const COUNTRIES = [
+  { label: "USA", value: "US" },
+  { label: "Canada", value: "CA" },
+  { label: "UK", value: "GB" },
+  { label: "Australia", value: "AU" },
+];
+
+const STATES: Record<string, { label: string, value: string }[]> = {
+  US: [
+    { label: "New York", value: "NY" },
+    { label: "Florida", value: "FL" },
+    { label: "California", value: "CA" },
+    { label: "Texas", value: "TX" },
+    { label: "Illinois", value: "IL" },
+    { label: "Georgia", value: "GA" },
+  ],
+  CA: [{ label: "Ontario", value: "ON" }, { label: "British Columbia", value: "BC" }],
+  GB: [{ label: "England", value: "ENG" }],
+  AU: [{ label: "New South Wales", value: "NSW" }],
+};
+
+const CITIES: Record<string, string[]> = {
+  NY: ["New York City", "Brooklyn", "Queens", "Buffalo", "Rochester"],
+  FL: ["Miami", "Orlando", "Tampa", "Fort Lauderdale", "Jacksonville"],
+  CA: ["Los Angeles", "San Francisco", "San Diego", "Sacramento", "San Jose"],
+  TX: ["Houston", "Austin", "Dallas", "San Antonio", "Fort Worth"],
+  IL: ["Chicago", "Naperville", "Aurora"],
+  GA: ["Atlanta", "Savannah", "Marietta"],
+  ON: ["Toronto", "Ottawa", "Mississauga"],
+  BC: ["Vancouver", "Victoria", "Burnaby"],
+  ENG: ["London", "Manchester", "Birmingham", "Liverpool"],
+  NSW: ["Sydney", "Newcastle", "Wollongong"],
+};
+
 export default function SalesPortal() {
-  const [city, setCity] = useState("");
+  const [country, setCountry] = useState("US");
+  const [state, setState] = useState("NY");
+  const [city, setCity] = useState("New York City");
   const [type, setType] = useState("bar");
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -37,11 +73,12 @@ export default function SalesPortal() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!city.trim()) return;
+    if (!city) return;
     setLoading(true);
     setSearched(true);
     try {
-      const res = await fetch(`/api/sales/lead-finder?city=${encodeURIComponent(city)}&type=${type}`);
+      const location = `${city}, ${state}, ${country}`;
+      const res = await fetch(`/api/sales/lead-finder?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&country=${encodeURIComponent(country)}&type=${type}`);
       const data = await res.json();
       setLeads(data.leads || []);
     } catch (err) {
@@ -52,13 +89,13 @@ export default function SalesPortal() {
   };
 
   const handleSync = async () => {
-    if (!city.trim()) return;
+    if (!city) return;
     setSyncing(true);
     try {
       const res = await fetch('/api/sales/leads/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ city, type })
+        body: JSON.stringify({ city, state, country, type })
       });
       const data = await res.json();
       if (data.success) {
@@ -97,44 +134,73 @@ export default function SalesPortal() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-black text-slate-900">Reputation Lead Finder</h2>
-                  <p className="text-sm text-muted">Select a category and city to find businesses with low ratings (≤ 4.2).</p>
+                  <p className="text-sm text-muted">Select location and category to find businesses with low ratings (≤ 4.2).</p>
                 </div>
               </div>
 
-              <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-8">
+              <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
+                <select 
+                  value={country}
+                  onChange={(e) => {
+                    const c = e.target.value;
+                    setCountry(c);
+                    const firstState = STATES[c]?.[0]?.value || "";
+                    setState(firstState);
+                    setCity(CITIES[firstState]?.[0] || "");
+                  }}
+                  className="h-14 px-4 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-sm font-bold shadow-sm bg-white"
+                >
+                  {COUNTRIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                </select>
+
+                <select 
+                  value={state}
+                  onChange={(e) => {
+                    const s = e.target.value;
+                    setState(s);
+                    setCity(CITIES[s]?.[0] || "");
+                  }}
+                  className="h-14 px-4 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-sm font-bold shadow-sm bg-white"
+                >
+                  {STATES[country]?.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                </select>
+
+                <select 
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="h-14 px-4 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-sm font-bold shadow-sm bg-white"
+                >
+                  {CITIES[state]?.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+
                 <select 
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="h-14 px-6 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-lg shadow-sm bg-white"
+                  className="h-14 px-4 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-sm font-bold shadow-sm bg-white"
                 >
                   {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
-                <input 
-                  type="text"
-                  placeholder="Enter City (e.g., Miami, Brooklyn)"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="flex-1 h-14 px-6 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-lg shadow-sm"
-                />
-                <button 
-                  type="submit"
-                  disabled={loading || syncing}
-                  className="h-14 px-8 bg-brand hover:bg-brand-strong text-white font-black rounded-2xl shadow-xl shadow-brand/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap"
-                >
-                  {loading ? 'Searching...' : 'Find Warm Leads'}
-                </button>
-                <button 
-                  type="button"
-                  onClick={handleSync}
-                  disabled={loading || syncing || !city}
-                  className="h-14 px-6 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold rounded-2xl border border-indigo-100 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-                  title="Import fresh data from Google into our lead database"
-                >
-                  <svg className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  {syncing ? 'Syncing...' : 'Sync DB'}
-                </button>
+
+                <div className="flex gap-2 lg:col-span-1">
+                  <button 
+                    type="submit"
+                    disabled={loading || syncing}
+                    className="flex-1 h-14 bg-brand hover:bg-brand-strong text-white font-black rounded-2xl shadow-xl shadow-brand/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap px-4"
+                  >
+                    {loading ? '...' : 'Find Leads'}
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={handleSync}
+                    disabled={loading || syncing || !city}
+                    className="w-14 h-14 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold rounded-2xl border border-indigo-100 transition-all disabled:opacity-50 flex items-center justify-center"
+                    title="Sync DB"
+                  >
+                    <svg className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                </div>
               </form>
 
               {loading && (

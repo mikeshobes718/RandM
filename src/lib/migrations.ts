@@ -252,12 +252,20 @@ create table if not exists leads (
   review_count integer default 0,
   business_type text,
   city text,
+  state text,
+  country text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 create index if not exists leads_city_type_idx on leads(city, business_type);
 `;
     await client.query(sql014); ran.push('014_leads_table');
+
+    const sql015 = `
+alter table leads add column if not exists state text;
+alter table leads add column if not exists country text;
+`;
+    await client.query(sql015); ran.push('015_leads_location_columns');
 
     await client.query('commit');
     return { ran };
