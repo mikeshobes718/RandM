@@ -184,8 +184,14 @@ export async function POST(req: Request) {
           : CATEGORIES;
           
         let categoryStartProcessing = !startCategory || !cityStartProcessing;
+        let cityLeadsCount = 0;
         
         for (const category of categories) {
+          if (cityLeadsCount >= 250) {
+            console.log(`[BULK IMPORT] Target of 250 leads reached for ${city}, moving to next city.`);
+            break;
+          }
+
           if (startCategory && !categoryStartProcessing) {
             if (category === startCategory) {
               categoryStartProcessing = true;
@@ -197,6 +203,7 @@ export async function POST(req: Request) {
           try {
             const count = await importLeadsForCity(city, state, category);
             totalImported += count;
+            cityLeadsCount += count;
             results.push({ city, state, category, count });
             
             // Log progress every 10 imports
@@ -204,7 +211,7 @@ export async function POST(req: Request) {
               console.log(`[BULK IMPORT] Progress: ${totalImported} leads imported so far...`);
             }
             
-            await new Promise(resolve => setTimeout(resolve, 300)); // Reduced delay
+            await new Promise(resolve => setTimeout(resolve, 300));
           } catch (e: any) {
             console.error(`Error importing ${category} in ${city}, ${state}:`, e);
             results.push({ city, state, category, error: e.message });

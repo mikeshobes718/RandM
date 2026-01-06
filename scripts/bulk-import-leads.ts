@@ -228,20 +228,31 @@ async function bulkImport() {
     
     // Process each city
     for (const city of cities) {
-      // Process each category
+      let cityLeadsCount = 0;
+      console.log(`\n🌆  City: ${city}, ${state} (Target: 250 leads)`);
+
+      // Process each category until we hit 250 leads
       for (const category of CATEGORIES) {
+        if (cityLeadsCount >= 250) {
+          console.log(`  🎉 Target of 250 reached for ${city}!`);
+          break;
+        }
+
         try {
           const count = await importLeadsForCity(city, state, category);
           totalImported += count;
+          cityLeadsCount += count;
           
-          // Rate limiting delay between city/category combinations
+          // Rate limiting delay between category searches
           await new Promise(resolve => setTimeout(resolve, 500));
         } catch (e) {
           console.error(`  ❌ Error importing ${category} in ${city}, ${state}:`, e);
         }
       }
       
-      // Longer delay between cities
+      console.log(`  📊 Finished ${city}. Total for this city: ${cityLeadsCount}`);
+      
+      // Longer delay between cities to keep Google happy
       await new Promise(resolve => setTimeout(resolve, 2000));
     }
   }

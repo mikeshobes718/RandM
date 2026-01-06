@@ -9,22 +9,22 @@ BASE_URL="https://www.reviewsandmarketing.com"
 echo "🚀 Starting bulk import in batches..."
 echo ""
 
-# Batch 1: Top 3 states, 5 categories, 3 cities each
-echo "📦 Batch 1: NY, CA, TX (3 cities, 5 categories each)..."
+# Batch 1: NY, CA (2 cities each, 5 categories each)
+echo "📦 Batch 1: NY, CA (2 cities each)..."
 curl -X POST "${BASE_URL}/api/admin/bulk-import-leads?token=${ADMIN_TOKEN}" \
   -H "Content-Type: application/json" \
-  -d '{"limitCities": 3, "limitCategories": 5}' \
+  -d '{"limitCities": 2, "limitCategories": 10}' \
   --max-time 600
 
 echo ""
 echo "✅ Batch 1 complete. Waiting 10 seconds before next batch..."
 sleep 10
 
-# Batch 2: Next 3 states
-echo "📦 Batch 2: FL, IL, GA (3 cities, 5 categories each)..."
+# Batch 2: TX, FL
+echo "📦 Batch 2: TX, FL (2 cities each)..."
 curl -X POST "${BASE_URL}/api/admin/bulk-import-leads?token=${ADMIN_TOKEN}" \
   -H "Content-Type: application/json" \
-  -d '{"limitCities": 3, "limitCategories": 5, "startState": "FL"}' \
+  -d '{"limitCities": 2, "limitCategories": 10, "startState": "TX"}' \
   --max-time 600
 
 echo ""
