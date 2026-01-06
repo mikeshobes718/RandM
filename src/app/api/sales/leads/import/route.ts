@@ -124,7 +124,8 @@ export async function POST(req: Request) {
           .upsert(fallbackLeads, { onConflict: 'google_place_id' });
         
         if (fallbackError) {
-          return new NextResponse('Database error (fallback)', { status: 500 });
+          console.error('[IMPORT LEADS] Fallback DB Error:', fallbackError);
+          return NextResponse.json({ success: false, error: fallbackError.message }, { status: 500 });
         }
         
         return NextResponse.json({ 
@@ -134,7 +135,7 @@ export async function POST(req: Request) {
         });
       }
       
-      return new NextResponse('Database error', { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ 
