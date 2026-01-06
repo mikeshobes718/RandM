@@ -272,11 +272,11 @@ function DashboardContent() {
             </div>
             <h2 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">Unlock Your Business Intelligence</h2>
             <p className="text-slate-600 max-w-md mb-8 font-medium leading-relaxed">
-              You're currently seeing <strong>less than 20%</strong> of your available data. Upgrade to Pro to track daily trends, see where every lead comes from, and analyze customer sentiment.
+              You're currently seeing <strong>less than 20%</strong> of your available data. Upgrade to Unlimited to track daily trends, see where every lead comes from, and analyze customer sentiment.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <Link href="/pricing" className="primary-button h-14 px-10 text-lg shadow-xl shadow-brand/20">
-                🚀 Upgrade to Pro Now
+                🚀 Upgrade Now
               </Link>
               <div className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/5 px-3 py-1.5 rounded-full border border-brand/10">
                 Join 500+ Top Rated Businesses
@@ -405,7 +405,7 @@ function DashboardContent() {
                   Create unique QR codes for every table, staff member, or flyer to see exactly what drives your growth.
                 </p>
                 <Link href="/pricing" className="primary-button !h-9 px-6 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/20 transition-transform hover:scale-105 active:scale-95">
-                  Upgrade to Pro
+                  Upgrade Plan
                 </Link>
               </div>
             )}

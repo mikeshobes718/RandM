@@ -2,12 +2,7 @@ import { getSupabaseAdmin } from './supabaseAdmin';
 import { getEnv } from './env';
 import { getStripeClient } from './stripe';
 
-function isProPlanId(planId: string | null | undefined): boolean {
-  if (!planId) return false;
-  const normalized = planId.trim().toLowerCase();
-  if (!normalized || normalized === 'starter' || normalized.startsWith('starter-')) return false;
-  return true;
-}
+import { PLANS, getPlanFromId } from './plans';
 
 export async function hasActivePro(uid: string): Promise<boolean> {
   // Co-founder safety net: Bladespindler@gmail.com is always PRO
@@ -30,12 +25,68 @@ export async function hasActivePro(uid: string): Promise<boolean> {
       .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (data && isProPlanId(data.plan_id as string | null | undefined)) {
-      return true;
+    
+    if (data) {
+      const planTier = getPlanFromId(data.plan_id as string | null | undefined);
+      return planTier === 'mid' || planTier === 'pro';
     }
   } catch {}
 
   return false;
+}
+
+export async function getPlanLimits(uid: string) {
+  // Co-founder override
+  const FOUNDER_EMAIL = 'Bladespindler@gmail.com';
+  const supa = getSupabaseAdmin();
+  const { data: userData } = await supa.from('users').select('email').eq('uid', uid).maybeSingle();
+  if (userData?.email?.toLowerCase() === FOUNDER_EMAIL.toLowerCase()) {
+    return PLANS.pro;
+  }
+
+  const { data: sub } = await supa
+    .from('subscriptions')
+    .select('status, plan_id')
+    .eq('uid', uid)
+    .in('status', ['active', 'trialing', 'starter'])
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const tier = getPlanFromId(sub?.plan_id || (sub?.status === 'starter' ? 'starter' : null));
+  return PLANS[tier];
+}
+
+export async function checkPlanLimit(businessId: string): Promise<{ allowed: boolean; reason?: string }> {
+  const supa = getSupabaseAdmin();
+  
+  // Get business owner
+  const { data: biz } = await supa.from('businesses').select('owner_uid').eq('id', businessId).maybeSingle();
+  if (!biz) return { allowed: true }; // Should not happen
+
+  const limits = await getPlanLimits(biz.owner_uid);
+  if (limits.id === 'pro') return { allowed: true };
+
+  // Count reviews this month
+  const startOfMonth = new Date();
+  startOfMonth.setUTCDate(1);
+  startOfMonth.setUTCHours(0, 0, 0, 0);
+
+  const { count } = await supa
+    .from('review_events')
+    .select('*', { count: 'exact', head: true })
+    .eq('business_id', businessId)
+    .in('event', ['google_opened', 'feedback_submitted'])
+    .gte('created_at', startOfMonth.toISOString());
+
+  if ((count || 0) >= limits.reviewLimit) {
+    return { 
+      allowed: false, 
+      reason: `Monthly limit of ${limits.reviewLimit} reviews reached for the ${limits.name} plan. Upgrade to continue collecting feedback.` 
+    };
+  }
+
+  return { allowed: true };
 }
 
 export async function getActiveSubscribersAndMRR(): Promise<{ active: number; mrrUSD: number }> {

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { ensureFeedbackTables, recordReviewEvent } from '@/lib/feedbackStorage';
 import { normalizePhone } from '@/lib/phone';
+import { checkPlanLimit } from '@/lib/entitlements';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -122,6 +123,12 @@ export async function POST(req: Request) {
 
   if (error) return new NextResponse(error.message, { status: 500 });
   if (!biz) return new NextResponse('not found', { status: 404 });
+
+  // Enforce plan limits
+  const limitCheck = await checkPlanLimit(businessId);
+  if (!limitCheck.allowed) {
+    return new NextResponse(limitCheck.reason, { status: 403 });
+  }
 
   try { await ensureFeedbackTables(); } catch {}
 

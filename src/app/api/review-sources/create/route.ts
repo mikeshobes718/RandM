@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireUid } from '@/lib/authServer';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { ensureFeedbackTables } from '@/lib/feedbackStorage';
+import { getPlanLimits } from '@/lib/entitlements';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -37,15 +38,18 @@ export async function POST(req: NextRequest) {
   
   if (!biz) return new NextResponse('Forbidden', { status: 403 });
 
-  // Check Pro status
-  const { data: sub } = await supa
-    .from('subscriptions')
-    .select('status, plan_id')
-    .eq('uid', uid)
-    .maybeSingle();
+  // Enforce plan limits
+  const limits = await getPlanLimits(uid);
   
-  const isPro = sub?.status === 'active';
-  if (!isPro) return new NextResponse('Pro plan required for multiple sources', { status: 403 });
+  // Count existing sources
+  const { count } = await supa
+    .from('review_sources')
+    .select('*', { count: 'exact', head: true })
+    .eq('business_id', businessId);
+
+  if ((count || 0) >= limits.qrLimit) {
+    return new NextResponse(`QR code limit of ${limits.qrLimit} reached for the ${limits.name} plan. Upgrade to create more unique QR codes.`, { status: 403 });
+  }
 
   try { await ensureFeedbackTables(); } catch (e) {}
 
@@ -65,6 +69,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ source });
 }
+
 
 
 

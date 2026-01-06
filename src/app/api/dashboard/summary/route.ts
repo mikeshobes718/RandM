@@ -80,11 +80,20 @@ export async function GET(req: NextRequest) {
       if (bizResult.error.message.includes('google_photo_url') || bizResult.error.message.includes('address') || bizResult.error.message.includes('business_type')) {
         const fallbackResult = await supa
           .from('businesses')
-          .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
+          .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone,google_photo_url,address')
           .eq('owner_uid', uid)
           .maybeSingle();
-        if (fallbackResult.error) return new NextResponse(fallbackResult.error.message, { status: 500 });
-        biz = fallbackResult.data;
+        if (fallbackResult.error) {
+             const superFallback = await supa
+              .from('businesses')
+              .select('id,name,review_link,google_maps_write_review_uri,google_rating,google_place_id,contact_phone')
+              .eq('owner_uid', uid)
+              .maybeSingle();
+             if (superFallback.error) return new NextResponse(superFallback.error.message, { status: 500 });
+             biz = superFallback.data;
+        } else {
+             biz = fallbackResult.data;
+        }
       } else {
         return new NextResponse(bizResult.error.message, { status: 500 });
       }

@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function Pricing() {
-  const [starterLoading, setStarterLoading] = useState(false);
+  const [midLoading, setMidLoading] = useState(false);
   const [proLoading, setProLoading] = useState(false);
   const [hasPlan, setHasPlan] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
   const [authed, setAuthed] = useState(false);
   const [planStatus, setPlanStatus] = useState<'loading' | 'none' | string>('loading');
-  const [isPro, setIsPro] = useState(false);
+  const [currentTier, setCurrentTier] = useState<'starter' | 'mid' | 'pro' | 'none'>('none');
 
   useEffect(() => {
     const checkAuthAndPlan = async () => {
@@ -24,37 +24,57 @@ export default function Pricing() {
         if (res.ok) {
           const data = await res.json();
           const status = (data.status || 'none').toLowerCase();
+          const planId = data.plan_id;
+          
           setPlanStatus(status);
-          setIsPro(status === 'active' || status === 'trialing');
+          
+          if (status === 'active' || status === 'trialing') {
+            const pid = (planId || '').toLowerCase();
+            if (pid.includes('mid') || pid.includes('small-business')) {
+              setCurrentTier('mid');
+            } else {
+              setCurrentTier('pro');
+            }
+          } else if (status === 'starter') {
+            setCurrentTier('starter');
+          } else {
+            setCurrentTier('none');
+          }
+          
           setHasPlan(status !== 'none');
         } else {
           setPlanStatus('none');
+          setCurrentTier('none');
         }
       } catch {
         setPlanStatus('none');
+        setCurrentTier('none');
       }
     };
     checkAuthAndPlan();
   }, []);
 
-  const handleProCta = async () => {
-    if (isPro) {
-      // Redirect to billing portal or settings
+  const handleCheckout = async (tier: 'mid' | 'pro') => {
+    if (currentTier === tier) {
       window.location.href = '/settings';
       return;
     }
-    setProLoading(true);
+    
+    if (tier === 'mid') setMidLoading(true);
+    else setProLoading(true);
+
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: billing }),
+        body: JSON.stringify({ plan: billing, tier }),
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
     } catch (err) {
       setError("Failed to start checkout.");
     } finally {
+      setMidLoading(false);
       setProLoading(false);
     }
   };
@@ -64,18 +84,18 @@ export default function Pricing() {
       window.location.href = '/register';
       return;
     }
-    if (planStatus === 'starter') {
+    if (currentTier === 'starter' || currentTier === 'mid' || currentTier === 'pro') {
       window.location.href = '/dashboard';
       return;
     }
-    setStarterLoading(true);
+    setMidLoading(true); // Reuse midLoading for starter activation
     try {
       const res = await fetch('/api/plan/start', { method: 'POST' });
       if (res.ok) window.location.href = '/onboarding/business';
     } catch {
       setError("Failed to activate Starter.");
     } finally {
-      setStarterLoading(false);
+      setMidLoading(false);
     }
   };
 
@@ -104,7 +124,7 @@ export default function Pricing() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {/* Starter Card */}
           <div className="premium-card p-8 rounded-3xl flex flex-col">
             <div className="mb-8">
@@ -124,39 +144,31 @@ export default function Pricing() {
                   {f}
                 </li>
               ))}
-              <li className="pt-2">
-                <Link href="/how-it-works" className="text-[10px] font-bold text-brand uppercase tracking-widest hover:underline flex items-center gap-1">
-                  How the free plan works
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </li>
             </ul>
             <button 
               onClick={handleStarterCta}
-              disabled={starterLoading || planStatus === 'starter' || isPro}
+              disabled={midLoading || currentTier !== 'none'}
               className="secondary-button w-full h-12 disabled:opacity-50"
             >
-              {planStatus === 'starter' ? 'Current Plan' : (isPro ? 'Included in Pro' : (starterLoading ? '...' : 'Get Started Free'))}
+              {currentTier === 'starter' ? 'Current Plan' : (currentTier !== 'none' ? 'Included' : (midLoading ? '...' : 'Get Started Free'))}
             </button>
           </div>
 
-          {/* Pro Card */}
-          <div className="premium-card p-8 rounded-3xl flex flex-col border-brand/50 ring-4 ring-brand/5">
+          {/* Mid Tier Card */}
+          <div className="premium-card p-8 rounded-3xl flex flex-col border-brand/20 shadow-xl shadow-brand/5 relative">
             <div className="mb-8">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold mb-2">Pro</h3>
-                <span className="text-[10px] font-black uppercase tracking-widest text-brand bg-brand/5 px-2 py-1 rounded">Recommended</span>
+                <h3 className="text-xl font-bold mb-2">Small Business</h3>
+                <span className="text-[10px] font-black uppercase tracking-widest text-brand bg-brand/5 px-2 py-1 rounded">Growth</span>
               </div>
-              <p className="text-sm text-muted">For growing businesses.</p>
+              <p className="text-sm text-muted">For expanding teams.</p>
             </div>
             <div className="mb-8">
-              <span className="text-4xl font-black">{billing === 'monthly' ? '$49.99' : '$499'}</span>
-              <span className="text-muted ml-2">{billing === 'monthly' ? '/mo' : '/yr'}</span>
+              <span className="text-4xl font-black">{billing === 'monthly' ? '$29.99' : '$24.99'}</span>
+              <span className="text-muted ml-2">{billing === 'monthly' ? '/mo' : '/mo billed yearly'}</span>
             </div>
             <ul className="space-y-4 mb-10 flex-1">
-              {['Unlimited Requests', 'Multiple QR Codes', 'Square Integration', 'Advanced Reporting', 'Priority Support'].map(f => (
+              {['50 Review Requests / mo', '5 Smart QR Codes', 'Square Integration', 'Standard Email Support'].map(f => (
                 <li key={f} className="flex items-center gap-3 text-sm font-medium">
                   <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -164,21 +176,46 @@ export default function Pricing() {
                   {f}
                 </li>
               ))}
-              <li className="pt-2">
-                <Link href="/how-it-works" className="text-[10px] font-bold text-brand uppercase tracking-widest hover:underline flex items-center gap-1">
-                  See Pro in action
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
-              </li>
             </ul>
             <button 
-              onClick={handleProCta}
-              disabled={proLoading || isPro}
+              onClick={() => handleCheckout('mid')}
+              disabled={midLoading || currentTier === 'mid' || currentTier === 'pro'}
               className="primary-button w-full h-12 disabled:opacity-50"
             >
-              {isPro ? 'Current Plan' : (proLoading ? '...' : 'Go Pro')}
+              {currentTier === 'mid' ? 'Current Plan' : (currentTier === 'pro' ? 'Included in Unlimited' : (midLoading ? '...' : 'Select Plan'))}
+            </button>
+          </div>
+
+          {/* Pro Card */}
+          <div className="premium-card p-8 rounded-3xl flex flex-col border-brand/50 ring-4 ring-brand/5 bg-slate-900 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-brand/20 rounded-full blur-3xl -mr-16 -mt-16 animate-pulse"></div>
+            <div className="mb-8">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold mb-2">Unlimited</h3>
+                <span className="text-[10px] font-black uppercase tracking-widest text-white bg-brand px-2 py-1 rounded shadow-lg shadow-brand/20">Recommended</span>
+              </div>
+              <p className="text-sm text-slate-400">Total control & scale.</p>
+            </div>
+            <div className="mb-8">
+              <span className="text-4xl font-black">{billing === 'monthly' ? '$49.99' : '$39.99'}</span>
+              <span className="text-slate-400 ml-2">{billing === 'monthly' ? '/mo' : '/mo billed yearly'}</span>
+            </div>
+            <ul className="space-y-4 mb-10 flex-1">
+              {['Unlimited Requests', 'Unlimited QR Codes', 'All Integrations', 'Priority Support', 'Advanced Reporting'].map(f => (
+                <li key={f} className="flex items-center gap-3 text-sm font-medium">
+                  <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <button 
+              onClick={() => handleCheckout('pro')}
+              disabled={proLoading || currentTier === 'pro'}
+              className="primary-button !bg-white !text-slate-900 w-full h-12 disabled:opacity-50 font-black shadow-xl shadow-brand/20"
+            >
+              {currentTier === 'pro' ? 'Current Plan' : (proLoading ? '...' : 'Go Unlimited')}
             </button>
           </div>
         </div>

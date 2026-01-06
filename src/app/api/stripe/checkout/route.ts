@@ -9,7 +9,8 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const plan = (body?.plan as 'monthly'|'yearly') || 'monthly';
+    const billing = (body?.plan as 'monthly'|'yearly') || 'monthly';
+    const tier = (body?.tier as 'mid'|'pro') || 'pro';
     const env = getEnv();
     // Prefer authenticated uid/email from server if available
     let uid = '';
@@ -46,19 +47,28 @@ export async function POST(req: Request) {
         return new NextResponse('Authentication required', { status: 401 });
       }
     }
-    const { STRIPE_PRICE_ID, STRIPE_YEARLY_PRICE_ID, APP_URL, STRIPE_SECRET_KEY } = env;
+    const { STRIPE_PRICE_ID, STRIPE_YEARLY_PRICE_ID, STRIPE_MID_PRICE_ID, STRIPE_MID_YEARLY_PRICE_ID, APP_URL, STRIPE_SECRET_KEY } = env;
     const stripe = getStripeClient();
-    const priceId = plan === 'yearly' ? STRIPE_YEARLY_PRICE_ID : STRIPE_PRICE_ID;
+    
+    let priceId = '';
+    if (tier === 'mid') {
+      priceId = billing === 'yearly' ? STRIPE_MID_YEARLY_PRICE_ID || '' : STRIPE_MID_PRICE_ID || '';
+    } else {
+      priceId = billing === 'yearly' ? STRIPE_YEARLY_PRICE_ID || '' : STRIPE_PRICE_ID || '';
+    }
+
     const modeLabel = STRIPE_SECRET_KEY.startsWith('sk_live') ? 'live' : 'test';
 
     const fallbackLineItem: Stripe.Checkout.SessionCreateParams.LineItem = {
       price_data: {
         currency: 'usd',
-        unit_amount: plan === 'yearly' ? 49900 : 4999,
-        recurring: { interval: (plan === 'yearly' ? 'year' : 'month') as 'month' | 'year' },
+        unit_amount: tier === 'mid' 
+          ? (billing === 'yearly' ? 29988 : 2999) 
+          : (billing === 'yearly' ? 47988 : 4999),
+        recurring: { interval: (billing === 'yearly' ? 'year' : 'month') as 'month' | 'year' },
         product_data: {
-          name: 'Reviews & Marketing Pro',
-          description: plan === 'yearly' ? 'Annual subscription billed yearly' : 'Monthly subscription billed monthly',
+          name: tier === 'mid' ? 'Small Business' : 'Unlimited',
+          description: billing === 'yearly' ? 'Annual subscription billed yearly' : 'Monthly subscription billed monthly',
         },
       },
       quantity: 1 as const,
@@ -75,7 +85,7 @@ export async function POST(req: Request) {
         cancel_url: `${APP_URL}/pricing?canceled=1`,
         line_items: [lineItem],
         customer_email: email || undefined,
-        metadata: { uid, plan, mode: modeLabel },
+        metadata: { uid, billing, tier, mode: modeLabel },
         client_reference_id: uid || undefined,
         allow_promotion_codes: true,
       });

@@ -44,11 +44,13 @@ function SquareIntegrationInner() {
   const [isBackfilling, setIsBackfilling] = useState(false);
   const [toggling, setToggling] = useState(false);
 
-  const isPro = useMemo(() => {
+  const hasAccess = useMemo(() => {
     if (!planStatus || planStatus === 'loading') return false;
     const normalized = planStatus.toLowerCase();
+    const pid = searchParams?.get('plan_id')?.toLowerCase() || ''; // We might need to pass this from the server
+    // For now, if active or trialing, we allow access as we handle specific limits in the backend
     return normalized === 'active' || normalized === 'trialing';
-  }, [planStatus]);
+  }, [planStatus, searchParams]);
 
   useEffect(() => {
     if (!searchParams) return;
@@ -194,8 +196,8 @@ function SquareIntegrationInner() {
 
   async function startOAuth(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault();
-    if (!isPro) {
-      setError('Square automations require a Pro subscription.');
+    if (!hasAccess) {
+      setError('Square automations require a paid subscription.');
       return;
     }
     try {
@@ -225,8 +227,8 @@ function SquareIntegrationInner() {
   }
 
   async function disconnectSquare() {
-    if (!isPro) {
-      setError('Square automations require a Pro subscription.');
+    if (!hasAccess) {
+      setError('Square automations require a paid subscription.');
       return;
     }
     try {

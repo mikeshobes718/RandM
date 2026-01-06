@@ -2,6 +2,13 @@ import Link from "next/link";
 
 const POSTS = [
   {
+    title: "Transparent Pricing for Sustainable Growth",
+    slug: "transparent-pricing",
+    date: "Jan 2026",
+    excerpt: "Why offering tiered value from Starter to Unlimited is the best way to scale your local business reputation.",
+    isLive: false
+  },
+  {
     title: "The 'Review Filter': How Businesses Are Engineering 5-Star Google Ratings",
     slug: "the-review-filter",
     date: "Jan 2026",
