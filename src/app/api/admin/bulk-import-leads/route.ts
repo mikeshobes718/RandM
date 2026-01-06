@@ -146,42 +146,80 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { limitCities, limitCategories } = await req.json().catch(() => ({}));
+    const { limitCities, limitCategories, startState, startCity, startCategory } = await req.json().catch(() => ({}));
     
     let totalImported = 0;
     const stateKeys = Object.keys(US_CITIES_BY_STATE);
     const results: any[] = [];
-
+    
+    // Allow resuming from a specific point
+    let startProcessing = !startState;
+    
     for (const state of stateKeys) {
+      if (startState && !startProcessing) {
+        if (state === startState) {
+          startProcessing = true;
+        } else {
+          continue;
+        }
+      }
+      
       const cities = limitCities 
         ? US_CITIES_BY_STATE[state].slice(0, limitCities)
         : US_CITIES_BY_STATE[state];
       
+      let cityStartProcessing = !startCity || !startProcessing;
+      
       for (const city of cities) {
+        if (startCity && !cityStartProcessing) {
+          if (city === startCity) {
+            cityStartProcessing = true;
+          } else {
+            continue;
+          }
+        }
+        
         const categories = limitCategories
           ? CATEGORIES.slice(0, limitCategories)
           : CATEGORIES;
           
+        let categoryStartProcessing = !startCategory || !cityStartProcessing;
+        
         for (const category of categories) {
+          if (startCategory && !categoryStartProcessing) {
+            if (category === startCategory) {
+              categoryStartProcessing = true;
+            } else {
+              continue;
+            }
+          }
+          
           try {
             const count = await importLeadsForCity(city, state, category);
             totalImported += count;
             results.push({ city, state, category, count });
-            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Log progress every 10 imports
+            if (results.length % 10 === 0) {
+              console.log(`[BULK IMPORT] Progress: ${totalImported} leads imported so far...`);
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 300)); // Reduced delay
           } catch (e: any) {
             console.error(`Error importing ${category} in ${city}, ${state}:`, e);
             results.push({ city, state, category, error: e.message });
           }
         }
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Reduced delay
       }
     }
 
     return NextResponse.json({
       success: true,
       totalImported,
-      results,
-      message: `Bulk import complete! Imported ${totalImported} leads.`,
+      resultsCount: results.length,
+      sampleResults: results.slice(0, 10), // Return first 10 for preview
+      message: `Bulk import complete! Imported ${totalImported} leads across ${results.length} city/category combinations.`,
     });
   } catch (error: any) {
     console.error('[BULK IMPORT] Error:', error);
