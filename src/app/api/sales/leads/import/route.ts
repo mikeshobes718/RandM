@@ -86,34 +86,13 @@ export async function POST(req: Request) {
     if (error) {
       console.error('[IMPORT LEADS] DB Error:', error);
       
-      // If error is about missing columns, try upserting without them
-      if (error.message.includes('column') || error.code === '42703') {
-        const fallbackLeads = leadsWithDetails.map((p: any) => ({
-          google_place_id: p.id,
-          name: p.displayName?.text || 'Unknown',
-          address: p.formattedAddress,
-          rating: p.rating,
-          review_count: p.userRatingCount || 0,
-          business_type: type,
-          city: city.toLowerCase(),
-        }));
-        const { error: fallbackError } = await supa
-          .from('leads')
-          .upsert(fallbackLeads, { onConflict: 'google_place_id' });
-        
-        if (fallbackError) {
-          console.error('[IMPORT LEADS] Fallback DB Error:', fallbackError);
-          return NextResponse.json({ success: false, error: fallbackError.message }, { status: 500 });
-        }
-        
-        return NextResponse.json({ 
-          success: true, 
-          count: fallbackLeads.length, 
-          message: `Successfully imported ${fallbackLeads.length} leads (without phone/state/country due to schema delay)` 
-        });
-      }
-      
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      // Return full error for debugging
+      return NextResponse.json({ 
+        success: false, 
+        error: error.message, 
+        details: error,
+        hint: 'If this is a column missing error, the fallback should have handled it.'
+      }, { status: 500 });
     }
 
     return NextResponse.json({ 
