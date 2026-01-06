@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { searchBusinesses, getPlaceDetails } from '@/lib/googlePlaces';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import postgres from 'postgres';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,27 +9,6 @@ export async function POST(req: Request) {
     const { city, state, country, type } = await req.json();
     if (!city || !type) {
       return new NextResponse('Missing city or type', { status: 400 });
-    }
-
-    // Attempt migration once here using postgres.js which is more SCRAM-compatible
-    try {
-      const projectRef = 'rhnxzpbhoqbvoqyqmfox';
-      const user = `postgres.${projectRef}`;
-      const password = process.env.SUPABASE_DB_PASSWORD || 'Blaze2026';
-      const host = 'aws-0-us-east-1.pooler.supabase.com';
-      const database = 'postgres';
-      const sql = postgres(`postgresql://${user}:${encodeURIComponent(password)}@${host}:6543/${database}`, {
-        ssl: 'require',
-        connect_timeout: 10,
-      });
-      await sql`alter table leads add column if not exists state text;`;
-      await sql`alter table leads add column if not exists country text;`;
-      await sql`alter table leads add column if not exists phone text;`;
-      console.log('[IMPORT] Migration check completed via postgres.js');
-      await sql.end();
-    } catch (migError) {
-      console.error('[IMPORT] Migration attempt failed:', migError);
-      // Continue anyway, maybe the columns already exist or we can fallback
     }
 
     const location = [city, state, country].filter(Boolean).join(', ');
