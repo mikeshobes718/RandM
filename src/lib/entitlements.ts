@@ -5,18 +5,9 @@ import { getStripeClient } from './stripe';
 import { PLANS, getPlanFromId } from './plans';
 
 export async function hasActivePro(uid: string): Promise<boolean> {
-  // Co-founder safety net: Bladespindler@gmail.com is always PRO
-  const FOUNDER_EMAIL = 'Bladespindler@gmail.com';
-
   try {
     const supa = getSupabaseAdmin();
     
-    // Check if this UID belongs to the founder
-    const { data: userData } = await supa.from('users').select('email').eq('uid', uid).maybeSingle();
-    if (userData?.email?.toLowerCase() === FOUNDER_EMAIL.toLowerCase()) {
-      return true;
-    }
-
     const { data } = await supa
       .from('subscriptions')
       .select('status, plan_id')
@@ -36,13 +27,7 @@ export async function hasActivePro(uid: string): Promise<boolean> {
 }
 
 export async function getPlanLimits(uid: string) {
-  // Co-founder override
-  const FOUNDER_EMAIL = 'Bladespindler@gmail.com';
   const supa = getSupabaseAdmin();
-  const { data: userData } = await supa.from('users').select('email').eq('uid', uid).maybeSingle();
-  if (userData?.email?.toLowerCase() === FOUNDER_EMAIL.toLowerCase()) {
-    return PLANS.pro;
-  }
 
   const { data: sub } = await supa
     .from('subscriptions')
