@@ -187,23 +187,23 @@ export default function Pricing() {
           </div>
 
           {/* Pro Card */}
-          <div className="premium-card p-8 rounded-3xl flex flex-col border-indigo-500/50 ring-4 ring-indigo-500/10 bg-[#1e293b] text-white relative overflow-hidden">
+          <div className="premium-card p-8 rounded-3xl flex flex-col border-indigo-500/50 ring-4 ring-indigo-500/10 !bg-[#1e293b] !text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -mr-32 -mt-32 animate-pulse"></div>
             <div className="mb-8 relative z-10">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold mb-2">Unlimited</h3>
                 <span className="text-[10px] font-black uppercase tracking-widest text-white bg-indigo-600 px-2 py-1 rounded shadow-lg shadow-indigo-500/20">Recommended</span>
               </div>
-              <p className="text-sm text-slate-300">Total control & scale.</p>
+              <p className="text-sm text-slate-200">Total control & scale.</p>
             </div>
             <div className="mb-8 relative z-10">
               <span className="text-4xl font-black">{billing === 'monthly' ? '$49.99' : '$39.99'}</span>
-              <span className="text-slate-400 ml-2">{billing === 'monthly' ? '/mo' : '/mo billed yearly'}</span>
+              <span className="text-slate-300 ml-2">{billing === 'monthly' ? '/mo' : '/mo billed yearly'}</span>
             </div>
             <ul className="space-y-4 mb-10 flex-1 relative z-10">
               {['Unlimited Requests', 'Unlimited QR Codes', 'All Integrations', 'Priority Support', 'Advanced Reporting'].map(f => (
                 <li key={f} className="flex items-center gap-3 text-sm font-medium">
-                  <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
                   {f}
