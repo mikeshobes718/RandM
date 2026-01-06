@@ -243,10 +243,11 @@ export async function searchBusinesses(query: string) {
     'places.rating',
     'places.userRatingCount',
     'places.types',
-    'places.primaryType',
-    'places.nationalPhoneNumber',
-    'places.internationalPhoneNumber',
-  ].join(',');
+                'places.primaryType',
+                'places.nationalPhoneNumber',
+                'places.internationalPhoneNumber',
+                'places.googleMapsUri',
+              ].join(',');
 
   try {
     const res = await fetch('https://places.googleapis.com/v1/places:searchText', {

@@ -72,6 +72,7 @@ export async function POST(req: Request) {
       state: state || null,
       country: country || null,
       phone: p.phone,
+      google_maps_url: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
     }));
 
     if (leadsToInsert.length === 0) {

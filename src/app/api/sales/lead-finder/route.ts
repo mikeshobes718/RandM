@@ -41,6 +41,7 @@ export async function GET(req: Request) {
           reviewCount: l.review_count,
           type: l.business_type,
           phone: l.phone,
+          googleMapsUrl: l.google_maps_url,
         }));
       }
     }
@@ -62,6 +63,7 @@ export async function GET(req: Request) {
           reviewCount: p.userRatingCount || 0,
           type: type || (p.primaryType ? p.primaryType.replace(/_/g, ' ') : p.types?.[0]?.replace(/_/g, ' ')),
           phone: p.nationalPhoneNumber || p.internationalPhoneNumber || 'No Phone',
+          googleMapsUrl: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
         }))
         .sort((a: any, b: any) => a.rating - b.rating);
     }

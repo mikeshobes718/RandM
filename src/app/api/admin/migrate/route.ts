@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { runSupabaseMigrations } from '@/lib/migrations';
+import { getEnv } from '@/lib/env';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
