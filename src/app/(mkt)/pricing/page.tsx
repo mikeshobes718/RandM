@@ -187,38 +187,36 @@ export default function Pricing() {
           </div>
 
           {/* Pro Card */}
-          <div className="premium-card p-8 rounded-3xl flex flex-col border-brand/50 ring-4 ring-brand/5 !bg-slate-900 !text-white relative overflow-hidden">
+          <div className="premium-card p-8 rounded-3xl flex flex-col border-brand/50 ring-4 ring-brand/5 !bg-[#0f172a] !text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-brand/20 rounded-full blur-3xl -mr-16 -mt-16 animate-pulse"></div>
-            <div className="mb-8 relative z-10">
+            <div className="mb-8">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold mb-2">Unlimited</h3>
                 <span className="text-[10px] font-black uppercase tracking-widest text-white bg-brand px-2 py-1 rounded shadow-lg shadow-brand/20">Recommended</span>
               </div>
               <p className="text-sm text-slate-400">Total control & scale.</p>
             </div>
-            <div className="mb-8 relative z-10">
+            <div className="mb-8">
               <span className="text-4xl font-black">{billing === 'monthly' ? '$49.99' : '$39.99'}</span>
               <span className="text-slate-400 ml-2">{billing === 'monthly' ? '/mo' : '/mo billed yearly'}</span>
             </div>
-            <ul className="space-y-4 mb-10 flex-1 relative z-10">
+            <ul className="space-y-4 mb-10 flex-1">
               {['Unlimited Requests', 'Unlimited QR Codes', 'All Integrations', 'Priority Support', 'Advanced Reporting'].map(f => (
                 <li key={f} className="flex items-center gap-3 text-sm font-medium">
                   <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span>{f}</span>
+                  {f}
                 </li>
               ))}
             </ul>
-            <div className="relative z-10 mt-auto">
-              <button 
-                onClick={() => handleCheckout('pro')}
-                disabled={proLoading || currentTier === 'pro'}
-                className="primary-button !bg-white !text-slate-900 w-full h-12 disabled:opacity-50 font-black shadow-xl shadow-brand/20"
-              >
-                {currentTier === 'pro' ? 'Current Plan' : (proLoading ? '...' : 'Go Unlimited')}
-              </button>
-            </div>
+            <button 
+              onClick={() => handleCheckout('pro')}
+              disabled={proLoading || currentTier === 'pro'}
+              className="primary-button !bg-white !text-slate-900 w-full h-12 disabled:opacity-50 font-black shadow-xl shadow-brand/20"
+            >
+              {currentTier === 'pro' ? 'Current Plan' : (proLoading ? '...' : 'Go Unlimited')}
+            </button>
           </div>
         </div>
 
