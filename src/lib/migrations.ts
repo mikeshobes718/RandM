@@ -266,6 +266,7 @@ create index if not exists leads_city_type_idx on leads(city, business_type);
     alter table leads add column if not exists country text;
     alter table leads add column if not exists phone text;
     alter table leads add column if not exists google_maps_url text;
+    alter table leads add column if not exists website text;
     `;
     await client.query(sql015); ran.push('015_leads_location_columns');
 

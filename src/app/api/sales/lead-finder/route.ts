@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   const supa = getSupabaseAdmin();
 
   try {
-    let leads = [];
+    let leads: any[] = [];
 
     // If city and type are provided, try querying our database first
     if (city && type) {
@@ -42,6 +42,7 @@ export async function GET(req: Request) {
           type: l.business_type,
           phone: l.phone,
           googleMapsUrl: l.google_maps_url,
+          website: l.website,
         }));
       }
     }
@@ -59,23 +60,36 @@ export async function GET(req: Request) {
           .filter((p: any) => p.rating != null && p.rating <= maxRating)
           .slice(0, 50) // Limit to avoid too many API calls
           .map(async (p: any) => {
-            // If we already have phone from search, use it
+            // If we already have phone from search, use it (but still fetch details for website)
             if (p.nationalPhoneNumber || p.internationalPhoneNumber) {
-              return {
-                ...p,
-                phone: p.nationalPhoneNumber || p.internationalPhoneNumber,
-              };
+              // Still fetch details to get website
+              try {
+                const details = await getPlaceDetails(p.id);
+                return {
+                  ...p,
+                  phone: p.nationalPhoneNumber || p.internationalPhoneNumber,
+                  googleMapsUri: details.googleMapsUri || p.googleMapsUri,
+                  website: details.websiteUri || null,
+                };
+              } catch (e) {
+                return {
+                  ...p,
+                  phone: p.nationalPhoneNumber || p.internationalPhoneNumber,
+                  website: null,
+                };
+              }
             }
-            // Otherwise fetch details to get phone number
+            // Otherwise fetch details to get phone number and website
             try {
               const details = await getPlaceDetails(p.id);
               return {
                 ...p,
                 phone: details.nationalPhoneNumber || details.internationalPhoneNumber || null,
                 googleMapsUri: details.googleMapsUri || p.googleMapsUri,
+                website: details.websiteUri || null,
               };
             } catch (e) {
-              return { ...p, phone: null };
+              return { ...p, phone: null, website: null };
             }
           })
       );
@@ -89,6 +103,7 @@ export async function GET(req: Request) {
         type: type || (p.primaryType ? p.primaryType.replace(/_/g, ' ') : p.types?.[0]?.replace(/_/g, ' ')),
         phone: p.phone || 'No Phone',
         googleMapsUrl: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
+        website: p.website || null,
       }))
       .sort((a: any, b: any) => a.rating - b.rating);
     }

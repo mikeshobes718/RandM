@@ -91,6 +91,7 @@ async function v1Details(GOOGLE_MAPS_API_KEY: string, placeId: string, sessionTo
     'photos',
     'nationalPhoneNumber',
     'internationalPhoneNumber',
+    'websiteUri',
   ].join(',');
   const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`;
   const res = await fetch(url, {
@@ -109,7 +110,7 @@ async function legacyDetails(GOOGLE_MAPS_API_KEY: string, placeId: string) {
   const url = new URL('https://maps.googleapis.com/maps/api/place/details/json');
   url.searchParams.set('place_id', placeId);
   url.searchParams.set('key', GOOGLE_MAPS_API_KEY);
-  url.searchParams.set('fields', 'place_id,name,formatted_address,rating,user_ratings_total,url,geometry/location,types,business_status,photos,formatted_phone_number,international_phone_number');
+  url.searchParams.set('fields', 'place_id,name,formatted_address,rating,user_ratings_total,url,geometry/location,types,business_status,photos,formatted_phone_number,international_phone_number,website');
   const res = await fetch(url.toString());
   if (!res.ok) throw new Error(`legacy_details_${res.status}`);
   const j = await res.json();
@@ -145,6 +146,7 @@ async function legacyDetails(GOOGLE_MAPS_API_KEY: string, placeId: string) {
     businessType: r.types?.[0] ? r.types[0].replace(/_/g, ' ') : undefined,
     nationalPhoneNumber: r.formatted_phone_number,
     internationalPhoneNumber: r.international_phone_number,
+    websiteUri: r.website,
   };
 }
 

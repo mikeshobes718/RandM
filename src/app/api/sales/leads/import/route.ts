@@ -43,21 +43,34 @@ export async function POST(req: Request) {
     // Google's searchText often omits phone numbers in the list response
     const leadsWithDetails = await Promise.all(
       filteredLeads.slice(0, 60).map(async (p) => {
-        // If we already have phone from search, use it
+        // If we already have phone from search, use it (but still fetch details for website)
         if (p.nationalPhoneNumber || p.internationalPhoneNumber) {
-          return {
-            ...p,
-            phone: p.nationalPhoneNumber || p.internationalPhoneNumber,
-            googleMapsUri: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
-          };
+          // Still fetch details to get website
+          try {
+            const details = await getPlaceDetails(p.id);
+            return {
+              ...p,
+              phone: p.nationalPhoneNumber || p.internationalPhoneNumber,
+              googleMapsUri: details.googleMapsUri || p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
+              website: details.websiteUri || null,
+            };
+          } catch (e) {
+            return {
+              ...p,
+              phone: p.nationalPhoneNumber || p.internationalPhoneNumber,
+              googleMapsUri: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
+              website: null,
+            };
+          }
         }
-        // Otherwise fetch full details to get phone number
+        // Otherwise fetch full details to get phone number and website
         try {
           const details = await getPlaceDetails(p.id);
           return {
             ...p,
             phone: details.nationalPhoneNumber || details.internationalPhoneNumber || null,
             googleMapsUri: details.googleMapsUri || p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
+            website: details.websiteUri || null,
           };
         } catch (e) {
           console.error(`[IMPORT LEADS] Failed to get details for ${p.id}:`, e);
@@ -65,6 +78,7 @@ export async function POST(req: Request) {
             ...p, 
             phone: null,
             googleMapsUri: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
+            website: null,
           };
         }
       })
@@ -82,6 +96,7 @@ export async function POST(req: Request) {
       country: country || null,
       phone: p.phone,
       google_maps_url: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
+      website: p.website || null,
     }));
 
     if (leadsToInsert.length === 0) {
