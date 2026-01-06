@@ -39,24 +39,33 @@ export async function POST(req: Request) {
     // We only need details for leads we might actually use
     const filteredLeads = allPlaces.filter(p => p.rating != null && p.rating <= 4.2);
 
-    // Fetch details for each lead to ensure we have phone numbers
+    // Fetch details for each lead to ensure we have phone numbers and Google Maps URLs
     // Google's searchText often omits phone numbers in the list response
     const leadsWithDetails = await Promise.all(
       filteredLeads.slice(0, 60).map(async (p) => {
+        // If we already have phone from search, use it
         if (p.nationalPhoneNumber || p.internationalPhoneNumber) {
           return {
             ...p,
-            phone: p.nationalPhoneNumber || p.internationalPhoneNumber
+            phone: p.nationalPhoneNumber || p.internationalPhoneNumber,
+            googleMapsUri: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
           };
         }
+        // Otherwise fetch full details to get phone number
         try {
           const details = await getPlaceDetails(p.id);
           return {
             ...p,
-            phone: details.nationalPhoneNumber || details.internationalPhoneNumber || null
+            phone: details.nationalPhoneNumber || details.internationalPhoneNumber || null,
+            googleMapsUri: details.googleMapsUri || p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
           };
         } catch (e) {
-          return { ...p, phone: null };
+          console.error(`[IMPORT LEADS] Failed to get details for ${p.id}:`, e);
+          return { 
+            ...p, 
+            phone: null,
+            googleMapsUri: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
+          };
         }
       })
     );

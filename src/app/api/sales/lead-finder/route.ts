@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { searchBusinesses } from '@/lib/googlePlaces';
+import { searchBusinesses, getPlaceDetails } from '@/lib/googlePlaces';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 export const dynamic = 'force-dynamic';
@@ -53,19 +53,44 @@ export async function GET(req: Request) {
       if (!searchQuery) return new NextResponse('Missing query or location', { status: 400 });
 
       const places = await searchBusinesses(searchQuery);
-      leads = places
-        .filter((p: any) => p.rating != null && p.rating <= maxRating)
-        .map((p: any) => ({
-          id: p.id,
-          name: p.displayName?.text || 'Unknown',
-          address: p.formattedAddress,
-          rating: p.rating,
-          reviewCount: p.userRatingCount || 0,
-          type: type || (p.primaryType ? p.primaryType.replace(/_/g, ' ') : p.types?.[0]?.replace(/_/g, ' ')),
-          phone: p.nationalPhoneNumber || p.internationalPhoneNumber || 'No Phone',
-          googleMapsUrl: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
-        }))
-        .sort((a: any, b: any) => a.rating - b.rating);
+      // Fetch details for places without phone numbers to get complete data
+      const placesWithDetails = await Promise.all(
+        places
+          .filter((p: any) => p.rating != null && p.rating <= maxRating)
+          .slice(0, 50) // Limit to avoid too many API calls
+          .map(async (p: any) => {
+            // If we already have phone from search, use it
+            if (p.nationalPhoneNumber || p.internationalPhoneNumber) {
+              return {
+                ...p,
+                phone: p.nationalPhoneNumber || p.internationalPhoneNumber,
+              };
+            }
+            // Otherwise fetch details to get phone number
+            try {
+              const details = await getPlaceDetails(p.id);
+              return {
+                ...p,
+                phone: details.nationalPhoneNumber || details.internationalPhoneNumber || null,
+                googleMapsUri: details.googleMapsUri || p.googleMapsUri,
+              };
+            } catch (e) {
+              return { ...p, phone: null };
+            }
+          })
+      );
+      
+      leads = placesWithDetails.map((p: any) => ({
+        id: p.id,
+        name: p.displayName?.text || 'Unknown',
+        address: p.formattedAddress,
+        rating: p.rating,
+        reviewCount: p.userRatingCount || 0,
+        type: type || (p.primaryType ? p.primaryType.replace(/_/g, ' ') : p.types?.[0]?.replace(/_/g, ' ')),
+        phone: p.phone || 'No Phone',
+        googleMapsUrl: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
+      }))
+      .sort((a: any, b: any) => a.rating - b.rating);
     }
 
     return NextResponse.json({ leads });
