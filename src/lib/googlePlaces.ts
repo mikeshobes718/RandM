@@ -234,6 +234,57 @@ export async function getPlaceReviews(placeId: string) {
   }
 }
 
+export async function searchBusinesses(query: string) {
+  const { GOOGLE_MAPS_API_KEY } = getEnv();
+  const fields = [
+    'places.id',
+    'places.displayName',
+    'places.formattedAddress',
+    'places.rating',
+    'places.userRatingCount',
+    'places.types',
+    'places.primaryType',
+  ].join(',');
+
+  try {
+    const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
+        'X-Goog-FieldMask': fields,
+      },
+      body: JSON.stringify({
+        textQuery: query,
+        // Boost business results
+        includedType: 'establishment',
+      }),
+    });
+
+    if (!res.ok) {
+      // Fallback to legacy text search if v1 fails
+      const legacyUrl = new URL('https://maps.googleapis.com/maps/api/place/textsearch/json');
+      legacyUrl.searchParams.set('query', query);
+      legacyUrl.searchParams.set('key', GOOGLE_MAPS_API_KEY);
+      const legacyRes = await fetch(legacyUrl.toString());
+      const data = await legacyRes.json();
+      return (data.results || []).map((r: any) => ({
+        id: r.place_id,
+        displayName: { text: r.name },
+        formattedAddress: r.formatted_address,
+        rating: r.rating,
+        userRatingCount: r.user_ratings_total,
+      }));
+    }
+
+    const data = await res.json();
+    return data.places || [];
+  } catch (error) {
+    console.error('[GOOGLE PLACES] Search failed:', error);
+    return [];
+  }
+}
+
 /**
  * Validates if a place is a legitimate business that can receive reviews.
  * Returns { isValid: boolean, reason?: string, suggestion?: string }

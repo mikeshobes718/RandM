@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 
 const PITCH_SCRIPTS = [
   {
@@ -19,6 +20,27 @@ const ASSETS = [
 ];
 
 export default function SalesPortal() {
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [searched, setSearched] = useState(false);
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setLoading(true);
+    setSearched(true);
+    try {
+      const res = await fetch(`/api/sales/lead-finder?query=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      setLeads(data.leads || []);
+    } catch (err) {
+      console.error("Lead search failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-slate-50 py-24 px-6">
       <div className="max-w-5xl mx-auto">
@@ -30,6 +52,88 @@ export default function SalesPortal() {
           <h1 className="text-4xl font-black text-slate-900 mb-4">Sales Toolkit</h1>
           <p className="text-slate-600 text-lg">Everything you need to close deals and grow Reviews & Marketing.</p>
         </div>
+
+        {/* Lead Finder Tool */}
+        <section className="mb-16">
+          <div className="bg-white p-8 rounded-[32px] border border-brand/20 shadow-2xl shadow-brand/5 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-brand text-white flex items-center justify-center shadow-lg shadow-brand/20">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900">Reputation Lead Finder</h2>
+                  <p className="text-sm text-muted">Search industries and cities to find businesses with low ratings (≤ 4.2).</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3 mb-8">
+                <input 
+                  type="text"
+                  placeholder="e.g., Restaurants in Miami, Gyms in Brooklyn"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="flex-1 h-14 px-6 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all text-lg shadow-sm"
+                />
+                <button 
+                  type="submit"
+                  disabled={loading}
+                  className="h-14 px-8 bg-brand hover:bg-brand-strong text-white font-black rounded-2xl shadow-xl shadow-brand/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2 whitespace-nowrap"
+                >
+                  {loading ? 'Searching...' : 'Find Warm Leads'}
+                </button>
+              </form>
+
+              {loading && (
+                <div className="flex flex-col items-center justify-center py-12 animate-pulse">
+                  <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p className="text-slate-500 font-medium">Scanning Google for potential leads...</p>
+                </div>
+              )}
+
+              {!loading && searched && leads.length === 0 && (
+                <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+                  <p className="text-slate-500">No low-rated businesses found for this search. Try another location or industry!</p>
+                </div>
+              )}
+
+              {!loading && leads.length > 0 && (
+                <div className="grid gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                  {leads.map((lead) => (
+                    <div key={lead.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-brand/20 hover:shadow-lg transition-all group">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-bold text-slate-900 group-hover:text-brand transition-colors">{lead.name}</h4>
+                          <span className="bg-red-100 text-red-600 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">Potential Lead</span>
+                        </div>
+                        <p className="text-sm text-slate-500 flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          {lead.address}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-6 px-4 py-2 bg-white rounded-xl border border-slate-100 shadow-sm">
+                        <div className="text-center border-r border-slate-100 pr-6">
+                          <p className="text-[10px] font-black uppercase text-slate-400 mb-0.5">Rating</p>
+                          <p className="text-2xl font-black text-red-500 leading-none">{lead.rating}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-[10px] font-black uppercase text-slate-400 mb-0.5">Reviews</p>
+                          <p className="text-2xl font-black text-slate-900 leading-none">{lead.reviewCount}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
 
         <div className="grid md:grid-cols-3 gap-8">
           {/* Main Content Area */}
