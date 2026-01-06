@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { searchBusinesses } from '@/lib/googlePlaces';
+import { searchBusinesses, getPlaceDetails } from '@/lib/googlePlaces';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 export const dynamic = 'force-dynamic';
@@ -12,32 +12,56 @@ export async function POST(req: Request) {
     }
 
     const location = [city, state, country].filter(Boolean).join(', ');
-    const query = `${type} in ${location}`;
     const supa = getSupabaseAdmin();
 
-    // To get ~50 leads, we'll need to make multiple requests or use a more comprehensive search
-    // Google Places searchText (New) returns up to 20 per page by default.
-    // We'll attempt to fetch more if needed.
-    
     let allPlaces: any[] = [];
     
-    // First page
-    const places = await searchBusinesses(query);
-    allPlaces = [...places];
+    // We'll try multiple search variations to get up to 50+ leads
+    const searchVariations = [
+      `${type} in ${location}`,
+      `best ${type} in ${location}`,
+      `top ${type} in ${location}`,
+      `worst rated ${type} in ${location}`,
+      `${type} establishments in ${location}`,
+    ];
 
-    // If we have less than 40, try one more variation of the search to broaden results
-    if (allPlaces.length < 40) {
-      const altQuery = `best ${type} in ${location}`;
-      const morePlaces = await searchBusinesses(altQuery);
-      // Merge unique ones
-      morePlaces.forEach((p: any) => {
+    for (const searchQuery of searchVariations) {
+      if (allPlaces.length >= 80) break; // Fetch a healthy buffer
+      const places = await searchBusinesses(searchQuery);
+      places.forEach((p: any) => {
         if (!allPlaces.find(ap => ap.id === p.id)) {
           allPlaces.push(p);
         }
       });
     }
 
-    const leadsToInsert = allPlaces.map((p: any) => ({
+    // Filter for low-rated leads before fetching details to save API quota
+    // We only need details for leads we might actually use
+    const filteredLeads = allPlaces.filter(p => p.rating != null && p.rating <= 4.2);
+
+    // Fetch details for each lead to ensure we have phone numbers
+    // Google's searchText often omits phone numbers in the list response
+    const leadsWithDetails = await Promise.all(
+      filteredLeads.slice(0, 60).map(async (p) => {
+        if (p.nationalPhoneNumber || p.internationalPhoneNumber) {
+          return {
+            ...p,
+            phone: p.nationalPhoneNumber || p.internationalPhoneNumber
+          };
+        }
+        try {
+          const details = await getPlaceDetails(p.id);
+          return {
+            ...p,
+            phone: details.nationalPhoneNumber || details.internationalPhoneNumber || null
+          };
+        } catch (e) {
+          return { ...p, phone: null };
+        }
+      })
+    );
+
+    const leadsToInsert = leadsWithDetails.map((p: any) => ({
       google_place_id: p.id,
       name: p.displayName?.text || 'Unknown',
       address: p.formattedAddress,
@@ -47,7 +71,7 @@ export async function POST(req: Request) {
       city: city.toLowerCase(),
       state: state || null,
       country: country || null,
-      phone: p.nationalPhoneNumber || p.internationalPhoneNumber || null,
+      phone: p.phone,
     }));
 
     if (leadsToInsert.length === 0) {
