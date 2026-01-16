@@ -591,26 +591,37 @@ export default function SalesPortalPage() {
               {/* Leaderboard */}
               <section ref={sectionRefs['leaderboard']} className="scroll-mt-24">
                 <h2 className="text-xl font-black tracking-tight mb-6">Leaderboard</h2>
-                <div className="premium-card rounded-3xl bg-white overflow-hidden border border-slate-100">
-                  {leaderboard.map((item, i) => (
-                    <div key={item.email} className={`p-4 flex items-center justify-between ${i < leaderboard.length - 1 ? 'border-b border-slate-100' : ''} ${i === 0 ? 'bg-brand/5' : ''}`}>
-                      <div className="flex items-center gap-3">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${
-                          i === 0 ? 'bg-brand text-white' : 'bg-slate-100 text-slate-400'
-                        }`}>
-                          {i + 1}
-                        </span>
-                        <div>
-                          <p className="text-xs font-bold text-slate-900 truncate max-w-[120px]">{item.name || item.email.split('@')[0]}</p>
-                          <p className="text-[9px] text-slate-400 font-medium truncate max-w-[120px]">{item.email}</p>
-                          <p className="text-[10px] text-brand font-bold uppercase tracking-widest mt-0.5">{item.closes} Closes</p>
+                <div className="premium-card rounded-3xl bg-white overflow-hidden border border-slate-100 min-h-[200px]">
+                  {leaderboard.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mb-4">
+                        <span className="text-xl">🏆</span>
+                      </div>
+                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-relaxed">
+                        No active stats found.<br />Log a call to start the race!
+                      </p>
+                    </div>
+                  ) : (
+                    leaderboard.map((item, i) => (
+                      <div key={item.email} className={`p-4 flex items-center justify-between ${i < leaderboard.length - 1 ? 'border-b border-slate-100' : ''} ${i === 0 ? 'bg-brand/5' : ''}`}>
+                        <div className="flex items-center gap-3">
+                          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${
+                            i === 0 ? 'bg-brand text-white' : 'bg-slate-100 text-slate-400'
+                          }`}>
+                            {i + 1}
+                          </span>
+                          <div>
+                            <p className="text-xs font-bold text-slate-900 truncate max-w-[120px]">{item.name || item.email.split('@')[0]}</p>
+                            <p className="text-[9px] text-slate-400 font-medium truncate max-w-[120px]">{item.email}</p>
+                            <p className="text-[10px] text-brand font-bold uppercase tracking-widest mt-0.5">{item.closes} Closes</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-black text-slate-900">{item.calls} Calls</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs font-black text-slate-900">{item.calls} Calls</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </section>
 

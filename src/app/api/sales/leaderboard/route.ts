@@ -6,65 +6,71 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   const supa = getSupabaseAdmin();
   try {
-    // 1. Fetch all sales reps from the users table
-    const { data: reps, error: repsError } = await supa
-      .from('users')
-      .select('email, rep_id')
-      .eq('role', 'sales_rep');
+    // 1. Fetch all users who have EVER logged a call, plus any designated sales reps
+    const { data: allUsers } = await supa.from('users').select('uid, email, role, rep_id');
+    const uidToUser = Object.fromEntries((allUsers || []).map(u => [u.uid, u]));
 
-    if (repsError) throw repsError;
-
-    if (!reps || reps.length === 0) {
-      return NextResponse.json({ leaderboard: [] });
-    }
-
-    // 2. Aggregate closes from call_log for these reps
-    // We'll use the last_called_by_email to match if rep_id (UUID) is inconsistent
-    const { data: logs, error: logsError } = await supa
-      .from('call_log')
-      .select('outcome, last_called_by_email:leads(last_called_by_email)')
-      .eq('outcome', 'closed');
-
-    if (logsError) {
-      console.error('[LEADERBOARD] logs error:', logsError);
-    }
-
-    // Since our schema might have rep_id as UUID in call_log but rep_id as static string in users,
-    // we'll match by email for 100% factual accuracy.
+    // 2. Aggregate closes from leads table (most reliable factual source for closes)
     const { data: allCloses, error: closesError } = await supa
       .from('leads')
-      .select('last_called_by_email')
+      .select('last_called_by, last_called_by_email')
       .eq('call_status', 'closed');
 
     if (closesError) throw closesError;
 
-    // 3. Aggregate total calls for these reps
+    // 3. Aggregate total calls from call_log
     const { data: allCalls, error: callsError } = await supa
       .from('call_log')
-      .select('rep_id, timestamp'); // In an ideal world, we'd join but let's keep it simple
+      .select('rep_id');
 
     if (callsError) console.error('[LEADERBOARD] calls error:', callsError);
 
-    // Fetch all users to match UUIDs to emails if needed
-    const { data: allUsers } = await supa.from('users').select('uid, email');
-    const uidToEmail = Object.fromEntries((allUsers || []).map(u => [u.uid, u.email]));
+    // 4. Group stats by user (using email as the primary key for "factual" grouping)
+    const statsByEmail: Record<string, { email: string, name: string, closes: number, calls: number }> = {};
 
-    const leaderStats = reps.map(rep => {
-      const closes = (allCloses || []).filter(c => c.last_called_by_email?.toLowerCase() === rep.email?.toLowerCase()).length;
-      
-      const callsByUUID = (allCalls || []).filter(c => uidToEmail[c.rep_id]?.toLowerCase() === rep.email?.toLowerCase()).length;
-      // Also check if any leads were logged with this email directly
-      // (though call_log uses UUID, leads table has last_called_by_email)
-      
-      return {
-        name: rep.rep_id || rep.email.split('@')[0],
-        email: rep.email,
-        closes: closes,
-        calls: callsByUUID || 0 // Factual call count
-      };
-    }).sort((a, b) => b.closes - a.closes);
+    // Initialize with all users who have a role or activity
+    (allUsers || []).forEach(u => {
+      if (u.role === 'sales_rep' || u.role === 'admin') {
+        statsByEmail[u.email.toLowerCase()] = {
+          email: u.email,
+          name: u.rep_id || u.email.split('@')[0],
+          closes: 0,
+          calls: 0
+        };
+      }
+    });
 
-    return NextResponse.json({ leaderboard: leaderStats });
+    // Add closes
+    (allCloses || []).forEach(c => {
+      const email = c.last_called_by_email?.toLowerCase();
+      if (email) {
+        if (!statsByEmail[email]) {
+          statsByEmail[email] = { email: c.last_called_by_email, name: email.split('@')[0], closes: 0, calls: 0 };
+        }
+        statsByEmail[email].closes++;
+      }
+    });
+
+    // Add calls
+    (allCalls || []).forEach(c => {
+      const user = c.rep_id ? uidToUser[c.rep_id] : null;
+      const email = user?.email?.toLowerCase();
+      if (email) {
+        if (!statsByEmail[email]) {
+          statsByEmail[email] = { email: user.email, name: user.rep_id || email.split('@')[0], closes: 0, calls: 0 };
+        }
+        statsByEmail[email].calls++;
+      }
+    });
+
+    const leaderStats = Object.values(statsByEmail)
+      .filter(s => s.calls > 0 || s.closes > 0 || (allUsers?.find(u => u.email.toLowerCase() === s.email.toLowerCase())?.role === 'sales_rep'))
+      .sort((a, b) => b.closes - a.closes || b.calls - a.calls);
+
+    return NextResponse.json({ 
+      leaderboard: leaderStats.slice(0, 10), // Top 10
+      total_active: leaderStats.length
+    });
   } catch (error: any) {
     console.error('[LEADERBOARD API] Error:', error);
     return NextResponse.json({ leaderboard: [] });

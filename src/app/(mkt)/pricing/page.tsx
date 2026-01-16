@@ -104,7 +104,7 @@ export default function Pricing() {
     <main className="min-h-screen py-24 px-6 bg-slate-50/50">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-black tracking-tight mb-4 text-slate-900">Simple Pricing (VERIFIED UPDATED JAN 16)</h1>
+          <h1 className="text-5xl font-black tracking-tight mb-4 text-slate-900">Simple Pricing</h1>
           <p className="text-slate-500 text-lg max-w-xl mx-auto font-medium">
             Choose the plan that fits your business. Start free, upgrade anytime.
           </p>

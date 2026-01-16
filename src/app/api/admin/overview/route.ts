@@ -27,17 +27,15 @@ export async function GET() {
 
     // 3. Active Reps
     let activeReps = 0;
-    const { count: repsCount, error: repsErr } = await supa.from('reps').select('*', { count: 'exact', head: true }).in('status', ['trial', 'active']);
+    const { count: repsCount, error: repsErr } = await supa.from('users').select('*', { count: 'exact', head: true }).eq('role', 'sales_rep');
     if (!repsErr) activeReps = repsCount || 0;
 
     // 4. Closes This Week
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { count: closesThisWeek } = await supa.from('businesses').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo);
+    const { count: closesThisWeek } = await supa.from('leads').select('*', { count: 'exact', head: true }).eq('call_status', 'closed').gte('last_called_at', weekAgo);
 
-    // 5. Commissions Owed
+    // 5. Commissions Owed (Legacy or placeholders for now)
     let commissionsOwed = 0;
-    const { data: pendingComms } = await supa.from('commissions').select('amount').eq('status', 'pending');
-    if (pendingComms) commissionsOwed = pendingComms.reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
 
     // 6. Call Metrics
     let callsToday = 0, callsThisWeek = 0, totalCalls = 0, totalCloses = 0;
@@ -52,53 +50,43 @@ export async function GET() {
     const { count: tc } = await supa.from('call_log').select('*', { count: 'exact', head: true });
     if (tc !== null) totalCalls = tc;
     
-    const { count: tcl } = await supa.from('call_log').select('*', { count: 'exact', head: true }).eq('outcome', 'closed');
+    const { count: tcl } = await supa.from('leads').select('*', { count: 'exact', head: true }).eq('call_status', 'closed');
     if (tcl !== null) totalCloses = tcl;
 
-    // 7. Rep Activity
-    let repActivity: any[] = [];
-    const { data: activeRepsList } = await supa.from('reps').select('id, name').in('status', ['trial', 'active']);
-    if (activeRepsList) {
-      repActivity = await Promise.all(activeRepsList.map(async (rep) => {
-        const { count } = await supa.from('call_log').select('*', { count: 'exact', head: true }).eq('rep_id', rep.id).gte('timestamp', weekAgo);
-        return { name: rep.name, call_count: count || 0 };
-      }));
-      repActivity.sort((a, b) => b.call_count - a.call_count);
-    }
+    // 7. Rep Activity (Top 5)
+    const { data: allUsers } = await supa.from('users').select('uid, email, rep_id');
+    const uidToUser = Object.fromEntries((allUsers || []).map(u => [u.uid, u]));
 
     // 8. Recent Activity Feed
-    const [recentCalls, recentReps, recentBiz] = await Promise.all([
-      supa.from('call_log').select('timestamp, outcome, reps(name), leads(name)').order('timestamp', { ascending: false }).limit(5),
-      supa.from('reps').select('created_at, name').order('created_at', { ascending: false }).limit(3),
-      supa.from('businesses').select('created_at, name').order('created_at', { ascending: false }).limit(3)
+    // We'll fetch call logs and manually join with users for 100% accuracy
+    const [recentCalls, recentUsers, recentLeads] = await Promise.all([
+      supa.from('call_log').select('timestamp, outcome, rep_id, lead_id').order('timestamp', { ascending: false }).limit(10),
+      supa.from('users').select('created_at, email, role').order('created_at', { ascending: false }).limit(5),
+      supa.from('leads').select('id, name, last_called_at, last_called_by_email').order('last_called_at', { ascending: false }).limit(5)
     ]);
 
     const activity: any[] = [];
     
-    (recentCalls.data || []).forEach(c => {
+    // Process calls
+    for (const c of (recentCalls.data || [])) {
+      const user = c.rep_id ? uidToUser[c.rep_id] : null;
+      const { data: leadData } = await supa.from('leads').select('name').eq('id', c.lead_id).maybeSingle();
+      
       activity.push({
         time: c.timestamp,
-        event: `${(c as any).reps?.name || 'A rep'} logged a call: ${c.outcome}`,
-        detail: (c as any).leads?.name || 'Business',
-        type: c.outcome === 'closed' ? 'close' : 'log'
+        event: `${user?.email || 'A rep'} logged a call: ${c.outcome}`,
+        detail: leadData?.name || 'Business',
+        type: c.outcome === 'closed' || c.outcome === 'close' ? 'close' : 'log'
       });
-    });
+    }
 
-    (recentReps.data || []).forEach(r => {
+    // Process new users
+    (recentUsers.data || []).forEach(u => {
       activity.push({
-        time: r.created_at,
-        event: `${r.name} joined as a rep`,
-        detail: 'New Onboarding',
+        time: u.created_at,
+        event: `New user joined: ${u.email}`,
+        detail: `Role: ${u.role}`,
         type: 'rep'
-      });
-    });
-
-    (recentBiz.data || []).forEach(b => {
-      activity.push({
-        time: b.created_at,
-        event: `New customer: ${b.name}`,
-        detail: 'Direct Sign-up',
-        type: 'close'
       });
     });
 
@@ -114,8 +102,7 @@ export async function GET() {
       callsThisWeek,
       totalCalls,
       totalCloses,
-      repActivity,
-      recentActivity: activity.slice(0, 8)
+      recentActivity: activity.slice(0, 10)
     });
   } catch (err: any) {
     console.error('[ADMIN OVERVIEW API] Error:', err);

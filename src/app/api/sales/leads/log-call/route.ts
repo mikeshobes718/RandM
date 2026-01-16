@@ -7,19 +7,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { leadId, googlePlaceId, leadData, repId, outcome, notes, followupDate } = body;
 
-    // First check if leads table exists
-    const { error: tableCheck } = await supa.from('leads').select('id').limit(1);
-    if (tableCheck) {
-      const msg = tableCheck.message || '';
-      if (msg.includes('does not exist') || msg.includes('schema cache') || tableCheck.code === 'PGRST204') {
-        return NextResponse.json({ 
-          error: `Database tables not set up yet. Please run the SQL migration in Supabase Dashboard. See /MANUAL_MIGRATION_SQL.md for instructions.`,
-          hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration SQL',
-          code: 'TABLES_MISSING'
-        }, { status: 503 });
-      }
-    }
-
     let targetLeadId = leadId;
 
     // 1. If leadId is missing, try to find or create the lead in the DB
@@ -33,12 +20,6 @@ export async function POST(req: Request) {
       if (existingLead) {
         targetLeadId = existingLead.id;
       } else if (leadData) {
-        const addressParts = leadData.address?.split(',');
-        const rawCity = addressParts && addressParts.length >= 3 
-          ? addressParts[addressParts.length - 3].trim() 
-          : null;
-        const normalizedCity = rawCity?.toLowerCase().replace(/ city$/, '').trim() || null;
-
         const { data: newLead, error: createError } = await supa
           .from('leads')
           .insert({
@@ -46,12 +27,10 @@ export async function POST(req: Request) {
             name: leadData.name,
             address: leadData.address,
             rating: leadData.rating,
-            review_count: leadData.reviewCount,
             business_type: leadData.type,
             phone: leadData.phone,
             google_maps_url: leadData.googleMapsUrl,
             website: leadData.website,
-            city: normalizedCity,
           })
           .select()
           .single();
@@ -65,36 +44,28 @@ export async function POST(req: Request) {
     }
 
     if (!targetLeadId) {
-      return NextResponse.json({ 
-        error: 'Missing lead identification', 
-        received: { leadId, googlePlaceId, hasLeadData: !!leadData },
-      }, { status: 400 });
+      return NextResponse.json({ error: 'Missing lead identification' }, { status: 400 });
     }
 
-    // Fetch rep details for logging
+    // 2. Fetch rep details for logging (BE SMART HERE)
     let repEmail = null;
     let repUuid = null;
     
     if (repId) {
-      // 1. Try to find user by static rep_id
+      // Try to find user by static rep_id OR by uid itself
       const { data: userData } = await supa
         .from('users')
         .select('uid, email')
-        .eq('rep_id', repId)
+        .or(`rep_id.eq."${repId}",uid.eq."${repId}"`)
         .maybeSingle();
       
       if (userData) {
         repUuid = userData.uid;
         repEmail = userData.email;
-      } else if (repId.includes('-')) {
-        // 2. Fallback to UUID lookup if repId looks like a UUID
-        const { data: repData } = await supa.from('reps').select('email').eq('id', repId).single();
-        repEmail = repData?.email || null;
-        repUuid = repId;
       }
     }
 
-    // 2. Create call log entry
+    // 3. Create call log entry
     const { error: logError } = await supa.from('call_log').insert({
       lead_id: targetLeadId,
       rep_id: repUuid,
@@ -107,7 +78,7 @@ export async function POST(req: Request) {
       console.error('[LOG CALL API] Call log insertion failed:', logError);
     }
 
-    // 3. Update lead status and stats
+    // 4. Update lead status and stats
     const { data: lead } = await supa.from('leads').select('times_called').eq('id', targetLeadId).single();
     const newTimesCalled = (lead?.times_called || 0) + 1;
 
@@ -115,7 +86,7 @@ export async function POST(req: Request) {
       times_called: newTimesCalled,
       last_called_at: new Date().toISOString(),
       last_called_by: repUuid,
-      last_called_by_email: repEmail, // Tracking by email is most reliable for leaderboard
+      last_called_by_email: repEmail, 
       call_status: outcome,
       next_followup: followupDate || null,
       notes: notes,
