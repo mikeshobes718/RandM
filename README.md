@@ -101,3 +101,4 @@ More docs
 
 See `docs/DEPLOYMENT.md` for full architecture, hosting, environment, and runbooks (Vercel + EB).
 Last updated: Fri Jan 16 17:19:09 -03 2026
+Deployment check Fri Jan 16 18:02:59 -03 2026
