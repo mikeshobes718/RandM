@@ -29,7 +29,8 @@ const MOCK_SCANS = [
 ];
 
 export default function AdminCustomerDetail() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
   const [activeTab, setActiveTab] = useState("Activity");
 
   return (

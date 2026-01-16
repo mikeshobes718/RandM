@@ -35,7 +35,8 @@ const MOCK_CALLS = [
 ];
 
 export default function AdminRepDetail() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
   const [activeTab, setActiveTab] = useState("Closes");
 
   return (
