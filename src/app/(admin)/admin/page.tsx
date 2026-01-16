@@ -84,12 +84,24 @@ export default function AdminOverview() {
             <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">
               <h4 className="text-sm font-black text-slate-900 mb-4 uppercase tracking-widest">Active Rep Performance</h4>
               <div className="space-y-4">
-                {metrics?.repActivity?.map((rep: any) => (
-                  <div key={rep.name} className="flex items-center justify-between">
-                    <p className="text-sm font-bold text-slate-600">{rep.name}</p>
-                    <p className="text-sm font-black text-slate-900">{rep.call_count} calls <span className="text-slate-400 font-medium ml-1 text-[10px]">(this week)</span></p>
-                  </div>
-                )) || <p className="text-xs text-slate-400 italic">No activity logged this week.</p>}
+                {metrics?.repActivity?.map((rep: any) => {
+                  const maxCalls = Math.max(...metrics.repActivity.map((r: any) => parseInt(r.call_count) || 1));
+                  const percentage = (parseInt(rep.call_count) / maxCalls) * 100;
+                  return (
+                    <div key={rep.name} className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-bold text-slate-600">{rep.name}</p>
+                        <p className="text-sm font-black text-slate-900">{rep.call_count} calls</p>
+                      </div>
+                      <div className="h-2 bg-slate-50 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-brand transition-all duration-1000" 
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                }) || <p className="text-xs text-slate-400 italic">No activity logged this week.</p>}
               </div>
             </div>
             <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">
