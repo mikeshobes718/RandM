@@ -275,6 +275,64 @@ create index if not exists leads_city_type_idx on leads(city, business_type);
     `;
     await client.query(sql016); ran.push('016_business_website_column');
 
+    const sql017 = `
+    create table if not exists reps (
+      id uuid primary key default gen_random_uuid(),
+      name text not null,
+      email text unique not null,
+      whatsapp text,
+      payment_method text check (payment_method in ('Wise', 'Payoneer')),
+      payment_id text,
+      status text not null default 'trial' check (status in ('trial', 'active', 'inactive', 'dropped')),
+      start_date timestamptz default now(),
+      tracking_code text unique not null,
+      notes text,
+      created_at timestamptz default now(),
+      updated_at timestamptz default now()
+    );
+
+    alter table leads add column if not exists assigned_to uuid references reps(id) on delete set null;
+    alter table leads add column if not exists status text default 'fresh' check (status in ('fresh', 'called', 'follow-up', 'closed', 'dead'));
+    alter table leads add column if not exists last_contact timestamptz;
+
+    alter table businesses add column if not exists closed_by uuid references reps(id) on delete set null;
+    alter table businesses add column if not exists notes text;
+
+    create table if not exists commissions (
+      id uuid primary key default gen_random_uuid(),
+      rep_id uuid not null references reps(id) on delete cascade,
+      business_id uuid references businesses(id) on delete cascade,
+      type text not null check (type in ('close', 'month2', 'month3', 'bonus')),
+      amount numeric not null,
+      earned_date timestamptz default now(),
+      status text not null default 'pending' check (status in ('pending', 'processing', 'paid')),
+      paid_date timestamptz,
+      created_at timestamptz default now()
+    );
+
+    create table if not exists payouts (
+      id uuid primary key default gen_random_uuid(),
+      rep_id uuid not null references reps(id) on delete cascade,
+      amount numeric not null,
+      date_paid timestamptz default now(),
+      method text check (method in ('Wise', 'Payoneer')),
+      reference text,
+      commission_ids uuid[],
+      created_at timestamptz default now()
+    );
+
+    create table if not exists admin_settings (
+      key text primary key,
+      value jsonb not null,
+      updated_at timestamptz default now()
+    );
+
+    insert into admin_settings (key, value) values 
+    ('commission_structure', '{"first_close_percent": 100, "month2_retention_percent": 25, "month3_retention_percent": 25, "bonus_10_closes": 100, "bonus_20_closes": 250}'::jsonb)
+    on conflict (key) do nothing;
+    `;
+    await client.query(sql017); ran.push('017_admin_dashboard_schema');
+
     await client.query('commit');
     return { ran };
   } catch (e) {
