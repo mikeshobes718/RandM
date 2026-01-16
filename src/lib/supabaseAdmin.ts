@@ -35,6 +35,7 @@ export function getPgPool(): any {
       max: 10,
       idle_timeout: 30,
       connect_timeout: 5,
+      prepare: false, // Important for some poolers
     });
 
     // Provide a shim that looks like a pg Pool
