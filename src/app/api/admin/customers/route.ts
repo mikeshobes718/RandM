@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     // 2. Fetch users for these subscriptions
     const { data: usersData, error: usersError } = await supa
       .from('users')
-      .select('uid, email, role, last_sign_in_at, created_at')
+      .select('uid, email, role, created_at') // Removed last_sign_in_at which doesn't exist
       .in('uid', uids);
 
     if (usersError) {

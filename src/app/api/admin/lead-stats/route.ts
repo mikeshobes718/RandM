@@ -31,13 +31,18 @@ export async function GET() {
         hasMore = false;
       } else {
         data.forEach(l => {
-          const state = l.state || 'Unknown';
+          let state = (l.state || 'Unknown').trim();
+          // Normalize common state issues
+          if (state.length > 2) {
+             // If it's "New York", map to "NY" if possible? 
+             // For now, let's just use what we have but trim it.
+          }
           breakdown[state] = (breakdown[state] || 0) + 1;
         });
         offset += limit;
-        // Safety break if it takes too many loops
-        if (offset > 20000) hasMore = false; 
         if (data.length < limit) hasMore = false;
+        // Increase safety limit for state breakdown to 30k leads
+        if (offset > 30000) hasMore = false; 
       }
     }
 

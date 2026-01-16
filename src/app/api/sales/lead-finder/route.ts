@@ -37,9 +37,15 @@ export async function GET(req: Request) {
         let dbQuery = supa
           .from('leads')
           .select('*')
-          .eq('business_type', type)
           .eq('state', state)
           .lte('rating', maxRating);
+
+        // Optional category filter - if "all" or specific
+        if (type !== 'all' && type !== 'restaurant') { 
+           // If they chose something specific like "plumber", filter it.
+           // If they chose "restaurant", it might be a mix, so we'll be flexible.
+           dbQuery = dbQuery.eq('business_type', type);
+        }
 
         // If not "All Cities", filter by specific city
         if (!isAllCities && normalizedCity) {
@@ -59,8 +65,8 @@ export async function GET(req: Request) {
           allDbLeads = [...allDbLeads, ...dbLeads];
           offset += batchSize;
           if (dbLeads.length < batchSize) hasMore = false;
-          // Safety limit: max 10k leads per search
-          if (offset >= 10000) hasMore = false;
+          // Return up to 5,000 leads for search results
+          if (offset >= 5000) hasMore = false;
         }
       }
 
