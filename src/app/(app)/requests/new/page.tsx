@@ -1,9 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
-export default function NewRequestPage() {
+function NewRequestContent() {
+  const searchParams = useSearchParams();
+  const [type, setType] = useState<"SMS" | "Email">("SMS");
+  const [body, setBody] = useState("");
+  const [name, setName] = useState("");
+  const [businessName, setBusinessName] = useState("Your Business");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Read from query params
+    const tType = searchParams?.get('type');
+    const tBody = searchParams?.get('body');
+    const tName = searchParams?.get('name');
+
+    if (tType === 'Email') setType('Email');
+    if (tBody) setBody(tBody);
+    if (tName) setName(tName);
+
+    // Fetch business name for preview
+    fetch('/api/dashboard/summary')
+      .then(res => res.json())
+      .then(data => {
+        if (data.business?.name) setBusinessName(data.business.name);
+      })
+      .finally(() => setLoading(false));
+  }, [searchParams]);
+
+  const previewText = body
+    .replace(/{{business_name}}/g, businessName)
+    .replace(/{{link}}/g, 'reviewsandmarketing.com/r/xyz');
+
   return (
     <div className="space-y-10 animate-fade-in">
       <div>
@@ -13,55 +44,138 @@ export default function NewRequestPage() {
 
       <div className="grid lg:grid-cols-2 gap-8">
         <div className="premium-card p-8 rounded-[40px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40">
-          <h2 className="text-xl font-black text-slate-900 mb-6">Choose Channel</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <button className="p-6 rounded-3xl border-2 border-brand bg-brand/5 text-center transition-all group">
-              <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform">📱</span>
-              <p className="font-black text-slate-900 uppercase tracking-widest text-xs">SMS Blast</p>
-              <p className="text-[10px] text-slate-400 mt-1 font-bold">Highest open rate</p>
-            </button>
-            <button className="p-6 rounded-3xl border-2 border-slate-100 hover:border-brand/30 text-center transition-all group">
-              <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform">✉️</span>
-              <p className="font-black text-slate-900 uppercase tracking-widest text-xs">Email Campaign</p>
-              <p className="text-[10px] text-slate-400 mt-1 font-bold">Best for newsletters</p>
-            </button>
-          </div>
+          <h2 className="text-xl font-black text-slate-900 mb-6">Campaign Setup</h2>
+          
+          <div className="space-y-8">
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Choose Channel</label>
+              <div className="grid grid-cols-2 gap-4">
+                <button 
+                  onClick={() => setType('SMS')}
+                  className={`p-6 rounded-3xl border-2 transition-all group text-center ${
+                    type === 'SMS' ? 'border-brand bg-brand/5 shadow-lg shadow-brand/10' : 'border-slate-50 hover:border-slate-200 bg-slate-50/50'
+                  }`}
+                >
+                  <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform">📱</span>
+                  <p className="font-black text-slate-900 uppercase tracking-widest text-xs">SMS Blast</p>
+                  <p className="text-[10px] text-slate-400 mt-1 font-bold">Highest open rate</p>
+                </button>
+                <button 
+                  onClick={() => setType('Email')}
+                  className={`p-6 rounded-3xl border-2 transition-all group text-center ${
+                    type === 'Email' ? 'border-brand bg-brand/5 shadow-lg shadow-brand/10' : 'border-slate-50 hover:border-slate-200 bg-slate-50/50'
+                  }`}
+                >
+                  <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform">✉️</span>
+                  <p className="font-black text-slate-900 uppercase tracking-widest text-xs">Email Campaign</p>
+                  <p className="text-[10px] text-slate-400 mt-1 font-bold">Best for newsletters</p>
+                </button>
+              </div>
+            </div>
 
-          <div className="mt-8 space-y-6">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Select Contact List</label>
-              <select className="w-full h-12 bg-slate-50 border-none rounded-2xl px-4 text-xs font-bold">
-                <option>All Contacts (0)</option>
-                <option>Recent Customers</option>
-                <option>VIP List</option>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Campaign Name</label>
+              <input 
+                type="text"
+                placeholder="e.g. Weekly Follow-up"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full h-12 bg-slate-50 border-none rounded-2xl px-4 text-xs font-bold"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Target Contact List</label>
+              <select className="w-full h-12 bg-slate-50 border-none rounded-2xl px-4 text-xs font-bold appearance-none cursor-pointer">
+                <option>All Contacts</option>
+                <option>Recent Customers (Last 7 Days)</option>
+                <option>Square Customers</option>
               </select>
             </div>
+
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Select Template</label>
-              <select className="w-full h-12 bg-slate-50 border-none rounded-2xl px-4 text-xs font-bold">
-                <option>Default Invitation</option>
-                <option>Review Request v1</option>
-                <option>Feedback Only</option>
-              </select>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Message Content</label>
+                <Link href="/templates" className="text-[9px] font-black text-brand uppercase tracking-widest hover:underline">Change Template →</Link>
+              </div>
+              <textarea 
+                rows={5}
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold resize-none"
+              />
             </div>
-            <button className="primary-button w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-brand/20">
-              Start Campaign
+
+            <button 
+              className="primary-button w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-brand/20 disabled:opacity-50 disabled:grayscale"
+              disabled={!body || !name}
+              onClick={() => {
+                alert('In production, this would trigger a campaign to your customers!');
+              }}
+            >
+              Start Campaign Now
             </button>
           </div>
         </div>
 
         <div className="space-y-6">
-          <div className="bg-slate-900 p-8 rounded-[40px] shadow-xl text-white">
-            <h3 className="text-sm font-black uppercase tracking-widest mb-6">Preview</h3>
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-6 relative aspect-[9/16] max-w-[280px] mx-auto overflow-hidden">
-               <div className="absolute top-8 left-4 right-4 bg-white/10 rounded-2xl p-4 text-[11px] leading-relaxed">
-                  Hi! How was your visit to <strong>Smile Dental</strong> today? We'd love your feedback: https://r-m.link/s-dnt
-               </div>
-               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/20 rounded-full"></div>
+          <div className="bg-slate-900 p-10 rounded-[40px] shadow-2xl text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-10">
+              <span className="text-6xl">{type === 'SMS' ? '📱' : '✉️'}</span>
             </div>
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] mb-10 text-white/40">Preview</h3>
+            
+            <div className="relative mx-auto max-w-[280px]">
+              {type === 'SMS' ? (
+                <div className="bg-white/5 border border-white/10 rounded-[32px] p-6 pt-12 aspect-[9/16] relative">
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1 bg-white/10 rounded-full"></div>
+                  <div className="bg-[#242424] rounded-2xl p-4 text-[11px] leading-relaxed shadow-xl border border-white/5">
+                    {previewText || "Your message will appear here..."}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white text-slate-900 rounded-3xl p-6 min-h-[400px] shadow-2xl">
+                  <div className="border-b border-slate-100 pb-4 mb-4">
+                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1">Subject</p>
+                    <p className="text-xs font-bold">{previewText.split('\n')[0].replace('Subject: ', '') || "No Subject"}</p>
+                  </div>
+                  <div className="text-[11px] leading-relaxed whitespace-pre-wrap">
+                    {previewText.split('\n').slice(1).join('\n').trim() || "Your email body will appear here..."}
+                  </div>
+                </div>
+              )}
+              <div className="mt-8 text-center">
+                <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Campaign Preview Mode</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-8 bg-brand/5 rounded-[40px] border border-brand/10">
+            <h4 className="text-xs font-black uppercase tracking-widest text-brand mb-3 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse"></span>
+              Compliance Check
+            </h4>
+            <p className="text-xs text-brand/70 leading-relaxed font-medium">
+              {type === 'SMS' 
+                ? "Your message includes mandatory opt-out instructions. SMS campaigns are subject to 10DLC registration requirements."
+                : "Your email includes a standard unsubscribe link in the footer to comply with CAN-SPAM regulations."}
+            </p>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NewRequestPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full mb-4"></div>
+        <p className="text-muted text-sm font-medium uppercase tracking-widest">Loading campaign... </p>
+      </div>
+    }>
+      <NewRequestContent />
+    </Suspense>
   );
 }
