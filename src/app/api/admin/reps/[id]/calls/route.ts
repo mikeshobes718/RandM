@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getPgPool } from '@/lib/supabaseAdmin';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const pool = getPgPool();
   if (!pool) return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
 
-  const id = params.id;
+  const { id } = await params;
 
   try {
     const res = await pool.query(`
