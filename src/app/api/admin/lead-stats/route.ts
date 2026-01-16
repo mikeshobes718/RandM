@@ -41,8 +41,8 @@ export async function GET() {
         });
         offset += limit;
         if (data.length < limit) hasMore = false;
-        // Increase safety limit for state breakdown to 30k leads
-        if (offset > 30000) hasMore = false; 
+        // Increase safety limit for state breakdown to 100k leads
+        if (offset > 100000) hasMore = false; 
       }
     }
 

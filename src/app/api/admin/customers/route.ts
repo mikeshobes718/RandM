@@ -65,10 +65,9 @@ export async function GET(req: NextRequest) {
             console.warn(`[ADMIN CUSTOMERS API] No user found for UID ${sub.uid}`);
           }
 
-          // EXCLUDE staff members (reps/admins) who aren't primary customers.
-          if (user?.role === 'sales_rep' || user?.role === 'admin') {
-            return null;
-          }
+          // Show ALL active subscribers. We'll include a role property 
+          // so the UI can badge them (Admin, Rep, or Customer).
+          const role = user?.role || 'customer';
 
           const planId = sub.plan_id?.toLowerCase() || 'starter';
           let plan = 'Starter';
@@ -97,7 +96,8 @@ export async function GET(req: NextRequest) {
             status,
             months: monthsActive,
             lastLogin: user?.last_sign_in_at || 'Never',
-            email: user?.email || 'No Email'
+            email: user?.email || 'No Email',
+            role: role // Include role so UI can badge it
           };
         } catch (itemErr) {
           console.error('[ADMIN CUSTOMERS API] Error mapping customer item:', itemErr);

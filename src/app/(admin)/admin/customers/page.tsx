@@ -14,7 +14,7 @@ type Customer = {
   status: string;
   months: number;
   lastLogin: string;
-  email: string;
+  role: string;
 };
 
 export default function AdminCustomers() {
@@ -149,7 +149,14 @@ export default function AdminCustomers() {
                   >
                     <td className="px-8 py-5">
                       <Link href={`/admin/customers/${customer.id}`} className="block">
-                        <p className="font-bold text-slate-900 group-hover:text-brand transition-colors">{customer.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-slate-900 group-hover:text-brand transition-colors">{customer.name}</p>
+                          {customer.role !== 'customer' && (
+                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 uppercase tracking-tighter border border-slate-200">
+                              {customer.role}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[10px] text-slate-400 font-medium">{customer.email}</p>
                       </Link>
                     </td>

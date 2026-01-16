@@ -65,8 +65,8 @@ export async function GET(req: Request) {
           allDbLeads = [...allDbLeads, ...dbLeads];
           offset += batchSize;
           if (dbLeads.length < batchSize) hasMore = false;
-          // Return up to 5,000 leads for search results
-          if (offset >= 5000) hasMore = false;
+          // Return up to 20,000 leads for search results (enough for all 9078)
+          if (offset >= 20000) hasMore = false;
         }
       }
 
