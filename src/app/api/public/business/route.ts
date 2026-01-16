@@ -9,11 +9,26 @@ export async function GET(req: Request) {
   const id = searchParams.get('id') || '';
   if (!id) return new NextResponse('missing id', { status: 400 });
   const supa = getSupabaseAdmin();
+  let businessId = id;
+
+  // If id is not a UUID, it might be a source slug
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(id)) {
+    const { data: sourceData } = await supa
+      .from('review_sources')
+      .select('business_id')
+      .eq('slug', id)
+      .maybeSingle();
+    if (sourceData) {
+      businessId = sourceData.business_id;
+    }
+  }
+
   const columns = 'id,name,google_maps_write_review_uri,review_link,google_place_id,landing_brand_color,landing_button_color,landing_logo_url,landing_headline,landing_subheading';
   let { data, error } = await supa
     .from('businesses')
     .select(columns)
-    .eq('id', id)
+    .eq('id', businessId)
     .maybeSingle();
 
   // Try to add website if it exists (legacy support)
