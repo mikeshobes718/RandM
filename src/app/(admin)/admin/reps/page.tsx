@@ -104,6 +104,7 @@ export default function AdminReps() {
                 const flags = [];
                 if (rep.days_since_active > 3) flags.push({ label: 'Inactive', color: 'bg-red-100 text-red-600' });
                 if (rep.avg_calls_per_day < 10) flags.push({ label: 'Low Activity', color: 'bg-amber-100 text-amber-600' });
+                if (rep.overdue_followups >= 5) flags.push({ label: 'Overdue', color: 'bg-orange-100 text-orange-600' });
                 if (rep.closes_last_7_days >= 3) flags.push({ label: 'Hot Streak', color: 'bg-emerald-100 text-emerald-600' });
 
                 return (

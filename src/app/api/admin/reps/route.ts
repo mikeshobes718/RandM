@@ -20,7 +20,8 @@ export async function GET() {
         (SELECT COUNT(*) FROM customers WHERE closed_by = r.id AND signed_up_date > NOW() - INTERVAL '7 days') as closes_last_7_days,
         (SELECT COALESCE(SUM(amount), 0) FROM commissions WHERE rep_id = r.id) as total_earned,
         (SELECT COALESCE(SUM(amount), 0) FROM commissions WHERE rep_id = r.id AND status = 'pending') as pending_payout,
-        EXTRACT(EPOCH FROM (NOW() - (SELECT MAX(timestamp) FROM call_log WHERE rep_id = r.id))) / 86400 as days_since_active
+        EXTRACT(EPOCH FROM (NOW() - (SELECT MAX(timestamp) FROM call_log WHERE rep_id = r.id))) / 86400 as days_since_active,
+        (SELECT COUNT(*) FROM leads WHERE assigned_to = r.id AND next_followup < CURRENT_DATE) as overdue_followups
       FROM reps r
       ORDER BY r.created_at DESC
     `);

@@ -55,6 +55,15 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
+    // 2. Check if tables exist before proceeding
+    const { error: checkError } = await supa.from('leads').select('id').limit(1);
+    if (checkError && checkError.code === 'PGRST205') {
+      return NextResponse.json({ 
+        error: 'Database tables are missing. Please run migrations via /api/admin/migrate?token=rm_admin_pass_2026',
+        details: checkError
+      }, { status: 503 });
+    }
+
     // 3. Create call log entry
     const { error: logError } = await supa.from('call_log').insert({
       lead_id: targetLeadId,
