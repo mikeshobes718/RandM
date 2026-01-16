@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 
 export default function SiteFooter() {
   const pathname = usePathname();
-  if (pathname?.startsWith('/r/')) return null;
+  if (pathname?.startsWith('/r/') || pathname?.startsWith('/admin')) return null;
 
   return (
     <footer className="bg-foreground text-white border-t border-[rgba(255,255,255,0.05)] mt-0">

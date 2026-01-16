@@ -55,7 +55,8 @@ export default function SiteHeader() {
 
   const isAuthPage = pathname === '/login' || pathname === '/register';
   const isLandingPage = pathname?.startsWith('/r/');
-  if (isAuthPage || isLandingPage) return null;
+  const isAdminPage = pathname?.startsWith('/admin');
+  if (isAuthPage || isLandingPage || isAdminPage) return null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#f1f5f9] bg-background/80 backdrop-blur-md">
