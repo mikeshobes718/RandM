@@ -59,7 +59,7 @@ export async function GET() {
       callsThisWeek: callsWeekRes.rows[0]?.calls || 0,
       totalCalls: totalCallsRes.rows[0]?.calls || 0,
       totalCloses: totalClosesRes.rows[0]?.closes || 0,
-      repActivity: repActivityRes.rows,
+      repActivity: (repActivityRes as any).rows,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

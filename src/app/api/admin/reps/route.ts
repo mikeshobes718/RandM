@@ -26,7 +26,7 @@ export async function GET() {
     `);
 
     // Calculate avg calls per day for flags
-    const reps = rows.map(r => ({
+    const reps = rows.map((r: any) => ({
       ...r,
       avg_calls_per_day: r.calls_logged / (Math.max(1, Math.ceil((new Date().getTime() - new Date(r.start_date).getTime()) / 86400000)))
     }));
