@@ -2,6 +2,11 @@
 import BusinessSetupForm from "@/components/onboarding/BusinessSetupForm";
 import ProAnalytics from "@/components/dashboard/ProAnalytics";
 import MultipleQrManager from "@/components/dashboard/MultipleQrManager";
+import ActivationWidget from "@/components/dashboard/ActivationWidget";
+import ReviewRequestsModule from "@/components/dashboard/ReviewRequestsModule";
+import PlanUsageCard from "@/components/dashboard/PlanUsageCard";
+import FeedbackInbox from "@/components/dashboard/FeedbackInbox";
+import ContactsPanel from "@/components/dashboard/ContactsPanel";
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
@@ -54,6 +59,13 @@ type ActivityItem = {
   icon: string;
 };
 
+type Campaign = {
+  name: string;
+  sent: number;
+  clicks: number;
+  date: string;
+};
+
 function DashboardContent() {
   const searchParams = useSearchParams();
   const [business, setBusiness] = useState<Business | null>(null);
@@ -68,6 +80,8 @@ function DashboardContent() {
   const [squareStatus, setSquareStatus] = useState<{ connected: boolean; isEnabled?: boolean; lastBackfillAt?: string | null } | null>(null);
   const [planStatus, setPlanStatus] = useState<string>('none');
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [planUsage, setPlanUsage] = useState({ used: 0, limit: 100, qrScans: 0, isUnlimited: false });
+  const [recentCampaigns, setRecentCampaigns] = useState<Campaign[]>([]);
 
   const isFromEdit = searchParams?.get('from') === 'edit';
 
@@ -90,6 +104,8 @@ function DashboardContent() {
         setPlanStatus(data.planStatus ?? 'none');
         setAnalytics(data.analytics ?? null);
         setSquareStatus(data.squareConnection ?? null);
+        setPlanUsage(data.planUsage ?? { used: 0, limit: 100, qrScans: 0, isUnlimited: false });
+        setRecentCampaigns(data.recentCampaigns ?? []);
         
         // Onboarding redirect logic
         // 1. If no active plan, must pick one
@@ -209,6 +225,27 @@ function DashboardContent() {
         </div>
       </div>
 
+      {/* Top Row: Activation & Plan */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-12">
+        <div className="md:col-span-8">
+          <ActivationWidget 
+            business={business} 
+            stats={stats} 
+            recentFeedbackCount={recentFeedback.length}
+            isPro={isPro}
+          />
+        </div>
+        <div className="md:col-span-4">
+          <PlanUsageCard 
+            planName={planStatus === 'active' ? 'Small Business' : planStatus === 'starter' ? 'Starter' : 'Unlimited'}
+            requestsUsed={planUsage.used}
+            requestsLimit={planUsage.limit}
+            qrScans={planUsage.qrScans}
+            isUnlimited={planUsage.isUnlimited}
+          />
+        </div>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <div className="premium-card p-6 rounded-2xl group relative">
@@ -304,7 +341,15 @@ function DashboardContent() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mt-12">
         {/* Main Toolkit Card */}
-        <div className="lg:col-span-7 space-y-8">
+        <div className="lg:col-span-7 space-y-12">
+          {/* Review Requests Module */}
+          <ReviewRequestsModule 
+            used={planUsage.used}
+            limit={planUsage.limit}
+            recentCampaigns={recentCampaigns}
+            isPro={isPro}
+          />
+
           <section className="premium-card p-8 rounded-3xl overflow-hidden relative group">
             <h2 className="text-xl font-bold mb-2">Review Toolkit</h2>
             <p className="text-sm text-muted mb-8 font-medium">Your core tools for collecting customer reviews.</p>
@@ -458,6 +503,8 @@ function DashboardContent() {
             </div>
           </div>
 
+          <ContactsPanel count={0} />
+
           {/* Recent Activity for Pro Users */}
           {isPro && (
             <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed">
@@ -570,73 +617,7 @@ function DashboardContent() {
         {/* Feedback Sidebar */}
         <div className="lg:col-span-5">
           <div className="sticky top-28 space-y-6">
-            <section className="premium-card p-6 rounded-3xl">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold">Recent Feedback</h2>
-                <Link href="/feedback" className="text-xs font-bold text-brand hover:underline">View All</Link>
-              </div>
-
-              {recentFeedback.filter(f => f.type === 'feedback' && f.rating <= 2).length > 0 && (
-                <div className="mb-6 space-y-3">
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-100 rounded-xl">
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                    <span className="text-[10px] font-black text-red-700 uppercase tracking-widest">Action Required: Negative Feedback</span>
-                  </div>
-                  {recentFeedback.filter(f => f.type === 'feedback' && f.rating <= 2).slice(0, 2).map((item) => (
-                    <div key={item.id} className="p-4 bg-red-50/30 rounded-xl border border-red-100/50">
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="text-xs font-bold text-red-900">{item.name || 'Anonymous'}</span>
-                        <span className="text-[10px] font-black text-red-600 px-1.5 py-0.5 bg-red-100 rounded">
-                          {item.rating}★
-                        </span>
-                      </div>
-                      <p className="text-xs text-red-700 italic line-clamp-2">"{item.comment}"</p>
-                      <Link href="/feedback" className="text-[9px] font-black text-red-600 uppercase tracking-widest mt-2 inline-block hover:underline">Respond Now →</Link>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {recentFeedback.length === 0 ? (
-                <div className="text-center py-12 px-4 border-2 border-dashed border-[#e2e8f0] rounded-2xl">
-                  <p className="text-xs text-muted">No feedback yet. Share your link to start collecting responses.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {recentFeedback.map((item: any, idx: number) => {
-                    const isEvent = item.type === 'event';
-                    const itemId = item.id || `feedback-${idx}`;
-                    return (
-                      <div key={itemId} className="p-4 bg-accent/30 rounded-xl border border-[#e2e8f0]/50 hover:border-brand/30 transition-all group/item">
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold group-hover/item:text-brand transition-colors">{isEvent ? 'Verified Redirect' : (item.name || 'Anonymous')}</span>
-                            {!isEvent && (
-                              <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
-                                item.rating >= 4 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
-                              }`}>
-                                {item.rating}★
-                              </span>
-                            )}
-                            {isEvent && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 uppercase tracking-tighter">
-                                Redirect
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10px] text-muted">
-                            {new Date(item.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p className={`text-xs line-clamp-2 leading-relaxed italic ${isEvent ? 'text-slate-400' : 'text-muted'}`}>
-                          {isEvent ? 'Customer routed to Google profile' : `"${item.comment || 'No comment provided'}"`}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
+            <FeedbackInbox initialItems={recentFeedback} businessId={business.id!} />
             
             {/* Helpful Tip */}
             <div className="p-6 bg-brand/5 rounded-3xl border border-brand/10">

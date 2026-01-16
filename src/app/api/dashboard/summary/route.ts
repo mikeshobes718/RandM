@@ -366,6 +366,32 @@ export async function GET(req: NextRequest) {
       activityFeed = mergedFeed.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 10);
     } catch (e) {}
 
+    // Plan Limits
+    let requestsUsed = 0;
+    let requestsLimit = 100;
+    if (planStatus === 'starter') requestsLimit = 3;
+    if (planStatus === 'active') {
+      const planId = (subscription?.plan_id || '').toLowerCase();
+      if (planId.includes('mid') || planId.includes('growth')) requestsLimit = 100;
+      else requestsLimit = 999999; // Unlimited
+    }
+
+    try {
+      const startOfMonth = startOfCurrentMonthUTC();
+      const { count: reqCount } = await supa
+        .from('review_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('business_id', biz.id)
+        .gte('created_at', startOfMonth);
+      requestsUsed = reqCount || 0;
+    } catch (e) {}
+
+    // Recent Campaigns (Mock for now since we don't have campaigns table yet)
+    const recentCampaigns = [
+      { name: 'SMS Blast - Jan 15', sent: 45, clicks: 12, date: new Date().toISOString() },
+      { name: 'Email Follow-up', sent: 22, clicks: 8, date: new Date(Date.now() - 86400000).toISOString() },
+    ].slice(0, 3);
+
     return NextResponse.json({
       business: { ...biz, contact_phone: biz.contact_phone ? formatPhone(biz.contact_phone) : null },
       stats: { reviewsThisMonth, shareLinkScans, averageRating: normalizedRating },
@@ -374,7 +400,14 @@ export async function GET(req: NextRequest) {
       planStatus,
       analytics,
       squareConnection,
-      activityFeed
+      activityFeed,
+      planUsage: {
+        used: requestsUsed,
+        limit: requestsLimit,
+        qrScans: shareLinkScans,
+        isUnlimited: requestsLimit > 1000
+      },
+      recentCampaigns
     });
   } catch (err: any) {
     console.error('[DASHBOARD API] Global Crash:', err);
