@@ -25,10 +25,12 @@ export function getPgPool(): any {
     const user = env.SUPABASE_DB_USER || 'postgres.rhnxzpbhoqbvoqyqmfox';
     const database = env.SUPABASE_DB_NAME || 'postgres';
 
-    // Best combination for Supabase + postgres.js + SCRAM
-    const connectionString = `postgresql://${user}:${encodeURIComponent(password)}@${host}:${port}/${database}`;
-
-    const sql = postgres(connectionString, {
+    const sql = postgres({
+      host,
+      port,
+      user,
+      password,
+      database,
       ssl: { rejectUnauthorized: false },
       max: 10,
       idle_timeout: 30,
