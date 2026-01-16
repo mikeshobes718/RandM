@@ -26,7 +26,12 @@ export async function GET(req: NextRequest) {
   
   if (!biz) return new NextResponse('Forbidden', { status: 403 });
 
-  try { await ensureFeedbackTables(); } catch (e) {}
+  // Ensure tables exist BEFORE querying
+  try { 
+    await ensureFeedbackTables(); 
+  } catch (e) {
+    console.error('Failed to ensure feedback tables:', e);
+  }
 
   const { data: sources, error } = await supa
     .from('review_sources')
@@ -34,7 +39,13 @@ export async function GET(req: NextRequest) {
     .eq('business_id', businessId)
     .order('created_at', { ascending: false });
 
-  if (error) return new NextResponse(error.message, { status: 500 });
+  if (error) {
+    // If table doesn't exist, return empty array instead of error
+    if (error.message?.includes('schema cache') || error.message?.includes('does not exist')) {
+      return NextResponse.json({ sources: [] });
+    }
+    return new NextResponse(error.message, { status: 500 });
+  }
 
   return NextResponse.json({ sources: sources || [] });
 }

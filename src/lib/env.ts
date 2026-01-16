@@ -9,6 +9,7 @@ const ServerEnvSchema = z.object({
   STRIPE_YEARLY_PRICE_ID: z.string().optional(),
   STRIPE_MID_PRICE_ID: z.string().optional(),
   STRIPE_MID_YEARLY_PRICE_ID: z.string().optional(),
+  STRIPE_CONCIERGE_PRICE_ID: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
   STRIPE_PORTAL_CONFIGURATION_ID: z.string().optional(),
 

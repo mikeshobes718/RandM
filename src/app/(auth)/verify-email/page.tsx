@@ -244,6 +244,7 @@ export default function VerifyEmailPage() {
             </div>
           )}
 
+          {/* HIDING FOR TESTING: 
           {verificationLink && (
             <div className="mb-8 p-6 rounded-3xl bg-amber-50/50 border border-amber-100 relative group">
               <div className="absolute -top-3 left-6 px-3 py-1 bg-amber-100 rounded-full text-[9px] font-black text-amber-700 uppercase tracking-widest border border-amber-200">
@@ -275,6 +276,7 @@ export default function VerifyEmailPage() {
               </div>
             </div>
           )}
+          */}
 
           {!verifying && (
             <div className="space-y-4">

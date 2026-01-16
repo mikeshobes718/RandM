@@ -24,10 +24,10 @@ export default function BlogPost() {
             Automation Guide • Feb 2026
           </div>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight mb-8">
-            Reputation on Autopilot: Scaling Your 5-Star Growth
+            Reputation on Autopilot: Scaling Your Growth Compliantly
           </h1>
           <p className="text-xl text-slate-600 leading-relaxed mb-8">
-            Learn how to move beyond manual QR codes and implement a systemic approach to customer feedback that runs 24/7 without your intervention.
+            Learn how to move beyond manual QR codes and implement a systemic approach to customer feedback that runs 24/7 while staying fully compliant.
           </p>
           <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-3xl border border-slate-100">
             <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 font-bold">AC</div>
@@ -50,7 +50,7 @@ export default function BlogPost() {
           
           <ul>
             <li><strong>Instant Triggers:</strong> Every completed transaction sends a signal to the system.</li>
-            <li><strong>Smart Timing:</strong> Emails are sent exactly when the experience is freshest in the customer's mind.</li>
+            <li><strong>Smart Timing:</strong> Messages are sent exactly when the experience is freshest in the customer's mind.</li>
             <li><strong>Consistent Volume:</strong> No more "dry spells" when staff forget to mention the review link.</li>
           </ul>
 
@@ -60,7 +60,7 @@ export default function BlogPost() {
           </div>
 
           <p>
-            In the slidedeck provided below, we break down the exact workflow of an automated system. We explore how data flows from your POS to R&M, how sentiment is filtered, and how your customer database grows while you sleep.
+            In the slidedeck provided below, we break down the exact workflow of an automated system. We explore how data flows from your POS to R&M, how customers are provided a direct path for feedback, and how your customer database grows while you sleep.
           </p>
 
           <h2 className="text-2xl mt-12 mb-6 text-emerald-600">Download the Automation Deck</h2>
@@ -72,7 +72,7 @@ export default function BlogPost() {
             </div>
             <div className="flex-1 text-center sm:text-left">
               <h4 className="font-bold text-slate-900 mb-1">Reputation Control: Automated</h4>
-              <p className="text-sm text-slate-500 mb-4">The executive slidedeck on scaling your 5-star reputation through POS automation.</p>
+              <p className="text-sm text-slate-500 mb-4">The executive slidedeck on scaling your reputation through compliant POS automation.</p>
               <a 
                 href="/docs/Reputation_Control_Automated.pdf" 
                 download
@@ -88,7 +88,7 @@ export default function BlogPost() {
 
           <h2 className="text-2xl mt-12 mb-6">Conclusion</h2>
           <p>
-            Manual efforts get you started, but systems get you to the finish line. If you are serious about becoming the highest-rated business in your area, automation isn't an option—it's a requirement.
+            Manual efforts get you started, but systems get you to the finish line. If you are serious about becoming the highest-rated business in your area, automation isn't an option—it's a requirement. We make sure that automation is done the right way: no incentives, no filtering, just easy access for your customers.
           </p>
         </div>
 
@@ -102,7 +102,3 @@ export default function BlogPost() {
     </main>
   );
 }
-
-
-
-

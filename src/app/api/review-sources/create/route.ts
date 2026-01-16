@@ -38,20 +38,45 @@ export async function POST(req: NextRequest) {
   
   if (!biz) return new NextResponse('Forbidden', { status: 403 });
 
+  // Ensure tables exist BEFORE querying
+  try { 
+    await ensureFeedbackTables(); 
+  } catch (e) {
+    console.error('Failed to ensure feedback tables:', e);
+    // Continue anyway - table might already exist
+  }
+
   // Enforce plan limits
   const limits = await getPlanLimits(uid);
   
-  // Count existing sources
-  const { count } = await supa
-    .from('review_sources')
-    .select('*', { count: 'exact', head: true })
-    .eq('business_id', businessId);
-
-  if ((count || 0) >= limits.qrLimit) {
-    return new NextResponse(`QR code limit of ${limits.qrLimit} reached for the ${limits.name} plan. Upgrade to create more unique QR codes.`, { status: 403 });
+  // Count existing sources (retry if table doesn't exist)
+  let count = 0;
+  try {
+    const { count: sourceCount, error: countError } = await supa
+      .from('review_sources')
+      .select('*', { count: 'exact', head: true })
+      .eq('business_id', businessId);
+    
+    if (countError && countError.message?.includes('schema cache')) {
+      // Table might not be in schema cache, try ensuring again and retry
+      await ensureFeedbackTables();
+      const retry = await supa
+        .from('review_sources')
+        .select('*', { count: 'exact', head: true })
+        .eq('business_id', businessId);
+      count = retry.count || 0;
+    } else {
+      count = sourceCount || 0;
+    }
+  } catch (e) {
+    // If table truly doesn't exist, allow creation (count = 0)
+    console.error('Error counting sources:', e);
+    count = 0;
   }
 
-  try { await ensureFeedbackTables(); } catch (e) {}
+  if (count >= limits.qrLimit) {
+    return new NextResponse(`QR code limit of ${limits.qrLimit} reached for the ${limits.name} plan. Upgrade to create more unique QR codes.`, { status: 403 });
+  }
 
   const slug = `${slugify(name)}-${Math.random().toString(36).substring(2, 6)}`;
 

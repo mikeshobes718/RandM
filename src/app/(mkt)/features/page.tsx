@@ -11,8 +11,8 @@ const PILLARS = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
       </svg>
     ),
-    title: 'Smart QR Routing',
-    copy: 'Protect your rating. Happy customers go to Google, while others are routed to a private feedback form for resolution.',
+    title: 'Compliant QR Flow',
+    copy: 'Protect your relationship with customers. We help happy customers share their experiences on Google while providing a private channel for those who have suggestions.',
   },
   {
     icon: (
@@ -21,7 +21,7 @@ const PILLARS = [
       </svg>
     ),
     title: 'Automated Requests',
-    copy: 'Send review requests automatically via SMS or Email. Optimized timing ensures the highest response rates possible.',
+    copy: 'Send review requests automatically via SMS or Email. Optimized timing ensures the highest response rates possible, all while staying compliant with platform policies.',
   },
   {
     icon: (
@@ -30,22 +30,22 @@ const PILLARS = [
       </svg>
     ),
     title: 'Actionable Insights',
-    copy: 'Track scans, clicks, and review sentiment in real-time. Identify your best locations and top performers instantly.',
+    copy: 'Track scans, clicks, and feedback sentiment in real-time. Identify your best locations and top performers based on genuine customer insights.',
   },
 ];
 
 const USE_CASES = [
   {
     title: 'For Restaurants',
-    text: 'Place QR codes on table tents or check folders. Turn a great meal into a 5-star Google review before the guest leaves.',
+    text: 'Place QR codes on table tents or check folders. Turn a great meal into a public review or a private thank-you before the guest leaves.',
   },
   {
     title: 'For Retail',
-    text: 'Print review links on receipts or display at checkout. Build a loyal customer base and boost your local search ranking.',
+    text: 'Print review links on receipts or display at checkout. Build a loyal customer base and boost your local search ranking with authentic feedback.',
   },
   {
     title: 'For Services',
-    text: 'Send automated follow-ups after a service appointment. Capture feedback and reviews while the experience is fresh.',
+    text: 'Send automated follow-ups after a service appointment. Capture honest feedback and reviews while the experience is fresh.',
   },
 ];
 
@@ -63,11 +63,12 @@ export default function FeaturesPage() {
               Everything you need to <br className="hidden md:block" />
               <span className="text-brand">master your reputation.</span>
             </h1>
-            <p className="text-xl text-muted max-w-2xl mx-auto mb-6 text-balance leading-relaxed">
-              A complete toolkit designed to help modern businesses collect more reviews, filter private feedback, and grow faster.
-            </p>
+            <div className="text-xl text-muted max-w-2xl mx-auto mb-6 text-balance leading-relaxed">
+              <p>Get more Google reviews the compliant way + recover unhappy customers privately.</p>
+              <p className="mt-2 font-bold text-brand">More reviews, more insights, fewer surprises.</p>
+            </div>
             <p className="text-sm text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed italic">
-              Display the QR code throughout your business. When customers scan it and choose five stars, they’re automatically directed to your Google Reviews page to leave a 5-star review, and also invited to share their contact information for special offers and promotions.
+              "We provide customers a direct path to share their experience. We don’t incentivize or filter reviews—customers choose what to share."
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <HomeCtaButtons variant="hero" />
@@ -125,7 +126,7 @@ export default function FeaturesPage() {
         <div className="container mx-auto px-6">
           <div className="max-w-2xl mx-auto text-center mb-16">
             <h2 className="text-3xl font-black tracking-tight mb-4">Built for every industry</h2>
-            <p className="text-muted">Whether you run a single shop or 100 locations, we have you covered.</p>
+            <p className="text-muted">Whether you run a single shop or multiple locations, we have you covered.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {USE_CASES.map((uc) => (
@@ -146,7 +147,7 @@ export default function FeaturesPage() {
             <div className="relative z-10 max-w-xl">
               <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6 text-white">Ready to scale your reputation?</h2>
               <p className="text-slate-400 text-lg mb-8 leading-relaxed">
-                Join 500+ businesses using our toolkit to dominate their local market. Start free and upgrade when you're ready for more.
+                Join the growing list of businesses using our toolkit to dominate their local market. Start free and upgrade when you're ready for more.
               </p>
               <div className="flex flex-wrap gap-4">
                 <HomeCtaButtons align="start" />
@@ -154,20 +155,20 @@ export default function FeaturesPage() {
             </div>
             <div className="relative z-10 grid grid-cols-2 gap-4 w-full md:w-auto">
               <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm text-center">
-                <div className="text-2xl font-black mb-1 text-white">500+</div>
+                <div className="text-2xl font-black mb-1 text-white">Active</div>
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Businesses</div>
               </div>
               <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm text-center">
                 <div className="text-2xl font-black mb-1 text-white">15K+</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Reviews</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Feedback Items</div>
               </div>
               <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm text-center">
                 <div className="text-2xl font-black mb-1 text-white">4.9★</div>
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Avg Rating</div>
               </div>
               <div className="p-6 bg-brand rounded-2xl text-center shadow-lg shadow-brand/20">
-                <div className="text-2xl font-black mb-1 text-white">3x</div>
-                <div className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Growth</div>
+                <div className="text-2xl font-black mb-1 text-white">Direct</div>
+                <div className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Impact</div>
               </div>
             </div>
           </div>

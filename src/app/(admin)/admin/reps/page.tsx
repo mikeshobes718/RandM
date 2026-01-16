@@ -7,55 +7,84 @@ import { useRouter } from "next/navigation";
 export default function AdminReps() {
   const router = useRouter();
   const [reps, setReps] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
+  const [updating, setUpdating] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchReps() {
+    async function fetchData() {
       try {
-        const res = await fetch('/api/admin/reps');
-        const data = await res.json();
-        setReps(data.reps || []);
+        const idToken = localStorage.getItem('idToken');
+        const [repsRes, usersRes] = await Promise.all([
+          fetch('/api/admin/reps'),
+          fetch('/api/admin/users/list?limit=100', {
+            headers: { 'Authorization': `Bearer ${idToken}` }
+          })
+        ]);
+        
+        const repsData = await repsRes.json();
+        const usersData = await usersRes.json();
+        
+        setReps(repsData.reps || []);
+        setUsers(usersData.users || []);
       } catch (err) {
-        console.error('Failed to fetch reps:', err);
+        console.error('Failed to fetch data:', err);
       } finally {
         setLoading(false);
       }
     }
-    fetchReps();
+    fetchData();
   }, []);
 
-  const filteredReps = reps.filter(rep => {
-    if (filter !== "All" && rep.status?.toLowerCase() !== filter.toLowerCase()) return false;
-    if (search && !rep.name?.toLowerCase().includes(search.toLowerCase())) return false;
+  const handleUpdateUser = async (uid: string, data: any) => {
+    setUpdating(uid);
+    try {
+      const idToken = localStorage.getItem('idToken');
+      const res = await fetch('/api/admin/users/update', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ uid, ...data })
+      });
+      
+      if (res.ok) {
+        setUsers(prev => prev.map(u => u.uid === uid ? { ...u, ...data } : u));
+      }
+    } catch (err) {
+      console.error('Failed to update user:', err);
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const filteredUsers = users.filter(user => {
+    if (filter !== "All") {
+      if (filter === "Sales Rep" && user.role !== "sales_rep") return false;
+      if (filter === "Customer" && user.role !== "customer") return false;
+    }
+    if (search && !user.email?.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
-  if (loading) return <div className="p-12 text-center font-black animate-pulse text-white">LOADING REPS...</div>;
+  if (loading) return <div className="p-12 text-center font-black animate-pulse text-white">LOADING DATA...</div>;
 
   return (
     <div className="space-y-10 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Sales Representatives</h1>
-          <p className="text-slate-500 font-medium mt-1">Manage and monitor your team's performance.</p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Access Control</h1>
+          <p className="text-slate-500 font-medium mt-1">Assign roles and static REP IDs to your team.</p>
         </div>
-        <Link 
-          href="/admin/reps/add" 
-          className="h-14 px-8 bg-brand text-white font-black rounded-2xl shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add New Rep
-        </Link>
       </div>
 
       <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex items-center justify-between">
           <div className="flex gap-2">
-            {["All", "Active", "Trial", "Inactive", "Dropped"].map((f) => (
+            {["All", "Sales Rep", "Customer"].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
@@ -73,7 +102,7 @@ export default function AdminReps() {
             </svg>
             <input 
               type="text" 
-              placeholder="Search reps..." 
+              placeholder="Search by email..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="h-10 pl-10 pr-4 bg-slate-50 border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-brand/20 w-64 transition-all"
@@ -82,88 +111,61 @@ export default function AdminReps() {
         </div>
 
         <div className="overflow-x-auto">
-          {filteredReps.length === 0 ? (
-            <div className="p-12 text-center">
-              <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center mx-auto mb-4 text-slate-300">
-                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">No Sales Reps Yet</h3>
-              <p className="text-sm text-slate-500 mb-6">Add your first sales rep to start tracking performance.</p>
-              <Link href="/admin/reps/add" className="inline-flex items-center gap-2 px-6 py-3 bg-brand text-white font-black rounded-xl shadow-lg shadow-brand/20">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Add First Rep
-              </Link>
-            </div>
-          ) : (
           <table className="w-full text-left">
             <thead>
               <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 bg-slate-50/50">
-                <th className="px-8 py-4 text-left">Name</th>
-                <th className="px-4 py-4 text-left">Status</th>
-                <th className="px-4 py-4 text-center">Leads</th>
-                <th className="px-4 py-4 text-center">Calls</th>
-                <th className="px-4 py-4 text-center">Closes</th>
-                <th className="px-4 py-4 text-right">Earned</th>
-                <th className="px-4 py-4 text-right">Owed</th>
-                <th className="px-8 py-4 text-right">Flags</th>
+                <th className="px-8 py-4">Registered Email</th>
+                <th className="px-4 py-4">Role</th>
+                <th className="px-4 py-4">Static REP ID</th>
+                <th className="px-8 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 text-sm">
-              {filteredReps.map((rep) => {
-                const calls = rep.calls_logged || 0;
-                const closes = rep.closes || 0;
-                
-                // Flag logic
-                const flags = [];
-                if (rep.days_since_active > 3) flags.push({ label: 'Inactive', color: 'bg-red-100 text-red-600' });
-                if (rep.avg_calls_per_day < 10) flags.push({ label: 'Low Activity', color: 'bg-amber-100 text-amber-600' });
-                if (rep.overdue_followups >= 5) flags.push({ label: 'Overdue', color: 'bg-orange-100 text-orange-600' });
-                if (rep.closes_last_7_days >= 3) flags.push({ label: 'Hot Streak', color: 'bg-emerald-100 text-emerald-600' });
-
-                return (
-                  <tr 
-                    key={rep.id} 
-                    onClick={() => router.push(`/admin/reps/${rep.id}`)}
-                    className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
-                  >
-                    <td className="px-8 py-5">
-                      <p className="font-bold text-slate-900 group-hover:text-brand transition-colors">{rep.name}</p>
-                      <p className="text-[10px] text-slate-400 font-medium">{rep.email}</p>
-                    </td>
-                    <td className="px-4 py-5">
-                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-                        rep.status === 'active' ? 'bg-emerald-50 text-emerald-600' :
-                        rep.status === 'trial' ? 'bg-blue-50 text-blue-600' :
-                        'bg-slate-100 text-slate-500'
-                      }`}>
-                        {rep.status}
+              {filteredUsers.map((user) => (
+                <tr key={user.uid} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-8 py-5">
+                    <p className="font-bold text-slate-900">{user.email}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">Joined {new Date(user.created_at).toLocaleDateString()}</p>
+                  </td>
+                  <td className="px-4 py-5">
+                    <select 
+                      value={user.role || 'customer'}
+                      onChange={(e) => handleUpdateUser(user.uid, { role: e.target.value })}
+                      disabled={updating === user.uid}
+                      className="bg-slate-50 border-none rounded-lg text-[10px] font-black uppercase tracking-widest px-3 py-1.5 focus:ring-2 focus:ring-brand/20 outline-none cursor-pointer disabled:opacity-50"
+                    >
+                      <option value="customer">Customer</option>
+                      <option value="sales_rep">Sales Rep</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </td>
+                  <td className="px-4 py-5">
+                    <input 
+                      type="text"
+                      defaultValue={user.rep_id || ''}
+                      placeholder="Assign ID..."
+                      onBlur={(e) => {
+                        if (e.target.value !== (user.rep_id || '')) {
+                          handleUpdateUser(user.uid, { rep_id: e.target.value });
+                        }
+                      }}
+                      disabled={updating === user.uid}
+                      className="bg-slate-50 border-none rounded-lg text-xs font-bold px-4 py-2 focus:ring-2 focus:ring-brand/20 outline-none w-32 disabled:opacity-50 shadow-inner"
+                    />
+                  </td>
+                  <td className="px-8 py-5 text-right">
+                    {updating === user.uid ? (
+                      <span className="text-[10px] font-black text-brand animate-pulse uppercase tracking-widest">Saving...</span>
+                    ) : (
+                      <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest group-hover:text-emerald-500 transition-colors">
+                        {user.role === 'sales_rep' ? '✓ Rep Access' : 'No Rep Access'}
                       </span>
-                    </td>
-                    <td className="px-4 py-5 text-center font-bold text-slate-700">{rep.leads_assigned || 0}</td>
-                    <td className="px-4 py-5 text-center font-bold text-slate-700">{calls}</td>
-                    <td className="px-4 py-5 text-center font-bold text-slate-900">{closes}</td>
-                    <td className="px-4 py-5 text-right font-bold text-slate-900">${(rep.total_earned || 0).toLocaleString()}</td>
-                    <td className="px-4 py-5 text-right font-black text-brand">${(rep.pending_payout || 0).toLocaleString()}</td>
-                    <td className="px-8 py-5 text-right">
-                      <div className="flex justify-end gap-1">
-                        {flags.map(f => (
-                          <span key={f.label} className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${f.color}`}>
-                            {f.label}
-                          </span>
-                        ))}
-                        {flags.length === 0 && <span className="text-slate-300">-</span>}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                    )}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
-          )}
         </div>
       </div>
     </div>

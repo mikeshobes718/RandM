@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -24,33 +24,25 @@ export async function GET(req: Request) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 
-    const url = new URL(req.url);
-    const limit = Number(url.searchParams.get('limit') || '50');
-    const offset = Number(url.searchParams.get('offset') || '0');
+    const body = await req.json();
+    const { uid, role, rep_id } = body;
+    
+    if (!uid) {
+      return new NextResponse('Missing uid', { status: 400 });
+    }
     
     const supa = getSupabaseAdmin();
     
-    // Get total count
-    const { count, error: countError } = await supa
+    const { error } = await supa
       .from('users')
-      .select('*', { count: 'exact', head: true });
-    if (countError) throw countError;
-    
-    // Get users
-    const { data, error } = await supa
-      .from('users')
-      .select('uid,email,role,rep_id,created_at')
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .update({ role, rep_id })
+      .eq('uid', uid);
+      
     if (error) throw error;
     
-    return NextResponse.json({ 
-      users: data || [], 
-      total: count || 0 
-    });
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Admin users list API error:', error);
-    return new NextResponse(`Error fetching users: ${error instanceof Error ? error.message : 'Unknown error'}`, { status: 500 });
+    console.error('Admin user update API error:', error);
+    return new NextResponse(`Error updating user: ${error instanceof Error ? error.message : 'Unknown error'}`, { status: 500 });
   }
 }
-

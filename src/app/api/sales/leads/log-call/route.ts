@@ -24,7 +24,6 @@ export async function POST(req: Request) {
 
     // 1. If leadId is missing, try to find or create the lead in the DB
     if (!targetLeadId && googlePlaceId) {
-      // Check if lead already exists by google_place_id
       const { data: existingLead } = await supa
         .from('leads')
         .select('id')
@@ -34,14 +33,12 @@ export async function POST(req: Request) {
       if (existingLead) {
         targetLeadId = existingLead.id;
       } else if (leadData) {
-        // Extract and normalize city
         const addressParts = leadData.address?.split(',');
         const rawCity = addressParts && addressParts.length >= 3 
           ? addressParts[addressParts.length - 3].trim() 
           : null;
         const normalizedCity = rawCity?.toLowerCase().replace(/ city$/, '').trim() || null;
 
-        // Create the lead
         const { data: newLead, error: createError } = await supa
           .from('leads')
           .insert({
@@ -74,10 +71,33 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    // 2. Create call log entry (rep_id can be null for unregistered reps)
+    // Fetch rep details for logging
+    let repEmail = null;
+    let repUuid = null;
+    
+    if (repId) {
+      // 1. Try to find user by static rep_id
+      const { data: userData } = await supa
+        .from('users')
+        .select('uid, email')
+        .eq('rep_id', repId)
+        .maybeSingle();
+      
+      if (userData) {
+        repUuid = userData.uid;
+        repEmail = userData.email;
+      } else if (repId.includes('-')) {
+        // 2. Fallback to UUID lookup if repId looks like a UUID
+        const { data: repData } = await supa.from('reps').select('email').eq('id', repId).single();
+        repEmail = repData?.email || null;
+        repUuid = repId;
+      }
+    }
+
+    // 2. Create call log entry
     const { error: logError } = await supa.from('call_log').insert({
       lead_id: targetLeadId,
-      rep_id: repId?.includes('-') ? repId : null,
+      rep_id: repUuid,
       outcome,
       notes,
       followup_date: followupDate || null,
@@ -94,26 +114,21 @@ export async function POST(req: Request) {
     const { error: updateError } = await supa.from('leads').update({
       times_called: newTimesCalled,
       last_called_at: new Date().toISOString(),
-      last_called_by: repId?.includes('-') ? repId : null,
+      last_called_by: repUuid,
+      last_called_by_email: repEmail, // Tracking by email is most reliable for leaderboard
       call_status: outcome,
       next_followup: followupDate || null,
-      lead_notes: notes,
+      notes: notes,
     }).eq('id', targetLeadId);
 
     if (updateError) {
       console.error('[LOG CALL API] Lead update failed:', updateError);
+      throw updateError;
     }
 
     return NextResponse.json({ success: true, leadId: targetLeadId });
   } catch (error: any) {
     console.error('[LOG CALL API] Error:', error);
-    const msg = error.message || 'Internal error';
-    if (msg.includes('does not exist') || msg.includes('schema cache')) {
-      return NextResponse.json({ 
-        error: `Database tables not set up. Run the migration SQL in Supabase Dashboard.`,
-        code: 'TABLES_MISSING'
-      }, { status: 503 });
-    }
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
   }
 }

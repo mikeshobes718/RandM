@@ -3,7 +3,7 @@ import { primaryButtonClass, secondaryButtonClass } from "@/lib/styles";
 import HomeCtaButtons from "@/components/HomeCtaButtons";
 
 const HIGHLIGHTS = [
-  { value: '500+', label: 'Active Businesses' },
+  { value: 'Verified', label: 'Compliant Flow' },
   { value: '4.9★', label: 'Average Growth' },
   { value: '99.9%', label: 'System Uptime' },
 ];
@@ -11,21 +11,21 @@ const HIGHLIGHTS = [
 const VALUES = [
   {
     title: 'Authenticity First',
-    copy: 'We believe reviews should be earned through great service. Our tools simply make it easier for your happy customers to tell the world.'
+    copy: 'We believe reviews should be earned through great service. Our tools simply make it easier for your customers to share their genuine experiences with the world.'
+  },
+  {
+    title: 'Compliance Driven',
+    copy: 'We don’t incentivize or filter reviews. We provide a platform that respects both business owners and customer choice, fully aligned with platform policies.'
   },
   {
     title: 'Actionable Insights',
-    copy: 'Data is useless without direction. Our dashboard highlights exactly where your reputation stands and how to improve it daily.'
-  },
-  {
-    title: 'Customer Privacy',
-    copy: 'Protecting your relationship with your customers is our priority. Feedback stays private between you and them until they choose to share it.'
+    copy: 'Data is useless without direction. Our dashboard highlights exactly where your reputation stands and how to improve it through better customer recovery.'
   },
 ];
 
 const MILESTONES = [
   { year: '2024', text: 'Reviews & Marketing launched with a mission to simplify reputation management for local shops.' },
-  { year: '2025', text: 'Introduced smart QR routing and automated follow-ups, helping businesses grow their Google ratings by 20% on average.' },
+  { year: '2025', text: 'Introduced compliant review flows and automated follow-ups, helping businesses grow their Google ratings through better customer recovery.' },
   { year: '2026', text: 'Expanding our toolkit with deep Square and Stripe integrations to capture feedback at the point of sale.' },
 ];
 
@@ -41,9 +41,10 @@ export default function AboutPage() {
             We help local operators <br className="hidden md:block" />
             <span className="text-brand">turn delight into proof.</span>
           </h1>
-          <p className="text-xl text-muted max-w-3xl mx-auto leading-relaxed">
-            Reviews & Marketing was born inside busy service businesses that needed polished tech without the enterprise bloat. We help you collect authentic reviews automatically.
-          </p>
+          <div className="text-xl text-muted max-w-3xl mx-auto leading-relaxed">
+            <p>Reviews & Marketing helps you collect authentic reviews and recover unhappy customers privately.</p>
+            <p className="mt-4 font-bold text-brand">“More reviews, more insights, fewer surprises.”</p>
+          </div>
         </div>
 
         {/* Stats */}
@@ -60,7 +61,7 @@ export default function AboutPage() {
           <div className="space-y-8">
             <h2 className="text-3xl font-black tracking-tight">Why we built it</h2>
             <p className="text-muted leading-relaxed text-lg">
-              Our founders spent a decade in hospitality and home services chasing reviews manually. We designed a platform that blends premium branding with deep automation, letting teams focus on the guest experience while the software handles the follow-through.
+              Our founders spent a decade in hospitality and home services chasing reviews. We designed a platform that blends premium branding with deep automation, letting teams focus on the guest experience while the software handles the follow-through. We believe in transparency: we don’t incentivize or filter reviews—customers choose what to share.
             </p>
             <div className="pt-4">
               <HomeCtaButtons align="start" />

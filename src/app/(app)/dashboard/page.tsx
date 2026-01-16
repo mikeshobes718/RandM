@@ -353,8 +353,52 @@ function DashboardContent() {
                       Download PNG
                     </a>
                     <button 
-                      onClick={() => window.print()}
-                      className="text-[10px] font-black text-slate-400 hover:text-brand uppercase tracking-widest text-center py-2 transition-colors"
+                      onClick={() => {
+                        const printWindow = window.open('', '_blank');
+                        if (printWindow) {
+                          const qrUrl = `/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=12`;
+                          printWindow.document.write(`
+                            <html>
+                              <head>
+                                <title>Print QR Code - ${business.name}</title>
+                                <style>
+                                  body { 
+                                    margin: 0; 
+                                    padding: 40px; 
+                                    display: flex; 
+                                    flex-direction: column; 
+                                    align-items: center; 
+                                    justify-content: center; 
+                                    min-height: 100vh;
+                                    font-family: system-ui, -apple-system, sans-serif;
+                                  }
+                                  img { max-width: 100%; height: auto; }
+                                  h1 { margin-top: 20px; font-size: 24px; color: #1e293b; }
+                                  p { margin-top: 10px; color: #64748b; font-size: 14px; }
+                                </style>
+                              </head>
+                              <body>
+                                <img src="${qrUrl}" alt="QR Code" />
+                                <h1>${business.name}</h1>
+                                <p>Scan to leave a review</p>
+                                <script>
+                                  window.onload = function() {
+                                    window.print();
+                                    window.onafterprint = function() {
+                                      window.close();
+                                    };
+                                  };
+                                </script>
+                              </body>
+                            </html>
+                          `);
+                          printWindow.document.close();
+                        } else {
+                          // Fallback to regular print if popup blocked
+                          window.print();
+                        }
+                      }}
+                      className="text-[10px] font-black text-slate-400 hover:text-brand uppercase tracking-widest text-center py-2 transition-colors cursor-pointer"
                     >
                       Print for display
                     </button>

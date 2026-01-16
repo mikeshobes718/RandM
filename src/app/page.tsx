@@ -6,8 +6,8 @@ import NewsletterSignup from "../components/NewsletterSignup";
 
 const features = [
   {
-    title: "Review Routing",
-    description: "Happy customers are sent to Google. Unhappy customers give you private feedback first.",
+    title: "Compliant Review Growth",
+    description: "Get more Google reviews the right way. We help happy customers share their experiences while giving you a private channel for feedback.",
     icon: (
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8M8 12h5m4 7h1a2 2 0 012-2v12l-4-2-4 2-4-2-4 2V7a2 2 0 012-2h1" />
     )
@@ -23,7 +23,7 @@ const features = [
     title: "Reputation Dashboard",
     description: "Monitor your rating, track new reviews, and organize customer leads from one place.",
     icon: (
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002 2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
     )
   }
 ];
@@ -32,17 +32,17 @@ const steps = [
   {
     num: "01",
     title: "Connect your business",
-    text: "Link your Google Business Profile in seconds. We’ll instantly generate a QR code that leads customers to your Google review page."
+    text: "Link your Google Business Profile in seconds. We’ll instantly generate a custom QR code for your physical location."
   },
   {
     num: "02",
     title: "Share your QR code",
-    text: "Place the QR code around your business. When customers scan it and select five stars, they’re sent to leave a 5-star Google review and prompted to share their contact info for promotions."
+    text: "Place the QR code throughout your business. Customers scan it to choose where to share their feedback—giving them a direct path to Google or a private message to you."
   },
   {
     num: "03",
-    title: "Handle lower ratings",
-    text: "If they choose four stars or fewer, they won’t be directed to Google. Instead, they’ll be asked what went wrong and how to contact them so you can follow up with support, promotions or an apology."
+    title: "Recover unhappy customers",
+    text: "If a customer has a less-than-perfect experience, they can message you privately. You get the chance to fix the issue before it ever becomes a public review."
   },
   {
     num: "04",
@@ -66,20 +66,21 @@ export default function Home() {
               REPUTATION TOOLKIT FOR MODERN BUSINESSES
             </div>
             <h1 className="text-balance mb-8">
-              The smartest way to get <br className="hidden md:block" />
-              <span className="text-brand">5-star </span>
-              <span className="inline-flex">
+              Get more <span className="inline-flex">
                 <span style={{ color: '#4285F4' }}>G</span>
                 <span style={{ color: '#EA4335' }}>o</span>
                 <span style={{ color: '#FBBC05' }}>o</span>
                 <span style={{ color: '#4285F4' }}>g</span>
                 <span style={{ color: '#34A853' }}>l</span>
                 <span style={{ color: '#EA4335' }}>e</span>
-              </span>
-              <span className="text-brand"> reviews.</span>
+              </span> reviews <br className="hidden md:block" />
+              the <span className="text-brand">compliant way.</span>
             </h1>
-            <p className="text-xl text-muted max-w-2xl mx-auto mb-10 text-balance leading-relaxed">
-              Automated review requests, smart QR codes, and a private feedback filter to protect your public rating.
+            <p className="text-xl text-muted max-w-2xl mx-auto mb-6 text-balance leading-relaxed">
+              Get more Google reviews the compliant way + recover unhappy customers privately. More reviews, more insights, fewer surprises.
+            </p>
+            <p className="text-sm text-slate-400 mb-10 font-medium">
+              We don’t incentivize or filter reviews—customers choose what to share.
             </p>
             <HomeCtaButtons variant="hero" />
           </div>
@@ -116,7 +117,7 @@ export default function Home() {
           </div>
           <div className="max-w-3xl mx-auto text-center p-8 bg-white/50 rounded-[32px] border border-brand/10 shadow-sm">
             <p className="text-lg text-slate-600 leading-relaxed italic">
-              "Display the QR code throughout your business. When customers scan it and choose five stars, they’re automatically directed to your Google Reviews page to leave a 5-star review, and also invited to share their contact information for special offers and promotions."
+              "We provide customers a direct path to share their experience. Happy customers are guided to Google, while those with concerns can reach you privately to resolve issues instantly."
             </p>
           </div>
         </div>
@@ -150,7 +151,7 @@ export default function Home() {
               <path d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H16.017C14.9124 8 14.017 7.10457 14.017 6V3L21.017 3V15C21.017 18.3137 18.3307 21 15.017 21H14.017ZM3.0166 21L3.0166 18C3.0166 16.8954 3.91203 16 5.0166 16H8.0166C8.56888 16 9.0166 15.5523 9.0166 15V9C9.0166 8.44772 8.56888 8 8.0166 8H5.0166C3.91203 8 3.0166 7.10457 3.0166 6V3L10.0166 3V15C10.0166 18.3137 7.3303 21 4.0166 21H3.0166Z" />
             </svg>
             <p className="text-2xl md:text-3xl font-medium mb-10 leading-tight text-white">
-              "Our Google rating went from 4.2 to 4.8 in just 3 months. The routing system is a lifesaver—we finally have control over our online reputation."
+              "Our Google rating went from 4.2 to 4.8 in just 3 months. The private feedback channel is a lifesaver—we finally have a way to hear from customers before they post publicly."
             </p>
             <div className="flex items-center justify-center gap-4">
               <div className="text-left">
@@ -165,9 +166,9 @@ export default function Home() {
       {/* Final CTA */}
       <section className="py-24 border-t border-[#e2e8f0]">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="mb-6">Ready to fix your reputation?</h2>
+          <h2 className="mb-6">Ready to improve your reputation?</h2>
           <p className="text-muted mb-10 max-w-xl mx-auto">
-            Join 500+ businesses using Reviews & Marketing to grow their online presence.
+            Join businesses using Reviews & Marketing to grow their online presence the compliant way.
           </p>
             <div className="flex flex-col items-center gap-6">
               <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -198,4 +199,4 @@ export default function Home() {
     </main>
   );
 }
-// force redeploy 4 - timestamp: ${new Date().toISOString()}
+// force redeploy 5 - compliance update

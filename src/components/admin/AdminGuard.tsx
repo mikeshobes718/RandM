@@ -7,7 +7,7 @@ const HARDCODED_ADMINS = ["mikeshobes718@yahoo.com", "volurer295@ovbest.com"];
 const ENV_ADMINS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "").split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
 const ADMIN_EMAILS = Array.from(new Set([...HARDCODED_ADMINS, ...ENV_ADMINS]));
 
-export default function AdminGuard({ children }: { children: ReactNode }) {
+export default function AdminGuard({ children, allowReps = false }: { children: ReactNode, allowReps?: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
@@ -19,14 +19,17 @@ export default function AdminGuard({ children }: { children: ReactNode }) {
         const res = await fetch('/api/auth/me');
         if (!res.ok) {
           console.error('[AdminGuard] Auth check failed:', res.status);
-          router.push('/login?redirect=/admin');
+          router.push('/login?redirect=' + window.location.pathname);
           return;
         }
         const user = await res.json();
-        console.log('[AdminGuard] User logged in as:', user?.email);
+        console.log('[AdminGuard] User logged in as:', user?.email, 'Role:', user?.role);
         
         const userEmail = user?.email?.toLowerCase();
-        if (userEmail && ADMIN_EMAILS.includes(userEmail)) {
+        const isAdmin = userEmail && ADMIN_EMAILS.includes(userEmail);
+        const isRep = user?.role === 'sales_rep';
+
+        if (isAdmin || (allowReps && isRep)) {
           console.log('[AdminGuard] Authorized access for:', userEmail);
           setAuthorized(true);
         } else {
@@ -35,13 +38,13 @@ export default function AdminGuard({ children }: { children: ReactNode }) {
         }
       } catch (err) {
         console.error('[AdminGuard] Unexpected error:', err);
-        router.push('/login?redirect=/admin');
+        router.push('/login?redirect=' + window.location.pathname);
       } finally {
         setLoading(false);
       }
     }
     checkAuth();
-  }, [router]);
+  }, [router, allowReps]);
 
   if (loading) {
     return (

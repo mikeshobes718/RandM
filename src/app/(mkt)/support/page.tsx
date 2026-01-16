@@ -1,7 +1,7 @@
 const FAQS = [
   {
     q: "How does the smart QR code work?",
-    a: "Our smart QR codes dynamically route customers based on their sentiment. Happy customers are sent directly to your Google Business Profile to leave a 5-star review, while others are directed to a private feedback form so you can resolve issues internally.",
+    a: "Our smart QR codes provide a direct path for customers to share their feedback. They can choose to leave a public review on Google or send you a private message to resolve issues internally. We don’t incentivize or filter reviews—customers always choose what to share.",
   },
   {
     q: "Is there a limit to how many review requests I can send?",

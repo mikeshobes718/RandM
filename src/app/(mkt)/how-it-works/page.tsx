@@ -17,7 +17,7 @@ export default function HowItWorks() {
             How Reviews & Marketing Works
           </h1>
           <p className="text-xl text-slate-500 max-w-2xl mx-auto font-medium">
-            A simple, automated system designed to intercept negative sentiment and amplify your 5-star experiences.
+            A simple, compliant system designed to recover unhappy customers privately and amplify your best experiences.
           </p>
         </div>
 
@@ -43,18 +43,15 @@ export default function HowItWorks() {
               </div>
               <div>
                 <h4 className="font-bold text-slate-900">Watch the Walkthrough</h4>
-                <p className="text-xs text-muted font-medium">See how we engineer 5-star reputations.</p>
+                <p className="text-xs text-muted font-medium">See how we build authentic reputations.</p>
               </div>
             </div>
             <div className="flex -space-x-3">
-              {[1,2,3,4].map(i => (
+              {[1,2,3,4,5].map(i => (
                 <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400">
                   {String.fromCharCode(64 + i)}
                 </div>
               ))}
-              <div className="w-10 h-10 rounded-full border-2 border-white bg-brand flex items-center justify-center text-[10px] font-black text-white">
-                +500
-              </div>
             </div>
           </div>
         </div>
@@ -80,16 +77,16 @@ export default function HowItWorks() {
           </div>
           <div className="space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand font-black text-xl">2</div>
-            <h3 className="text-xl font-bold text-slate-900">Filter</h3>
+            <h3 className="text-xl font-bold text-slate-900">Listen</h3>
             <p className="text-slate-500 text-sm leading-relaxed font-medium">
-              Our Smart Routing engine identifies sentiment. 5-stars go to Google; 1-4 stars go to a private feedback form.
+              We don’t incentivize or filter reviews—customers choose what to share. We provide a direct path for praise to Google or private feedback to you.
             </p>
           </div>
           <div className="space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand font-black text-xl">3</div>
-            <h3 className="text-xl font-bold text-slate-900">Convert</h3>
+            <h3 className="text-xl font-bold text-slate-900">Improve</h3>
             <p className="text-slate-500 text-sm leading-relaxed font-medium">
-              Watch your public rating climb while you collect private leads to fix service issues and grow your database.
+              Watch your public rating grow while you collect private insights to fix service issues and build a stronger customer database.
             </p>
           </div>
         </div>
@@ -97,7 +94,7 @@ export default function HowItWorks() {
         {/* CTA */}
         <div className="p-12 bg-slate-900 rounded-[48px] text-center text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-brand/10 blur-3xl rounded-full -mr-32 -mt-32 pointer-events-none"></div>
-          <h2 className="text-3xl font-black mb-6 relative z-10">Ready to start engineering your reputation?</h2>
+          <h2 className="text-3xl font-black mb-6 relative z-10">Ready to start building your reputation?</h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
             <Link href="/register" className="primary-button h-14 px-10 text-lg shadow-xl shadow-brand/20">
               Get Started For Free
@@ -111,4 +108,3 @@ export default function HowItWorks() {
     </main>
   );
 }
-

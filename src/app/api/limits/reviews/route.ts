@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
 import { requireUid } from '@/lib/authServer';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { hasActivePro } from '@/lib/entitlements';
+import { getPlanLimits } from '@/lib/entitlements';
 
 export async function GET() {
   const uid = await requireUid().catch(() => null);
   if (!uid) return new NextResponse('Unauthorized', { status: 401 });
   const supa = getSupabaseAdmin();
-  const pro = await hasActivePro(uid);
-  const limit = pro ? null : 5;
+  const limits = await getPlanLimits(uid);
+  const limit = limits.id === 'pro' ? null : limits.reviewLimit;
+  const pro = limits.id === 'pro';
   let used = 0;
-  if (!pro) {
+  if (limit !== null) {
     const since = new Date();
     since.setUTCDate(1); since.setUTCHours(0,0,0,0);
     const { data: biz } = await supa.from('businesses').select('id').eq('owner_uid', uid);

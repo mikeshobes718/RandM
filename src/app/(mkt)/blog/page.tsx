@@ -9,24 +9,24 @@ const POSTS = [
     isLive: false
   },
   {
-    title: "The 'Review Filter': How Businesses Are Engineering 5-Star Google Ratings",
+    title: "The 'Feedback Loop': How Businesses Are Recovering Customers Privately",
     slug: "the-review-filter",
     date: "Jan 2026",
-    excerpt: "Analysis of the fundamental shift from simply managing reviews to engineering perfect outcomes through smart filtering.",
+    excerpt: "Analysis of the fundamental shift from simply managing reviews to recovering customers through private feedback channels.",
     isLive: true
   },
   {
-    title: "Reputation on Autopilot: Scaling Your 5-Star Growth",
+    title: "Reputation on Autopilot: Scaling Your Growth Compliantly",
     slug: "reputation-on-autopilot",
     date: "Feb 2026",
-    excerpt: "Discover the power of POS integration and how to automate your entire review request workflow for consistent results.",
+    excerpt: "Discover the power of POS integration and how to automate your entire review request workflow while staying fully compliant.",
     isLive: true
   },
   {
     title: "QR design principles that actually drive scans",
     slug: "qr-design",
     date: "April 2026",
-    excerpt: "Placement, incentive framing, and artwork guidelines for high-intent customer journeys.",
+    excerpt: "Placement, choice framing, and artwork guidelines for high-intent customer journeys.",
   },
   {
     title: "Scripts that turn service moments into ⭐⭐⭐⭐⭐ reviews",
@@ -88,3 +88,4 @@ export default function BlogPage() {
     </main>
   );
 }
+// force redeploy - blog compliance

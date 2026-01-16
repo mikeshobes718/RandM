@@ -11,6 +11,7 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({}));
     const billing = (body?.plan as 'monthly'|'yearly') || 'monthly';
     const tier = (body?.tier as 'mid'|'pro') || 'pro';
+    const hasConcierge = Boolean(body?.concierge);
     const env = getEnv();
     // Prefer authenticated uid/email from server if available
     let uid = '';
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
         return new NextResponse('Authentication required', { status: 401 });
       }
     }
-    const { STRIPE_PRICE_ID, STRIPE_YEARLY_PRICE_ID, STRIPE_MID_PRICE_ID, STRIPE_MID_YEARLY_PRICE_ID, APP_URL, STRIPE_SECRET_KEY } = env;
+    const { STRIPE_PRICE_ID, STRIPE_YEARLY_PRICE_ID, STRIPE_MID_PRICE_ID, STRIPE_MID_YEARLY_PRICE_ID, STRIPE_CONCIERGE_PRICE_ID, APP_URL, STRIPE_SECRET_KEY } = env;
     const stripe = getStripeClient();
     
     let priceId = '';
@@ -59,75 +60,61 @@ export async function POST(req: Request) {
 
     const modeLabel = STRIPE_SECRET_KEY.startsWith('sk_live') ? 'live' : 'test';
 
-    const fallbackLineItem: Stripe.Checkout.SessionCreateParams.LineItem = {
-      price_data: {
-        currency: 'usd',
-        unit_amount: tier === 'mid' 
-          ? (billing === 'yearly' ? 29988 : 2999) 
-          : (billing === 'yearly' ? 47988 : 4999),
-        recurring: { interval: (billing === 'yearly' ? 'year' : 'month') as 'month' | 'year' },
-        product_data: {
-          name: tier === 'mid' ? 'Small Business' : 'Unlimited',
-          description: billing === 'yearly' ? 'Annual subscription billed yearly' : 'Monthly subscription billed monthly',
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+
+    // 1. Subscription Line Item
+    if (priceId) {
+      lineItems.push({ price: priceId, quantity: 1 });
+    } else {
+      // Fallback
+      lineItems.push({
+        price_data: {
+          currency: 'usd',
+          unit_amount: tier === 'mid' 
+            ? (billing === 'yearly' ? 39000 : 3900) 
+            : (billing === 'yearly' ? 79000 : 7900),
+          recurring: { interval: (billing === 'yearly' ? 'year' : 'month') as 'month' | 'year' },
+          product_data: {
+            name: tier === 'mid' ? 'Small Business' : 'Unlimited',
+            description: billing === 'yearly' ? 'Annual subscription billed yearly' : 'Monthly subscription billed monthly',
+          },
         },
-      },
-      quantity: 1 as const,
-    };
-
-    const preferredLineItem: Stripe.Checkout.SessionCreateParams.LineItem | null = priceId
-      ? { price: priceId, quantity: 1 as const }
-      : null;
-
-    const createSession = async (lineItem: Stripe.Checkout.SessionCreateParams.LineItem) =>
-      stripe.checkout.sessions.create({
-        mode: 'subscription',
-        success_url: `${APP_URL}/post-checkout?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${APP_URL}/pricing?canceled=1`,
-        line_items: [lineItem],
-        customer_email: email || undefined,
-        metadata: { uid, billing, tier, mode: modeLabel },
-        client_reference_id: uid || undefined,
-        allow_promotion_codes: true,
+        quantity: 1,
       });
-
-    let session: Stripe.Checkout.Session;
-    let usedFallback = false;
-
-    try {
-      const initialLineItem = preferredLineItem ?? fallbackLineItem;
-      console.log('[STRIPE CHECKOUT] Creating session with preferred line item', { uid, billing, priceId });
-      session = await createSession(initialLineItem);
-    } catch (error) {
-      const stripeError = error as Stripe.errors.StripeError;
-      const message = stripeError?.message || String(error);
-      const isPriceError =
-        message.includes('No such price') ||
-        message.includes('test mode key') ||
-        message.includes('You provided a testmode key') ||
-        message.includes('You cannot provide a price') ||
-        stripeError?.code === 'resource_missing';
-
-      if (!isPriceError && preferredLineItem) {
-        console.error('[STRIPE CHECKOUT] Failed to create session with preferred price ID', {
-          billing,
-          priceId,
-          code: stripeError?.code,
-          message,
-        });
-        throw error;
-      }
-
-      console.warn('[STRIPE CHECKOUT] Falling back to inline price data for checkout', {
-        billing,
-        priceId,
-        code: stripeError?.code,
-        message,
-      });
-      session = await createSession(fallbackLineItem);
-      usedFallback = true;
     }
 
-    console.log('[STRIPE CHECKOUT] Session created', { sessionId: session.id, usedFallback, billing, uid });
+    // 2. Optional Concierge Add-on
+    if (hasConcierge) {
+      if (STRIPE_CONCIERGE_PRICE_ID) {
+        lineItems.push({ price: STRIPE_CONCIERGE_PRICE_ID, quantity: 1 });
+      } else {
+        // Fallback for one-time fee
+        lineItems.push({
+          price_data: {
+            currency: 'usd',
+            unit_amount: 2900,
+            product_data: {
+              name: 'Concierge Launch',
+              description: 'One-time setup assistance',
+            },
+          },
+          quantity: 1,
+        });
+      }
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      success_url: `${APP_URL}/post-checkout?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${APP_URL}/pricing?canceled=1`,
+      line_items: lineItems,
+      customer_email: email || undefined,
+      metadata: { uid, billing, tier, mode: modeLabel, concierge: String(hasConcierge) },
+      client_reference_id: uid || undefined,
+      allow_promotion_codes: true,
+    });
+
+    console.log('[STRIPE CHECKOUT] Session created', { sessionId: session.id, billing, uid, hasConcierge });
 
     return NextResponse.json({ url: session.url, id: session.id });
   } catch (error) {

@@ -5,11 +5,11 @@ const CONTROLS = [
   },
   {
     title: 'Application security',
-    body: 'Least-privilege access, mandatory MFA for internal tooling, and regular third-party penetration tests. Sensitive credentials live in managed secret stores with automatic rotation.',
+    body: 'Least-privilege access, mandatory MFA for internal tooling, and periodic security reviews. Sensitive credentials live in managed secret stores with automatic rotation.',
   },
   {
     title: 'Compliance & privacy',
-    body: 'We follow SOC 2 aligned controls, maintain detailed audit logs, and honor data processing agreements. Customer data never leaves our trusted sub-processors without consent.',
+    body: 'We follow industry-standard security practices, maintain detailed audit logs, and honor data processing agreements. Customer data never leaves our trusted sub-processors without consent.',
   },
 ];
 
@@ -52,3 +52,4 @@ export default function SecurityPage() {
     </main>
   );
 }
+// force redeploy - security softening
