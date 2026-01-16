@@ -170,7 +170,16 @@ function LandingClientContent({ id }: { id: string }) {
     
     sendEvent('google_opened', { sentiment: sentiment || 'positive', rating: 5, metadata: { planned_rating: 5 } });
     sendEvent('flow_completed', { metadata: { destination: 'google', sentiment: sentiment || 'positive', planned_rating: 5 } });
-    const url = biz.reviewLink.startsWith('http') ? biz.reviewLink : `https://${biz.reviewLink}`;
+    
+    let url = biz.reviewLink.startsWith('http') ? biz.reviewLink : `https://${biz.reviewLink}`;
+    
+    // Force 5 stars for the happy path
+    if (url.includes('placeid=') && !url.includes(',')) {
+      url = `${url},5`;
+    } else if (url.includes('placeid=') && /,\d$/.test(url)) {
+      url = url.replace(/,\d$/, ',5');
+    }
+
     window.open(url, '_blank', 'noopener,noreferrer');
   }, [biz, email, phone, name, entrySource, sendEvent, sentiment]);
 
@@ -204,7 +213,16 @@ function LandingClientContent({ id }: { id: string }) {
 
     sendEvent('google_opened', { sentiment: plannedRating >= 4 ? 'positive' : 'negative', rating: plannedRating, metadata: { planned_rating: plannedRating } });
     sendEvent('flow_completed', { metadata: { destination: 'google_from_feedback', sentiment: plannedRating >= 4 ? 'positive' : 'negative', planned_rating: plannedRating } });
-    const url = biz.reviewLink.startsWith('http') ? biz.reviewLink : `https://${biz.reviewLink}`;
+    
+    let url = biz.reviewLink.startsWith('http') ? biz.reviewLink : `https://${biz.reviewLink}`;
+    
+    // Inject the planned rating
+    if (url.includes('placeid=') && !url.includes(',')) {
+      url = `${url},${plannedRating}`;
+    } else if (url.includes('placeid=') && /,\d$/.test(url)) {
+      url = url.replace(/,\d$/, `,${plannedRating}`);
+    }
+
     window.open(url, '_blank', 'noopener,noreferrer');
     setShowRatingPrompt(false);
   }, [biz, comment, email, phone, name, entrySource, sendEvent, plannedRating]);
