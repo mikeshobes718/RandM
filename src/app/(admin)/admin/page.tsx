@@ -24,14 +24,14 @@ export default function AdminOverview() {
   const stats = useMemo(() => {
     if (!metrics) return [];
     return [
-      { label: "MRR", value: `$${metrics.mrr.toLocaleString()}`, color: "text-brand" },
-      { label: "Active Customers", value: metrics.activeCustomers, color: "text-slate-900" },
-      { label: "Active Reps", value: metrics.activeReps, color: "text-slate-900" },
-      { label: "Closes This Week", value: metrics.closesThisWeek, color: "text-emerald-500" },
+      { label: "MRR", value: `$${(metrics.mrr || 0).toLocaleString()}`, color: "text-brand" },
+      { label: "Active Customers", value: metrics.activeCustomers || 0, color: "text-slate-900" },
+      { label: "Active Reps", value: metrics.activeReps || 0, color: "text-slate-900" },
+      { label: "Closes This Week", value: metrics.closesThisWeek || 0, color: "text-emerald-500" },
       { label: "Commissions Owed", value: `$${(metrics.commissionsOwed || 0).toLocaleString()}`, color: "text-amber-500" },
       { label: "Calls Today", value: metrics.callsToday || 0, color: "text-indigo-500" },
       { label: "Calls This Week", value: metrics.callsThisWeek || 0, color: "text-indigo-500" },
-      { label: "Call-to-Close", value: metrics.totalCalls > 0 ? `${((metrics.totalCloses / metrics.totalCalls) * 100).toFixed(1)}%` : '0%', color: "text-rose-500" },
+      { label: "Call-to-Close", value: (metrics.totalCalls || 0) > 0 ? `${(((metrics.totalCloses || 0) / metrics.totalCalls) * 100).toFixed(1)}%` : '0%', color: "text-rose-500" },
     ];
   }, [metrics]);
 
@@ -84,24 +84,28 @@ export default function AdminOverview() {
             <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">
               <h4 className="text-sm font-black text-slate-900 mb-4 uppercase tracking-widest">Active Rep Performance</h4>
               <div className="space-y-4">
-                {metrics?.repActivity?.map((rep: any) => {
-                  const maxCalls = Math.max(...metrics.repActivity.map((r: any) => parseInt(r.call_count) || 1));
-                  const percentage = (parseInt(rep.call_count) / maxCalls) * 100;
-                  return (
-                    <div key={rep.name} className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-bold text-slate-600">{rep.name}</p>
-                        <p className="text-sm font-black text-slate-900">{rep.call_count} calls</p>
+                {metrics?.repActivity && metrics.repActivity.length > 0 ? (
+                  metrics.repActivity.map((rep: any) => {
+                    const maxCalls = Math.max(...metrics.repActivity.map((r: any) => parseInt(r.call_count) || 1));
+                    const percentage = (parseInt(rep.call_count) / maxCalls) * 100;
+                    return (
+                      <div key={rep.name} className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-bold text-slate-600">{rep.name}</p>
+                          <p className="text-sm font-black text-slate-900">{rep.call_count} calls</p>
+                        </div>
+                        <div className="h-2 bg-slate-50 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-brand transition-all duration-1000" 
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
                       </div>
-                      <div className="h-2 bg-slate-50 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-brand transition-all duration-1000" 
-                          style={{ width: `${percentage}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  );
-                }) || <p className="text-xs text-slate-400 italic">No activity logged this week.</p>}
+                    );
+                  })
+                ) : (
+                  <p className="text-xs text-slate-400 italic">No activity logged this week.</p>
+                )}
               </div>
             </div>
             <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">

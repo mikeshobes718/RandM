@@ -6,6 +6,16 @@ export async function GET() {
   if (!pool) return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
 
   try {
+    // Check if tables exist
+    const { rows: tableCheck } = await pool.query("SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'reps'");
+    if (tableCheck.length === 0) {
+      return NextResponse.json({ 
+        error: 'Database tables are missing. Please run migrations.',
+        mrr: 0, activeCustomers: 0, activeReps: 0, closesThisWeek: 0, commissionsOwed: 0, 
+        callsToday: 0, callsThisWeek: 0, totalCalls: 0, totalCloses: 0, repActivity: []
+      });
+    }
+
     // 1. MRR (sum of active subscriptions)
     const mrrRes = await pool.query(`
       SELECT SUM(CASE 
