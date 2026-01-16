@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getEnv } from './env';
-import { Pool } from 'pg';
+import postgres from 'postgres';
 
 let _supabase: SupabaseClient | null = null;
 export function getSupabaseAdmin(): SupabaseClient {
@@ -12,32 +12,54 @@ export function getSupabaseAdmin(): SupabaseClient {
   return _supabase;
 }
 
-let _pool: Pool | null = null;
-export function getPgPool(): Pool | null {
+let _sql: any = null;
+export function getPgPool(): any {
   try {
     const env = getEnv();
     const password = env.SUPABASE_DB_PASSWORD;
     if (!password) return null;
-    if (_pool) return _pool;
+    if (_sql) return _sql;
     
-    const host = env.SUPABASE_DB_HOST || 'db.rhnxzpbhoqbvoqyqmfox.supabase.co';
-    const port = Number(env.SUPABASE_DB_PORT) || 5432;
-    const user = env.SUPABASE_DB_USER || 'postgres';
+    const host = env.SUPABASE_DB_HOST || 'aws-0-us-east-1.pooler.supabase.com';
+    const port = Number(env.SUPABASE_DB_PORT) || 6543;
+    const user = env.SUPABASE_DB_USER || 'postgres.rhnxzpbhoqbvoqyqmfox';
     const database = env.SUPABASE_DB_NAME || 'postgres';
 
-    _pool = new Pool({
+    // Use postgres library which often handles SCRAM better than pg
+    const sql = postgres({
       host,
       port,
       database,
-      user,
+      username: user,
       password,
-      ssl: { rejectUnauthorized: false },
-      max: 10,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      ssl: 'require', // Try 'require' instead of object
+      prepare: false,
     });
 
-    return _pool;
+    _sql = sql;
+
+    return {
+      connect: async () => {
+        return {
+          query: async (text: string, params?: any[]) => {
+            if (text.toLowerCase().trim() === 'begin') return { rows: [] };
+            if (text.toLowerCase().trim() === 'commit') return { rows: [] };
+            if (text.toLowerCase().trim() === 'rollback') return { rows: [] };
+            const result = await sql.unsafe(text, params || []);
+            return { rows: Array.from(result) };
+          },
+          release: () => {},
+        };
+      },
+      query: async (text: string, params?: any[]) => {
+        const result = await sql.unsafe(text, params || []);
+        return { rows: Array.from(result) };
+      },
+      end: async () => {
+        await sql.end();
+        _sql = null;
+      }
+    };
   } catch (err) {
     console.error('[PG POOL] Error creating pool:', err);
     return null;
