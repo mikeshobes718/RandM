@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getEnv } from './env';
-import { Pool } from 'pg';
+import postgres from 'postgres';
 
 let _supabase: SupabaseClient | null = null;
 export function getSupabaseAdmin(): SupabaseClient {
@@ -12,35 +12,60 @@ export function getSupabaseAdmin(): SupabaseClient {
   return _supabase;
 }
 
-let _pool: Pool | null = null;
-export function getPgPool(): Pool | null {
-  try {
-    const env = getEnv();
-    const password = env.SUPABASE_DB_PASSWORD;
-    if (!password) return null;
-    if (_pool) return _pool;
-    
-    const host = env.SUPABASE_DB_HOST || 'aws-0-us-east-1.pooler.supabase.com';
-    const port = Number(env.SUPABASE_DB_PORT) || 6543;
-    const user = env.SUPABASE_DB_USER || 'postgres.rhnxzpbhoqbvoqyqmfox';
-    const database = env.SUPABASE_DB_NAME || 'postgres';
+let _sql: any = null;
+export function getSql() {
+  if (_sql) return _sql;
+  const env = getEnv();
+  const password = env.SUPABASE_DB_PASSWORD;
+  if (!password) return null;
 
-    // Best combination for Supabase + pg + SCRAM
-    const connectionString = `postgresql://${user}:${encodeURIComponent(password)}@${host}:${port}/${database}?sslmode=require`;
+  const host = env.SUPABASE_DB_HOST || 'aws-0-us-east-1.pooler.supabase.com';
+  const port = Number(env.SUPABASE_DB_PORT) || 6543;
+  const user = env.SUPABASE_DB_USER || 'postgres.rhnxzpbhoqbvoqyqmfox';
+  const database = env.SUPABASE_DB_NAME || 'postgres';
 
-    _pool = new Pool({
-      connectionString,
-      ssl: { 
-        rejectUnauthorized: false 
-      },
-      max: 10,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
-    });
+  _sql = postgres({
+    host,
+    port,
+    database,
+    username: user,
+    password,
+    ssl: 'require',
+    prepare: false, // Required for Supabase transaction pooler
+  });
 
-    return _pool;
-  } catch (err) {
-    console.error('[PG POOL] Error creating pool:', err);
-    return null;
-  }
+  return _sql;
+}
+
+/**
+ * @deprecated Use getSql() instead. Maintaining this for migrations.ts compatibility.
+ */
+export function getPgPool(): any {
+  const sql = getSql();
+  if (!sql) return null;
+
+  return {
+    connect: async () => {
+      return {
+        query: async (text: string, params?: any[]) => {
+          // Simplistic adapter for migrations.ts
+          if (text.toLowerCase() === 'begin') { await sql`BEGIN`; return { rows: [] }; }
+          if (text.toLowerCase() === 'commit') { await sql`COMMIT`; return { rows: [] }; }
+          if (text.toLowerCase() === 'rollback') { await sql`ROLLBACK`; return { rows: [] }; }
+          
+          const result = await sql.unsafe(text, params || []);
+          return { rows: result, count: result.length };
+        },
+        release: () => {},
+      };
+    },
+    query: async (text: string, params?: any[]) => {
+      const result = await sql.unsafe(text, params || []);
+      return { rows: result, count: result.length };
+    },
+    end: async () => {
+      await sql.end();
+      _sql = null;
+    }
+  };
 }

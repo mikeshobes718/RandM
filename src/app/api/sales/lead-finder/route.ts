@@ -16,9 +16,72 @@ export async function GET(req: Request) {
   const supa = getSupabaseAdmin();
 
   try {
-    let leads: any[] = [];
+    const location = [city, state, country].filter(Boolean).join(', ');
+    const searchQuery = query || (location && type ? `${type} in ${location}` : null);
+    if (!searchQuery) return new NextResponse('Missing query or location', { status: 400 });
 
-    // If city and type are provided, try querying our database first
+    // 1. Live Search from Google
+    const places = await searchBusinesses(searchQuery);
+    
+    // 2. Filter by rating and fetch details (phone/website)
+    const filteredPlaces = places
+      .filter((p: any) => p.rating != null && p.rating <= maxRating)
+      .slice(0, 40); // Limit for performance
+
+    const placesWithDetails = await Promise.all(
+      filteredPlaces.map(async (p: any) => {
+        try {
+          const details = await getPlaceDetails(p.id);
+          return {
+            ...p,
+            phone: details.nationalPhoneNumber || details.internationalPhoneNumber || p.nationalPhoneNumber || p.internationalPhoneNumber || null,
+            googleMapsUri: details.googleMapsUri || p.googleMapsUri,
+            website: details.websiteUri || null,
+          };
+        } catch (e) {
+          return { ...p, phone: p.nationalPhoneNumber || p.internationalPhoneNumber || null, website: null };
+        }
+      })
+    );
+
+    // 3. Check our DB for these leads to get call history
+    const googlePlaceIds = placesWithDetails.map(p => p.id);
+    let dbLeadsMap = new Map();
+    
+    if (googlePlaceIds.length > 0) {
+      const { data: dbLeads } = await supa
+        .from('leads')
+        .select('*')
+        .in('google_place_id', googlePlaceIds);
+      
+      if (dbLeads) {
+        dbLeads.forEach(l => dbLeadsMap.set(l.google_place_id, l));
+      }
+    }
+
+    // 4. Merge Data
+    let combinedLeads = placesWithDetails.map((p: any) => {
+      const dbLead = dbLeadsMap.get(p.id);
+      return {
+        id: p.id,
+        dbId: dbLead?.id || null,
+        name: p.displayName?.text || 'Unknown',
+        address: p.formattedAddress,
+        rating: p.rating,
+        reviewCount: p.userRatingCount || 0,
+        type: type || (p.primaryType ? p.primaryType.replace(/_/g, ' ') : p.types?.[0]?.replace(/_/g, ' ')),
+        phone: dbLead?.phone || p.phone || 'No Phone',
+        googleMapsUrl: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
+        website: dbLead?.website || p.website || null,
+        timesCalled: dbLead?.times_called || 0,
+        lastCalledAt: dbLead?.last_called_at || null,
+        callStatus: dbLead?.call_status || 'fresh',
+        nextFollowup: dbLead?.next_followup || null,
+        notes: dbLead?.lead_notes || null,
+      };
+    });
+
+    // 5. Also add any leads from our DB for this city/type that WEREN'T in the Google search
     if (city && type) {
       let dbQuery = supa
         .from('leads')
@@ -27,13 +90,14 @@ export async function GET(req: Request) {
         .eq('city', city.toLowerCase())
         .lte('rating', maxRating);
       
-      if (state) dbQuery = dbQuery.eq('state', state);
-      if (country) dbQuery = dbQuery.eq('country', country);
+      if (googlePlaceIds.length > 0) {
+        dbQuery = dbQuery.not('google_place_id', 'in', `(${googlePlaceIds.join(',')})`);
+      }
       
-      const { data: dbLeads, error: dbError } = await dbQuery.order('rating', { ascending: true });
+      const { data: extraDbLeads } = await dbQuery.limit(50);
 
-      if (!dbError && dbLeads && dbLeads.length > 0) {
-        leads = dbLeads.map(l => ({
+      if (extraDbLeads && extraDbLeads.length > 0) {
+        const extraLeads = extraDbLeads.map(l => ({
           id: l.google_place_id,
           dbId: l.id,
           name: l.name,
@@ -50,74 +114,13 @@ export async function GET(req: Request) {
           nextFollowup: l.next_followup,
           notes: l.lead_notes,
         }));
+        combinedLeads = [...combinedLeads, ...extraLeads];
       }
     }
 
-    // If no leads found in DB, fallback to live search
-    if (leads.length === 0) {
-      const location = [city, state, country].filter(Boolean).join(', ');
-      const searchQuery = query || (location && type ? `${type} in ${location}` : null);
-      if (!searchQuery) return new NextResponse('Missing query or location', { status: 400 });
-
-      const places = await searchBusinesses(searchQuery);
-      // Fetch details for places without phone numbers to get complete data
-      const placesWithDetails = await Promise.all(
-        places
-          .filter((p: any) => p.rating != null && p.rating <= maxRating)
-          .slice(0, 50) // Limit to avoid too many API calls
-          .map(async (p: any) => {
-            // If we already have phone from search, use it (but still fetch details for website)
-            if (p.nationalPhoneNumber || p.internationalPhoneNumber) {
-              // Still fetch details to get website
-              try {
-                const details = await getPlaceDetails(p.id);
-                return {
-                  ...p,
-                  phone: p.nationalPhoneNumber || p.internationalPhoneNumber,
-                  googleMapsUri: details.googleMapsUri || p.googleMapsUri,
-                  website: details.websiteUri || null,
-                };
-              } catch (e) {
-                return {
-                  ...p,
-                  phone: p.nationalPhoneNumber || p.internationalPhoneNumber,
-                  website: null,
-                };
-              }
-            }
-            // Otherwise fetch details to get phone number and website
-            try {
-              const details = await getPlaceDetails(p.id);
-              return {
-                ...p,
-                phone: details.nationalPhoneNumber || details.internationalPhoneNumber || null,
-                googleMapsUri: details.googleMapsUri || p.googleMapsUri,
-                website: details.websiteUri || null,
-              };
-            } catch (e) {
-              return { ...p, phone: null, website: null };
-            }
-          })
-      );
-      
-      leads = placesWithDetails.map((p: any) => ({
-        id: p.id,
-        name: p.displayName?.text || 'Unknown',
-        address: p.formattedAddress,
-        rating: p.rating,
-        reviewCount: p.userRatingCount || 0,
-        type: type || (p.primaryType ? p.primaryType.replace(/_/g, ' ') : p.types?.[0]?.replace(/_/g, ' ')),
-        phone: p.phone || 'No Phone',
-        googleMapsUrl: p.googleMapsUri || `https://www.google.com/maps/place/?q=place_id:${p.id}`,
-        website: p.website || null,
-      }))
-      .sort((a: any, b: any) => a.rating - b.rating);
-    }
-
-    return NextResponse.json({ leads });
+    return NextResponse.json({ leads: combinedLeads.sort((a: any, b: any) => a.rating - b.rating) });
   } catch (error) {
     console.error('[LEAD FINDER API] Error:', error);
     return new NextResponse('Internal error', { status: 500 });
   }
 }
-
