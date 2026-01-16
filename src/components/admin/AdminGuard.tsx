@@ -3,7 +3,9 @@
 import { useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
-const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "mikeshobes718@yahoo.com,volurer295@ovbest.com").split(',').map(e => e.trim().toLowerCase());
+const HARDCODED_ADMINS = ["mikeshobes718@yahoo.com", "volurer295@ovbest.com"];
+const ENV_ADMINS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "").split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+const ADMIN_EMAILS = Array.from(new Set([...HARDCODED_ADMINS, ...ENV_ADMINS]));
 
 export default function AdminGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -13,18 +15,26 @@ export default function AdminGuard({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function checkAuth() {
       try {
+        console.log('[AdminGuard] Checking authorization...');
         const res = await fetch('/api/auth/me');
         if (!res.ok) {
+          console.error('[AdminGuard] Auth check failed:', res.status);
           router.push('/login?redirect=/admin');
           return;
         }
         const { user } = await res.json();
-        if (user && ADMIN_EMAILS.includes(user.email?.toLowerCase())) {
+        console.log('[AdminGuard] User logged in as:', user?.email);
+        
+        const userEmail = user?.email?.toLowerCase();
+        if (userEmail && ADMIN_EMAILS.includes(userEmail)) {
+          console.log('[AdminGuard] Authorized access for:', userEmail);
           setAuthorized(true);
         } else {
+          console.warn('[AdminGuard] Unauthorized access attempt:', userEmail);
           router.push('/');
         }
       } catch (err) {
+        console.error('[AdminGuard] Unexpected error:', err);
         router.push('/login?redirect=/admin');
       } finally {
         setLoading(false);
