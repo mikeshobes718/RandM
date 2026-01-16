@@ -35,6 +35,7 @@ export async function GET(req: Request) {
       if (!dbError && dbLeads && dbLeads.length > 0) {
         leads = dbLeads.map(l => ({
           id: l.google_place_id,
+          dbId: l.id,
           name: l.name,
           address: l.address,
           rating: l.rating,
@@ -43,6 +44,11 @@ export async function GET(req: Request) {
           phone: l.phone,
           googleMapsUrl: l.google_maps_url,
           website: l.website,
+          timesCalled: l.times_called || 0,
+          lastCalledAt: l.last_called_at,
+          callStatus: l.call_status || 'fresh',
+          nextFollowup: l.next_followup,
+          notes: l.lead_notes,
         }));
       }
     }

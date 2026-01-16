@@ -1,43 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-const MOCK_REP = {
-  id: "1",
-  name: "Maria Lopez",
-  status: "Active",
-  startDate: "Dec 1, 2025",
-  leadsAssigned: 142,
-  callsLogged: 840,
-  closes: 24,
-  commissionEarned: "$1,200",
-  commissionOwed: "$450",
-  lastActive: "2 min ago",
-  email: "maria.l@example.com",
-  whatsapp: "+1 234 567 8900",
-  paymentMethod: "Wise",
-  paymentId: "maria_wise_77",
-  notes: "Top performing rep for the Northeast region. High conversion rate on dental leads.",
-};
-
-const MOCK_CLOSES = [
-  { id: "c1", businessName: "Smile Dental", plan: "Pro", date: "Jan 12, 2026", amount: "$50" },
-  { id: "c2", businessName: "Joe's Pizza", plan: "Unlimited", date: "Dec 10, 2025", amount: "$100" },
-  { id: "c3", businessName: "Elite Body Shop", plan: "Pro", date: "Jan 5, 2026", amount: "$50" },
-];
-
-const MOCK_CALLS = [
-  { id: "cl1", businessName: "Pizza Palace", date: "2 hours ago", status: "Called", notes: "No answer, left voicemail." },
-  { id: "cl2", businessName: "Sparkle Dental", date: "3 hours ago", status: "Follow-up", notes: "Interested, call back Friday." },
-  { id: "cl3", businessName: "Tire World", date: "Yesterday", status: "Called", notes: "Busy, call back next week." },
-];
-
 export default function AdminRepDetail() {
-  const params = useParams();
-  const id = params?.id as string;
+  const params = useParams() as any;
+  const id = params?.id;
+  const [rep, setRep] = useState<any>(null);
+  const [closes, setCloses] = useState<any[]>([]);
+  const [calls, setCalls] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Closes");
+
+  useEffect(() => {
+    async function fetchRepData() {
+      if (!id) return;
+      try {
+        const [repRes, callsRes] = await Promise.all([
+          fetch(`/api/admin/reps/${id}`),
+          fetch(`/api/admin/reps/${id}/calls`)
+        ]);
+        const repData = await repRes.json();
+        const callsData = await callsRes.json();
+        
+        setRep(repData.rep);
+        setCloses(repData.closes || []);
+        setCalls(callsData.calls || []);
+      } catch (err) {
+        console.error('Failed to fetch rep data:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRepData();
+  }, [id]);
+
+  if (loading) return <div className="p-12 text-center font-black animate-pulse text-white">LOADING REP DETAILS...</div>;
+  if (!rep) return <div className="p-12 text-center font-black text-white">REP NOT FOUND</div>;
+
+  const totalCalls = calls.length;
+  const totalCloses = closes.length;
+  const closeRate = totalCalls > 0 ? ((totalCloses / totalCalls) * 100).toFixed(1) : "0";
 
   return (
     <div className="space-y-10 animate-fade-in">
@@ -52,10 +56,12 @@ export default function AdminRepDetail() {
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight">{MOCK_REP.name}</h1>
-              <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-wider">{MOCK_REP.status}</span>
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight">{rep.name}</h1>
+              <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                rep.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
+              }`}>{rep.status}</span>
             </div>
-            <p className="text-slate-500 font-medium mt-1">Rep ID: {id} • Joined {MOCK_REP.startDate}</p>
+            <p className="text-slate-500 font-medium mt-1">Rep ID: {id} • Joined {new Date(rep.start_date).toLocaleDateString()}</p>
           </div>
         </div>
         <div className="flex gap-3">
@@ -67,12 +73,12 @@ export default function AdminRepDetail() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
         {[
-          { label: "Leads Assigned", value: MOCK_REP.leadsAssigned },
-          { label: "Calls Logged", value: MOCK_REP.callsLogged },
-          { label: "Total Closes", value: MOCK_REP.closes },
-          { label: "Close Rate", value: ((MOCK_REP.closes / MOCK_REP.callsLogged) * 100).toFixed(1) + "%" },
-          { label: "Total Earned", value: MOCK_REP.commissionEarned, color: "text-slate-900" },
-          { label: "Pending Payout", value: MOCK_REP.commissionOwed, color: "text-brand" },
+          { label: "Leads Assigned", value: rep.leads_assigned || 0 },
+          { label: "Total Calls", value: totalCalls },
+          { label: "Total Closes", value: totalCloses },
+          { label: "Close Rate", value: closeRate + "%" },
+          { label: "Total Earned", value: `$${(rep.total_earned || 0).toLocaleString()}`, color: "text-slate-900" },
+          { label: "Pending Payout", value: `$${(rep.pending_payout || 0).toLocaleString()}`, color: "text-brand" },
         ].map(stat => (
           <div key={stat.label} className="bg-white p-6 rounded-3xl border border-slate-50 shadow-lg shadow-slate-200/40">
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{stat.label}</p>
@@ -89,17 +95,17 @@ export default function AdminRepDetail() {
             <div className="space-y-6">
               <div>
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Email</label>
-                <p className="text-sm font-bold text-slate-700">{MOCK_REP.email}</p>
+                <p className="text-sm font-bold text-slate-700">{rep.email}</p>
               </div>
               <div>
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">WhatsApp</label>
-                <p className="text-sm font-bold text-slate-700">{MOCK_REP.whatsapp}</p>
+                <p className="text-sm font-bold text-slate-700">{rep.whatsapp || 'Not provided'}</p>
               </div>
               <div className="pt-4 border-t border-slate-50">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Payment Method</label>
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 rounded-md bg-slate-100 text-[10px] font-black uppercase text-slate-600">{MOCK_REP.paymentMethod}</span>
-                  <p className="text-sm font-bold text-slate-900">{MOCK_REP.paymentId}</p>
+                  <span className="px-2 py-1 rounded-md bg-slate-100 text-[10px] font-black uppercase text-slate-600">{rep.payment_method || 'None'}</span>
+                  <p className="text-sm font-bold text-slate-900">{rep.payment_id || '-'}</p>
                 </div>
               </div>
             </div>
@@ -113,18 +119,10 @@ export default function AdminRepDetail() {
                 <div className="flex gap-2">
                   <input 
                     readOnly 
-                    value={`https://reviewsandmarketing.com/register?ref=rep_${id}`}
+                    value={`https://reviewsandmarketing.com/register?ref=${rep.tracking_code}`}
                     className="flex-1 bg-slate-50 border-none rounded-xl px-4 py-3 text-xs font-mono font-bold text-slate-600"
                   />
-                  <button className="p-3 rounded-xl bg-brand text-white hover:scale-105 transition-all">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-2m-6-6L14 7m0 0l-3-3m3 3l3 3m-3-3v10" /></svg>
-                  </button>
                 </div>
-              </div>
-              <div className="pt-4 border-t border-slate-50">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Rep Portal Access</label>
-                <p className="text-xs font-bold text-slate-500">Rep can log in to their dashboard at:</p>
-                <p className="text-xs font-black text-brand mt-1">reviewsandmarketing.com/sales-portal</p>
               </div>
             </div>
           </div>
@@ -133,7 +131,7 @@ export default function AdminRepDetail() {
             <h3 className="text-sm font-black uppercase tracking-widest mb-6">Internal Admin Notes</h3>
             <textarea 
               className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-brand/50 resize-none outline-none transition-all"
-              defaultValue={MOCK_REP.notes}
+              defaultValue={rep.notes}
             ></textarea>
             <button className="w-full mt-4 py-4 rounded-xl bg-brand text-white text-xs font-black uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
               Save Notes
@@ -172,12 +170,14 @@ export default function AdminRepDetail() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {MOCK_CLOSES.map(close => (
+                  {closes.length === 0 ? (
+                    <tr><td colSpan={4} className="px-8 py-8 text-center text-slate-400 italic">No closes yet.</td></tr>
+                  ) : closes.map(close => (
                     <tr key={close.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-8 py-5 font-bold text-slate-900">{close.businessName}</td>
+                      <td className="px-8 py-5 font-bold text-slate-900">{close.business_name}</td>
                       <td className="px-4 py-5 font-bold text-slate-600 text-xs">{close.plan}</td>
-                      <td className="px-4 py-5 text-slate-500 text-sm font-medium">{close.date}</td>
-                      <td className="px-8 py-5 text-right font-black text-emerald-500">{close.amount}</td>
+                      <td className="px-4 py-5 text-slate-500 text-sm font-medium">{new Date(close.signed_up_date).toLocaleDateString()}</td>
+                      <td className="px-8 py-5 text-right font-black text-emerald-500">${close.amount}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -186,15 +186,20 @@ export default function AdminRepDetail() {
 
             {activeTab === 'Call Log' && (
               <div className="p-8 space-y-6">
-                {MOCK_CALLS.map(call => (
+                {calls.length === 0 ? (
+                  <p className="text-center text-slate-400 italic">No calls logged yet.</p>
+                ) : calls.map(call => (
                   <div key={call.id} className="flex gap-4 p-4 rounded-3xl border border-slate-50 hover:bg-slate-50 transition-all">
                     <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 flex-shrink-0">
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="font-bold text-slate-900">{call.businessName}</p>
-                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">• {call.date}</span>
+                        <p className="font-bold text-slate-900">{call.lead_name}</p>
+                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest">• {new Date(call.timestamp).toLocaleString()}</span>
+                        <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                          call.outcome === 'closed' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                        }`}>{call.outcome}</span>
                       </div>
                       <p className="text-sm text-slate-600 font-medium">{call.notes}</p>
                     </div>

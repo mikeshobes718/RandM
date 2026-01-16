@@ -1,17 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-
-const REPS = [
-  { id: "1", name: "Maria Lopez", status: "Active", startDate: "Dec 1, 2025", leads: 142, calls: 840, closes: 24, commission: "$1,200", owed: "$450", lastActive: "2 min ago" },
-  { id: "2", name: "John Smith", status: "Trial", startDate: "Jan 5, 2026", leads: 45, calls: 120, closes: 2, commission: "$100", owed: "$100", lastActive: "1 hour ago" },
-  { id: "3", name: "David Ross", status: "Active", startDate: "Nov 15, 2025", leads: 210, calls: 1150, closes: 31, commission: "$1,550", owed: "$0", lastActive: "3 hours ago" },
-  { id: "4", name: "Sarah Jenkins", status: "Dropped", startDate: "Oct 10, 2025", leads: 80, calls: 300, closes: 5, commission: "$250", owed: "$0", lastActive: "2 months ago" },
-];
+import { useRouter } from "next/navigation";
 
 export default function AdminReps() {
+  const router = useRouter();
+  const [reps, setReps] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    async function fetchReps() {
+      try {
+        const res = await fetch('/api/admin/reps');
+        const data = await res.json();
+        setReps(data.reps || []);
+      } catch (err) {
+        console.error('Failed to fetch reps:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchReps();
+  }, []);
+
+  const filteredReps = reps.filter(rep => {
+    if (filter !== "All" && rep.status?.toLowerCase() !== filter.toLowerCase()) return false;
+    if (search && !rep.name?.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  if (loading) return <div className="p-12 text-center font-black animate-pulse text-white">LOADING REPS...</div>;
 
   return (
     <div className="space-y-10 animate-fade-in">
@@ -53,54 +74,75 @@ export default function AdminReps() {
             <input 
               type="text" 
               placeholder="Search reps..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="h-10 pl-10 pr-4 bg-slate-50 border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-brand/20 w-64 transition-all"
             />
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full text-left">
             <thead>
               <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 bg-slate-50/50">
                 <th className="px-8 py-4 text-left">Name</th>
                 <th className="px-4 py-4 text-left">Status</th>
-                <th className="px-4 py-4 text-left">Start Date</th>
                 <th className="px-4 py-4 text-center">Leads</th>
                 <th className="px-4 py-4 text-center">Calls</th>
                 <th className="px-4 py-4 text-center">Closes</th>
-                <th className="px-4 py-4 text-center">Close Rate</th>
                 <th className="px-4 py-4 text-right">Earned</th>
                 <th className="px-4 py-4 text-right">Owed</th>
-                <th className="px-8 py-4 text-right">Last Active</th>
+                <th className="px-8 py-4 text-right">Flags</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 text-sm">
-              {REPS.map((rep) => (
-                <tr key={rep.id} className="hover:bg-slate-50/50 transition-colors group cursor-pointer">
-                  <td className="px-8 py-5">
-                    <p className="font-bold text-slate-900 group-hover:text-brand transition-colors">{rep.name}</p>
-                  </td>
-                  <td className="px-4 py-5">
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-                      rep.status === 'Active' ? 'bg-emerald-50 text-emerald-600' :
-                      rep.status === 'Trial' ? 'bg-blue-50 text-blue-600' :
-                      'bg-slate-100 text-slate-500'
-                    }`}>
-                      {rep.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-5 text-slate-500 font-medium">{rep.startDate}</td>
-                  <td className="px-4 py-5 text-center font-bold text-slate-700">{rep.leads}</td>
-                  <td className="px-4 py-5 text-center font-bold text-slate-700">{rep.calls}</td>
-                  <td className="px-4 py-5 text-center font-bold text-slate-900">{rep.closes}</td>
-                  <td className="px-4 py-5 text-center font-black text-slate-900">
-                    {((rep.closes / rep.calls) * 100).toFixed(1)}%
-                  </td>
-                  <td className="px-4 py-5 text-right font-bold text-slate-900">{rep.commission}</td>
-                  <td className="px-4 py-5 text-right font-black text-brand">{rep.owed}</td>
-                  <td className="px-8 py-5 text-right text-slate-400 text-xs font-bold">{rep.lastActive}</td>
-                </tr>
-              ))}
+              {filteredReps.map((rep) => {
+                const calls = rep.calls_logged || 0;
+                const closes = rep.closes || 0;
+                
+                // Flag logic
+                const flags = [];
+                if (rep.days_since_active > 3) flags.push({ label: 'Inactive', color: 'bg-red-100 text-red-600' });
+                if (rep.avg_calls_per_day < 10) flags.push({ label: 'Low Activity', color: 'bg-amber-100 text-amber-600' });
+                if (rep.closes_last_7_days >= 3) flags.push({ label: 'Hot Streak', color: 'bg-emerald-100 text-emerald-600' });
+
+                return (
+                  <tr 
+                    key={rep.id} 
+                    onClick={() => router.push(`/admin/reps/${rep.id}`)}
+                    className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
+                  >
+                    <td className="px-8 py-5">
+                      <p className="font-bold text-slate-900 group-hover:text-brand transition-colors">{rep.name}</p>
+                      <p className="text-[10px] text-slate-400 font-medium">{rep.email}</p>
+                    </td>
+                    <td className="px-4 py-5">
+                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                        rep.status === 'active' ? 'bg-emerald-50 text-emerald-600' :
+                        rep.status === 'trial' ? 'bg-blue-50 text-blue-600' :
+                        'bg-slate-100 text-slate-500'
+                      }`}>
+                        {rep.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-5 text-center font-bold text-slate-700">{rep.leads_assigned || 0}</td>
+                    <td className="px-4 py-5 text-center font-bold text-slate-700">{calls}</td>
+                    <td className="px-4 py-5 text-center font-bold text-slate-900">{closes}</td>
+                    <td className="px-4 py-5 text-right font-bold text-slate-900">${(rep.total_earned || 0).toLocaleString()}</td>
+                    <td className="px-4 py-5 text-right font-black text-brand">${(rep.pending_payout || 0).toLocaleString()}</td>
+                    <td className="px-8 py-5 text-right">
+                      <div className="flex justify-end gap-1">
+                        {flags.map(f => (
+                          <span key={f.label} className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${f.color}`}>
+                            {f.label}
+                          </span>
+                        ))}
+                        {flags.length === 0 && <span className="text-slate-300">-</span>}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

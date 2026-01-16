@@ -6,8 +6,32 @@ export async function GET() {
   if (!pool) return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
 
   try {
-    const { rows } = await pool.query('SELECT * FROM reps ORDER BY created_at DESC');
-    return NextResponse.json({ reps: rows });
+    const { rows } = await pool.query(`
+      SELECT 
+        r.id,
+        r.name,
+        r.email,
+        r.status,
+        r.start_date,
+        (SELECT COUNT(*) FROM leads WHERE assigned_to = r.id) as leads_assigned,
+        (SELECT COUNT(*) FROM call_log WHERE rep_id = r.id) as calls_logged,
+        (SELECT COUNT(*) FROM call_log WHERE rep_id = r.id AND timestamp > NOW() - INTERVAL '7 days') as calls_last_7_days,
+        (SELECT COUNT(*) FROM customers WHERE closed_by = r.id) as closes,
+        (SELECT COUNT(*) FROM customers WHERE closed_by = r.id AND signed_up_date > NOW() - INTERVAL '7 days') as closes_last_7_days,
+        (SELECT COALESCE(SUM(amount), 0) FROM commissions WHERE rep_id = r.id) as total_earned,
+        (SELECT COALESCE(SUM(amount), 0) FROM commissions WHERE rep_id = r.id AND status = 'pending') as pending_payout,
+        EXTRACT(EPOCH FROM (NOW() - (SELECT MAX(timestamp) FROM call_log WHERE rep_id = r.id))) / 86400 as days_since_active
+      FROM reps r
+      ORDER BY r.created_at DESC
+    `);
+
+    // Calculate avg calls per day for flags
+    const reps = rows.map(r => ({
+      ...r,
+      avg_calls_per_day: r.calls_logged / (Math.max(1, Math.ceil((new Date().getTime() - new Date(r.start_date).getTime()) / 86400000)))
+    }));
+
+    return NextResponse.json({ reps });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

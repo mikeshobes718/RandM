@@ -1,24 +1,50 @@
 "use client";
 
-import { useMemo } from "react";
-
-const STATS = [
-  { label: "MRR", value: "$12,450", change: "+8%", color: "text-brand" },
-  { label: "Active Customers", value: "248", change: "+12", color: "text-slate-900" },
-  { label: "Active Reps", value: "14", change: "+2", color: "text-slate-900" },
-  { label: "Closes This Week", value: "32", change: "+5", color: "text-emerald-500" },
-  { label: "Commissions Owed", value: "$4,200", change: "-$150", color: "text-amber-500" },
-];
-
-const RECENT_ACTIVITY = [
-  { time: "2 min ago", event: 'Maria closed "Smile Dental"', detail: "$50/mo", type: "close" },
-  { time: "1 hour ago", event: "John logged 15 calls", detail: "NY Area", type: "log" },
-  { time: "3 hours ago", event: 'David closed "Boutique Gym"', detail: "$99/mo", type: "close" },
-  { time: "Yesterday", event: 'Customer "Bright Teeth" churned', detail: "Starter Plan", type: "churn" },
-  { time: "Yesterday", event: "Sarah joined as Trial Rep", detail: "Referral", type: "rep" },
-];
+import { useMemo, useEffect, useState } from "react";
 
 export default function AdminOverview() {
+  const [metrics, setMetrics] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchMetrics() {
+      try {
+        const res = await fetch('/api/admin/overview');
+        const data = await res.json();
+        setMetrics(data);
+      } catch (err) {
+        console.error('Failed to fetch metrics:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMetrics();
+  }, []);
+
+  const stats = useMemo(() => {
+    if (!metrics) return [];
+    return [
+      { label: "MRR", value: `$${metrics.mrr.toLocaleString()}`, color: "text-brand" },
+      { label: "Active Customers", value: metrics.activeCustomers, color: "text-slate-900" },
+      { label: "Active Reps", value: metrics.activeReps, color: "text-slate-900" },
+      { label: "Closes This Week", value: metrics.closesThisWeek, color: "text-emerald-500" },
+      { label: "Commissions Owed", value: `$${(metrics.commissionsOwed || 0).toLocaleString()}`, color: "text-amber-500" },
+      { label: "Calls Today", value: metrics.callsToday || 0, color: "text-indigo-500" },
+      { label: "Calls This Week", value: metrics.callsThisWeek || 0, color: "text-indigo-500" },
+      { label: "Call-to-Close", value: metrics.totalCalls > 0 ? `${((metrics.totalCloses / metrics.totalCalls) * 100).toFixed(1)}%` : '0%', color: "text-rose-500" },
+    ];
+  }, [metrics]);
+
+  const RECENT_ACTIVITY = [
+    { time: "2 min ago", event: 'Maria closed "Smile Dental"', detail: "$50/mo", type: "close" },
+    { time: "1 hour ago", event: "John logged 15 calls", detail: "NY Area", type: "log" },
+    { time: "3 hours ago", event: 'David closed "Boutique Gym"', detail: "$99/mo", type: "close" },
+    { time: "Yesterday", event: 'Customer "Bright Teeth" churned', detail: "Starter Plan", type: "churn" },
+    { time: "Yesterday", event: "Sarah joined as Trial Rep", detail: "Referral", type: "rep" },
+  ];
+
+  if (loading) return <div className="p-12 text-center font-black animate-pulse">LOADING OVERVIEW...</div>;
+
   return (
     <div className="space-y-10 animate-fade-in">
       {/* Header */}
@@ -28,16 +54,13 @@ export default function AdminOverview() {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        {STATS.map((stat) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat) => (
           <div key={stat.label} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-20 h-20 bg-slate-50 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-150 duration-500"></div>
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 relative z-10">{stat.label}</p>
             <div className="flex items-end gap-2 relative z-10">
               <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
-              <p className={`text-[10px] font-black mb-1 px-1.5 py-0.5 rounded ${stat.change.startsWith('+') ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-500'}`}>
-                {stat.change}
-              </p>
             </div>
           </div>
         ))}
@@ -53,24 +76,20 @@ export default function AdminOverview() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-slate-900">Revenue & Closes Chart</h3>
-            <p className="text-sm text-slate-400 font-medium">Coming soon: interactive performance visualizer.</p>
+            <h3 className="text-lg font-bold text-slate-900">Call Activity by Rep</h3>
+            <p className="text-sm text-slate-400 font-medium">Daily call volume tracking per salesperson.</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">
-              <h4 className="text-sm font-black text-slate-900 mb-4 uppercase tracking-widest">Top Reps this week</h4>
+              <h4 className="text-sm font-black text-slate-900 mb-4 uppercase tracking-widest">Active Rep Performance</h4>
               <div className="space-y-4">
-                {[
-                  { name: "Maria L.", closes: 12, amount: "$600" },
-                  { name: "David R.", closes: 9, amount: "$450" },
-                  { name: "Sarah J.", closes: 7, amount: "$350" }
-                ].map(rep => (
+                {metrics?.repActivity?.map((rep: any) => (
                   <div key={rep.name} className="flex items-center justify-between">
                     <p className="text-sm font-bold text-slate-600">{rep.name}</p>
-                    <p className="text-sm font-black text-slate-900">{rep.closes} closes</p>
+                    <p className="text-sm font-black text-slate-900">{rep.call_count} calls <span className="text-slate-400 font-medium ml-1 text-[10px]">(this week)</span></p>
                   </div>
-                ))}
+                )) || <p className="text-xs text-slate-400 italic">No activity logged this week.</p>}
               </div>
             </div>
             <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">
@@ -86,10 +105,10 @@ export default function AdminOverview() {
         </div>
 
         {/* Activity Feed */}
-        <div className="bg-slate-900 rounded-[40px] p-8 text-white relative overflow-hidden">
+        <div className="bg-slate-900 rounded-[40px] p-8 text-white relative overflow-hidden flex flex-col">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
           <h3 className="text-xl font-black mb-8 relative z-10">Recent Activity</h3>
-          <div className="space-y-8 relative z-10">
+          <div className="space-y-8 relative z-10 flex-1">
             {RECENT_ACTIVITY.map((item, i) => (
               <div key={i} className="flex gap-4 group">
                 <div className="flex flex-col items-center">
