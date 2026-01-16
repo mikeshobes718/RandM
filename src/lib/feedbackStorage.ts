@@ -1,13 +1,21 @@
 import { Pool } from 'pg';
 import { getSupabaseAdmin } from './supabaseAdmin';
 
-export type ReviewEventName = 'page_opened' | 'rating_selected' | 'feedback_submitted' | 'google_opened';
+export type ReviewEventName = 
+  | 'page_opened' 
+  | 'rating_selected' 
+  | 'feedback_submitted' 
+  | 'google_opened'
+  | 'flow_completed'
+  | 'sentiment_selected';
 
 const REVIEW_EVENT_SET: Set<ReviewEventName> = new Set([
   'page_opened',
   'rating_selected',
   'feedback_submitted',
   'google_opened',
+  'flow_completed',
+  'sentiment_selected',
 ]);
 
 let ensurePromise: Promise<void> | null = null;
