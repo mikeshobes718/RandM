@@ -44,6 +44,7 @@ export async function GET(req: NextRequest) {
     // Fetch plan status regardless of business existence
     let isPro = false;
     let planStatus = 'none';
+    let subscriptionData: { status: string; plan_id: string | null } | null = null;
     try {
       const { data: subscription } = await supa
         .from('subscriptions')
@@ -52,6 +53,8 @@ export async function GET(req: NextRequest) {
         .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle();
+      
+      subscriptionData = subscription;
       
       // Co-founder override: always PRO
       const { data: userData } = await supa.from('users').select('email').eq('uid', uid).maybeSingle();
@@ -371,7 +374,7 @@ export async function GET(req: NextRequest) {
     let requestsLimit = 100;
     if (planStatus === 'starter') requestsLimit = 3;
     if (planStatus === 'active') {
-      const planId = (subscription?.plan_id || '').toLowerCase();
+      const planId = (subscriptionData?.plan_id || '').toLowerCase();
       if (planId.includes('mid') || planId.includes('growth')) requestsLimit = 100;
       else requestsLimit = 999999; // Unlimited
     }
