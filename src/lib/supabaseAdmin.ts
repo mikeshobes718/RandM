@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getEnv } from './env';
-import postgres from 'postgres';
+import { Pool } from 'pg';
 
 let _supabase: SupabaseClient | null = null;
 export function getSupabaseAdmin(): SupabaseClient {
@@ -12,54 +12,34 @@ export function getSupabaseAdmin(): SupabaseClient {
   return _supabase;
 }
 
-let _sql: any = null;
-export function getPgPool(): any {
+let _pool: Pool | null = null;
+export function getPgPool(): Pool | null {
   try {
     const env = getEnv();
     const password = env.SUPABASE_DB_PASSWORD;
     if (!password) return null;
-    if (_sql) return _sql;
+    if (_pool) return _pool;
     
-    const host = env.SUPABASE_DB_HOST || 'aws-0-us-east-1.pooler.supabase.com';
-    const port = Number(env.SUPABASE_DB_PORT) || 6543;
-    const user = env.SUPABASE_DB_USER || 'postgres.rhnxzpbhoqbvoqyqmfox';
-    const database = env.SUPABASE_DB_NAME || 'postgres';
+    // Direct connection to DB (bypassing pooler if possible)
+    const host = '44.208.221.186'; // Direct IP for rhnxzpbhoqbvoqyqmfox
+    const port = 5432;
+    const user = 'postgres.rhnxzpbhoqbvoqyqmfox'; // Need full user for pooler IP
+    const database = 'postgres';
 
-    // Use postgres library which often handles SCRAM better than pg
-    const sql = postgres({
+    _pool = new Pool({
       host,
       port,
       database,
-      username: user,
+      user,
       password,
-      ssl: 'require', // Try 'require' instead of object
-      prepare: false,
+      ssl: { 
+        rejectUnauthorized: false,
+        // Supabase often needs this for SCRAM
+      },
+      max: 1, // Only 1 for migrations
     });
 
-    _sql = sql;
-
-    return {
-      connect: async () => {
-        return {
-          query: async (text: string, params?: any[]) => {
-            if (text.toLowerCase().trim() === 'begin') return { rows: [] };
-            if (text.toLowerCase().trim() === 'commit') return { rows: [] };
-            if (text.toLowerCase().trim() === 'rollback') return { rows: [] };
-            const result = await sql.unsafe(text, params || []);
-            return { rows: Array.from(result) };
-          },
-          release: () => {},
-        };
-      },
-      query: async (text: string, params?: any[]) => {
-        const result = await sql.unsafe(text, params || []);
-        return { rows: Array.from(result) };
-      },
-      end: async () => {
-        await sql.end();
-        _sql = null;
-      }
-    };
+    return _pool;
   } catch (err) {
     console.error('[PG POOL] Error creating pool:', err);
     return null;

@@ -209,6 +209,7 @@ export default function SalesPortal() {
   const handleLogCall = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedLead) return;
+    console.log('[LOG CALL] Selected Lead:', selectedLead);
     setLoggingCall(true);
     try {
       const res = await fetch('/api/sales/leads/log-call', {
