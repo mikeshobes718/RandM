@@ -60,6 +60,16 @@ export default function AdminCustomers() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="p-12 text-center bg-red-50 rounded-[40px] border border-red-100">
+        <p className="text-red-600 font-black uppercase tracking-widest text-xs mb-2">Error Loading Customers</p>
+        <p className="text-sm text-red-500 font-medium mb-6">{error}</p>
+        <button onClick={fetchCustomers} className="primary-button !bg-red-600 !h-12 px-8">Try Again</button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-10 animate-fade-in">
       <div className="flex items-end justify-between">
