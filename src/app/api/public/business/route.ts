@@ -9,23 +9,22 @@ export async function GET(req: Request) {
   const id = searchParams.get('id') || '';
   if (!id) return new NextResponse('missing id', { status: 400 });
   const supa = getSupabaseAdmin();
-  const columns = 'id,name,google_maps_write_review_uri,review_link,google_place_id,landing_brand_color,landing_button_color,landing_logo_url,landing_headline,landing_subheading,website';
+  const columns = 'id,name,google_maps_write_review_uri,review_link,google_place_id,landing_brand_color,landing_button_color,landing_logo_url,landing_headline,landing_subheading';
   let { data, error } = await supa
     .from('businesses')
     .select(columns)
     .eq('id', id)
     .maybeSingle();
 
-  if (error && (error.message.includes('column') || /column/.test(error.message))) {
-    const fallbackColumns = 'id,name,google_maps_write_review_uri,review_link,google_place_id,landing_brand_color,landing_button_color,landing_logo_url,landing_headline,landing_subheading';
-    const fallback = await supa
+  // Try to add website if it exists (legacy support)
+  if (!error && data) {
+    const { data: websiteData } = await supa
       .from('businesses')
-      .select(fallbackColumns)
+      .select('website')
       .eq('id', id)
       .maybeSingle();
-    if (fallback.data) {
-      data = { ...fallback.data, website: null } as typeof data;
-      error = fallback.error ?? null;
+    if (websiteData) {
+      data.website = (websiteData as any).website;
     }
   }
 
