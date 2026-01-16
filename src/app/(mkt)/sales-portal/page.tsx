@@ -231,9 +231,13 @@ export default function SalesPortal() {
         setFollowupDate("");
         // Refresh leads to show updated status
         handleSearch({ preventDefault: () => {} } as any);
+      } else {
+        const data = await res.json();
+        alert(`Failed to save call log: ${data.error || 'Unknown error'}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to log call:", err);
+      alert(`Error logging call: ${err.message}`);
     } finally {
       setLoggingCall(false);
     }
