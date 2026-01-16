@@ -4,7 +4,8 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 export async function POST(req: Request) {
   const supa = getSupabaseAdmin();
   try {
-    const { leadId, googlePlaceId, leadData, repId, outcome, notes, followupDate } = await req.json();
+    const body = await req.json();
+    const { leadId, googlePlaceId, leadData, repId, outcome, notes, followupDate } = body;
 
     let targetLeadId = leadId;
 
@@ -33,7 +34,6 @@ export async function POST(req: Request) {
             phone: leadData.phone,
             google_maps_url: leadData.googleMapsUrl,
             website: leadData.website,
-            // Use current search filters for location if available
             city: leadData.address?.split(',')?.slice(-3, -2)?.[0]?.trim()?.toLowerCase() || null,
           })
           .select()
@@ -41,7 +41,6 @@ export async function POST(req: Request) {
 
         if (createError) {
           console.error('[LOG CALL API] Failed to create lead:', createError);
-          // If creation fails (e.g. table doesn't exist), we can't continue
           throw createError;
         }
         targetLeadId = newLead.id;
@@ -49,17 +48,17 @@ export async function POST(req: Request) {
     }
 
     if (!targetLeadId) {
-      return new NextResponse('Missing lead identification', { status: 400 });
+      return NextResponse.json({ 
+        error: 'Missing lead identification', 
+        received: { leadId, googlePlaceId, hasLeadData: !!leadData },
+        body
+      }, { status: 400 });
     }
-
-    // 2. Ensure rep exists (optional for now, but good for data integrity)
-    // Actually, if the reps table doesn't exist yet, this will fail.
-    // Let's try to proceed and see.
 
     // 3. Create call log entry
     const { error: logError } = await supa.from('call_log').insert({
       lead_id: targetLeadId,
-      rep_id: repId.includes('-') ? repId : null, // Only insert if it looks like a UUID
+      rep_id: repId?.includes('-') ? repId : null,
       outcome,
       notes,
       followup_date: followupDate || null,
@@ -67,7 +66,6 @@ export async function POST(req: Request) {
 
     if (logError) {
       console.error('[LOG CALL API] Call log insertion failed:', logError);
-      // If call_log table doesn't exist, we still want to update the leads table
     }
 
     // 4. Update lead status and stats
@@ -77,7 +75,7 @@ export async function POST(req: Request) {
     const { error: updateError } = await supa.from('leads').update({
       times_called: newTimesCalled,
       last_called_at: new Date().toISOString(),
-      last_called_by: repId.includes('-') ? repId : null,
+      last_called_by: repId?.includes('-') ? repId : null,
       call_status: outcome,
       next_followup: followupDate || null,
       lead_notes: notes,
