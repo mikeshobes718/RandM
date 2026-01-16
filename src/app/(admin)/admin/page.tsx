@@ -45,7 +45,7 @@ export default function AdminOverview() {
     return [
       { label: "MRR", value: `$${(metrics.mrr || 0).toLocaleString()}`, color: "text-brand" },
       { label: "Total Leads", value: (breakdown?.totalLeads || 0).toLocaleString(), color: "text-slate-900" },
-      { label: "Active Customers", value: metrics.activeCustomers || 0, color: "text-slate-900" },
+      { label: "Customers", value: metrics.activeCustomers || 0, color: "text-slate-900" },
       { label: "Active Reps", value: metrics.activeReps || 0, color: "text-slate-900" },
       { label: "Closes This Week", value: metrics.closesThisWeek || 0, color: "text-emerald-500" },
       { label: "Calls Today", value: metrics.callsToday || 0, color: "text-indigo-500" },

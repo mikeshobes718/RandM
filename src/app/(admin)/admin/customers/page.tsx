@@ -74,7 +74,7 @@ export default function AdminCustomers() {
     <div className="space-y-10 animate-fade-in">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Active Customers</h1>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Customers</h1>
           <p className="text-slate-500 font-medium mt-1">View and manage all businesses using Reviews & Marketing.</p>
         </div>
         <button 
