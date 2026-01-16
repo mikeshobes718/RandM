@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -8,60 +10,60 @@ export default function Pricing() {
   const [proLoading, setProLoading] = useState(false);
   const [hasPlan, setHasPlan] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const [authed, setAuthed] = useState(false);
-  const [planStatus, setPlanStatus] = useState<'loading' | 'none' | string>('loading');
-  const [currentTier, setCurrentTier] = useState<'starter' | 'mid' | 'pro' | 'none'>('none');
+  const [planStatus, setPlanStatus] = useState<"loading" | "none" | string>("loading");
+  const [currentTier, setCurrentTier] = useState<"starter" | "mid" | "pro" | "none">("none");
   const [concierge, setConcierge] = useState(false);
 
   useEffect(() => {
     const checkAuthAndPlan = async () => {
       try {
-        const token = localStorage.getItem('idToken');
+        const token = localStorage.getItem("idToken");
         setAuthed(Boolean(token));
         
         const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await fetch('/api/plan/status', { cache: 'no-store', headers });
+        const res = await fetch("/api/plan/status", { cache: "no-store", headers });
         if (res.ok) {
           const data = await res.json();
-          const status = (data.status || 'none').toLowerCase();
+          const status = (data.status || "none").toLowerCase();
           const planId = data.plan_id;
           
           setPlanStatus(status);
           
-          if (status === 'active' || status === 'trialing') {
-            const pid = (planId || '').toLowerCase();
-            if (pid.includes('mid') || pid.includes('small-business') || pid.includes('small') || pid.includes('growth')) {
-              setCurrentTier('mid');
+          if (status === "active" || status === "trialing") {
+            const pid = (planId || "").toLowerCase();
+            if (pid.includes("mid") || pid.includes("small-business") || pid.includes("small") || pid.includes("growth")) {
+              setCurrentTier("mid");
             } else {
-              setCurrentTier('pro');
+              setCurrentTier("pro");
             }
-          } else if (status === 'starter') {
-            setCurrentTier('starter');
+          } else if (status === "starter") {
+            setCurrentTier("starter");
           } else {
-            setCurrentTier('none');
+            setCurrentTier("none");
           }
           
-          setHasPlan(status !== 'none');
+          setHasPlan(status !== "none");
         } else {
-          setPlanStatus('none');
-          setCurrentTier('none');
+          setPlanStatus("none");
+          setCurrentTier("none");
         }
       } catch {
-        setPlanStatus('none');
-        setCurrentTier('none');
+        setPlanStatus("none");
+        setCurrentTier("none");
       }
     };
     checkAuthAndPlan();
   }, []);
 
-  const handleCheckout = async (tier: 'mid' | 'pro') => {
+  const handleCheckout = async (tier: "mid" | "pro") => {
     if (currentTier === tier) {
-      window.location.href = '/settings';
+      window.location.href = "/settings";
       return;
     }
     
-    if (tier === 'mid') setMidLoading(true);
+    if (tier === "mid") setMidLoading(true);
     else setProLoading(true);
 
     try {
@@ -82,17 +84,17 @@ export default function Pricing() {
 
   const handleStarterCta = async () => {
     if (!authed) {
-      window.location.href = '/register';
+      window.location.href = "/register";
       return;
     }
-    if (currentTier === 'starter' || currentTier === 'mid' || currentTier === 'pro') {
-      window.location.href = '/dashboard';
+    if (currentTier === "starter" || currentTier === "mid" || currentTier === "pro") {
+      window.location.href = "/dashboard";
       return;
     }
     setMidLoading(true); // Reuse midLoading for starter activation
     try {
-      const res = await fetch('/api/plan/start', { method: 'POST' });
-      if (res.ok) window.location.href = '/onboarding/business';
+      const res = await fetch("/api/plan/start", { method: "POST" });
+      if (res.ok) window.location.href = "/onboarding/business";
     } catch {
       setError("Failed to activate Starter.");
     } finally {
@@ -104,21 +106,21 @@ export default function Pricing() {
     <main className="min-h-screen py-24 px-6 bg-slate-50/50">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-black tracking-tight mb-4 text-slate-900">Simple Pricing!</h1>
+          <h1 className="text-5xl font-black tracking-tight mb-4 text-slate-900">Simple Pricing</h1>
           <p className="text-slate-500 text-lg max-w-xl mx-auto font-medium">
             Choose the plan that fits your business. Start free, upgrade anytime.
           </p>
           
           <div className="mt-10 inline-flex items-center p-1 bg-slate-100 rounded-2xl border border-slate-200 shadow-inner">
             <button 
-              onClick={() => setBilling('monthly')}
-              className={`px-8 py-2.5 text-sm font-black rounded-xl transition-all ${billing === 'monthly' ? 'bg-white shadow-md text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+              onClick={() => setBilling("monthly")}
+              className={`px-8 py-2.5 text-sm font-black rounded-xl transition-all ${billing === "monthly" ? "bg-white shadow-md text-slate-900" : "text-slate-400 hover:text-slate-600"}`}
             >
               Monthly
             </button>
             <button 
-              onClick={() => setBilling('yearly')}
-              className={`px-8 py-2.5 text-sm font-black rounded-xl transition-all ${billing === 'yearly' ? 'bg-white shadow-md text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+              onClick={() => setBilling("yearly")}
+              className={`px-8 py-2.5 text-sm font-black rounded-xl transition-all ${billing === "yearly" ? "bg-white shadow-md text-slate-900" : "text-slate-400 hover:text-slate-600"}`}
             >
               Yearly <span className="text-[10px] text-emerald-600 ml-1 font-black uppercase tracking-widest">— Save 17% (2 months free)</span>
             </button>
@@ -137,7 +139,7 @@ export default function Pricing() {
               <span className="text-slate-400 text-sm font-bold ml-2">/ free forever</span>
             </div>
             <ul className="space-y-4 mb-10 flex-1">
-              {['3 Review Requests / month', '1 Smart QR Code', 'Basic Analytics', 'Email Support'].map(f => (
+              {["3 Review Requests / month", "1 Smart QR Code", "Basic Analytics", "Email Support"].map(f => (
                 <li key={f} className="flex items-center gap-3 text-sm font-bold text-slate-600">
                   <div className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
                     <svg className="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4">
@@ -150,10 +152,10 @@ export default function Pricing() {
             </ul>
             <button 
               onClick={handleStarterCta}
-              disabled={midLoading || currentTier !== 'none'}
+              disabled={midLoading || currentTier !== "none"}
               className="h-14 rounded-2xl font-black uppercase tracking-widest text-xs border-2 border-slate-100 text-slate-400 disabled:opacity-50 hover:bg-slate-50 transition-all"
             >
-              {currentTier === 'starter' ? 'Current Plan' : (currentTier !== 'none' ? 'Included' : 'Get Started Free')}
+              {currentTier === "starter" ? "Current Plan" : (currentTier !== "none" ? "Included" : "Get Started Free")}
             </button>
           </div>
 
@@ -169,13 +171,13 @@ export default function Pricing() {
             </div>
             <div className="mb-8 relative z-10">
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-slate-900">{billing === 'monthly' ? '$39' : '$390'}</span>
-                <span className="text-slate-400 text-sm font-bold">{billing === 'monthly' ? '/ mo' : '/ yr'}</span>
+                <span className="text-4xl font-black text-slate-900">{billing === "monthly" ? "$39" : "$390"}</span>
+                <span className="text-slate-400 text-sm font-bold">{billing === "monthly" ? "/ mo" : "/ yr"}</span>
               </div>
-              {billing === 'yearly' && <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">Save 17% — 2 months free</p>}
+              {billing === "yearly" && <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">Save 17% — 2 months free</p>}
             </div>
             <ul className="space-y-4 mb-10 flex-1 relative z-10">
-              {['100 Review Requests / month', '5 Smart QR Codes', 'Square Integration', 'Standard Email Support'].map(f => (
+              {["100 Review Requests / month", "5 Smart QR Codes", "Square Integration", "Standard Email Support"].map(f => (
                 <li key={f} className="flex items-center gap-3 text-sm font-bold text-slate-600">
                   <div className="w-5 h-5 rounded-full bg-brand/5 flex items-center justify-center flex-shrink-0">
                     <svg className="w-3 h-3 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4">
@@ -187,11 +189,11 @@ export default function Pricing() {
               ))}
             </ul>
             <button 
-              onClick={() => handleCheckout('mid')}
-              disabled={midLoading || currentTier === 'mid' || currentTier === 'pro'}
+              onClick={() => handleCheckout("mid")}
+              disabled={midLoading || currentTier === "mid" || currentTier === "pro"}
               className="primary-button w-full h-14 rounded-2xl shadow-xl shadow-brand/20 disabled:opacity-50 relative z-10"
             >
-              {currentTier === 'mid' ? 'Current Plan' : (currentTier === 'pro' ? 'Included' : (midLoading ? 'Processing...' : 'Start Small Business'))}
+              {currentTier === "mid" ? "Current Plan" : (currentTier === "pro" ? "Included" : (midLoading ? "Processing..." : "Start Small Business"))}
             </button>
           </div>
 
@@ -207,13 +209,13 @@ export default function Pricing() {
             </div>
             <div className="mb-8 relative z-10">
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-slate-900">{billing === 'monthly' ? '$79' : '$790'}</span>
-                <span className="text-slate-400 text-sm font-bold">{billing === 'monthly' ? '/ mo' : '/ yr'}</span>
+                <span className="text-4xl font-black text-slate-900">{billing === "monthly" ? "$79" : "$790"}</span>
+                <span className="text-slate-400 text-sm font-bold">{billing === "monthly" ? "/ mo" : "/ yr"}</span>
               </div>
-              {billing === 'yearly' && <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">Save 17% — 2 months free</p>}
+              {billing === "yearly" && <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">Save 17% — 2 months free</p>}
             </div>
             <ul className="space-y-4 mb-10 flex-1 relative z-10">
-              {['Unlimited Review Requests', 'Unlimited QR Codes', 'All Integrations', 'Priority Support', 'Advanced Reporting'].map(f => (
+              {["Unlimited Review Requests", "Unlimited QR Codes", "All Integrations", "Priority Support", "Advanced Reporting"].map(f => (
                 <li key={f} className="flex items-center gap-3 text-sm font-bold text-slate-900">
                   <div className="w-5 h-5 rounded-full bg-brand flex items-center justify-center flex-shrink-0 shadow-lg shadow-brand/20">
                     <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4">
@@ -225,15 +227,11 @@ export default function Pricing() {
               ))}
             </ul>
             <button 
-              onClick={() => handleCheckout('pro')}
-              disabled={proLoading || currentTier === 'pro'}
-              className={`w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs transition-all relative z-10 ${
-                currentTier === 'pro' 
-                  ? 'bg-slate-100 text-slate-400 cursor-default' 
-                  : 'bg-slate-900 hover:bg-black text-white shadow-2xl shadow-slate-900/30'
-              }`}
+              onClick={() => handleCheckout("pro")}
+              disabled={proLoading || currentTier === "pro"}
+              className={`w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs transition-all relative z-10 ${currentTier === "pro" ? "bg-slate-100 text-slate-400 cursor-default" : "bg-slate-900 hover:bg-black text-white shadow-2xl shadow-slate-900/30"}`}
             >
-              {currentTier === 'pro' ? 'Current Plan' : (proLoading ? 'Processing...' : 'Start Unlimited')}
+              {currentTier === "pro" ? "Current Plan" : (proLoading ? "Processing..." : "Start Unlimited")}
             </button>
           </div>
         </div>
@@ -262,10 +260,10 @@ export default function Pricing() {
                   
                   <div className="grid sm:grid-cols-2 gap-4 mb-8">
                     {[
-                      'QR codes generated + ready to print',
-                      'Place QR guidance (counter, receipt, signage)',
-                      'Activation setup (see definition below)',
-                      'Message template setup (SMS/email)'
+                      "QR codes generated + ready to print",
+                      "Place QR guidance (counter, receipt, signage)",
+                      "Activation setup (see definition below)",
+                      "Message template setup (SMS/email)"
                     ].map(f => (
                       <div key={f} className="flex items-center gap-2 text-xs font-bold text-slate-600">
                         <span className="text-amber-500 font-black">✓</span>
@@ -318,6 +316,9 @@ export default function Pricing() {
             <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">Custom needs?</h4>
             <p className="text-sm text-slate-500 font-medium leading-relaxed italic text-balance">For enterprise features or multi-location setups (&gt;10), please <Link href="/contact" className="text-brand font-black hover:underline underline-offset-4">contact our sales team</Link>.</p>
           </div>
+        </div>
+        <div className="mt-8 text-center">
+          <p className="text-[10px] text-slate-300">v1.0.8-live</p>
         </div>
       </div>
     </main>
