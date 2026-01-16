@@ -29,7 +29,10 @@ export async function GET(req: Request) {
     }
   }
 
-  if (error) return new NextResponse(error.message, { status: 500 });
+  if (error) {
+    console.error('[PUBLIC BIZ API] Query error:', error);
+    return new NextResponse(`Database error: ${error.message}`, { status: 500 });
+  }
   if (!data) return new NextResponse('not found', { status: 404 });
 
   let reviewLink = data.google_maps_write_review_uri || data.review_link || '';
