@@ -21,8 +21,9 @@ export function getPgPool(): Pool | null {
     if (_pgPool) return _pgPool;
     
     const restUrl = new URL(env.SUPABASE_URL);
-    const host = env.SUPABASE_DB_HOST || `db.${restUrl.hostname}`;
-    const port = 5432; // Use direct port instead of pooler port 6543
+    const projectRef = restUrl.hostname.split('.')[0];
+    const host = `db.${projectRef}.supabase.co`; // Force direct host
+    const port = 5432;
     const user = env.SUPABASE_DB_USER || 'postgres';
     const database = env.SUPABASE_DB_NAME || 'postgres';
     
