@@ -26,15 +26,10 @@ export function getPgPool(): Pool | null {
     const user = env.SUPABASE_DB_USER || 'postgres';
     const database = env.SUPABASE_DB_NAME || 'postgres';
     
+    const connectionString = `postgres://${user}:${password}@${host}:${port}/${database}?sslmode=require`;
+    
     _pgPool = new Pool({
-      host,
-      port,
-      database,
-      user,
-      password,
-      ssl: {
-        rejectUnauthorized: false
-      },
+      connectionString,
       max: 1,
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 10000,
