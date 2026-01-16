@@ -176,16 +176,13 @@ function LandingClientContent({ id }: { id: string }) {
     
     // Force 5 stars for the happy path
     if (url.includes('placeid=')) {
-      const parts = url.split('?');
-      if (parts.length > 1) {
-        const baseUrl = parts[0];
-        const params = new URLSearchParams(parts[1]);
-        const placeId = params.get('placeid');
-        if (placeId) {
-          const cleanPlaceId = placeId.split(',')[0];
-          params.set('placeid', `${cleanPlaceId},1,5`);
-          url = `${baseUrl}?${params.toString()}`;
-        }
+      const placeIdMatch = url.match(/([?&]placeid=)([^&]+)/);
+      if (placeIdMatch) {
+        const prefix = placeIdMatch[1];
+        const fullPlaceId = placeIdMatch[2];
+        const cleanPlaceId = fullPlaceId.split(',')[0];
+        const newPlaceId = `${cleanPlaceId},1,5`;
+        url = url.replace(placeIdMatch[0], `${prefix}${newPlaceId}`);
       }
     } else if (url.includes('google.com/search') && url.includes('#lrd=')) {
       url = url.replace(/,(\d),1$/, ',5,1');
@@ -231,17 +228,14 @@ function LandingClientContent({ id }: { id: string }) {
     // Robustly inject or replace the rating in the Google URL
     // Standard Google format for pre-filling stars: ...placeid=ID,1,5
     if (url.includes('placeid=')) {
-      const parts = url.split('?');
-      if (parts.length > 1) {
-        const baseUrl = parts[0];
-        const params = new URLSearchParams(parts[1]);
-        const placeId = params.get('placeid');
-        if (placeId) {
-          // Remove any existing comma-suffix from placeid
-          const cleanPlaceId = placeId.split(',')[0];
-          params.set('placeid', `${cleanPlaceId},1,${plannedRating}`);
-          url = `${baseUrl}?${params.toString()}`;
-        }
+      // Use a regex to replace or append the ,1,X suffix without URL encoding commas
+      const placeIdMatch = url.match(/([?&]placeid=)([^&]+)/);
+      if (placeIdMatch) {
+        const prefix = placeIdMatch[1];
+        const fullPlaceId = placeIdMatch[2];
+        const cleanPlaceId = fullPlaceId.split(',')[0];
+        const newPlaceId = `${cleanPlaceId},1,${plannedRating}`;
+        url = url.replace(placeIdMatch[0], `${prefix}${newPlaceId}`);
       }
     } else if (url.includes('google.com/search')) {
       // If it's a search-style link, try to inject into the lrd fragment if present
