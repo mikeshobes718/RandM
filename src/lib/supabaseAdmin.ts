@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getEnv } from './env';
-import { Pool } from 'pg';
+import postgres from 'postgres';
 
 let _supabase: SupabaseClient | null = null;
 export function getSupabaseAdmin(): SupabaseClient {
@@ -12,35 +12,52 @@ export function getSupabaseAdmin(): SupabaseClient {
   return _supabase;
 }
 
-let _pool: Pool | null = null;
-export function getPgPool(): Pool | null {
+let _sql: any = null;
+export function getPgPool(): any {
   try {
     const env = getEnv();
     const password = env.SUPABASE_DB_PASSWORD;
     if (!password) return null;
-    if (_pool) return _pool;
+    if (_sql) return _sql;
     
     const host = env.SUPABASE_DB_HOST || 'aws-0-us-east-1.pooler.supabase.com';
     const port = Number(env.SUPABASE_DB_PORT) || 6543;
     const user = env.SUPABASE_DB_USER || 'postgres.rhnxzpbhoqbvoqyqmfox';
     const database = env.SUPABASE_DB_NAME || 'postgres';
 
-    // Best combination for Supabase + pg + SCRAM
+    // Best combination for Supabase + postgres.js + SCRAM
     const connectionString = `postgresql://${user}:${encodeURIComponent(password)}@${host}:${port}/${database}`;
 
-    _pool = new Pool({
-      connectionString,
-      ssl: { 
-        rejectUnauthorized: false 
-      },
+    const sql = postgres(connectionString, {
+      ssl: { rejectUnauthorized: false },
       max: 10,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
+      idle_timeout: 30,
+      connect_timeout: 5,
     });
 
-    return _pool;
+    // Provide a shim that looks like a pg Pool
+    _sql = {
+      query: async (text: string, params: any[]) => {
+        const result = await sql.unsafe(text, params);
+        return { rows: Array.from(result) };
+      },
+      connect: async () => {
+        return {
+          query: async (text: string, params: any[]) => {
+            const result = await sql.unsafe(text, params);
+            return { rows: Array.from(result) };
+          },
+          release: () => {},
+        };
+      },
+      end: async () => {
+        await sql.end();
+      }
+    };
+
+    return _sql;
   } catch (err) {
-    console.error('[PG POOL] Error creating pool:', err);
+    console.error('[POSTGRES] Error creating pool shim:', err);
     return null;
   }
 }
