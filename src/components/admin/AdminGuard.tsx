@@ -3,7 +3,7 @@
 import { useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
-const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "mikeshobes718@yahoo.com").split(',').map(e => e.trim().toLowerCase());
+const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "mikeshobes718@yahoo.com,volurer295@ovbest.com").split(',').map(e => e.trim().toLowerCase());
 
 export default function AdminGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
