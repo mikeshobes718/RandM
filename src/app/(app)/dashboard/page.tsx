@@ -240,12 +240,12 @@ function DashboardContent() {
           </div>
         </div>
         <div className="premium-card p-6 rounded-2xl group relative">
-          <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Reviews This Month</div>
+          <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">New Google Reviews</div>
           <div className="text-4xl font-black">{stats.reviewsThisMonth}</div>
           {/* Tooltip */}
           <div className="absolute inset-x-0 -top-12 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
             <div className="bg-slate-900 text-white text-[10px] py-2 px-3 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
-              Total customer interactions (Google redirects + private feedback) in the current calendar month.
+              Number of customers successfully routed to your Google profile this month.
             </div>
           </div>
         </div>
@@ -531,6 +531,27 @@ function DashboardContent() {
                 <h2 className="text-lg font-bold">Recent Feedback</h2>
                 <Link href="/feedback" className="text-xs font-bold text-brand hover:underline">View All</Link>
               </div>
+
+              {recentFeedback.filter(f => f.type === 'feedback' && f.rating <= 2).length > 0 && (
+                <div className="mb-6 space-y-3">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-100 rounded-xl">
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    <span className="text-[10px] font-black text-red-700 uppercase tracking-widest">Action Required: Negative Feedback</span>
+                  </div>
+                  {recentFeedback.filter(f => f.type === 'feedback' && f.rating <= 2).slice(0, 2).map((item) => (
+                    <div key={item.id} className="p-4 bg-red-50/30 rounded-xl border border-red-100/50">
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="text-xs font-bold text-red-900">{item.name || 'Anonymous'}</span>
+                        <span className="text-[10px] font-black text-red-600 px-1.5 py-0.5 bg-red-100 rounded">
+                          {item.rating}★
+                        </span>
+                      </div>
+                      <p className="text-xs text-red-700 italic line-clamp-2">"{item.comment}"</p>
+                      <Link href="/feedback" className="text-[9px] font-black text-red-600 uppercase tracking-widest mt-2 inline-block hover:underline">Respond Now →</Link>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {recentFeedback.length === 0 ? (
                 <div className="text-center py-12 px-4 border-2 border-dashed border-[#e2e8f0] rounded-2xl">

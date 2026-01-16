@@ -148,6 +148,38 @@ function LandingClientContent({ id }: { id: string }) {
     window.open(url, '_blank', 'noopener,noreferrer');
   }, [biz?.reviewLink, sendEvent, sentiment]);
 
+  const handleNegativeGoogleReview = useCallback(async () => {
+    if (!biz?.reviewLink) return;
+    
+    // If they have typed something, save it as private feedback first
+    if (comment.trim() || email.trim() || phone.trim()) {
+      try {
+        await fetch('/api/feedback/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessId: biz.id,
+            rating: 1, // It's the negative path
+            source: entrySource,
+            name: name.trim() || 'Valued Customer',
+            email: email.trim() || 'no-email@provided.com',
+            phone: normalizePhone(phone).slice(0, 10) || undefined,
+            comment: comment.trim() || '(Customer clicked Google link from feedback screen)',
+            consent: true,
+          }),
+        });
+        sendEvent('feedback_submitted', { metadata: { sentiment: 'negative', silent: true } });
+      } catch (e) {
+        console.error('Failed to save silent feedback:', e);
+      }
+    }
+
+    sendEvent('google_opened', { sentiment: 'negative' });
+    sendEvent('flow_completed', { metadata: { destination: 'google_from_feedback', sentiment: 'negative' } });
+    const url = biz.reviewLink.startsWith('http') ? biz.reviewLink : `https://${biz.reviewLink}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }, [biz, comment, email, phone, name, entrySource, sendEvent]);
+
   const primaryColor = useMemo(() => normalizeHexColor(biz?.brandColor) || '#4f46e5', [biz?.brandColor]);
   const backgroundStyle = useMemo(
     () => ({
@@ -424,7 +456,7 @@ function LandingClientContent({ id }: { id: string }) {
                 <div className="pt-4 text-center">
                   <button
                     type="button"
-                    onClick={handleGoogleReview}
+                    onClick={handleNegativeGoogleReview}
                     className="text-slate-400 hover:text-slate-600 text-xs font-bold transition-colors underline underline-offset-4"
                   >
                     Or leave a public review on Google

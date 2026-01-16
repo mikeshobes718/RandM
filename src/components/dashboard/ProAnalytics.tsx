@@ -203,8 +203,8 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
         </div>
 
         <div className="lg:col-span-4 premium-card p-8 rounded-3xl flex flex-col">
-          <h2 className="text-xl font-bold mb-2">Customer Sentiment</h2>
-          <p className="text-xs text-muted font-medium mb-8">Overall rating distribution from feedback.</p>
+          <h2 className="text-xl font-bold mb-2">Feedback Sentiment</h2>
+          <p className="text-xs text-muted font-medium mb-8">Overall mood from your private customer feedback.</p>
           <div className="flex-1 flex items-center justify-center relative">
             <div className="w-48 h-48">
               <Doughnut 
@@ -258,7 +258,7 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
           </div>
         )}
 
-        {topSources.length > 0 && (
+        {topSources.length > 0 ? (
           <div className="lg:col-span-6 premium-card p-8 rounded-3xl group relative">
             <h2 className="text-lg font-bold mb-2">Top Performing Sources</h2>
             <p className="text-xs text-muted font-medium mb-8">Which QR codes or links are driving results.</p>
@@ -275,6 +275,12 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
                   </div>
                 </div>
               ))}
+              {topSources.length === 1 && (
+                <div className="p-4 border-2 border-dashed border-[#e2e8f0] rounded-2xl flex flex-col items-center justify-center text-center mt-4">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Scale your reach</p>
+                  <p className="text-[10px] text-slate-400">Add more QR codes for your staff, tables, or menu to compare performance.</p>
+                </div>
+              )}
             </div>
             {/* Tooltip */}
             <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
@@ -282,6 +288,16 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
                 Ranked list of your QR codes and links, showing which ones generate the most customer leads.
               </div>
             </div>
+          </div>
+        ) : (
+          <div className="lg:col-span-6 premium-card p-8 rounded-3xl flex flex-col items-center justify-center text-center">
+            <div className="w-12 h-12 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mb-4">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 mb-2">No Sources Tracked Yet</h2>
+            <p className="text-xs text-muted max-w-[240px] leading-relaxed">
+              Once you create multiple QR codes, you'll see a breakdown of which ones are driving the most growth here.
+            </p>
           </div>
         )}
       </div>

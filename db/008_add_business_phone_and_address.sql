@@ -29,3 +29,4 @@ alter table businesses add column if not exists google_maps_write_review_uri tex
 
 
 
+
