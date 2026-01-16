@@ -216,6 +216,8 @@ export default function SalesPortal() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           leadId: selectedLead.dbId,
+          googlePlaceId: selectedLead.id,
+          leadData: selectedLead,
           repId: repId, // Using the random repId for now
           outcome: callOutcome,
           notes: callNotes,
