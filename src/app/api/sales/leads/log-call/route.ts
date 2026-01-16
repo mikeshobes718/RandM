@@ -80,7 +80,7 @@ export async function POST(req: Request) {
       rep_id: repUuid || repId || 'system', // Fallback to the raw ID if we couldn't resolve it
       outcome,
       notes,
-      followup_date: followup_date || null,
+      followup_date: followupDate || null,
     });
 
     if (logError) {
