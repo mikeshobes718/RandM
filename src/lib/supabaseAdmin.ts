@@ -22,7 +22,7 @@ export function getPgPool(): Pool | null {
     
     const restUrl = new URL(env.SUPABASE_URL);
     const host = env.SUPABASE_DB_HOST || `db.${restUrl.hostname}`;
-    const port = env.SUPABASE_DB_PORT ? Number(env.SUPABASE_DB_PORT) : 5432;
+    const port = 5432; // Use direct port instead of pooler port 6543
     const user = env.SUPABASE_DB_USER || 'postgres';
     const database = env.SUPABASE_DB_NAME || 'postgres';
     
@@ -32,7 +32,9 @@ export function getPgPool(): Pool | null {
       database,
       user,
       password,
-      ssl: true,
+      ssl: {
+        rejectUnauthorized: false
+      },
       max: 1,
       idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 10000,
