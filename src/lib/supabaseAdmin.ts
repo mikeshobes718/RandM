@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getEnv } from './env';
-import { Pool } from 'pg';
+import postgres from 'postgres';
 
 let _supabase: SupabaseClient | null = null;
 export function getSupabaseAdmin(): SupabaseClient {
@@ -12,13 +12,13 @@ export function getSupabaseAdmin(): SupabaseClient {
   return _supabase;
 }
 
-let _pgPool: Pool | null = null;
-export function getPgPool(): Pool | null {
+let _sql: any = null;
+export function getPgPool(): any {
   try {
     const env = getEnv();
     const password = env.SUPABASE_DB_PASSWORD;
     if (!password) return null;
-    if (_pgPool) return _pgPool;
+    if (_sql) return _sql;
     
     const restUrl = new URL(env.SUPABASE_URL);
     const host = env.SUPABASE_DB_HOST || `db.${restUrl.hostname}`;
@@ -26,21 +26,36 @@ export function getPgPool(): Pool | null {
     const user = env.SUPABASE_DB_USER || 'postgres';
     const database = env.SUPABASE_DB_NAME || 'postgres';
     
-    _pgPool = new Pool({
+    _sql = postgres({
       host,
       port,
       database,
-      user,
+      username: user,
       password,
-      ssl: {
-        rejectUnauthorized: false
-      },
+      ssl: { rejectUnauthorized: false },
       max: 1,
-      idleTimeoutMillis: 10000,
-      connectionTimeoutMillis: 10000,
+      idle_timeout: 10,
+      connect_timeout: 10,
     });
     
-    return _pgPool;
+    // Mock the 'connect' and 'query' behavior for migrations.ts which expects a 'pg' pool
+    return {
+      connect: async () => {
+        return {
+          query: async (sql: string, params?: any[]) => {
+            if (sql.toLowerCase().includes('begin')) return _sql.begin(async () => {});
+            if (sql.toLowerCase().includes('commit')) return;
+            if (sql.toLowerCase().includes('rollback')) return;
+            return _sql.unsafe(sql, params || []);
+          },
+          release: () => {},
+        };
+      },
+      end: async () => {
+        if (_sql) await _sql.end();
+        _sql = null;
+      },
+    };
   } catch {
     return null;
   }

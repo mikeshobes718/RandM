@@ -171,13 +171,24 @@ function LandingClientContent({ id }: { id: string }) {
     sendEvent('google_opened', { sentiment: sentiment || 'positive', rating: 5, metadata: { planned_rating: 5 } });
     sendEvent('flow_completed', { metadata: { destination: 'google', sentiment: sentiment || 'positive', planned_rating: 5 } });
     
-    let url = biz.reviewLink.startsWith('http') ? biz.reviewLink : `https://${biz.reviewLink}`;
+    let url = (biz.reviewLink || '').trim();
+    if (!url.startsWith('http')) url = `https://${url}`;
     
     // Force 5 stars for the happy path
-    if (url.includes('placeid=') && !url.includes(',')) {
-      url = `${url},5`;
-    } else if (url.includes('placeid=') && /,\d$/.test(url)) {
-      url = url.replace(/,\d$/, ',5');
+    if (url.includes('placeid=')) {
+      const parts = url.split('?');
+      if (parts.length > 1) {
+        const baseUrl = parts[0];
+        const params = new URLSearchParams(parts[1]);
+        const placeId = params.get('placeid');
+        if (placeId) {
+          const cleanPlaceId = placeId.split(',')[0];
+          params.set('placeid', `${cleanPlaceId},1,5`);
+          url = `${baseUrl}?${params.toString()}`;
+        }
+      }
+    } else if (url.includes('google.com/search') && url.includes('#lrd=')) {
+      url = url.replace(/,(\d),1$/, ',5,1');
     }
 
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -214,15 +225,33 @@ function LandingClientContent({ id }: { id: string }) {
     sendEvent('google_opened', { sentiment: plannedRating >= 4 ? 'positive' : 'negative', rating: plannedRating, metadata: { planned_rating: plannedRating } });
     sendEvent('flow_completed', { metadata: { destination: 'google_from_feedback', sentiment: plannedRating >= 4 ? 'positive' : 'negative', planned_rating: plannedRating } });
     
-    let url = biz.reviewLink.startsWith('http') ? biz.reviewLink : `https://${biz.reviewLink}`;
+    let url = (biz.reviewLink || '').trim();
+    if (!url.startsWith('http')) url = `https://${url}`;
     
-    // Inject the planned rating
-    if (url.includes('placeid=') && !url.includes(',')) {
-      url = `${url},${plannedRating}`;
-    } else if (url.includes('placeid=') && /,\d$/.test(url)) {
-      url = url.replace(/,\d$/, `,${plannedRating}`);
+    // Robustly inject or replace the rating in the Google URL
+    // Standard Google format for pre-filling stars: ...placeid=ID,1,5
+    if (url.includes('placeid=')) {
+      const parts = url.split('?');
+      if (parts.length > 1) {
+        const baseUrl = parts[0];
+        const params = new URLSearchParams(parts[1]);
+        const placeId = params.get('placeid');
+        if (placeId) {
+          // Remove any existing comma-suffix from placeid
+          const cleanPlaceId = placeId.split(',')[0];
+          params.set('placeid', `${cleanPlaceId},1,${plannedRating}`);
+          url = `${baseUrl}?${params.toString()}`;
+        }
+      }
+    } else if (url.includes('google.com/search')) {
+      // If it's a search-style link, try to inject into the lrd fragment if present
+      if (url.includes('#lrd=')) {
+        // Format is #lrd=HEX:HEX,3,1 (where 3 is the rating)
+        url = url.replace(/,(\d),1$/, `,${plannedRating},1`);
+      }
     }
 
+    console.log('[DEBUG] Redirecting to Google with URL:', url);
     window.open(url, '_blank', 'noopener,noreferrer');
     setShowRatingPrompt(false);
   }, [biz, comment, email, phone, name, entrySource, sendEvent, plannedRating]);
