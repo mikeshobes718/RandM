@@ -13,7 +13,7 @@ export async function GET(req: Request) {
 
   // If id is not a UUID, it might be a source slug
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(id)) {
+  if (!uuidRegex.test(businessId)) {
     const { data: sourceData } = await supa
       .from('review_sources')
       .select('business_id')
@@ -22,6 +22,11 @@ export async function GET(req: Request) {
     if (sourceData) {
       businessId = sourceData.business_id;
     }
+  }
+
+  // If we still don't have a valid UUID, it's not a valid business reference
+  if (!uuidRegex.test(businessId)) {
+    return new NextResponse('not found', { status: 404 });
   }
 
   const columns = 'id,name,google_maps_write_review_uri,review_link,google_place_id,landing_brand_color,landing_button_color,landing_logo_url,landing_headline,landing_subheading';
