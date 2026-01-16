@@ -270,6 +270,11 @@ create index if not exists leads_city_type_idx on leads(city, business_type);
     `;
     await client.query(sql015); ran.push('015_leads_location_columns');
 
+    const sql016 = `
+    alter table businesses add column if not exists website text;
+    `;
+    await client.query(sql016); ran.push('016_business_website_column');
+
     await client.query('commit');
     return { ran };
   } catch (e) {
