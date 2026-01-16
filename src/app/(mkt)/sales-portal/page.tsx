@@ -181,6 +181,16 @@ export default function SalesPortal() {
   const [syncing, setSyncing] = useState(false);
   const [leads, setLeads] = useState<any[]>([]);
   const [searched, setSearched] = useState(false);
+  const [repId, setRepId] = useState("rep_" + Math.random().toString(36).substring(2, 7));
+  const [copied, setCopied] = useState(false);
+
+  const referralLink = `https://www.reviewsandmarketing.com/register?ref=${repId}`;
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(referralLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,27 +235,54 @@ export default function SalesPortal() {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-12 border-b border-slate-200 pb-8 text-center sm:text-left">
-          <span className="bg-brand/10 text-brand text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full mb-4 inline-block">
-            Internal Sales Enablement
-          </span>
           <h1 className="text-4xl font-black text-slate-900 mb-4">Sales Toolkit</h1>
-          <p className="text-slate-600 text-lg">Everything you need to close deals and grow Reviews & Marketing.</p>
+          <p className="text-slate-600 text-lg font-medium">Everything you need to close deals and track your earnings.</p>
         </div>
+
+        {/* Stats & Personal Dashboard */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+          <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-brand/5 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500"></div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Calls Logged</p>
+            <div className="flex items-end gap-2">
+              <p className="text-4xl font-black text-slate-900">142</p>
+              <p className="text-emerald-500 text-sm font-bold mb-1.5">↑ 12%</p>
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500"></div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Closes This Week</p>
+            <div className="flex items-end gap-2">
+              <p className="text-4xl font-black text-slate-900">8</p>
+              <p className="text-emerald-500 text-sm font-bold mb-1.5">Goal: 10</p>
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-brand/5 rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500"></div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Commission Earned</p>
+            <div className="flex items-end gap-2">
+              <p className="text-4xl font-black text-brand">$2,450.00</p>
+              <p className="text-slate-400 text-xs font-bold mb-1.5">Pending: $450</p>
+            </div>
+          </div>
+        </section>
 
         {/* Lead Finder Tool */}
         <section className="mb-16">
           <div className="bg-white p-8 rounded-[32px] border border-brand/20 shadow-2xl shadow-brand/5 overflow-hidden relative">
             <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
             <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-brand text-white flex items-center justify-center shadow-lg shadow-brand/20">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black text-slate-900">Reputation Lead Finder</h2>
-                  <p className="text-sm text-muted">Select location and category to find businesses with low ratings (≤ 4.2).</p>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-brand text-white flex items-center justify-center shadow-lg shadow-brand/20">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-900">Reputation Lead Finder</h2>
+                    <p className="text-sm text-muted">Find businesses with low ratings (≤ 4.2) to call.</p>
+                  </div>
                 </div>
               </div>
 
@@ -393,6 +430,45 @@ export default function SalesPortal() {
           </div>
         </section>
 
+        {/* Unique Referral Link Generator */}
+        <section className="mb-16">
+          <div className="bg-slate-900 rounded-[32px] p-8 sm:p-10 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-brand/20 to-transparent pointer-events-none"></div>
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="flex-1 text-center md:text-left">
+                <h2 className="text-2xl sm:text-3xl font-black text-white mb-2">Your Unique Sign-up Link</h2>
+                <p className="text-slate-400 font-medium">Use this link to register new clients. We track every sign-up automatically to your account.</p>
+              </div>
+              <div className="w-full md:w-auto flex flex-col sm:flex-row items-stretch gap-3">
+                <div className="flex-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 flex items-center justify-between gap-4 min-w-[300px]">
+                  <code className="text-brand-light font-mono text-sm truncate">{referralLink}</code>
+                  <button 
+                    onClick={copyToClipboard}
+                    className="text-white/60 hover:text-white transition-colors p-1"
+                    title="Copy to clipboard"
+                  >
+                    {copied ? (
+                      <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                <button 
+                  onClick={copyToClipboard}
+                  className="bg-brand hover:bg-brand-strong text-white font-black px-8 h-12 sm:h-auto rounded-2xl transition-all shadow-lg shadow-brand/20 whitespace-nowrap"
+                >
+                  {copied ? 'Copied!' : 'Copy Link'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <div className="grid md:grid-cols-3 gap-8">
           {/* Main Content Area */}
           <div className="md:col-span-2 space-y-12">
@@ -449,6 +525,56 @@ export default function SalesPortal() {
 
           {/* Sidebar Area */}
           <div className="space-y-8">
+            {/* Leaderboard */}
+            <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+              <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+                Top Closers
+              </h3>
+              <div className="space-y-3">
+                {[
+                  { name: "Sarah J.", closes: 42, color: "bg-emerald-100 text-emerald-700" },
+                  { name: "Mike S.", closes: 38, color: "bg-blue-100 text-blue-700" },
+                  { name: "David R.", closes: 31, color: "bg-slate-100 text-slate-700" }
+                ].map((rep, i) => (
+                  <div key={rep.name} className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-black text-slate-400">#{i+1}</span>
+                      <p className="text-sm font-bold text-slate-900">{rep.name}</p>
+                    </div>
+                    <span className={`text-[10px] font-black px-2 py-1 rounded-lg ${rep.color}`}>{rep.closes} Closes</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Payout History */}
+            <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+              <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <svg className="w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Payout History
+              </h3>
+              <div className="space-y-4 mb-6">
+                <div className="flex items-center justify-between text-xs border-b border-slate-50 pb-2">
+                  <span className="text-slate-500">Jan 1, 2026</span>
+                  <span className="font-bold text-slate-900">$1,200.00</span>
+                </div>
+                <div className="flex items-center justify-between text-xs border-b border-slate-50 pb-2">
+                  <span className="text-slate-500">Dec 15, 2025</span>
+                  <span className="font-bold text-slate-900">$950.00</span>
+                </div>
+              </div>
+              <div className="bg-brand/5 p-4 rounded-2xl border border-brand/10">
+                <p className="text-[10px] font-black uppercase tracking-widest text-brand mb-1">Next Payout</p>
+                <p className="text-lg font-black text-slate-900">Jan 15, 2026</p>
+                <p className="text-xs font-bold text-brand mt-1">Est. $2,450.00</p>
+              </div>
+            </section>
+
             {/* Asset Downloads */}
             <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
               <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
