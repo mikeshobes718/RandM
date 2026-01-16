@@ -70,7 +70,6 @@ export async function GET() {
     if (recentCalls.data) {
       for (const c of recentCalls.data) {
         const user = c.rep_id ? uidToUser[c.rep_id] : null;
-        // If we don't have a user record for this UID, try to find by rep_id string
         let repEmail = user?.email;
         if (!repEmail && c.rep_id) {
           const { data: fallbackUser } = await supa.from('users').select('email').eq('rep_id', c.rep_id).maybeSingle();
@@ -81,7 +80,8 @@ export async function GET() {
         
         activity.push({
           time: c.timestamp,
-          event: `${repEmail || 'System'} logged a call: ${c.outcome.replace('_', ' ')}`,
+          // If we have an email, use it. If we have a raw ID, use it. Otherwise 'System'.
+          event: `${repEmail || c.rep_id || 'System'} logged a call: ${c.outcome.replace('_', ' ')}`,
           detail: leadData?.name || 'Business Lead',
           type: c.outcome === 'closed' || c.outcome === 'close' ? 'close' : 'log'
         });

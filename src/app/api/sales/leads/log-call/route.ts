@@ -53,25 +53,34 @@ export async function POST(req: Request) {
     
     if (repId) {
       // Try to find user by static rep_id OR by uid itself
-      const { data: userData } = await supa
+      // Use proper Supabase filter syntax
+      const { data: userData, error: userError } = await supa
         .from('users')
         .select('uid, email')
-        .or(`rep_id.eq."${repId}",uid.eq."${repId}"`)
+        .or(`rep_id.eq.${repId},uid.eq.${repId}`)
         .maybeSingle();
       
+      if (userError) {
+        console.error('[LOG CALL API] User lookup failed:', userError);
+      }
+
       if (userData) {
         repUuid = userData.uid;
         repEmail = userData.email;
+      } else {
+        console.warn('[LOG CALL API] No user found for repId:', repId);
       }
+    } else {
+      console.warn('[LOG CALL API] No repId provided in request');
     }
 
     // 3. Create call log entry
     const { error: logError } = await supa.from('call_log').insert({
       lead_id: targetLeadId,
-      rep_id: repUuid,
+      rep_id: repUuid || repId || 'system', // Fallback to the raw ID if we couldn't resolve it
       outcome,
       notes,
-      followup_date: followupDate || null,
+      followup_date: followup_date || null,
     });
 
     if (logError) {
