@@ -22,7 +22,7 @@ export default function AdminGuard({ children }: { children: ReactNode }) {
           router.push('/login?redirect=/admin');
           return;
         }
-        const { user } = await res.json();
+        const user = await res.json();
         console.log('[AdminGuard] User logged in as:', user?.email);
         
         const userEmail = user?.email?.toLowerCase();
