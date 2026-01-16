@@ -224,12 +224,20 @@ export async function GET(req: NextRequest) {
     try {
       const { data: feedbackData } = await supa.from('feedback').select('*').eq('business_id', biz.id).order('created_at', { ascending: false }).limit(5);
       const { data: contactData } = await supa.from('review_contact_captures').select('*').eq('business_id', biz.id).order('created_at', { ascending: false }).limit(5);
-      const { data: googleEventsSidebar } = await supa.from('review_events').select('*').eq('business_id', biz.id).eq('event', 'google_opened').order('created_at', { ascending: false }).limit(5);
+      const { data: googleEventsSidebar } = await supa.from('review_events').select('id,rating,created_at').eq('business_id', biz.id).eq('event', 'google_opened').order('created_at', { ascending: false }).limit(5);
 
       const merged = [
         ...(feedbackData || []).map(f => ({ ...f, type: 'feedback', archived: false })),
         ...(contactData || []).map(c => ({ ...c, type: 'contact', rating: 5, comment: '5-star review (Contact form completed)', archived: false })),
-        ...(googleEventsSidebar || []).map(e => ({ id: e.id, rating: 5, name: 'Anonymous Customer', comment: 'Redirected to Google for review', created_at: e.created_at, type: 'event', archived: false }))
+        ...(googleEventsSidebar || []).map(e => ({ 
+          id: e.id, 
+          rating: e.rating || 5, // Use actual rating from event if available, default to 5
+          name: 'Anonymous Customer', 
+          comment: `Planning to leave ${e.rating || 5}-star review on Google`, 
+          created_at: e.created_at, 
+          type: 'event', 
+          archived: false 
+        }))
       ];
       
       recentFeedback = merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);

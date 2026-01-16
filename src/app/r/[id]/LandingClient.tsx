@@ -80,6 +80,8 @@ function LandingClientContent({ id }: { id: string }) {
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showRatingPrompt, setShowRatingPrompt] = useState(false);
+  const [plannedRating, setPlannedRating] = useState<number | null>(null);
 
   const entrySource = useMemo(() => {
     if (!searchParams) return 'landing';
@@ -110,11 +112,12 @@ function LandingClientContent({ id }: { id: string }) {
   }, [id]);
 
   const sendEvent = useCallback(
-    (event: ReviewEventName, payload?: { sentiment?: string; metadata?: Record<string, unknown> }) => {
+    (event: ReviewEventName, payload?: { sentiment?: string; metadata?: Record<string, unknown>; rating?: number }) => {
       const businessId = biz?.id || id;
       if (!businessId) return;
       const body: Record<string, unknown> = { businessId, event, source: entrySource };
       if (payload?.sentiment) body.sentiment = payload.sentiment;
+      if (payload?.rating !== undefined) body.rating = payload.rating;
       if (payload?.metadata && Object.keys(payload.metadata).length) body.metadata = payload.metadata;
       fetch('/api/feedback/event', {
         method: 'POST',
@@ -140,45 +143,71 @@ function LandingClientContent({ id }: { id: string }) {
     [sendEvent],
   );
 
-  const handleGoogleReview = useCallback(() => {
-    if (!biz?.reviewLink) return;
-    sendEvent('google_opened', { sentiment: sentiment || 'positive' });
-    sendEvent('flow_completed', { metadata: { destination: 'google', sentiment: sentiment || 'positive' } });
-    const url = biz.reviewLink.startsWith('http') ? biz.reviewLink : `https://${biz.reviewLink}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }, [biz?.reviewLink, sendEvent, sentiment]);
-
-  const handleNegativeGoogleReview = useCallback(async () => {
+  const handleGoogleReview = useCallback(async () => {
     if (!biz?.reviewLink) return;
     
-    // If they have typed something, save it as private feedback first
-    if (comment.trim() || email.trim() || phone.trim()) {
+    // Save contact info if provided (happy path - assume 5 stars)
+    if (email.trim() || phone.trim() || name.trim()) {
       try {
         await fetch('/api/feedback/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             businessId: biz.id,
-            rating: 1, // It's the negative path
+            rating: 5, // Happy path = 5 stars
             source: entrySource,
             name: name.trim() || 'Valued Customer',
             email: email.trim() || 'no-email@provided.com',
             phone: normalizePhone(phone).slice(0, 10) || undefined,
-            comment: comment.trim() || '(Customer clicked Google link from feedback screen)',
+            comment: '(Customer planning to leave 5-star review on Google)',
             consent: true,
           }),
         });
-        sendEvent('feedback_submitted', { metadata: { sentiment: 'negative', silent: true } });
       } catch (e) {
-        console.error('Failed to save silent feedback:', e);
+        console.error('Failed to save contact info:', e);
       }
     }
-
-    sendEvent('google_opened', { sentiment: 'negative' });
-    sendEvent('flow_completed', { metadata: { destination: 'google_from_feedback', sentiment: 'negative' } });
+    
+    sendEvent('google_opened', { sentiment: sentiment || 'positive', rating: 5, metadata: { planned_rating: 5 } });
+    sendEvent('flow_completed', { metadata: { destination: 'google', sentiment: sentiment || 'positive', planned_rating: 5 } });
     const url = biz.reviewLink.startsWith('http') ? biz.reviewLink : `https://${biz.reviewLink}`;
     window.open(url, '_blank', 'noopener,noreferrer');
-  }, [biz, comment, email, phone, name, entrySource, sendEvent]);
+  }, [biz, email, phone, name, entrySource, sendEvent, sentiment]);
+
+  const handleNegativeGoogleReview = useCallback(() => {
+    setShowRatingPrompt(true);
+  }, []);
+
+  const confirmGoogleReviewWithRating = useCallback(async () => {
+    if (!biz?.reviewLink || !plannedRating) return;
+    
+    // Save their feedback with the planned rating
+    try {
+      await fetch('/api/feedback/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessId: biz.id,
+          rating: plannedRating,
+          source: entrySource,
+          name: name.trim() || 'Valued Customer',
+          email: email.trim() || 'no-email@provided.com',
+          phone: normalizePhone(phone).slice(0, 10) || undefined,
+          comment: comment.trim() || `(Customer planning to leave ${plannedRating}-star review on Google)`,
+          consent: true,
+        }),
+      });
+      sendEvent('feedback_submitted', { metadata: { sentiment: plannedRating >= 4 ? 'positive' : 'negative', planned_rating: plannedRating } });
+    } catch (e) {
+      console.error('Failed to save feedback with rating:', e);
+    }
+
+    sendEvent('google_opened', { sentiment: plannedRating >= 4 ? 'positive' : 'negative', rating: plannedRating, metadata: { planned_rating: plannedRating } });
+    sendEvent('flow_completed', { metadata: { destination: 'google_from_feedback', sentiment: plannedRating >= 4 ? 'positive' : 'negative', planned_rating: plannedRating } });
+    const url = biz.reviewLink.startsWith('http') ? biz.reviewLink : `https://${biz.reviewLink}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    setShowRatingPrompt(false);
+  }, [biz, comment, email, phone, name, entrySource, sendEvent, plannedRating]);
 
   const primaryColor = useMemo(() => normalizeHexColor(biz?.brandColor) || '#4f46e5', [biz?.brandColor]);
   const backgroundStyle = useMemo(
@@ -496,6 +525,51 @@ function LandingClientContent({ id }: { id: string }) {
           {error && (
             <div className="mt-8 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-bold text-center animate-shake">
               {error}
+            </div>
+          )}
+
+          {/* Rating Prompt Modal */}
+          {showRatingPrompt && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+              <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-fade-in">
+                <h3 className="text-xl font-black text-slate-900 mb-2 text-center">What rating are you planning to leave?</h3>
+                <p className="text-sm text-slate-500 text-center mb-6">This helps us track feedback accurately.</p>
+                
+                <div className="flex justify-center gap-2 mb-8">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      onClick={() => setPlannedRating(star)}
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold transition-all ${
+                        plannedRating === star
+                          ? 'bg-brand text-white scale-110 shadow-lg'
+                          : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:scale-105'
+                      }`}
+                    >
+                      {star}★
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowRatingPrompt(false);
+                      setPlannedRating(null);
+                    }}
+                    className="flex-1 h-12 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmGoogleReviewWithRating}
+                    disabled={!plannedRating}
+                    className="flex-1 h-12 rounded-xl bg-brand text-white font-black shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Continue to Google
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
