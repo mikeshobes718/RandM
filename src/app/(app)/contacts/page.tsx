@@ -21,6 +21,7 @@ export default function ContactsPage() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [showGuide, setShowGuide] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -138,14 +139,14 @@ export default function ContactsPage() {
     }
   };
 
-  const handleDownloadCSV = () => {
-    if (contacts.length === 0) {
+  const handleDownloadCSV = (isTemplate = false) => {
+    if (!isTemplate && contacts.length === 0) {
       setError('No contacts to download');
       return;
     }
 
     const headers = ['Name', 'Email', 'Phone', 'Source', 'Added'];
-    const rows = contacts.map(c => [
+    const rows = isTemplate ? [] : contacts.map(c => [
       c.name || '',
       c.email || '',
       c.phone || '',
@@ -158,7 +159,7 @@ export default function ContactsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `contacts_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = isTemplate ? 'import_template.csv' : `contacts_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -185,7 +186,7 @@ export default function ContactsPage() {
         </div>
         <div className="flex items-center gap-3">
           <button 
-            onClick={handleDownloadCSV}
+            onClick={() => handleDownloadCSV(false)}
             disabled={contacts.length === 0}
             className="secondary-button !h-12 px-6 text-[10px] font-black uppercase tracking-[0.1em] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
@@ -309,11 +310,103 @@ export default function ContactsPage() {
             </div>
             <div className="h-4 w-px bg-slate-200"></div>
             <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
-              Need help? <Link href="/support" className="text-brand font-black hover:underline">Read the import guide</Link>
+              Need help? <button onClick={() => setShowGuide(true)} className="text-brand font-black hover:underline">Read the import guide</button>
             </p>
           </div>
         </div>
       </div>
+
+      {/* Import Guide Modal */}
+      {showGuide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Import Guide</h3>
+                <p className="text-xs text-slate-400 font-medium mt-1 uppercase tracking-widest">Master your contact data</p>
+              </div>
+              <button 
+                onClick={() => setShowGuide(false)}
+                className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="p-8 space-y-8 overflow-y-auto max-h-[70vh]">
+              {/* Step 1 */}
+              <div className="flex gap-6">
+                <div className="w-10 h-10 rounded-2xl bg-brand/10 text-brand flex-shrink-0 flex items-center justify-center font-black">1</div>
+                <div>
+                  <h4 className="font-black text-slate-900 uppercase tracking-wide text-sm mb-2">Prepare your CSV</h4>
+                  <p className="text-sm text-slate-500 leading-relaxed font-medium">
+                    Your file must be a <span className="text-slate-900 font-bold">.CSV</span> or <span className="text-slate-900 font-bold">.XLSX</span>. 
+                    The first row must contain column headers.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 2 */}
+              <div className="flex gap-6">
+                <div className="w-10 h-10 rounded-2xl bg-brand/10 text-brand flex-shrink-0 flex items-center justify-center font-black">2</div>
+                <div className="flex-1">
+                  <h4 className="font-black text-slate-900 uppercase tracking-wide text-sm mb-2">Required Columns</h4>
+                  <p className="text-sm text-slate-500 leading-relaxed font-medium mb-4">
+                    We automatically scan for these column names (case-insensitive):
+                  </p>
+                  <div className="grid grid-cols-3 gap-3">
+                    {['Name', 'Email', 'Phone'].map(header => (
+                      <div key={header} className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-center">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Header</p>
+                        <p className="text-xs font-bold text-slate-900">{header}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-4 font-bold italic">* You must have at least "Name" or "Email" for the row to be valid.</p>
+                </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="flex gap-6">
+                <div className="w-10 h-10 rounded-2xl bg-brand/10 text-brand flex-shrink-0 flex items-center justify-center font-black">3</div>
+                <div>
+                  <h4 className="font-black text-slate-900 uppercase tracking-wide text-sm mb-2">Sample Format</h4>
+                  <div className="bg-slate-900 rounded-2xl p-4 font-mono text-[11px] text-slate-300 leading-relaxed overflow-x-auto">
+                    name, email, phone<br/>
+                    John Doe, john@example.com, 555-0123<br/>
+                    Jane Smith, jane@example.com, 555-0124
+                  </div>
+                  <button 
+                    onClick={() => handleDownloadCSV(true)}
+                    className="mt-4 text-[10px] font-black text-brand uppercase tracking-widest flex items-center gap-2 hover:underline"
+                  >
+                    <span>⬇</span> Download Template
+                  </button>
+                </div>
+              </div>
+
+              {/* Tips */}
+              <div className="bg-brand/5 border border-brand/10 rounded-3xl p-6">
+                <h4 className="font-black text-brand uppercase tracking-widest text-[10px] mb-3 flex items-center gap-2">
+                  <span>💡</span> Pro Tip
+                </h4>
+                <p className="text-xs text-brand/80 font-medium leading-relaxed">
+                  Export your customers from <span className="font-bold underline">Square</span>, <span className="font-bold underline">Shopify</span>, or <span className="font-bold underline">Clover</span> as a CSV. Our system is designed to intelligently pick up those standard headers automatically.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button 
+                onClick={() => setShowGuide(false)}
+                className="h-12 px-8 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-slate-200"
+              >
+                Got it, let's go
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
