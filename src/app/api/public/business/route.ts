@@ -16,14 +16,17 @@ export async function GET(req: Request) {
     .eq('id', id)
     .maybeSingle();
 
-  if (error && /column/.test(error.message || '')) {
+  if (error && (error.message.includes('column') || /column/.test(error.message))) {
+    const fallbackColumns = 'id,name,google_maps_write_review_uri,review_link,google_place_id,landing_brand_color,landing_button_color,landing_logo_url,landing_headline,landing_subheading';
     const fallback = await supa
       .from('businesses')
-      .select('id,name,review_link,google_place_id,website')
+      .select(fallbackColumns)
       .eq('id', id)
       .maybeSingle();
-    if (fallback.data) data = { ...fallback.data } as typeof data;
-    error = fallback.error ?? null;
+    if (fallback.data) {
+      data = { ...fallback.data, website: null } as typeof data;
+      error = fallback.error ?? null;
+    }
   }
 
   if (error) return new NextResponse(error.message, { status: 500 });
