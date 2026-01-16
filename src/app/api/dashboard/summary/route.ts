@@ -406,6 +406,18 @@ export async function GET(req: NextRequest) {
       { name: 'Email Follow-up', sent: 22, clicks: 8, date: new Date(Date.now() - 86400000).toISOString() },
     ].slice(0, 3);
 
+    // Fetch contact count
+    let contactsCount = 0;
+    try {
+      const { count: cCount } = await supa
+        .from('review_contact_captures')
+        .select('*', { count: 'exact', head: true })
+        .eq('business_id', biz.id);
+      contactsCount = cCount || 0;
+    } catch (e) {
+      console.warn('[DASHBOARD API] Error fetching contacts count:', e);
+    }
+
     return NextResponse.json({
       business: { ...biz, contact_phone: biz.contact_phone ? formatPhone(biz.contact_phone) : null },
       stats: { reviewsThisMonth, shareLinkScans, averageRating: normalizedRating },
@@ -420,7 +432,8 @@ export async function GET(req: NextRequest) {
         limit: requestsLimit,
         qrScans: shareLinkScans,
         isUnlimited: requestsLimit > 1000,
-        planName
+        planName,
+        contactsCount
       },
       recentCampaigns
     });

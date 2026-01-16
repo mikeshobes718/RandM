@@ -246,6 +246,139 @@ function DashboardContent() {
         </div>
       </div>
 
+      {/* Review Toolkit - Moved Higher */}
+      <div className="mb-12">
+        <section className="premium-card p-8 rounded-3xl overflow-hidden relative group bg-white border border-slate-100 shadow-xl shadow-slate-200/40">
+          <h2 className="text-xl font-bold mb-2">Review Toolkit</h2>
+          <p className="text-sm text-muted mb-8 font-medium">Your core tools for collecting customer reviews.</p>
+          
+          <div className="space-y-8">
+            <div className="relative group/copy">
+              <label className="text-[10px] font-black text-muted uppercase tracking-widest block mb-2">Your Smart Landing Link</label>
+              <div className="flex gap-2 p-1 bg-slate-50 border border-[#e2e8f0] rounded-2xl">
+                <div className="flex-1 h-11 bg-white rounded-xl px-4 flex items-center text-sm font-mono truncate text-slate-600 border border-[#f1f5f9] shadow-sm">
+                  {landingUrl}
+                </div>
+                <button onClick={handleCopyLink} className={`primary-button !h-11 px-8 text-xs font-black uppercase tracking-widest transition-all ${copyState === 'copied' ? '!bg-emerald-500 !shadow-emerald-100' : ''}`}>
+                  {copyState === 'copied' ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                      Copied
+                    </span>
+                  ) : 'Copy Link'}
+                </button>
+              </div>
+              <div className="absolute inset-x-0 -top-10 opacity-0 group-hover/copy:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+                <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+                  The smart link that filters reviews before they reach Google.
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start pt-8 border-t border-[#e2e8f0]/50">
+              <div className="md:col-span-4 flex flex-col items-center gap-4">
+                <div className="bg-white p-4 border-4 border-slate-50 rounded-[32px] shadow-2xl shadow-slate-200/50 group-hover:scale-[1.02] transition-transform">
+                  <img
+                    src={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=8`}
+                    alt="QR Code"
+                    className="w-full aspect-square max-w-[160px]"
+                  />
+                </div>
+                <div className="flex flex-col gap-2 w-full">
+                  <a
+                    href={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=12`}
+                    download={`${business.name.replace(/\s+/g, '-').toLowerCase()}-qr.png`}
+                    className="secondary-button !h-10 text-[10px] font-black uppercase tracking-widest bg-white shadow-sm hover:shadow-md transition-all"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download PNG
+                  </a>
+                  <button 
+                    onClick={() => {
+                      const printWindow = window.open('', '_blank');
+                      if (printWindow) {
+                        const qrUrl = `/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=12`;
+                        printWindow.document.write(`
+                          <html>
+                            <head>
+                              <title>Print QR Code - ${business.name}</title>
+                              <style>
+                                body { 
+                                  margin: 0; 
+                                  padding: 40px; 
+                                  display: flex; 
+                                  flex-direction: column; 
+                                  align-items: center; 
+                                  justify-content: center; 
+                                  min-height: 100vh;
+                                  font-family: system-ui, -apple-system, sans-serif;
+                                }
+                                img { max-width: 100%; height: auto; }
+                                h1 { margin-top: 20px; font-size: 24px; color: #1e293b; }
+                                p { margin-top: 10px; color: #64748b; font-size: 14px; }
+                              </style>
+                            </head>
+                            <body>
+                              <img src="${qrUrl}" alt="QR Code" />
+                              <h1>${business.name}</h1>
+                              <p>Scan to leave a review</p>
+                              <script>
+                                window.onload = function() {
+                                  window.print();
+                                  window.onafterprint = function() {
+                                    window.close();
+                                  };
+                                };
+                              </script>
+                            </body>
+                          </html>
+                        `);
+                        printWindow.document.close();
+                      } else {
+                        // Fallback to regular print if popup blocked
+                        window.print();
+                      }
+                    }}
+                    className="text-[10px] font-black text-slate-400 hover:text-brand uppercase tracking-widest text-center py-2 transition-colors cursor-pointer"
+                  >
+                    Print for display
+                  </button>
+                </div>
+              </div>
+              <div className="md:col-span-8 space-y-6">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-brand/10 text-brand flex items-center justify-center text-xs">✨</span>
+                    Smart Rep Engine
+                  </h3>
+                  <p className="text-sm text-slate-500 leading-relaxed font-medium">
+                    This QR code identifies happy customers automatically. If they pick 5 stars, they go to Google. If they pick less, they send you a private lead.
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-[#f1f5f9]">
+                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Best Place to Display</div>
+                    <p className="text-xs text-slate-600 font-bold">Checkout Counter</p>
+                  </div>
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-[#f1f5f9]">
+                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Expected Conversion</div>
+                    <p className="text-xs text-emerald-600 font-bold">+40% Review Rate</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 items-center text-[10px] font-black text-slate-400 uppercase tracking-widest bg-amber-50 p-3 rounded-xl border border-amber-100">
+                  <span className="text-amber-500 text-sm">💡</span>
+                  <span>Pro Tip: Add this code to your printed receipts for the highest scan rate.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
       {/* Primary Action: Review Requests */}
       <div className="mb-12">
         <ReviewRequestsModule 
@@ -366,138 +499,8 @@ function DashboardContent() {
           <FeedbackInbox initialItems={recentFeedback} businessId={business.id!} />
         </div>
 
-        {/* Main Toolkit Card */}
+        {/* Secondary Tools */}
         <div className="lg:col-span-7 space-y-12">
-          <section className="premium-card p-8 rounded-3xl overflow-hidden relative group bg-white border border-slate-100 shadow-xl shadow-slate-200/40">
-            <h2 className="text-xl font-bold mb-2">Review Toolkit</h2>
-            <p className="text-sm text-muted mb-8 font-medium">Your core tools for collecting customer reviews.</p>
-            
-            <div className="space-y-8">
-              <div className="relative group/copy">
-                <label className="text-[10px] font-black text-muted uppercase tracking-widest block mb-2">Your Smart Landing Link</label>
-                <div className="flex gap-2 p-1 bg-slate-50 border border-[#e2e8f0] rounded-2xl">
-                  <div className="flex-1 h-11 bg-white rounded-xl px-4 flex items-center text-sm font-mono truncate text-slate-600 border border-[#f1f5f9] shadow-sm">
-                    {landingUrl}
-                  </div>
-                  <button onClick={handleCopyLink} className={`primary-button !h-11 px-8 text-xs font-black uppercase tracking-widest transition-all ${copyState === 'copied' ? '!bg-emerald-500 !shadow-emerald-100' : ''}`}>
-                    {copyState === 'copied' ? (
-                      <span className="flex items-center gap-2">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                        Copied
-                      </span>
-                    ) : 'Copy Link'}
-                  </button>
-                </div>
-                <div className="absolute inset-x-0 -top-10 opacity-0 group-hover/copy:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                  <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
-                    The smart link that filters reviews before they reach Google.
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start pt-8 border-t border-[#e2e8f0]/50">
-                <div className="md:col-span-4 flex flex-col items-center gap-4">
-                  <div className="bg-white p-4 border-4 border-slate-50 rounded-[32px] shadow-2xl shadow-slate-200/50 group-hover:scale-[1.02] transition-transform">
-                    <img
-                      src={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=8`}
-                      alt="QR Code"
-                      className="w-full aspect-square max-w-[160px]"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-2 w-full">
-                    <a
-                      href={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=12`}
-                      download={`${business.name.replace(/\s+/g, '-').toLowerCase()}-qr.png`}
-                      className="secondary-button !h-10 text-[10px] font-black uppercase tracking-widest bg-white shadow-sm hover:shadow-md transition-all"
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                      </svg>
-                      Download PNG
-                    </a>
-                    <button 
-                      onClick={() => {
-                        const printWindow = window.open('', '_blank');
-                        if (printWindow) {
-                          const qrUrl = `/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=12`;
-                          printWindow.document.write(`
-                            <html>
-                              <head>
-                                <title>Print QR Code - ${business.name}</title>
-                                <style>
-                                  body { 
-                                    margin: 0; 
-                                    padding: 40px; 
-                                    display: flex; 
-                                    flex-direction: column; 
-                                    align-items: center; 
-                                    justify-content: center; 
-                                    min-height: 100vh;
-                                    font-family: system-ui, -apple-system, sans-serif;
-                                  }
-                                  img { max-width: 100%; height: auto; }
-                                  h1 { margin-top: 20px; font-size: 24px; color: #1e293b; }
-                                  p { margin-top: 10px; color: #64748b; font-size: 14px; }
-                                </style>
-                              </head>
-                              <body>
-                                <img src="${qrUrl}" alt="QR Code" />
-                                <h1>${business.name}</h1>
-                                <p>Scan to leave a review</p>
-                                <script>
-                                  window.onload = function() {
-                                    window.print();
-                                    window.onafterprint = function() {
-                                      window.close();
-                                    };
-                                  };
-                                </script>
-                              </body>
-                            </html>
-                          `);
-                          printWindow.document.close();
-                        } else {
-                          // Fallback to regular print if popup blocked
-                          window.print();
-                        }
-                      }}
-                      className="text-[10px] font-black text-slate-400 hover:text-brand uppercase tracking-widest text-center py-2 transition-colors cursor-pointer"
-                    >
-                      Print for display
-                    </button>
-                  </div>
-                </div>
-                <div className="md:col-span-8 space-y-6">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-lg bg-brand/10 text-brand flex items-center justify-center text-xs">✨</span>
-                      Smart Rep Engine
-                    </h3>
-                    <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                      This QR code identifies happy customers automatically. If they pick 5 stars, they go to Google. If they pick less, they send you a private lead.
-                    </p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-[#f1f5f9]">
-                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Best Place to Display</div>
-                      <p className="text-xs text-slate-600 font-bold">Checkout Counter</p>
-                    </div>
-                    <div className="p-4 bg-slate-50 rounded-2xl border border-[#f1f5f9]">
-                      <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Expected Conversion</div>
-                      <p className="text-xs text-emerald-600 font-bold">+40% Review Rate</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 items-center text-[10px] font-black text-slate-400 uppercase tracking-widest bg-amber-50 p-3 rounded-xl border border-amber-100">
-                    <span className="text-amber-500 text-sm">💡</span>
-                    <span>Pro Tip: Add this code to your printed receipts for the highest scan rate.</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
           {/* Multiple QR Codes for All Users (Locked for Free) */}
           <div className="relative group/qr">
             {!isPro && (
@@ -523,7 +526,7 @@ function DashboardContent() {
         </div>
 
         <div className="lg:col-span-5 space-y-6">
-          <ContactsPanel count={0} />
+          <ContactsPanel count={planUsage.contactsCount || 0} />
 
           {/* Integrations Card */}
           <section className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 group relative overflow-hidden">
