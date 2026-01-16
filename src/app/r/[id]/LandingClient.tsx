@@ -174,8 +174,15 @@ function LandingClientContent({ id }: { id: string }) {
     let url = (biz.reviewLink || '').trim();
     if (!url.startsWith('http')) url = `https://${url}`;
     
-    // Force 5 stars for the happy path
-    if (url.includes('placeid=')) {
+    // Force 5 stars for the happy path where possible
+    if (url.includes('google.com/search')) {
+      if (url.includes('#lrd=')) {
+        url = url.replace(/,(\d),1$/, ',5,1');
+      } else {
+        const separator = url.includes('#') ? '' : '#';
+        url = `${url}${separator}lrd=0x0:0x0,5,1`;
+      }
+    } else if (url.includes('placeid=') && !url.includes('search.google.com')) {
       const placeIdMatch = url.match(/([?&]placeid=)([^&]+)/);
       if (placeIdMatch) {
         const prefix = placeIdMatch[1];
@@ -184,8 +191,6 @@ function LandingClientContent({ id }: { id: string }) {
         const newPlaceId = `${cleanPlaceId},1,5`;
         url = url.replace(placeIdMatch[0], `${prefix}${newPlaceId}`);
       }
-    } else if (url.includes('google.com/search') && url.includes('#lrd=')) {
-      url = url.replace(/,(\d),1$/, ',5,1');
     }
 
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -226,9 +231,17 @@ function LandingClientContent({ id }: { id: string }) {
     if (!url.startsWith('http')) url = `https://${url}`;
     
     // Robustly inject or replace the rating in the Google URL
-    // Standard Google format for pre-filling stars: ...placeid=ID,1,5
-    if (url.includes('placeid=')) {
-      // Use a regex to replace or append the ,1,X suffix without URL encoding commas
+    if (url.includes('google.com/search')) {
+      if (url.includes('#lrd=')) {
+        // Format is #lrd=HEX:HEX,3,1 (where 3 is the rating)
+        url = url.replace(/,(\d),1$/, `,${plannedRating},1`);
+      } else {
+        // Append it if not present
+        const separator = url.includes('#') ? '' : '#';
+        url = `${url}${separator}lrd=0x0:0x0,${plannedRating},1`;
+      }
+    } else if (url.includes('placeid=') && !url.includes('search.google.com')) {
+      // ONLY append to placeid if it's NOT search.google.com (which we know 404s)
       const placeIdMatch = url.match(/([?&]placeid=)([^&]+)/);
       if (placeIdMatch) {
         const prefix = placeIdMatch[1];
@@ -237,13 +250,9 @@ function LandingClientContent({ id }: { id: string }) {
         const newPlaceId = `${cleanPlaceId},1,${plannedRating}`;
         url = url.replace(placeIdMatch[0], `${prefix}${newPlaceId}`);
       }
-    } else if (url.includes('google.com/search')) {
-      // If it's a search-style link, try to inject into the lrd fragment if present
-      if (url.includes('#lrd=')) {
-        // Format is #lrd=HEX:HEX,3,1 (where 3 is the rating)
-        url = url.replace(/,(\d),1$/, `,${plannedRating},1`);
-      }
     }
+    // If it's search.google.com/local/writereview?placeid=..., we leave it ALONE to avoid 404s
+    // since Google doesn't seem to support pre-filling stars via that specific shortcut URL.
 
     console.log('[DEBUG] Redirecting to Google with URL:', url);
     window.open(url, '_blank', 'noopener,noreferrer');
