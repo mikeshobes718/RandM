@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getEnv } from './env';
-import postgres from 'postgres';
+import { Pool } from 'pg';
 
 let _supabase: SupabaseClient | null = null;
 export function getSupabaseAdmin(): SupabaseClient {
@@ -12,57 +12,34 @@ export function getSupabaseAdmin(): SupabaseClient {
   return _supabase;
 }
 
-let _sql: any = null;
-export function getPgPool(): any {
+let _pool: Pool | null = null;
+export function getPgPool(): Pool | null {
   try {
     const env = getEnv();
     const password = env.SUPABASE_DB_PASSWORD;
     if (!password) return null;
-    if (_sql) return _sql;
+    if (_pool) return _pool;
     
     const host = env.SUPABASE_DB_HOST || 'aws-0-us-east-1.pooler.supabase.com';
     const port = Number(env.SUPABASE_DB_PORT) || 6543;
     const user = env.SUPABASE_DB_USER || 'postgres.rhnxzpbhoqbvoqyqmfox';
     const database = env.SUPABASE_DB_NAME || 'postgres';
 
-    const sql = postgres({
+    _pool = new Pool({
       host,
       port,
       database,
-      username: user,
+      user,
       password,
       ssl: { rejectUnauthorized: false },
-      prepare: false, // Critical for pooler
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
     });
 
-    _sql = sql;
-
-    // Return pg-compatible wrapper for migrations
-    return {
-      connect: async () => {
-        return {
-          query: async (text: string, params?: any[]) => {
-            // Basic transaction support for migrations
-            if (text.toLowerCase().trim() === 'begin') return { rows: [] };
-            if (text.toLowerCase().trim() === 'commit') return { rows: [] };
-            if (text.toLowerCase().trim() === 'rollback') return { rows: [] };
-            
-            const result = await sql.unsafe(text, params || []);
-            return { rows: Array.from(result) };
-          },
-          release: () => {},
-        };
-      },
-      query: async (text: string, params?: any[]) => {
-        const result = await sql.unsafe(text, params || []);
-        return { rows: Array.from(result) };
-      },
-      end: async () => {
-        await sql.end();
-        _sql = null;
-      }
-    };
-  } catch {
+    return _pool;
+  } catch (err) {
+    console.error('[PG POOL] Error creating pool:', err);
     return null;
   }
 }
