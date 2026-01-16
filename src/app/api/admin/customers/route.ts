@@ -51,28 +51,9 @@ export async function GET(req: NextRequest) {
     const usersMap = Object.fromEntries((usersData || []).map(u => [u.uid, u]));
     const bizMap = Object.fromEntries((bizData || []).map(b => [b.owner_uid, b]));
 
-    // Fetch leads to see who closed them
-    let closedByMap: Record<string, string> = {};
-    try {
-      // ONLY fetch the columns we need, and limit to 2000 for sanity
-      const { data: leads, error: leadsError } = await supa
-        .from('leads')
-        .select('name, last_called_by_email')
-        .eq('call_status', 'closed')
-        .limit(2000);
-      
-      if (leadsError) {
-        console.warn('[ADMIN CUSTOMERS API] Failed to fetch closedBy details:', leadsError.message);
-      } else {
-        (leads || []).forEach(l => {
-          if (l.name) {
-            closedByMap[l.name.toLowerCase()] = l.last_called_by_email || 'Self';
-          }
-        });
-      }
-    } catch (e) {
-      console.warn('[ADMIN CUSTOMERS API] Error fetching leads for closedBy:', e);
-    }
+    // Skip the leads closed-by lookup to avoid schema issues
+    // This can be re-enabled once schema is stable
+    const closedByMap: Record<string, string> = {};
 
     const customers = subsData
       .map(sub => {

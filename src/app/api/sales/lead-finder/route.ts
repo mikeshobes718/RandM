@@ -26,30 +26,46 @@ export async function GET(req: Request) {
     let combinedLeads: any[] = [];
     let googlePlaceIdsFound: string[] = [];
 
-    // 1. STEP 1: Search Database First (FREE)
+    // 1. STEP 1: Search Database First (FREE) - Paginate to get ALL leads
     if (type && state) {
-      let dbQuery = supa
-        .from('leads')
-        .select('*, last_caller:last_called_by(email)')
-        .eq('business_type', type)
-        .eq('state', state)
-        .lte('rating', maxRating);
+      let allDbLeads: any[] = [];
+      let offset = 0;
+      const batchSize = 1000;
+      let hasMore = true;
 
-      // If not "All Cities", filter by specific city
-      if (!isAllCities && normalizedCity) {
-        dbQuery = dbQuery.eq('city', normalizedCity);
+      while (hasMore) {
+        let dbQuery = supa
+          .from('leads')
+          .select('*')
+          .eq('business_type', type)
+          .eq('state', state)
+          .lte('rating', maxRating);
+
+        // If not "All Cities", filter by specific city
+        if (!isAllCities && normalizedCity) {
+          dbQuery = dbQuery.eq('city', normalizedCity);
+        }
+
+        const { data: dbLeads, error: dbError } = await dbQuery
+          .order('rating', { ascending: true })
+          .range(offset, offset + batchSize - 1);
+
+        if (dbError) {
+          console.warn('[LEAD FINDER API] DB Search error:', dbError.message);
+          hasMore = false;
+        } else if (!dbLeads || dbLeads.length === 0) {
+          hasMore = false;
+        } else {
+          allDbLeads = [...allDbLeads, ...dbLeads];
+          offset += batchSize;
+          if (dbLeads.length < batchSize) hasMore = false;
+          // Safety limit: max 10k leads per search
+          if (offset >= 10000) hasMore = false;
+        }
       }
 
-      const { data: dbLeads, error: dbError } = await dbQuery
-        .order('rating', { ascending: true })
-        .limit(1000); // Increased limit significantly to show all paid leads from DB
-
-      if (dbError) {
-        console.warn('[LEAD FINDER API] DB Search error:', dbError.message);
-      }
-
-      if (dbLeads) {
-        combinedLeads = dbLeads.map(l => ({
+      if (allDbLeads.length > 0) {
+        combinedLeads = allDbLeads.map(l => ({
           id: l.google_place_id,
           dbId: l.id,
           name: l.name,
@@ -62,12 +78,11 @@ export async function GET(req: Request) {
           website: l.website,
           timesCalled: l.times_called || 0,
           lastCalledAt: l.last_called_at,
-          lastCalledByEmail: l.last_caller?.email || null,
+          lastCalledByEmail: l.last_called_by_email || null,
           callStatus: l.call_status || 'fresh',
           nextFollowup: l.next_followup,
-          notes: l.notes,
         }));
-        googlePlaceIdsFound = dbLeads.map(l => l.google_place_id);
+        googlePlaceIdsFound = allDbLeads.map(l => l.google_place_id);
       }
     }
 

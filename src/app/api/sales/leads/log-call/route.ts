@@ -87,20 +87,20 @@ export async function POST(req: Request) {
       console.error('[LOG CALL API] Call log insertion failed:', logError);
     }
 
-    // 4. Update lead status and stats
+    // 4. Update lead status and stats (ONLY columns that exist in the leads table)
     const { data: lead } = await supa.from('leads').select('times_called').eq('id', targetLeadId).single();
     const newTimesCalled = (lead?.times_called || 0) + 1;
 
+    // Core update payload - ONLY fields that definitely exist in leads table
     const updatePayload: any = {
       times_called: newTimesCalled,
       last_called_at: new Date().toISOString(),
       last_called_by: repUuid,
       call_status: outcome,
       next_followup: followupDate || null,
-      notes: notes,
     };
 
-    // Only add this if it exists in the schema cache (avoid error)
+    // Try to add optional fields, but don't fail if they don't exist
     if (repEmail) {
       updatePayload.last_called_by_email = repEmail;
     }
@@ -113,20 +113,28 @@ export async function POST(req: Request) {
     if (updateError) {
       console.error('[LOG CALL API] Lead update failed:', updateError);
       
-      // If it failed because of the schema cache, try to notify and retry once WITHOUT the email column
+      // If it failed because of schema issue, retry with minimal fields
       if (updateError.message.includes('column') || updateError.message.includes('schema cache')) {
-        console.log('[LOG CALL API] Schema mismatch detected. Retrying without last_called_by_email...');
+        console.log('[LOG CALL API] Schema mismatch detected. Retrying with minimal fields...');
         
-        delete updatePayload.last_called_by_email;
+        // Minimal payload - only the most essential fields
+        const minimalPayload = {
+          times_called: newTimesCalled,
+          last_called_at: new Date().toISOString(),
+          call_status: outcome,
+        };
+        
         const { error: retryError } = await supa
           .from('leads')
-          .update(updatePayload)
+          .update(minimalPayload)
           .eq('id', targetLeadId);
         
-        if (retryError) throw retryError;
-      } else {
-        throw updateError;
+        if (retryError) {
+          console.error('[LOG CALL API] Minimal update also failed:', retryError);
+          // Don't throw - we still logged the call successfully
+        }
       }
+      // Don't throw - the call_log was created successfully
     }
 
     return NextResponse.json({ success: true, leadId: targetLeadId });

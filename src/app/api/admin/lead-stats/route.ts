@@ -45,10 +45,13 @@ export async function GET() {
       .map(([state, count]) => ({ state, count }))
       .sort((a, b) => b.count - a.count);
 
+    // Sum the breakdown to double-check against totalLeads
+    const breakdownSum = sorted.reduce((sum, s) => sum + s.count, 0);
+    
     return NextResponse.json({ 
       breakdown: sorted, 
       totalStates: sorted.length,
-      totalLeads: totalLeads || (data || []).length
+      totalLeads: totalLeads || breakdownSum
     });
   } catch (error: any) {
     console.error('[LEAD STATS API] Error:', error);
