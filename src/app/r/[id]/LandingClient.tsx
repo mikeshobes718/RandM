@@ -474,14 +474,14 @@ function LandingClientContent({ id }: { id: string }) {
                   <div className="space-y-3">
                     <input
                       className={inputClass}
-                      placeholder="Email Address"
+                      placeholder="Email Address (optional)"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
                     <input
                       className={inputClass}
-                      placeholder="Phone Number"
+                      placeholder="Phone Number (optional)"
                       value={phone}
                       onChange={(e) => setPhone(formatPhone(e.target.value))}
                     />
