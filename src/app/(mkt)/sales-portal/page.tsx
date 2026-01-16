@@ -590,37 +590,50 @@ export default function SalesPortalPage() {
             <div className="space-y-12">
               {/* Leaderboard */}
               <section ref={sectionRefs['leaderboard']} className="scroll-mt-24">
-                <h2 className="text-xl font-black tracking-tight mb-6">Leaderboard</h2>
-                <div className="premium-card rounded-3xl bg-white overflow-hidden border border-slate-100 min-h-[200px]">
+                <h2 className="text-xl font-black tracking-tight mb-6">Sales Leaderboard</h2>
+                <div className="premium-card rounded-[32px] bg-white overflow-hidden border border-slate-100 min-h-[450px] shadow-xl shadow-slate-200/40">
                   {leaderboard.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center p-8 text-center">
-                      <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center mb-4">
-                        <span className="text-xl">🏆</span>
+                    <div className="h-[450px] flex flex-col items-center justify-center p-8 text-center">
+                      <div className="w-16 h-16 rounded-[24px] bg-slate-50 flex items-center justify-center mb-6 border border-slate-100">
+                        <span className="text-3xl">🏆</span>
                       </div>
-                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-relaxed">
-                        No active stats found.<br />Log a call to start the race!
+                      <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-2">No active stats yet</h4>
+                      <p className="text-xs font-medium text-slate-400 max-w-[180px] leading-relaxed">
+                        Log your first call to claim your spot on the leaderboard!
                       </p>
                     </div>
                   ) : (
-                    leaderboard.map((item, i) => (
-                      <div key={item.email} className={`p-4 flex items-center justify-between ${i < leaderboard.length - 1 ? 'border-b border-slate-100' : ''} ${i === 0 ? 'bg-brand/5' : ''}`}>
-                        <div className="flex items-center gap-3">
-                          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${
-                            i === 0 ? 'bg-brand text-white' : 'bg-slate-100 text-slate-400'
-                          }`}>
-                            {i + 1}
-                          </span>
-                          <div>
-                            <p className="text-xs font-bold text-slate-900 truncate max-w-[120px]">{item.name || item.email.split('@')[0]}</p>
-                            <p className="text-[9px] text-slate-400 font-medium truncate max-w-[120px]">{item.email}</p>
-                            <p className="text-[10px] text-brand font-bold uppercase tracking-widest mt-0.5">{item.closes} Closes</p>
+                    <div className="divide-y divide-slate-100">
+                      {leaderboard.map((item, i) => (
+                        <div key={item.email} className={`p-5 flex items-center justify-between transition-colors hover:bg-slate-50/50 ${i === 0 ? 'bg-brand/[0.03]' : ''}`}>
+                          <div className="flex items-center gap-4">
+                            <div className="relative">
+                              <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black shadow-sm ${
+                                i === 0 ? 'bg-brand text-white' : 
+                                i === 1 ? 'bg-slate-200 text-slate-600' :
+                                i === 2 ? 'bg-amber-100 text-amber-700' :
+                                'bg-slate-100 text-slate-400'
+                              }`}>
+                                {i + 1}
+                              </span>
+                              {i === 0 && <span className="absolute -top-1 -right-1 text-[10px]">👑</span>}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-black text-slate-900 truncate max-w-[140px]">{item.name || item.email.split('@')[0]}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="px-1.5 py-0.5 bg-brand/10 text-brand text-[9px] font-black rounded uppercase tracking-widest">
+                                  {item.closes} Closes
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-black text-slate-900">{item.calls}</p>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Calls</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-xs font-black text-slate-900">{item.calls} Calls</p>
-                        </div>
-                      </div>
-                    ))
+                      ))}
+                    </div>
                   )}
                 </div>
               </section>

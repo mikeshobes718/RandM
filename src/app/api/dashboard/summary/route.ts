@@ -357,7 +357,7 @@ export async function GET(req: NextRequest) {
           let icon = '📱', label = e.event.replace(/_/g, ' ');
           if (e.event === 'google_opened') { icon = '⭐'; label = 'Redirected to Google'; }
           if (e.event === 'feedback_submitted') { icon = '✉️'; label = 'New Private Feedback'; }
-          if (e.event === 'rating_selected') { icon = '✨'; label = 'Rating Selected'; }
+          if (e.event === 'rating_selected' || e.event === 'sentiment_selected') { icon = '✨'; label = 'Star Rating Selected'; }
           if (e.event === 'page_opened') { icon = '🌐'; label = 'Review Page Opened'; }
           return { event: label, time: e.created_at, icon };
         }),

@@ -603,13 +603,14 @@ function DashboardContent() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {recentFeedback.map((item: any) => {
+                  {recentFeedback.map((item: any, idx: number) => {
                     const isEvent = item.type === 'event';
+                    const itemId = item.id || `feedback-${idx}`;
                     return (
-                      <div key={item.id} className="p-4 bg-accent/30 rounded-xl border border-[#e2e8f0]/50">
+                      <div key={itemId} className="p-4 bg-accent/30 rounded-xl border border-[#e2e8f0]/50 hover:border-brand/30 transition-all group/item">
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold">{isEvent ? 'Verified Redirect' : (item.name || 'Anonymous')}</span>
+                            <span className="text-xs font-bold group-hover/item:text-brand transition-colors">{isEvent ? 'Verified Redirect' : (item.name || 'Anonymous')}</span>
                             {!isEvent && (
                               <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
                                 item.rating >= 4 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'

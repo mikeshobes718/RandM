@@ -99,27 +99,43 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
         display: false,
       },
       tooltip: {
+        enabled: true,
         mode: 'index' as const,
         intersect: false,
+        backgroundColor: '#0f172a',
+        titleFont: { size: 12, weight: 'bold' as const },
+        bodyFont: { size: 12 },
+        padding: 12,
+        borderRadius: 8,
+        displayColors: true,
       },
     },
     scales: {
       y: {
         beginAtZero: true,
         grid: {
-          display: false,
+          display: true,
+          color: 'rgba(0,0,0,0.03)',
         },
+        ticks: {
+          font: { size: 10 },
+          color: '#94a3b8',
+        }
       },
       x: {
         grid: {
           display: false,
         },
+        ticks: {
+          font: { size: 10 },
+          color: '#94a3b8',
+        }
       }
     }
   };
 
   const conversionRate = data.funnel && data.funnel.scans > 0 
-    ? Math.round((data.funnel.completions / data.funnel.scans) * 100) 
+    ? Math.min(100, Math.round((data.funnel.completions / data.funnel.scans) * 100)) 
     : 0;
 
   const topSources = data.sources 
