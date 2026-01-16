@@ -1,77 +1,82 @@
 import { NextResponse } from 'next/server';
-import { getPgPool } from '@/lib/supabaseAdmin';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function GET() {
-  const pool = getPgPool();
-  if (!pool) return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
+  const supa = getSupabaseAdmin();
+
+  // Default values if tables don't exist
+  const defaults = {
+    mrr: 0, activeCustomers: 0, activeReps: 0, closesThisWeek: 0, commissionsOwed: 0,
+    callsToday: 0, callsThisWeek: 0, totalCalls: 0, totalCloses: 0, repActivity: []
+  };
 
   try {
-    // Check if tables exist
-    const { rows: tableCheck } = await pool.query("SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'reps'");
-    if (tableCheck.length === 0) {
-      return NextResponse.json({ 
-        error: 'Database tables are missing. Please run migrations.',
-        mrr: 0, activeCustomers: 0, activeReps: 0, closesThisWeek: 0, commissionsOwed: 0, 
-        callsToday: 0, callsThisWeek: 0, totalCalls: 0, totalCloses: 0, repActivity: []
-      });
-    }
-
-    // 1. MRR (sum of active subscriptions)
-    const mrrRes = await pool.query(`
-      SELECT SUM(CASE 
-        WHEN plan_id = 'unlimited' THEN 199 
-        WHEN plan_id = 'pro' THEN 99 
-        ELSE 49 
-      END) as mrr
-      FROM subscriptions 
-      WHERE status = 'active'
-    `);
+    // 1. MRR from subscriptions
+    const { data: subs } = await supa.from('subscriptions').select('plan_id').eq('status', 'active');
+    const mrr = (subs || []).reduce((sum, s) => {
+      if (s.plan_id === 'unlimited') return sum + 199;
+      if (s.plan_id === 'pro') return sum + 99;
+      return sum + 49;
+    }, 0);
 
     // 2. Active Customers
-    const customersRes = await pool.query(`SELECT COUNT(*) as active_customers FROM subscriptions WHERE status = 'active'`);
+    const { count: activeCustomers } = await supa.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active');
 
     // 3. Active Reps
-    const repsRes = await pool.query(`SELECT COUNT(*) as active_reps FROM reps WHERE status IN ('trial', 'active')`);
+    let activeReps = 0;
+    const { count: repsCount, error: repsErr } = await supa.from('reps').select('*', { count: 'exact', head: true }).in('status', ['trial', 'active']);
+    if (!repsErr) activeReps = repsCount || 0;
 
     // 4. Closes This Week
-    const closesWeekRes = await pool.query(`
-      SELECT COUNT(*) as closes 
-      FROM businesses 
-      WHERE created_at > NOW() - INTERVAL '7 days'
-    `);
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { count: closesThisWeek } = await supa.from('businesses').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo);
 
     // 5. Commissions Owed
-    const owedRes = await pool.query(`SELECT SUM(amount) as owed FROM commissions WHERE status = 'pending'`);
+    let commissionsOwed = 0;
+    const { data: pendingComms } = await supa.from('commissions').select('amount').eq('status', 'pending');
+    if (pendingComms) commissionsOwed = pendingComms.reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
 
-    // 6. Call Metrics
-    const callsTodayRes = await pool.query(`SELECT COUNT(*) as calls FROM call_log WHERE timestamp > CURRENT_DATE`);
-    const callsWeekRes = await pool.query(`SELECT COUNT(*) as calls FROM call_log WHERE timestamp > NOW() - INTERVAL '7 days'`);
-    const totalCallsRes = await pool.query(`SELECT COUNT(*) as calls FROM call_log`);
-    const totalClosesRes = await pool.query(`SELECT COUNT(*) as closes FROM call_log WHERE outcome = 'closed'`);
+    // 6. Call Metrics (only if call_log table exists)
+    let callsToday = 0, callsThisWeek = 0, totalCalls = 0, totalCloses = 0;
+    const todayStart = new Date().toISOString().split('T')[0];
+    
+    const { count: ct } = await supa.from('call_log').select('*', { count: 'exact', head: true }).gte('timestamp', todayStart);
+    if (ct !== null) callsToday = ct;
+    
+    const { count: cw } = await supa.from('call_log').select('*', { count: 'exact', head: true }).gte('timestamp', weekAgo);
+    if (cw !== null) callsThisWeek = cw;
+    
+    const { count: tc } = await supa.from('call_log').select('*', { count: 'exact', head: true });
+    if (tc !== null) totalCalls = tc;
+    
+    const { count: tcl } = await supa.from('call_log').select('*', { count: 'exact', head: true }).eq('outcome', 'closed');
+    if (tcl !== null) totalCloses = tcl;
 
-    // 7. Call Activity by Rep (Last 7 Days)
-    const repActivityRes = await pool.query(`
-      SELECT r.name, COUNT(cl.id) as call_count
-      FROM reps r
-      LEFT JOIN call_log cl ON cl.rep_id = r.id AND cl.timestamp > NOW() - INTERVAL '7 days'
-      WHERE r.status IN ('trial', 'active')
-      GROUP BY r.name
-      ORDER BY call_count DESC
-    `);
+    // 7. Rep Activity
+    let repActivity: any[] = [];
+    const { data: activeRepsList } = await supa.from('reps').select('id, name').in('status', ['trial', 'active']);
+    if (activeRepsList) {
+      repActivity = await Promise.all(activeRepsList.map(async (rep) => {
+        const { count } = await supa.from('call_log').select('*', { count: 'exact', head: true }).eq('rep_id', rep.id).gte('timestamp', weekAgo);
+        return { name: rep.name, call_count: count || 0 };
+      }));
+      repActivity.sort((a, b) => b.call_count - a.call_count);
+    }
 
     return NextResponse.json({
-      mrr: mrrRes.rows[0]?.mrr || 0,
-      activeCustomers: customersRes.rows[0]?.active_customers || 0,
-      activeReps: repsRes.rows[0]?.active_reps || 0,
-      closesThisWeek: closesWeekRes.rows[0]?.closes || 0,
-      commissionsOwed: owedRes.rows[0]?.owed || 0,
-      callsToday: callsTodayRes.rows[0]?.calls || 0,
-      callsThisWeek: callsWeekRes.rows[0]?.calls || 0,
-      totalCalls: totalCallsRes.rows[0]?.calls || 0,
-      totalCloses: totalClosesRes.rows[0]?.closes || 0,
-      repActivity: (repActivityRes as any).rows,
+      mrr,
+      activeCustomers: activeCustomers || 0,
+      activeReps,
+      closesThisWeek: closesThisWeek || 0,
+      commissionsOwed,
+      callsToday,
+      callsThisWeek,
+      totalCalls,
+      totalCloses,
+      repActivity,
     });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error('[ADMIN OVERVIEW API] Error:', err);
+    return NextResponse.json({ ...defaults, error: err.message });
   }
 }

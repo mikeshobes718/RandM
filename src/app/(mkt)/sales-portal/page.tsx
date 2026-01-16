@@ -233,11 +233,11 @@ export default function SalesPortal() {
         handleSearch({ preventDefault: () => {} } as any);
       } else {
         const data = await res.json();
-        alert(`Failed to save call log: ${data.error || 'Unknown error'}\n\nPayload sent: ${JSON.stringify({
-          leadId: selectedLead.dbId,
-          googlePlaceId: selectedLead.id,
-          repId: repId
-        }, null, 2)}`);
+        if (data.code === 'TABLES_MISSING') {
+          alert(`⚠️ Database Setup Required\n\nThe admin needs to run the database migration first.\n\nTechnical details: ${data.error}`);
+        } else {
+          alert(`Failed to save call log: ${data.error || 'Unknown error'}`);
+        }
       }
     } catch (err: any) {
       console.error("Failed to log call:", err);

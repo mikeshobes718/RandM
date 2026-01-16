@@ -7,6 +7,19 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { leadId, googlePlaceId, leadData, repId, outcome, notes, followupDate } = body;
 
+    // First check if leads table exists
+    const { error: tableCheck } = await supa.from('leads').select('id').limit(1);
+    if (tableCheck) {
+      const msg = tableCheck.message || '';
+      if (msg.includes('does not exist') || msg.includes('schema cache') || tableCheck.code === 'PGRST204') {
+        return NextResponse.json({ 
+          error: `Database tables not set up yet. Please run the SQL migration in Supabase Dashboard. See /MANUAL_MIGRATION_SQL.md for instructions.`,
+          hint: 'Go to Supabase Dashboard → SQL Editor → Run the migration SQL',
+          code: 'TABLES_MISSING'
+        }, { status: 503 });
+      }
+    }
+
     let targetLeadId = leadId;
 
     // 1. If leadId is missing, try to find or create the lead in the DB
@@ -51,20 +64,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ 
         error: 'Missing lead identification', 
         received: { leadId, googlePlaceId, hasLeadData: !!leadData },
-        body
       }, { status: 400 });
     }
 
-    // 2. Check if tables exist before proceeding
-    const { error: checkError } = await supa.from('leads').select('id').limit(1);
-    if (checkError && checkError.code === 'PGRST205') {
-      return NextResponse.json({ 
-        error: 'Database tables are missing. Please run migrations via /api/admin/migrate?token=rm_admin_pass_2026',
-        details: checkError
-      }, { status: 503 });
-    }
-
-    // 3. Create call log entry
+    // 2. Create call log entry (rep_id can be null for unregistered reps)
     const { error: logError } = await supa.from('call_log').insert({
       lead_id: targetLeadId,
       rep_id: repId?.includes('-') ? repId : null,
@@ -75,9 +78,10 @@ export async function POST(req: Request) {
 
     if (logError) {
       console.error('[LOG CALL API] Call log insertion failed:', logError);
+      // Don't throw - continue to update lead
     }
 
-    // 4. Update lead status and stats
+    // 3. Update lead status and stats
     const { data: lead } = await supa.from('leads').select('times_called').eq('id', targetLeadId).single();
     const newTimesCalled = (lead?.times_called || 0) + 1;
 
@@ -92,12 +96,19 @@ export async function POST(req: Request) {
 
     if (updateError) {
       console.error('[LOG CALL API] Lead update failed:', updateError);
-      throw updateError;
+      // Don't throw - call was still logged
     }
 
     return NextResponse.json({ success: true, leadId: targetLeadId });
   } catch (error: any) {
     console.error('[LOG CALL API] Error:', error);
-    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+    const msg = error.message || 'Internal error';
+    if (msg.includes('does not exist') || msg.includes('schema cache')) {
+      return NextResponse.json({ 
+        error: `Database tables not set up. Run the migration SQL in Supabase Dashboard.`,
+        code: 'TABLES_MISSING'
+      }, { status: 503 });
+    }
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
