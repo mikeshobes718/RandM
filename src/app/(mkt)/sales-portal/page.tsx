@@ -233,7 +233,11 @@ export default function SalesPortal() {
         handleSearch({ preventDefault: () => {} } as any);
       } else {
         const data = await res.json();
-        alert(`Failed to save call log: ${data.error || 'Unknown error'}`);
+        alert(`Failed to save call log: ${data.error || 'Unknown error'}\n\nPayload sent: ${JSON.stringify({
+          leadId: selectedLead.dbId,
+          googlePlaceId: selectedLead.id,
+          repId: repId
+        }, null, 2)}`);
       }
     } catch (err: any) {
       console.error("Failed to log call:", err);
