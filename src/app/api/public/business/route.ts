@@ -24,7 +24,7 @@ export async function GET(req: Request) {
       .eq('id', id)
       .maybeSingle();
     if (websiteData) {
-      data.website = (websiteData as any).website;
+      (data as any).website = (websiteData as any).website;
     }
   }
 
