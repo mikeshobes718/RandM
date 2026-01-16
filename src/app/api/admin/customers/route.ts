@@ -40,8 +40,21 @@ export async function GET(req: NextRequest) {
     const bizMap = Object.fromEntries((bizData || []).map(b => [b.owner_uid, b]));
 
     // Fetch leads to see who closed them
-    const { data: leads } = await supa.from('leads').select('name, last_called_by_email').eq('call_status', 'closed');
-    const closedByMap = Object.fromEntries((leads || []).map(l => [l.name.toLowerCase(), l.last_called_by_email]));
+    let closedByMap: Record<string, string> = {};
+    try {
+      const { data: leads, error: leadsError } = await supa
+        .from('leads')
+        .select('name, last_called_by_email')
+        .eq('call_status', 'closed');
+      
+      if (leadsError) {
+        console.warn('[ADMIN CUSTOMERS API] Failed to fetch closedBy details (likely schema cache):', leadsError.message);
+      } else {
+        closedByMap = Object.fromEntries((leads || []).map(l => [l.name.toLowerCase(), l.last_called_by_email]));
+      }
+    } catch (e) {
+      console.warn('[ADMIN CUSTOMERS API] Error fetching leads for closedBy:', e);
+    }
 
     const customers = subsData
       .map(sub => {

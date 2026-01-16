@@ -91,19 +91,42 @@ export async function POST(req: Request) {
     const { data: lead } = await supa.from('leads').select('times_called').eq('id', targetLeadId).single();
     const newTimesCalled = (lead?.times_called || 0) + 1;
 
-    const { error: updateError } = await supa.from('leads').update({
+    const updatePayload: any = {
       times_called: newTimesCalled,
       last_called_at: new Date().toISOString(),
       last_called_by: repUuid,
-      last_called_by_email: repEmail, 
       call_status: outcome,
       next_followup: followupDate || null,
       notes: notes,
-    }).eq('id', targetLeadId);
+    };
+
+    // Only add this if it exists in the schema cache (avoid error)
+    if (repEmail) {
+      updatePayload.last_called_by_email = repEmail;
+    }
+
+    const { error: updateError } = await supa
+      .from('leads')
+      .update(updatePayload)
+      .eq('id', targetLeadId);
 
     if (updateError) {
       console.error('[LOG CALL API] Lead update failed:', updateError);
-      throw updateError;
+      
+      // If it failed because of the schema cache, try to notify and retry once WITHOUT the email column
+      if (updateError.message.includes('column') || updateError.message.includes('schema cache')) {
+        console.log('[LOG CALL API] Schema mismatch detected. Retrying without last_called_by_email...');
+        
+        delete updatePayload.last_called_by_email;
+        const { error: retryError } = await supa
+          .from('leads')
+          .update(updatePayload)
+          .eq('id', targetLeadId);
+        
+        if (retryError) throw retryError;
+      } else {
+        throw updateError;
+      }
     }
 
     return NextResponse.json({ success: true, leadId: targetLeadId });

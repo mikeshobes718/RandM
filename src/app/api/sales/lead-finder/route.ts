@@ -40,9 +40,13 @@ export async function GET(req: Request) {
         dbQuery = dbQuery.eq('city', normalizedCity);
       }
 
-      const { data: dbLeads } = await dbQuery
+      const { data: dbLeads, error: dbError } = await dbQuery
         .order('rating', { ascending: true })
-        .limit(500); // Increased limit to show more leads from database
+        .limit(1000); // Increased limit significantly to show all paid leads from DB
+
+      if (dbError) {
+        console.warn('[LEAD FINDER API] DB Search error:', dbError.message);
+      }
 
       if (dbLeads) {
         combinedLeads = dbLeads.map(l => ({
