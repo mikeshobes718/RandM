@@ -62,6 +62,7 @@ export default function FeaturesPage() {
             <h1 className="text-balance mb-8">
               Everything you need to <br className="hidden md:block" />
               <span className="text-brand">master your reputation.</span>
+              {/* CANARY_1655 */}
             </h1>
             <div className="text-xl text-muted max-w-2xl mx-auto mb-6 text-balance leading-relaxed">
               <p>Get more Google reviews the compliant way + recover unhappy customers privately.</p>
