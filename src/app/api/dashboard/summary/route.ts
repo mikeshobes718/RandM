@@ -372,11 +372,22 @@ export async function GET(req: NextRequest) {
     // Plan Limits
     let requestsUsed = 0;
     let requestsLimit = 100;
-    if (planStatus === 'starter') requestsLimit = 3;
-    if (planStatus === 'active') {
+    let planName = 'Small Business';
+    
+    if (planStatus === 'starter') {
+      requestsLimit = 3;
+      planName = 'Starter';
+    } else if (planStatus === 'active') {
       const planId = (subscriptionData?.plan_id || '').toLowerCase();
-      if (planId.includes('mid') || planId.includes('growth')) requestsLimit = 100;
-      else requestsLimit = 999999; // Unlimited
+      if (planId.includes('mid') || planId.includes('growth')) {
+        requestsLimit = 100;
+        planName = 'Small Business';
+      } else {
+        requestsLimit = 999999; // Unlimited
+        planName = 'Unlimited';
+      }
+    } else {
+      planName = 'Free';
     }
 
     try {
@@ -408,7 +419,8 @@ export async function GET(req: NextRequest) {
         used: requestsUsed,
         limit: requestsLimit,
         qrScans: shareLinkScans,
-        isUnlimited: requestsLimit > 1000
+        isUnlimited: requestsLimit > 1000,
+        planName
       },
       recentCampaigns
     });

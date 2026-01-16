@@ -80,7 +80,7 @@ function DashboardContent() {
   const [squareStatus, setSquareStatus] = useState<{ connected: boolean; isEnabled?: boolean; lastBackfillAt?: string | null } | null>(null);
   const [planStatus, setPlanStatus] = useState<string>('none');
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
-  const [planUsage, setPlanUsage] = useState({ used: 0, limit: 100, qrScans: 0, isUnlimited: false });
+  const [planUsage, setPlanUsage] = useState({ used: 0, limit: 100, qrScans: 0, isUnlimited: false, planName: 'Small Business' });
   const [recentCampaigns, setRecentCampaigns] = useState<Campaign[]>([]);
 
   const isFromEdit = searchParams?.get('from') === 'edit';
@@ -226,8 +226,8 @@ function DashboardContent() {
       </div>
 
       {/* Top Row: Activation & Plan */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-12">
-        <div className="md:col-span-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-12">
+        <div className="lg:col-span-8">
           <ActivationWidget 
             business={business} 
             stats={stats} 
@@ -235,9 +235,9 @@ function DashboardContent() {
             isPro={isPro}
           />
         </div>
-        <div className="md:col-span-4">
+        <div className="lg:col-span-4">
           <PlanUsageCard 
-            planName={planStatus === 'active' ? 'Small Business' : planStatus === 'starter' ? 'Starter' : 'Unlimited'}
+            planName={planUsage.planName}
             requestsUsed={planUsage.used}
             requestsLimit={planUsage.limit}
             qrScans={planUsage.qrScans}
@@ -246,18 +246,31 @@ function DashboardContent() {
         </div>
       </div>
 
+      {/* Primary Action: Review Requests */}
+      <div className="mb-12">
+        <ReviewRequestsModule 
+          used={planUsage.used}
+          limit={planUsage.limit}
+          recentCampaigns={recentCampaigns}
+          isPro={isPro}
+        />
+      </div>
+
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="premium-card p-6 rounded-2xl group relative">
-          <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Google Rating</div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
+        <div className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 group relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <span className="text-4xl">⭐</span>
+          </div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Google Rating</p>
           <div className="flex items-end gap-3">
-            <div className="text-4xl font-black">
+            <div className="text-5xl font-black text-slate-900 tracking-tighter leading-none">
               {stats.averageRating !== null && stats.averageRating !== undefined ? 
                 stats.averageRating.toFixed(1) : 
                 <span className="text-2xl text-muted">N/A</span>
               }
             </div>
-            <div className="flex mb-1.5">
+            <div className="flex mb-1 gap-0.5">
               {stats.averageRating !== null && stats.averageRating !== undefined ? (
                 [1, 2, 3, 4, 5].map((s) => (
                   <svg key={s} className={`w-4 h-4 ${s <= (stats.averageRating ?? 0) ? 'text-amber-400' : 'text-slate-200'}`} fill="currentColor" viewBox="0 0 20 20">
@@ -276,9 +289,13 @@ function DashboardContent() {
             </div>
           </div>
         </div>
-        <div className="premium-card p-6 rounded-2xl group relative">
-          <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">New Google Reviews</div>
-          <div className="text-4xl font-black">{stats.reviewsThisMonth}</div>
+
+        <div className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 group relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <span className="text-4xl">📊</span>
+          </div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">New Google Reviews</p>
+          <div className="text-5xl font-black text-slate-900 tracking-tighter leading-none">{stats.reviewsThisMonth}</div>
           {/* Tooltip */}
           <div className="absolute inset-x-0 -top-12 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
             <div className="bg-slate-900 text-white text-[10px] py-2 px-3 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
@@ -286,9 +303,13 @@ function DashboardContent() {
             </div>
           </div>
         </div>
-        <div className="premium-card p-6 rounded-2xl group relative">
-          <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Link Scans This Month</div>
-          <div className="text-4xl font-black">{stats.shareLinkScans}</div>
+
+        <div className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 group relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <span className="text-4xl">📱</span>
+          </div>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Link Scans This Month</p>
+          <div className="text-5xl font-black text-slate-900 tracking-tighter leading-none">{stats.shareLinkScans}</div>
           {/* Tooltip */}
           <div className="absolute inset-x-0 -top-12 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
             <div className="bg-slate-900 text-white text-[10px] py-2 px-3 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
@@ -299,7 +320,7 @@ function DashboardContent() {
       </div>
 
       {/* Advanced Analytics & Insights Section */}
-      <div className="mt-12 relative">
+      <div className="mt-12 relative mb-12">
         {!isPro && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-white/40 backdrop-blur-[6px] rounded-[40px] border-2 border-dashed border-brand/20">
             <div className="w-20 h-20 bg-brand text-white rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-brand/40 animate-bounce">
@@ -339,18 +360,15 @@ function DashboardContent() {
         </div>
       </div>
 
+      {/* Tools & Feedback Section */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mt-12">
+        <div className="lg:col-span-12">
+          <FeedbackInbox initialItems={recentFeedback} businessId={business.id!} />
+        </div>
+
         {/* Main Toolkit Card */}
         <div className="lg:col-span-7 space-y-12">
-          {/* Review Requests Module */}
-          <ReviewRequestsModule 
-            used={planUsage.used}
-            limit={planUsage.limit}
-            recentCampaigns={recentCampaigns}
-            isPro={isPro}
-          />
-
-          <section className="premium-card p-8 rounded-3xl overflow-hidden relative group">
+          <section className="premium-card p-8 rounded-3xl overflow-hidden relative group bg-white border border-slate-100 shadow-xl shadow-slate-200/40">
             <h2 className="text-xl font-bold mb-2">Review Toolkit</h2>
             <p className="text-sm text-muted mb-8 font-medium">Your core tools for collecting customer reviews.</p>
             
@@ -502,40 +520,13 @@ function DashboardContent() {
               <MultipleQrManager businessId={business.id!} landingUrl={landingUrl || ''} />
             </div>
           </div>
+        </div>
 
+        <div className="lg:col-span-5 space-y-6">
           <ContactsPanel count={0} />
 
-          {/* Recent Activity for Pro Users */}
-          {isPro && (
-            <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold">Recent Activity</h2>
-                <span className="text-[10px] font-bold text-brand bg-brand/5 px-2 py-1 rounded">Pro</span>
-              </div>
-              <div className="space-y-4">
-                {activityFeed.length === 0 ? (
-                  <p className="text-xs text-muted text-center py-4">No recent activity detected.</p>
-                ) : (
-                  activityFeed.map((act, i) => (
-                    <div key={i} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-3">
-                        <span className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm text-base">{act.icon}</span>
-                        <div className="flex flex-col">
-                          <span className="font-bold text-slate-700 capitalize">{act.event}</span>
-                        </div>
-                      </div>
-                      <span className="text-[10px] font-medium text-slate-400">
-                        {new Date(act.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </section>
-          )}
-
           {/* Integrations Card */}
-          <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed group relative overflow-hidden">
+          <section className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 group relative overflow-hidden">
             {!isPro && (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-white/60 backdrop-blur-[4px]">
                 <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
@@ -612,20 +603,16 @@ function DashboardContent() {
               </div>
             </div>
           </section>
-        </div>
 
-        {/* Feedback Sidebar */}
-        <div className="lg:col-span-5">
-          <div className="sticky top-28 space-y-6">
-            <FeedbackInbox initialItems={recentFeedback} businessId={business.id!} />
-            
-            {/* Helpful Tip */}
-            <div className="p-6 bg-brand/5 rounded-3xl border border-brand/10">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-brand mb-2">Pro Tip</h4>
-              <p className="text-xs text-brand/80 leading-relaxed">
-                Add your review QR code to your printed receipts or table tents to increase scan rates by up to 40%.
-              </p>
+          {/* Helpful Tip */}
+          <div className="p-8 bg-brand/5 rounded-[32px] border border-brand/10 relative overflow-hidden group">
+            <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <span className="text-8xl">💡</span>
             </div>
+            <h4 className="text-xs font-black uppercase tracking-widest text-brand mb-3">Pro Tip</h4>
+            <p className="text-sm text-brand/80 leading-relaxed font-medium">
+              Add your review QR code to your printed receipts or table tents to increase scan rates by up to 40%. Customers are most likely to leave a review within 5 minutes of their purchase.
+            </p>
           </div>
         </div>
       </div>
