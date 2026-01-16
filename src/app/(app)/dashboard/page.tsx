@@ -80,7 +80,7 @@ function DashboardContent() {
   const [squareStatus, setSquareStatus] = useState<{ connected: boolean; isEnabled?: boolean; lastBackfillAt?: string | null } | null>(null);
   const [planStatus, setPlanStatus] = useState<string>('none');
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
-  const [planUsage, setPlanUsage] = useState({ used: 0, limit: 100, qrScans: 0, isUnlimited: false, planName: 'Small Business' });
+  const [planUsage, setPlanUsage] = useState({ used: 0, limit: 100, qrScans: 0, isUnlimited: false, planName: 'Small Business', contactsCount: 0 });
   const [recentCampaigns, setRecentCampaigns] = useState<Campaign[]>([]);
 
   const isFromEdit = searchParams?.get('from') === 'edit';
