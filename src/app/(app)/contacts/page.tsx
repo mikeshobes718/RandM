@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useAuth } from "@/lib/AuthContext";
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import { app } from '@/lib/firebaseClient';
 
 type Contact = {
   id: string;
@@ -14,7 +15,7 @@ type Contact = {
 };
 
 export default function ContactsPage() {
-  const { user } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -23,14 +24,29 @@ export default function ContactsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetchContacts();
+    const auth = getAuth(app);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        fetchContacts(firebaseUser);
+      } else {
+        setLoading(false);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
-  const fetchContacts = async () => {
+  const fetchContacts = async (currentUser?: User | null) => {
+    const authUser = currentUser || user;
+    if (!authUser) {
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     try {
-      const token = await user?.getIdToken();
+      const token = await authUser.getIdToken();
       const res = await fetch('/api/contacts/list', {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -42,8 +58,8 @@ export default function ContactsPage() {
       setContacts(data.contacts || []);
     } catch (err: any) {
       console.error('Contacts fetch error:', err);
-      // Don't show error for "no contacts" case
-      if (!err.message.includes('no contacts')) {
+      // Don't show error for empty contacts
+      if (!err.message.includes('no contacts') && !err.message.includes('does not exist')) {
         setError(err.message);
       }
     } finally {
@@ -53,7 +69,7 @@ export default function ContactsPage() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) return;
 
     setUploading(true);
     setError(null);
@@ -96,7 +112,7 @@ export default function ContactsPage() {
       }
 
       // Send to API
-      const token = await user?.getIdToken();
+      const token = await user.getIdToken();
       const res = await fetch('/api/contacts/import', {
         method: 'POST',
         headers: { 
@@ -113,7 +129,7 @@ export default function ContactsPage() {
 
       const result = await res.json();
       setSuccessMsg(`Successfully imported ${result.imported || newContacts.length} contacts!`);
-      fetchContacts();
+      fetchContacts(user);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -238,7 +254,7 @@ export default function ContactsPage() {
             <div className="p-6 border-b border-slate-50 flex items-center justify-between">
               <p className="text-sm font-bold text-slate-600">{contacts.length} contact{contacts.length !== 1 ? 's' : ''}</p>
               <button 
-                onClick={fetchContacts}
+                onClick={() => fetchContacts(user)}
                 className="text-xs font-bold text-brand hover:underline"
               >
                 Refresh
