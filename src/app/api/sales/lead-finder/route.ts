@@ -14,6 +14,9 @@ export async function GET(req: Request) {
   const maxRating = parseFloat(searchParams.get('maxRating') || '4.2');
 
   const supa = getSupabaseAdmin();
+  
+  // Normalize city name (e.g., "New York City" -> "new york")
+  const normalizedCity = city?.toLowerCase().replace(/ city$/, '').trim();
 
   try {
     const location = [city, state, country].filter(Boolean).join(', ');
@@ -82,12 +85,12 @@ export async function GET(req: Request) {
     });
 
     // 5. Also add any leads from our DB for this city/type that WEREN'T in the Google search
-    if (city && type) {
+    if (normalizedCity && type) {
       let dbQuery = supa
         .from('leads')
         .select('*')
         .eq('business_type', type)
-        .eq('city', city.toLowerCase())
+        .eq('city', normalizedCity)
         .lte('rating', maxRating);
       
       if (googlePlaceIds.length > 0) {

@@ -34,6 +34,13 @@ export async function POST(req: Request) {
       if (existingLead) {
         targetLeadId = existingLead.id;
       } else if (leadData) {
+        // Extract and normalize city
+        const addressParts = leadData.address?.split(',');
+        const rawCity = addressParts && addressParts.length >= 3 
+          ? addressParts[addressParts.length - 3].trim() 
+          : null;
+        const normalizedCity = rawCity?.toLowerCase().replace(/ city$/, '').trim() || null;
+
         // Create the lead
         const { data: newLead, error: createError } = await supa
           .from('leads')
@@ -47,7 +54,7 @@ export async function POST(req: Request) {
             phone: leadData.phone,
             google_maps_url: leadData.googleMapsUrl,
             website: leadData.website,
-            city: leadData.address?.split(',')?.slice(-3, -2)?.[0]?.trim()?.toLowerCase() || null,
+            city: normalizedCity,
           })
           .select()
           .single();
@@ -78,7 +85,6 @@ export async function POST(req: Request) {
 
     if (logError) {
       console.error('[LOG CALL API] Call log insertion failed:', logError);
-      // Don't throw - continue to update lead
     }
 
     // 3. Update lead status and stats
@@ -96,7 +102,6 @@ export async function POST(req: Request) {
 
     if (updateError) {
       console.error('[LOG CALL API] Lead update failed:', updateError);
-      // Don't throw - call was still logged
     }
 
     return NextResponse.json({ success: true, leadId: targetLeadId });
