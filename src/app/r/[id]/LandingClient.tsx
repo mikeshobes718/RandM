@@ -146,26 +146,38 @@ function LandingClientContent({ id }: { id: string }) {
   const handleGoogleReview = useCallback(async () => {
     if (!biz?.reviewLink) return;
     
-    // Save contact info if provided (happy path - assume 5 stars)
-    if (email.trim() || phone.trim() || name.trim()) {
-      try {
-        await fetch('/api/feedback/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            businessId: biz.id,
-            rating: 5, // Happy path = 5 stars
-            source: entrySource,
-            name: name.trim() || 'Valued Customer',
-            email: email.trim() || 'no-email@provided.com',
-            phone: normalizePhone(phone).slice(0, 10) || undefined,
-            comment: '(Customer planning to leave 5-star review on Google)',
-            consent: true,
-          }),
-        });
-      } catch (e) {
-        console.error('Failed to save contact info:', e);
-      }
+    // Validate mandatory contact info for happy path
+    if (!email.trim() || !phone.trim()) {
+      setError('Please provide your email and phone number to continue.');
+      return;
+    }
+
+    if (!isValidEmail(email.trim())) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setError(null);
+      await fetch('/api/feedback/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessId: biz.id,
+          rating: 5, // Happy path = 5 stars
+          source: entrySource,
+          name: name.trim() || 'Valued Customer',
+          email: email.trim(),
+          phone: normalizePhone(phone).slice(0, 10),
+          comment: '(Customer planning to leave 5-star review on Google)',
+          consent: true,
+        }),
+      });
+    } catch (e) {
+      console.error('Failed to save contact info:', e);
+    } finally {
+      setSubmitting(false);
     }
     
     sendEvent('google_opened', { sentiment: sentiment || 'positive', rating: 5, metadata: { planned_rating: 5 } });
@@ -197,8 +209,20 @@ function LandingClientContent({ id }: { id: string }) {
   }, [biz, email, phone, name, entrySource, sendEvent, sentiment]);
 
   const handleNegativeGoogleReview = useCallback(() => {
+    if (!comment.trim()) {
+      setError('Please tell us what went wrong first.');
+      return;
+    }
+    if (!email.trim() || !phone.trim()) {
+      setError('Please provide your email and phone number so we can make this right.');
+      return;
+    }
+    if (!isValidEmail(email.trim())) {
+      setError('Please enter a valid email address.');
+      return;
+    }
     setShowRatingPrompt(true);
-  }, []);
+  }, [comment, email, phone]);
 
   const confirmGoogleReviewWithRating = useCallback(async () => {
     if (!biz?.reviewLink || !plannedRating) return;
@@ -213,8 +237,8 @@ function LandingClientContent({ id }: { id: string }) {
           rating: plannedRating,
           source: entrySource,
           name: name.trim() || 'Valued Customer',
-          email: email.trim() || 'no-email@provided.com',
-          phone: normalizePhone(phone).slice(0, 10) || undefined,
+          email: email.trim(),
+          phone: normalizePhone(phone).slice(0, 10),
           comment: comment.trim() || `(Customer planning to leave ${plannedRating}-star review on Google)`,
           consent: true,
         }),
@@ -272,11 +296,11 @@ function LandingClientContent({ id }: { id: string }) {
 
   async function submitContactCapture() {
     if (!biz || submitting) return;
-    if (!email.trim() && !phone.trim()) {
-      handleGoogleReview();
+    if (!email.trim() || !phone.trim()) {
+      setError('Please provide both your email and phone number.');
       return;
     }
-    if (email.trim() && !isValidEmail(email.trim())) {
+    if (!isValidEmail(email.trim())) {
       setError('Please enter a valid email address.');
       return;
     }
@@ -286,8 +310,8 @@ function LandingClientContent({ id }: { id: string }) {
       const payload = {
         businessId: biz.id,
         name: name.trim() || undefined,
-        email: email.trim() || undefined,
-        phone: normalizePhone(phone).slice(0, 10) || undefined,
+        email: email.trim(),
+        phone: normalizePhone(phone).slice(0, 10),
         consent: true,
         source: entrySource,
       };
@@ -313,6 +337,10 @@ function LandingClientContent({ id }: { id: string }) {
       setError('Please tell us what went wrong.');
       return;
     }
+    if (!email.trim() || !phone.trim()) {
+      setError('Please provide your email and phone number.');
+      return;
+    }
     if (email.trim() && !isValidEmail(email.trim())) {
       setError('Please enter a valid email address.');
       return;
@@ -328,8 +356,8 @@ function LandingClientContent({ id }: { id: string }) {
           rating: 1, // Defaulting to 1 for negative sentiment private feedback
           source: entrySource,
           name: name.trim() || 'Valued Customer',
-          email: email.trim() || 'no-email@provided.com',
-          phone: normalizePhone(phone).slice(0, 10) || undefined,
+          email: email.trim(),
+          phone: normalizePhone(phone).slice(0, 10),
           comment: comment.trim(),
           consent: true,
         }),
@@ -442,12 +470,12 @@ function LandingClientContent({ id }: { id: string }) {
 
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
-                  <div className="relative flex justify-center text-xs uppercase font-black tracking-widest text-slate-300"><span className="bg-white px-4">Optional</span></div>
+                  <div className="relative flex justify-center text-xs uppercase font-black tracking-widest text-slate-300"><span className="bg-white px-4">Contact Information</span></div>
                 </div>
 
                 <div className="space-y-4">
                   <div className="text-center">
-                    <p className="text-sm font-bold text-slate-600">Want special offers?</p>
+                    <p className="text-sm font-bold text-slate-600">Please provide your details to continue</p>
                   </div>
                   <div className="space-y-3">
                     <input
@@ -507,21 +535,23 @@ function LandingClientContent({ id }: { id: string }) {
 
                 <div className="space-y-4">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">How can we reach you to make this right?</label>
-                  <input
-                    className={inputClass}
-                    placeholder="Email or phone (optional)"
-                    value={email || phone}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val.includes('@')) {
-                        setEmail(val);
-                        setPhone('');
-                      } else {
-                        setPhone(formatPhone(val));
-                        setEmail('');
-                      }
-                    }}
-                  />
+                  <div className="space-y-3">
+                    <input
+                      className={inputClass}
+                      placeholder="Email Address"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                    <input
+                      className={inputClass}
+                      placeholder="Phone Number"
+                      value={phone}
+                      onChange={(e) => setPhone(formatPhone(e.target.value))}
+                      required
+                    />
+                  </div>
                 </div>
 
                 <button
