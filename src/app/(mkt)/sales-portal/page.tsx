@@ -3,6 +3,17 @@ import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import AdminGuard from '@/components/admin/AdminGuard';
 
+// Simple Tooltip component
+const Tooltip = ({ text, children }: { text: string; children: React.ReactNode }) => (
+  <div className="group relative inline-block w-full">
+    {children}
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-[10px] font-bold rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-normal w-48 text-center shadow-xl border border-white/10 uppercase tracking-widest leading-relaxed">
+      {text}
+      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+    </div>
+  </div>
+);
+
 interface Lead {
   id: string;
   dbId?: string;
@@ -326,18 +337,24 @@ export default function SalesPortalPage() {
         <div className="max-w-7xl mx-auto px-6 py-12">
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-            <div className="premium-card p-6 rounded-3xl bg-white">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Calls Today</p>
-              <h3 className="text-3xl font-black text-slate-900">{stats.callsToday}</h3>
-            </div>
-            <div className="premium-card p-6 rounded-3xl bg-white">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Appointments</p>
-              <h3 className="text-3xl font-black text-slate-900">{stats.appointments}</h3>
-            </div>
-            <div className="premium-card p-6 rounded-3xl bg-white">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Closes This Month</p>
-              <h3 className="text-3xl font-black text-slate-900">{stats.closes}</h3>
-            </div>
+            <Tooltip text="Number of calls logged today from your account.">
+              <div className="premium-card p-6 rounded-3xl bg-white h-full">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Calls Today</p>
+                <h3 className="text-3xl font-black text-slate-900">{stats.callsToday}</h3>
+              </div>
+            </Tooltip>
+            <Tooltip text="Leads where 'Appointment' outcome was logged.">
+              <div className="premium-card p-6 rounded-3xl bg-white h-full">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Appointments</p>
+                <h3 className="text-3xl font-black text-slate-900">{stats.appointments}</h3>
+              </div>
+            </Tooltip>
+            <Tooltip text="Leads where 'Closed' outcome was logged this month.">
+              <div className="premium-card p-6 rounded-3xl bg-white h-full">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Closes This Month</p>
+                <h3 className="text-3xl font-black text-slate-900">{stats.closes}</h3>
+              </div>
+            </Tooltip>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-12">
@@ -356,7 +373,9 @@ export default function SalesPortalPage() {
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-muted text-right">Find businesses with low ratings (≤ 4.2) to call.</p>
+                  <Tooltip text="Target low-rated businesses (≤ 4.2) for the best conversion rate.">
+                    <p className="text-xs text-muted text-right max-w-[200px]">Find businesses with low ratings (≤ 4.2) to call.</p>
+                  </Tooltip>
                 </div>
 
                 <form onSubmit={handleSearch} className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8 relative">
@@ -411,12 +430,14 @@ export default function SalesPortalPage() {
                     <option value="hvac">HVAC</option>
                     <option value="lawyer">Lawyer</option>
                   </select>
-                  <button 
-                    disabled={loading || !city || !state || !repId}
-                    className="primary-button h-12 rounded-2xl shadow-lg shadow-brand/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loading ? "Searching..." : "Find Leads"}
-                  </button>
+                  <Tooltip text="Search Google Places API for real-time local data.">
+                    <button 
+                      disabled={loading || !city || !state || !repId}
+                      className="primary-button h-12 rounded-2xl shadow-lg shadow-brand/20 disabled:opacity-50 disabled:cursor-not-allowed w-full"
+                    >
+                      {loading ? "Searching..." : "Find Leads"}
+                    </button>
+                  </Tooltip>
                 </form>
 
                 {searched && (

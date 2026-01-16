@@ -16,7 +16,7 @@ export default function ContactsPanel({ count, lastImportDate, lastImportSource 
           <h3 className="text-lg font-black text-slate-900">Contacts</h3>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Your marketing list</p>
         </div>
-        <Link href="/contacts/import" className="px-4 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all">
+        <Link href="/contacts" className="px-4 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all">
           Import Contacts
         </Link>
       </div>

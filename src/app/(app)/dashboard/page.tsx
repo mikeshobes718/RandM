@@ -545,7 +545,10 @@ function DashboardContent() {
             )}
             <div className={!isPro ? "opacity-30 grayscale pointer-events-none blur-[1px]" : ""}>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-slate-900">Square Integration</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-slate-900">Square Integration</h2>
+                  <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[8px] font-black rounded uppercase tracking-tighter border border-blue-100/50">BETA</span>
+                </div>
                 {squareStatus?.connected ? (
                   <div className="flex items-center gap-2">
                     <span className={`w-1.5 h-1.5 rounded-full ${squareStatus.isEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></span>

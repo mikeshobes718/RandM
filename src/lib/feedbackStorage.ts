@@ -99,6 +99,12 @@ export async function ensureFeedbackTables(): Promise<void> {
           unique(business_id, slug)
         );
       `);
+      // Force PostgREST to reload schema cache
+      try {
+        await client.query('NOTIFY pgrst, \'reload schema\'');
+      } catch (e) {
+        console.warn('Failed to notify PostgREST to reload schema:', e);
+      }
     } finally {
       client.release();
       await pool.end();

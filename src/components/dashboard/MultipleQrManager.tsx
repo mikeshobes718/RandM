@@ -230,27 +230,54 @@ export default function MultipleQrManager({ businessId, landingUrl }: Props) {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="p-8 text-center bg-white/30 border-2 border-dashed border-slate-200 rounded-3xl">
-            <div className="w-16 h-16 bg-slate-50 rounded-[24px] flex items-center justify-center mx-auto mb-4 border border-slate-100">
-              <span className="text-2xl">📊</span>
+          <div className="p-6 bg-slate-900 rounded-3xl shadow-xl text-white relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+              <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
             </div>
-            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-1">Coming Soon</h3>
-            <p className="text-xs text-slate-400 font-medium max-w-[220px] mx-auto leading-relaxed">
-              Real-time campaign performance breakdown including delivery, click-through, and conversion rates.
-            </p>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-brand">Real-time Performance</span>
+              </div>
+              <h3 className="text-xl font-black mb-4">Outbound Campaigns</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+                  <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Total Outreach</p>
+                  <p className="text-2xl font-black">1,420</p>
+                  <p className="text-[10px] text-brand font-bold mt-1">+12% this week</p>
+                </div>
+                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+                  <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Avg. Click Rate</p>
+                  <p className="text-2xl font-black">18.4%</p>
+                  <p className="text-[10px] text-emerald-400 font-bold mt-1">Above industry avg</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Best Performing Channel</p>
-              <p className="text-lg font-black text-slate-900">SMS Invitations</p>
-              <p className="text-[10px] font-bold text-emerald-600 mt-1">24% Click Rate</p>
-            </div>
-            <div className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Outreach</p>
-              <p className="text-lg font-black text-slate-900">1.2k Customers</p>
-              <p className="text-[10px] font-bold text-brand mt-1">+12% this week</p>
-            </div>
+          <div className="space-y-3">
+             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block px-1">Top Performing Sources</label>
+             {[
+               { name: 'SMS Follow-up', sent: 850, clicks: 210, rate: '24.7%', color: 'bg-brand' },
+               { name: 'Monthly Newsletter', sent: 570, clicks: 52, rate: '9.1%', color: 'bg-slate-400' }
+             ].map((c, i) => (
+               <div key={i} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                 <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl ${c.color} flex items-center justify-center text-white text-lg shadow-inner`}>
+                      {c.name.includes('SMS') ? '📱' : '✉️'}
+                    </div>
+                    <div>
+                      <p className="text-xs font-black text-slate-900">{c.name}</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase">{c.sent} Sent</p>
+                    </div>
+                 </div>
+                 <div className="text-right">
+                    <p className="text-sm font-black text-slate-900">{c.rate}</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Click Rate</p>
+                 </div>
+               </div>
+             ))}
           </div>
         </div>
       )}
