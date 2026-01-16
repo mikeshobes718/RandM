@@ -63,6 +63,7 @@ export default function AdminReps() {
 
   const filteredUsers = users.filter(user => {
     if (filter !== "All") {
+      if (filter === "Admin" && user.role !== "admin") return false;
       if (filter === "Sales Rep" && user.role !== "sales_rep") return false;
       if (filter === "Customer" && user.role !== "customer") return false;
     }
@@ -84,7 +85,7 @@ export default function AdminReps() {
       <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex items-center justify-between">
           <div className="flex gap-2">
-            {["All", "Sales Rep", "Customer"].map((f) => (
+            {["All", "Admin", "Sales Rep", "Customer"].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
