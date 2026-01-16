@@ -30,12 +30,14 @@ export default function AdminCustomers() {
 
   const fetchCustomers = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/admin/customers');
-      if (!res.ok) throw new Error('Failed to fetch customers');
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to fetch customers');
       setCustomers(data.customers || []);
     } catch (err: any) {
+      console.error('Fetch error:', err);
       setError(err.message);
     } finally {
       setLoading(false);

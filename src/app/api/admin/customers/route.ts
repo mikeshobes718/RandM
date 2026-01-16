@@ -54,15 +54,21 @@ export async function GET(req: NextRequest) {
     // Fetch leads to see who closed them
     let closedByMap: Record<string, string> = {};
     try {
+      // ONLY fetch the columns we need, and limit to 2000 for sanity
       const { data: leads, error: leadsError } = await supa
         .from('leads')
         .select('name, last_called_by_email')
-        .eq('call_status', 'closed');
+        .eq('call_status', 'closed')
+        .limit(2000);
       
       if (leadsError) {
-        console.warn('[ADMIN CUSTOMERS API] Failed to fetch closedBy details (likely schema cache):', leadsError.message);
+        console.warn('[ADMIN CUSTOMERS API] Failed to fetch closedBy details:', leadsError.message);
       } else {
-        closedByMap = Object.fromEntries((leads || []).map(l => [l.name ? l.name.toLowerCase() : '', l.last_called_by_email || 'Self']));
+        (leads || []).forEach(l => {
+          if (l.name) {
+            closedByMap[l.name.toLowerCase()] = l.last_called_by_email || 'Self';
+          }
+        });
       }
     } catch (e) {
       console.warn('[ADMIN CUSTOMERS API] Error fetching leads for closedBy:', e);
@@ -74,11 +80,14 @@ export async function GET(req: NextRequest) {
           const user = usersMap[sub.uid];
           const biz = bizMap[sub.uid];
           
-          // The user's instruction: "as long as theyre not marked as customer on the sales rep part... then they shoiuld show in the customers part"
-          // In Access Control, people are 'customer' by default. 
-          // If the user meant "exclude employees", then employees would be 'sales_rep' or 'admin'.
-          // I'll change this to exclude staff members (reps/admins) who aren't primary customers.
-          if (user?.role === 'sales_rep' || user?.role === 'admin') return null;
+          if (!user) {
+            console.warn(`[ADMIN CUSTOMERS API] No user found for UID ${sub.uid}`);
+          }
+
+          // EXCLUDE staff members (reps/admins) who aren't primary customers.
+          if (user?.role === 'sales_rep' || user?.role === 'admin') {
+            return null;
+          }
 
           const planId = sub.plan_id?.toLowerCase() || 'starter';
           let plan = 'Starter';
@@ -88,16 +97,21 @@ export async function GET(req: NextRequest) {
 
           const status = sub.status === 'active' ? 'Active' : (sub.status === 'trialing' ? 'Trial' : 'Churned');
           
-          const signedUpDate = new Date(biz?.created_at || user?.created_at || sub.updated_at || Date.now());
+          const rawDate = biz?.created_at || user?.created_at || sub.updated_at;
+          const signedUpDate = rawDate ? new Date(rawDate) : new Date();
           const now = new Date();
-          const monthsActive = Math.max(0, (now.getFullYear() - signedUpDate.getUTCFullYear()) * 12 + (now.getMonth() - signedUpDate.getUTCMonth()));
+          
+          let monthsActive = 0;
+          if (!isNaN(signedUpDate.getTime())) {
+            monthsActive = Math.max(0, (now.getFullYear() - signedUpDate.getUTCFullYear()) * 12 + (now.getMonth() - signedUpDate.getUTCMonth()));
+          }
 
           return {
             id: biz?.id || user?.uid || sub.uid,
             name: biz?.name || 'Pending Setup',
             plan,
             mrr: `$${mrrValue}`,
-            signedUp: signedUpDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            signedUp: !isNaN(signedUpDate.getTime()) ? signedUpDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown',
             closedBy: (biz?.name && closedByMap[biz.name.toLowerCase()]) || 'Self',
             status,
             months: monthsActive,

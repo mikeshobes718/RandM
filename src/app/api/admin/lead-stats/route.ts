@@ -13,26 +13,33 @@ export async function GET() {
 
     if (countErr) throw countErr;
 
-    // 2. Get state breakdown (using a grouped query if possible, or selecting just state)
-    // Supabase JS doesn't support GROUP BY directly in a clean way, so we select the 'state' column.
-    // To overcome the 1000 limit, we'll fetch in batches or just use a raw SQL query via our helper.
-    
-    // For now, let's try to get as many as possible or use multiple requests if needed.
-    // Actually, a better way is to use our getPgPool if available, but SASL is failing locally.
-    // Let's use the supa client with a larger range.
-    
-    const { data, error } = await supa
-      .from('leads')
-      .select('state')
-      .range(0, 10000); // Support up to 10k leads for breakdown
-
-    if (error) throw error;
-
+    // 2. Get state breakdown (Fetch in chunks to overcome 1000 row limit)
     const breakdown: Record<string, number> = {};
-    (data || []).forEach(l => {
-      const state = l.state || 'Unknown';
-      breakdown[state] = (breakdown[state] || 0) + 1;
-    });
+    let offset = 0;
+    const limit = 1000;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data, error } = await supa
+        .from('leads')
+        .select('state')
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+      
+      if (!data || data.length === 0) {
+        hasMore = false;
+      } else {
+        data.forEach(l => {
+          const state = l.state || 'Unknown';
+          breakdown[state] = (breakdown[state] || 0) + 1;
+        });
+        offset += limit;
+        // Safety break if it takes too many loops
+        if (offset > 20000) hasMore = false; 
+        if (data.length < limit) hasMore = false;
+      }
+    }
 
     const sorted = Object.entries(breakdown)
       .map(([state, count]) => ({ state, count }))
