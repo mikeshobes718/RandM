@@ -53,6 +53,6 @@ export async function GET(req: Request) {
     logoUrl: data.landing_logo_url || null,
     headline: data.landing_headline || null,
     subheading: data.landing_subheading || null,
-    website: data.website || null,
+    website: (data as any).website || null,
   });
 }
