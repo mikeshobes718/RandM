@@ -20,6 +20,7 @@ export function getPgPool(): Pool | null {
     if (!password) return null;
     if (_pgPool) return _pgPool;
     
+    const restUrl = new URL(env.SUPABASE_URL);
     const host = env.SUPABASE_DB_HOST || `db.${restUrl.hostname}`;
     const port = env.SUPABASE_DB_PORT ? Number(env.SUPABASE_DB_PORT) : 5432;
     const user = env.SUPABASE_DB_USER || 'postgres';
