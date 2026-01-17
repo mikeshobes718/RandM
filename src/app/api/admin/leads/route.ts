@@ -73,9 +73,18 @@ export async function GET() {
 
     // Process today's calls
     (callsToday || []).forEach((call: any) => {
-      const email = uidToEmail[call.rep_id] || (call.rep_id && call.rep_id.includes('@') ? call.rep_id : null) || 'unknown';
+      const email = uidToEmail[call.rep_id] || 
+                    (call.rep_id && call.rep_id.includes('@') ? call.rep_id : null) || 
+                    'unknown';
+      
       if (!repStats[email]) {
-        repStats[email] = { calls_today: 0, appointments_today: 0, closes_this_month: 0, email, name: email.split('@')[0] };
+        repStats[email] = { 
+          calls_today: 0, 
+          appointments_today: 0, 
+          closes_this_month: 0, 
+          email, 
+          name: email.includes('@') ? email.split('@')[0] : email 
+        };
       }
       repStats[email].calls_today++;
       if (call.outcome === 'callback' || call.outcome === 'appointment') {
@@ -86,9 +95,19 @@ export async function GET() {
     // Process closes this month
     (closesData || []).forEach((item: any) => {
       // Could be a lead object or a call_log object
-      const email = item.last_called_by_email || uidToEmail[item.rep_id] || 'unknown';
+      const email = item.last_called_by_email || 
+                    uidToEmail[item.rep_id] || 
+                    (item.rep_id && item.rep_id.includes('@') ? item.rep_id : null) || 
+                    'unknown';
+      
       if (!repStats[email]) {
-        repStats[email] = { calls_today: 0, appointments_today: 0, closes_this_month: 0, email, name: email.split('@')[0] };
+        repStats[email] = { 
+          calls_today: 0, 
+          appointments_today: 0, 
+          closes_this_month: 0, 
+          email, 
+          name: email.includes('@') ? email.split('@')[0] : email 
+        };
       }
       repStats[email].closes_this_month++;
     });
@@ -106,10 +125,15 @@ export async function GET() {
       .sort((a, b) => b.closes_this_month - a.closes_this_month || b.calls_today - a.calls_today);
 
     // Calculate totals directly from call_log and leads (most accurate)
+    // For closes, if we used call_log fallback, count unique lead_ids
+    const uniqueClosesCount = closesData[0]?.rep_id !== undefined 
+      ? new Set(closesData.map(c => c.lead_id || c.id)).size 
+      : closesData.length;
+
     const totalMetrics = {
       callsToday: (callsToday || []).length,
       appointments: (callsToday || []).filter((c: any) => c.outcome === 'callback' || c.outcome === 'appointment').length,
-      closesThisMonth: (closesData || []).length,
+      closesThisMonth: uniqueClosesCount,
     };
 
     // Format leads for response - handle missing columns gracefully

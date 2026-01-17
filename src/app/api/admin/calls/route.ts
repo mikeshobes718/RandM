@@ -52,6 +52,9 @@ export async function GET() {
           repEmail = c.rep_id;
         } else if (lead?.last_called_by_email) {
           repEmail = lead.last_called_by_email;
+        } else {
+          // If we have an ID but can't map it to an email, show the ID itself
+          repEmail = c.rep_id;
         }
       } else if (lead?.last_called_by_email) {
         repEmail = lead.last_called_by_email;
