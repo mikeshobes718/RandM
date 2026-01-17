@@ -52,7 +52,7 @@ export default function SiteFooter() {
             <h3 className="text-[10px] font-black text-white uppercase tracking-widest mb-6">Connect</h3>
             <ul className="space-y-4">
               <li><a href="https://www.instagram.com/reviews5marketing?igsh=dHIwbmNqd2w2enVy" target="_blank" rel="noopener noreferrer" className="text-sm text-slate-400 hover:text-brand transition-colors">Instagram</a></li>
-              <li><a href="https://twitter.com/reviewsandmkt" className="text-sm text-slate-400 hover:text-brand transition-colors">Twitter</a></li>
+              <li><a href="https://www.facebook.com/people/Reviews-Marketing/61586440390598/" target="_blank" rel="noopener noreferrer" className="text-sm text-slate-400 hover:text-brand transition-colors">Facebook</a></li>
             </ul>
           </div>
         </div>
