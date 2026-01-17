@@ -10,60 +10,70 @@ export async function GET() {
     const today = new Date().toISOString().split('T')[0];
     const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
 
-    // 1. Fetch all leads with call activity
+    // 1. Fetch all leads with call activity (use * and extract what we need)
     const { data: leads, error: leadsErr } = await supa
       .from('leads')
-      .select('id, name, phone, city, state, rating, times_called, call_status, last_called_at, last_called_by_email')
+      .select('*')
       .order('created_at', { ascending: false })
       .limit(1000);
     
-    if (leadsErr) throw leadsErr;
+    if (leadsErr) {
+      console.error('[ADMIN LEADS] Leads query error:', leadsErr);
+      throw leadsErr;
+    }
 
     // 2. Fetch all call_log entries for today
     const { data: callsToday, error: callsErr } = await supa
       .from('call_log')
-      .select('id, rep_id, outcome, timestamp')
+      .select('*')
       .gte('timestamp', today);
     
-    if (callsErr) throw callsErr;
+    if (callsErr) {
+      console.error('[ADMIN LEADS] Calls query error:', callsErr);
+      throw callsErr;
+    }
 
-    // 3. Get closes this month from leads table
-    const { data: closesData, error: closesErr } = await supa
-      .from('leads')
-      .select('id, last_called_by_email')
-      .eq('call_status', 'closed')
-      .gte('last_called_at', firstOfMonth);
-    
-    if (closesErr) throw closesErr;
+    // 3. Get closes this month - be resilient to missing columns
+    let closesData: any[] = [];
+    try {
+      const { data, error } = await supa
+        .from('leads')
+        .select('id, last_called_by_email')
+        .eq('call_status', 'closed')
+        .gte('last_called_at', firstOfMonth);
+      
+      if (!error && data) {
+        closesData = data;
+      } else {
+        // Fallback: count from call_log instead
+        console.warn('[ADMIN LEADS] Closes query failed, using call_log fallback');
+        const { data: closeLogs } = await supa
+          .from('call_log')
+          .select('id, rep_id')
+          .eq('outcome', 'closed')
+          .gte('timestamp', firstOfMonth);
+        closesData = closeLogs || [];
+      }
+    } catch (e) {
+      console.warn('[ADMIN LEADS] Closes query error, skipping:', e);
+    }
 
-    // 4. Get unique rep identifiers and map to emails
-    const allRepIds = Array.from(new Set([
-      ...(callsToday || []).map(c => c.rep_id).filter(Boolean),
-      ...(closesData || []).map(c => c.last_called_by_email).filter(Boolean)
-    ]));
-
-    // Fetch users that might match
-    const { data: users, error: usersErr } = await supa
-      .from('users')
-      .select('uid, email, rep_id, role');
-    
-    if (usersErr) throw usersErr;
+    // 4. Fetch all users for rep mapping
+    const { data: users } = await supa.from('users').select('uid, email, rep_id, role');
 
     // Build lookups
     const uidToEmail: Record<string, string> = {};
-    const emailToUser: Record<string, any> = {};
     (users || []).forEach(u => {
       if (u.uid) uidToEmail[u.uid] = u.email;
       if (u.rep_id) uidToEmail[u.rep_id] = u.email;
-      if (u.email) emailToUser[u.email.toLowerCase()] = u;
     });
 
     // Calculate per-rep metrics
     const repStats: Record<string, { calls_today: number; appointments_today: number; closes_this_month: number; email: string; name: string }> = {};
 
     // Process today's calls
-    (callsToday || []).forEach(call => {
-      const email = uidToEmail[call.rep_id] || call.rep_id || 'unknown';
+    (callsToday || []).forEach((call: any) => {
+      const email = uidToEmail[call.rep_id] || (call.rep_id && call.rep_id.includes('@') ? call.rep_id : null) || 'unknown';
       if (!repStats[email]) {
         repStats[email] = { calls_today: 0, appointments_today: 0, closes_this_month: 0, email, name: email.split('@')[0] };
       }
@@ -74,8 +84,9 @@ export async function GET() {
     });
 
     // Process closes this month
-    (closesData || []).forEach(lead => {
-      const email = lead.last_called_by_email || 'unknown';
+    (closesData || []).forEach((item: any) => {
+      // Could be a lead object or a call_log object
+      const email = item.last_called_by_email || uidToEmail[item.rep_id] || 'unknown';
       if (!repStats[email]) {
         repStats[email] = { calls_today: 0, appointments_today: 0, closes_this_month: 0, email, name: email.split('@')[0] };
       }
@@ -97,20 +108,20 @@ export async function GET() {
     // Calculate totals directly from call_log and leads (most accurate)
     const totalMetrics = {
       callsToday: (callsToday || []).length,
-      appointments: (callsToday || []).filter(c => c.outcome === 'callback' || c.outcome === 'appointment').length,
+      appointments: (callsToday || []).filter((c: any) => c.outcome === 'callback' || c.outcome === 'appointment').length,
       closesThisMonth: (closesData || []).length,
     };
 
-    // Format leads for response
-    const formattedLeads = (leads || []).map(l => ({
+    // Format leads for response - handle missing columns gracefully
+    const formattedLeads = (leads || []).map((l: any) => ({
       id: l.id,
-      name: l.name,
+      name: l.name || 'Unknown',
       phone: l.phone,
       city: l.city,
       state: l.state,
       rating: l.rating,
       times_called: l.times_called || 0,
-      status: l.call_status || 'fresh',
+      status: l.call_status || l.status || 'fresh',
       last_called_at: l.last_called_at,
       assigned_to_name: l.last_called_by_email || 'Unassigned'
     }));
