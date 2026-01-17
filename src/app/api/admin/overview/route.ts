@@ -22,8 +22,11 @@ export async function GET() {
       return sum + 49;
     }, 0);
 
-    // 2. Active Customers
-    const { count: activeCustomers } = await supa.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active');
+    // 2. Active Customers (count both active and trial)
+    const { count: activeCount } = await supa.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active');
+    const { count: trialCount } = await supa.from('subscriptions').select('*', { count: 'exact', head: true }).or('status.eq.trialing,status.eq.trial');
+    const activeCustomers = (activeCount || 0) + (trialCount || 0);
+    console.log(`[ADMIN OVERVIEW] Customers: ${activeCount} active + ${trialCount} trial = ${activeCustomers}`);
 
     // 3. Active Reps
     let activeReps = 0;

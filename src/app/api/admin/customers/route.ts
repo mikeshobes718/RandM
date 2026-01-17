@@ -75,9 +75,17 @@ export async function GET(req: NextRequest) {
         monthsActive = Math.max(0, (now.getFullYear() - signedUpDate.getUTCFullYear()) * 12 + (now.getMonth() - signedUpDate.getUTCMonth()));
       }
 
+      console.log(`[ADMIN CUSTOMERS API] Building customer for sub ${sub.uid}:`, {
+        hasUser: !!user,
+        hasBiz: !!biz,
+        email: user?.email,
+        bizName: biz?.name,
+        role
+      });
+
       return {
         id: biz?.id || user?.uid || sub.uid,
-        name: biz?.name || 'Pending Setup',
+        name: biz?.name || user?.email || 'Setup Pending',
         plan,
         mrr: `$${mrrValue}`,
         signedUp: !isNaN(signedUpDate.getTime()) ? signedUpDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown',
@@ -85,7 +93,7 @@ export async function GET(req: NextRequest) {
         status,
         months: monthsActive,
         lastLogin: 'Never',
-        email: user?.email || 'No Email',
+        email: user?.email || sub.uid || 'No Email',
         role: role
       };
     });
