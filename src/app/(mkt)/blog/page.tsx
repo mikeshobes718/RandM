@@ -2,94 +2,155 @@ import Link from "next/link";
 
 const POSTS = [
   {
-    title: "Transparent Pricing for Sustainable Growth",
-    slug: "transparent-pricing",
-    date: "Jan 2026",
-    excerpt: "Why offering tiered value from Starter to Unlimited is the best way to scale your local business reputation.",
-    isLive: false
-  },
-  {
     title: "Reputation Growth & Protection: The Strategy Guide",
     slug: "reputation-growth-protection",
     date: "Jan 2026",
+    category: "Strategy",
     excerpt: "The complete blueprint for building a 5-star brand and protecting your business with private feedback channels.",
-    isLive: true
+    isLive: true,
+    image: "🛡️"
   },
   {
     title: "The 'Feedback Loop': How Businesses Are Recovering Customers Privately",
     slug: "the-review-filter",
     date: "Jan 2026",
+    category: "Operations",
     excerpt: "Analysis of the fundamental shift from simply managing reviews to recovering customers through private feedback channels.",
-    isLive: true
+    isLive: true,
+    image: "🔄"
   },
   {
     title: "Reputation on Autopilot: Scaling Your Growth Compliantly",
     slug: "reputation-on-autopilot",
     date: "Feb 2026",
+    category: "Automation",
     excerpt: "Discover the power of POS integration and how to automate your entire review request workflow while staying fully compliant.",
-    isLive: true
+    isLive: true,
+    image: "🤖"
+  },
+  {
+    title: "Transparent Pricing for Sustainable Growth",
+    slug: "transparent-pricing",
+    date: "Jan 2026",
+    category: "Business",
+    excerpt: "Why offering tiered value from Starter to Unlimited is the best way to scale your local business reputation.",
+    isLive: false,
+    image: "💰"
   },
   {
     title: "QR design principles that actually drive scans",
     slug: "qr-design",
     date: "April 2026",
+    category: "Design",
     excerpt: "Placement, choice framing, and artwork guidelines for high-intent customer journeys.",
+    image: "📱"
   },
   {
     title: "Scripts that turn service moments into ⭐⭐⭐⭐⭐ reviews",
     slug: "scripts-that-convert",
     date: "May 2026",
+    category: "Communication",
     excerpt: "Use these proven prompts for in-person, text, and email follow-ups that feel human and convert.",
+    image: "✍️"
   },
 ];
 
 export default function BlogPage() {
+  const featuredPost = POSTS.find(p => p.isLive);
+  const otherPosts = POSTS.filter(p => p !== featuredPost);
+
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <main className="relative min-h-screen overflow-hidden bg-white">
+      {/* Background Decor */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-x-0 top-[-260px] h-[480px] rounded-full bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.18),transparent_60%)] blur-3xl" />
-        <div className="absolute left-[-160px] bottom-[-140px] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,rgba(236,72,153,0.18),transparent_75%)] blur-3xl" />
+        <div className="absolute inset-x-0 top-0 h-[600px] bg-gradient-to-b from-slate-50 to-white" />
+        <div className="absolute right-0 top-0 h-[500px] w-[500px] bg-brand/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/3" />
       </div>
 
-      <section className="relative px-4 pt-24 pb-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.4em] text-slate-700 shadow-sm shadow-slate-900/5 backdrop-blur">Insights</span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">Playbooks for consistent 5★ reviews</h1>
-          <p className="mt-4 text-lg text-slate-700 md:text-xl">
-            Practical guides to spark high-intent feedback, recover less-than-perfect experiences, and grow trust at scale.
-          </p>
-        </div>
-      </section>
+      <section className="relative px-6 pt-32 pb-20 sm:px-12">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+            <div className="max-w-2xl">
+              <span className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/5 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-brand mb-6">
+                Knowledge Base
+              </span>
+              <h1 className="text-5xl font-black tracking-tight text-slate-900 sm:text-7xl mb-6">
+                Growth <span className="text-brand">Playbooks</span>
+              </h1>
+              <p className="text-xl text-slate-500 font-medium leading-relaxed">
+                Practical guides for consistent 5-star reputation, private customer recovery, and scaling your brand trust.
+              </p>
+            </div>
+          </div>
 
-      <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
-          {POSTS.map((post) => (
-            <Link 
-              key={post.title} 
-              href={post.isLive ? `/blog/${post.slug}` : "#"}
-              className={`group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl ${!post.isLive ? 'cursor-default' : ''}`}
-            >
-              <article>
-                <div className="inline-flex items-center rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-indigo-600">
-                  {post.date}
-                </div>
-                <h2 className="mt-4 text-xl font-semibold text-slate-900 group-hover:text-indigo-600">{post.title}</h2>
-                <p className="mt-3 text-sm text-slate-700 leading-relaxed flex-1">{post.excerpt}</p>
-                <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-400">
-                  {post.isLive ? 'Read Analysis' : 'Coming soon'}
-                  {post.isLive ? (
-                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          {/* Featured Post */}
+          {featuredPost && (
+            <div className="mb-24">
+              <Link 
+                href={`/blog/${featuredPost.slug}`}
+                className="group relative flex flex-col lg:flex-row gap-12 p-8 lg:p-12 rounded-[48px] bg-slate-900 overflow-hidden shadow-2xl transition-all hover:scale-[1.01]"
+              >
+                <div className="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(79,70,229,0.15),transparent)] opacity-50 pointer-events-none" />
+                <div className="flex-1 relative z-10 flex flex-col justify-center">
+                  <div className="flex items-center gap-3 mb-6">
+                    <span className="px-3 py-1 bg-brand/20 text-brand text-[10px] font-black uppercase tracking-widest rounded-lg border border-brand/30">Featured Guide</span>
+                    <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">{featuredPost.date}</span>
+                  </div>
+                  <h2 className="text-3xl lg:text-5xl font-black text-white mb-6 group-hover:text-brand transition-colors leading-tight">
+                    {featuredPost.title}
+                  </h2>
+                  <p className="text-lg text-slate-400 font-medium leading-relaxed mb-8 max-w-xl">
+                    {featuredPost.excerpt}
+                  </p>
+                  <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white group-hover:gap-5 transition-all">
+                    Read Strategic Analysis
+                    <svg className="w-5 h-5 text-brand" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
-                  ) : (
-                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </div>
+                </div>
+                <div className="flex-1 relative min-h-[300px] flex items-center justify-center">
+                   <div className="w-full h-full bg-white/5 rounded-[32px] border border-white/10 flex items-center justify-center text-[120px]">
+                     {featuredPost.image}
+                   </div>
+                </div>
+              </Link>
+            </div>
+          )}
+
+          {/* Grid of Other Posts */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {otherPosts.map((post) => (
+              <Link 
+                key={post.title} 
+                href={post.isLive ? `/blog/${post.slug}` : "#"}
+                className={`group flex flex-col h-full bg-white rounded-[40px] border border-slate-100 p-8 shadow-xl shadow-slate-200/40 transition-all hover:border-brand/20 hover:-translate-y-2 ${!post.isLive ? 'grayscale opacity-70 cursor-default' : ''}`}
+              >
+                <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-3xl mb-8 group-hover:bg-brand/5 group-hover:scale-110 transition-all duration-500">
+                  {post.image}
+                </div>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-brand">{post.category}</span>
+                  <span className="w-1 h-1 rounded-full bg-slate-200" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{post.date}</span>
+                </div>
+                <h3 className="text-xl font-black text-slate-900 mb-4 group-hover:text-brand transition-colors">
+                  {post.title}
+                </h3>
+                <p className="text-sm text-slate-500 font-medium leading-relaxed mb-8 flex-1">
+                  {post.excerpt}
+                </p>
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-brand transition-all">
+                  {post.isLive ? 'Read Analysis' : 'Coming Soon'}
+                  {post.isLive && (
+                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   )}
                 </div>
-              </article>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
     </main>
