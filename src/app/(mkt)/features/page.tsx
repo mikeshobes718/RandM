@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import Link from "next/link";
+import Image from "next/image";
 import { FeatureTabs } from "@/components/FeatureTabs";
 import HomeCtaButtons from "@/components/HomeCtaButtons";
 
@@ -109,8 +110,27 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* Interactive Tabs */}
+      {/* How It Works - Visual Explainer */}
       <section className="py-24 bg-accent/50 border-y border-border">
+        <div className="container mx-auto px-6">
+          <div className="max-w-2xl mx-auto text-center mb-12">
+            <h2 className="text-3xl font-black tracking-tight mb-4">How it works</h2>
+            <p className="text-muted">Simple, automated reputation management in three steps.</p>
+          </div>
+          <div className="max-w-4xl mx-auto">
+            <Image
+              src="/extras/concise.png"
+              alt="How Reviews & Marketing Works - Visual Flow"
+              width={1200}
+              height={600}
+              className="w-full h-auto rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive Tabs */}
+      <section className="py-24">
         <div className="container mx-auto px-6">
           <div className="max-w-2xl mx-auto text-center mb-16">
             <h2 className="text-3xl font-black tracking-tight mb-4">Deep dive into the toolkit</h2>

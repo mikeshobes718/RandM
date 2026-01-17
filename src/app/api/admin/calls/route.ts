@@ -46,6 +46,8 @@ export async function GET() {
         timestamp = date;
       }
 
+      const timesCalled = row[10] || '1'; // Column K: Times Called
+
       return {
         id: `sheet-${index}`,
         timestamp,
@@ -54,7 +56,8 @@ export async function GET() {
         followup_date: followupDate,
         rep_name: repId || repEmail || 'System',
         lead_name: businessName,
-        lead_phone: phone
+        lead_phone: phone,
+        times_called: timesCalled
       };
     });
 

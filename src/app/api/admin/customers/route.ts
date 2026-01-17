@@ -8,10 +8,10 @@ export async function GET(req: NextRequest) {
   console.log('[ADMIN CUSTOMERS API] ===== START =====');
   
   try {
-    // 1. Fetch ALL users with role 'customer'
+    // 1. Fetch ALL users with role 'customer' including last_sign_in_at
     const { data: customerUsers, error: usersError } = await supa
       .from('users')
-      .select('uid, email, role, created_at')
+      .select('uid, email, role, created_at, last_sign_in_at')
       .eq('role', 'customer')
       .order('created_at', { ascending: false });
 
@@ -73,6 +73,31 @@ export async function GET(req: NextRequest) {
         bizName: biz?.name
       });
 
+      // Format last login
+      let lastLogin = 'Never';
+      const lastSignIn = (user as any).last_sign_in_at;
+      if (lastSignIn) {
+        const loginDate = new Date(lastSignIn);
+        if (!isNaN(loginDate.getTime())) {
+          const diffMs = now.getTime() - loginDate.getTime();
+          const diffMins = Math.floor(diffMs / 60000);
+          const diffHours = Math.floor(diffMs / 3600000);
+          const diffDays = Math.floor(diffMs / 86400000);
+          
+          if (diffMins < 5) {
+            lastLogin = 'Just now';
+          } else if (diffMins < 60) {
+            lastLogin = `${diffMins}m ago`;
+          } else if (diffHours < 24) {
+            lastLogin = `${diffHours}h ago`;
+          } else if (diffDays < 7) {
+            lastLogin = `${diffDays}d ago`;
+          } else {
+            lastLogin = loginDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          }
+        }
+      }
+
       return {
         id: biz?.id || user.uid,
         name: biz?.name || user.email || 'No Business Name',
@@ -82,7 +107,7 @@ export async function GET(req: NextRequest) {
         closedBy: 'Self',
         status,
         months: monthsActive,
-        lastLogin: 'Never',
+        lastLogin,
         email: user.email || 'No Email',
         role: user.role
       };

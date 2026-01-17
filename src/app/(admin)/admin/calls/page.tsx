@@ -83,6 +83,7 @@ export default function CallLog() {
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Rep</th>
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Business Name</th>
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Phone</th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Attempts</th>
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Outcome</th>
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Notes</th>
                 <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Follow-up</th>
@@ -91,7 +92,7 @@ export default function CallLog() {
             <tbody className="divide-y divide-slate-50">
               {filteredCalls.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-8 py-12 text-center text-slate-400 font-medium italic">No calls logged yet.</td>
+                  <td colSpan={8} className="px-8 py-12 text-center text-slate-400 font-medium italic">No calls logged yet.</td>
                 </tr>
               ) : (
                 filteredCalls.map((call) => (
@@ -108,6 +109,9 @@ export default function CallLog() {
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
                       <p className="text-sm font-medium text-slate-600">{call.lead_phone}</p>
+                    </td>
+                    <td className="px-8 py-5 whitespace-nowrap text-center">
+                      <span className="text-sm font-black text-brand">{call.times_called || '1'}</span>
                     </td>
                     <td className="px-8 py-5 whitespace-nowrap">
                       <span className={`text-[10px] font-black px-2 py-1 rounded-lg uppercase tracking-wider ${

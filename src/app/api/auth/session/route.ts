@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -14,9 +15,20 @@ export async function POST(request: NextRequest) {
 
     try {
       const auth = getAuthAdmin();
+      const supa = getSupabaseAdmin();
       
       // Verify the ID token
       const decodedToken = await auth.verifyIdToken(idToken);
+      
+      // Update last_sign_in_at in users table
+      try {
+        await supa
+          .from('users')
+          .update({ last_sign_in_at: new Date().toISOString() })
+          .eq('uid', decodedToken.uid);
+      } catch (updateErr) {
+        console.warn('[SESSION] Failed to update last_sign_in_at:', updateErr);
+      }
       
       // Create a session cookie
       const expiresIn = days * 24 * 60 * 60 * 1000; // Convert days to milliseconds
