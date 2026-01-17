@@ -31,41 +31,82 @@ export async function POST(req: Request) {
         const websiteIndex = headers.indexOf('Website');
         const businessNameIndex = headers.indexOf('Business Name');
         
-        // Find existing reveal by Place ID
+        // Find existing reveal by Place ID (including "NO_PHONE" cached entries)
         for (let i = 1; i < revealsData.length; i++) {
           const row = revealsData[i];
-          if (row[placeIdIndex] === googlePlaceId && row[phoneIndex]) {
-            console.log('[REVEAL CONTACT] ✅ Found in Reveals sheet:', row[phoneIndex]);
+          if (row[placeIdIndex] === googlePlaceId) {
+            const cachedPhone = row[phoneIndex];
             
-            // Log the cached hit to Detailed Hit Log
-            try {
-              const now = new Date();
-              const estDate = now.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
-              const estTime = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: true }) + ' EST';
-              const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            // Check if this is a cached "no phone" entry
+            if (cachedPhone === 'NO_PHONE') {
+              console.log('[REVEAL CONTACT] ✅ Found cached NO_PHONE entry - skipping Google API');
               
-              await appendToSheet(USAGE_SPREADSHEET_ID, 'Detailed Hit Log!A2', [
-                estDate,
-                estTime,
-                transactionId,
-                row[businessNameIndex] || leadData?.name || 'Unknown Business',
-                googlePlaceId,
-                'Reveal Contact (Cached from Sheet)',
-                '$0.00',
-                'Reveals Sheet Cache',
-                repId || 'N/A',
-                repEmail || 'System'
-              ]);
-            } catch (logErr) {
-              console.error('[REVEAL CONTACT] Log error:', logErr);
-            }
+              // Log the cached hit (no cost)
+              try {
+                const now = new Date();
+                const estDate = now.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+                const estTime = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: true }) + ' EST';
+                const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                
+                await appendToSheet(USAGE_SPREADSHEET_ID, 'Detailed Hit Log!A2', [
+                  estDate,
+                  estTime,
+                  transactionId,
+                  row[businessNameIndex] || leadData?.name || 'Unknown Business',
+                  googlePlaceId,
+                  'Reveal Contact (Cached NO_PHONE)',
+                  '$0.00',
+                  'Reveals Sheet Cache',
+                  repId || 'N/A',
+                  repEmail || 'System'
+                ]);
+              } catch (logErr) {
+                console.error('[REVEAL CONTACT] Log error:', logErr);
+              }
 
-            return NextResponse.json({ 
-              success: true, 
-              phone: row[phoneIndex], 
-              website: row[websiteIndex] || null,
-              source: 'reveals_sheet'
-            });
+              return NextResponse.json({ 
+                success: true, 
+                phone: null, 
+                website: row[websiteIndex] || null,
+                message: 'This business has no phone number listed on Google.',
+                source: 'reveals_sheet_cached'
+              });
+            }
+            
+            // Has a real phone number cached
+            if (cachedPhone) {
+              console.log('[REVEAL CONTACT] ✅ Found in Reveals sheet:', cachedPhone);
+              
+              // Log the cached hit to Detailed Hit Log
+              try {
+                const now = new Date();
+                const estDate = now.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+                const estTime = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: true }) + ' EST';
+                const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                
+                await appendToSheet(USAGE_SPREADSHEET_ID, 'Detailed Hit Log!A2', [
+                  estDate,
+                  estTime,
+                  transactionId,
+                  row[businessNameIndex] || leadData?.name || 'Unknown Business',
+                  googlePlaceId,
+                  'Reveal Contact (Cached from Sheet)',
+                  '$0.00',
+                  'Reveals Sheet Cache',
+                  repId || 'N/A',
+                  repEmail || 'System'
+                ]);
+              } catch (logErr) {
+                console.error('[REVEAL CONTACT] Log error:', logErr);
+              }
+
+              return NextResponse.json({ 
+                success: true, 
+                phone: cachedPhone, 
+                website: row[websiteIndex] || null,
+                source: 'reveals_sheet'
+              });
+            }
           }
         }
       }
@@ -149,7 +190,48 @@ export async function POST(req: Request) {
     const businessName = leadData?.name || details.displayName?.text || 'Unknown Business';
 
     if (!phone) {
-      console.log('[REVEAL CONTACT] No phone found for this business');
+      console.log('[REVEAL CONTACT] No phone found for this business - caching NO_PHONE result');
+      
+      // Save "NO_PHONE" to Reveals sheet so we don't pay for this lookup again
+      const now = new Date();
+      const estDate = now.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+      const estTime = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: true }) + ' EST';
+      
+      try {
+        await appendToSheet(USAGE_SPREADSHEET_ID, 'Reveals!A2', [
+          estDate,
+          estTime,
+          businessName,
+          googlePlaceId,
+          'NO_PHONE', // Special marker indicating we checked and found no phone
+          website || '',
+          repId || 'N/A',
+          repEmail || 'System'
+        ]);
+        console.log('[REVEAL CONTACT] ✅ Saved NO_PHONE marker to Reveals sheet');
+      } catch (sheetErr) {
+        console.error('[REVEAL CONTACT] Error saving NO_PHONE to Reveals sheet:', sheetErr);
+      }
+      
+      // Log to Detailed Hit Log (this still cost $0.025)
+      try {
+        const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        await appendToSheet(USAGE_SPREADSHEET_ID, 'Detailed Hit Log!A2', [
+          estDate,
+          estTime,
+          transactionId,
+          businessName,
+          googlePlaceId,
+          'Reveal Contact (NEW - NO_PHONE)',
+          '$0.025',
+          'Google Places API',
+          repId || 'N/A',
+          repEmail || 'System'
+        ]);
+      } catch (logErr) {
+        console.error('[REVEAL CONTACT] Log error:', logErr);
+      }
+      
       return NextResponse.json({ 
         success: true, 
         phone: null, 
