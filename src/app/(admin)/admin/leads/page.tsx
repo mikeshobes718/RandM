@@ -30,7 +30,7 @@ export default function AdminLeads() {
 
   const filteredLeads = leads.filter(lead => {
     if (statusFilter !== "All" && lead.status?.toLowerCase() !== statusFilter.toLowerCase()) return false;
-    if (search && !lead.business_name?.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search && !lead.name?.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 

@@ -143,55 +143,69 @@ export async function GET() {
       }))
       .sort((a, b) => b.closes_this_month - a.closes_this_month || b.calls_today - a.calls_today);
 
-    // 3. Build leads list from Google Sheet data (deduplicate by business name + phone)
+    // 3. Build leads list from Google Sheet data (deduplicate by Google Place ID or Business Name)
     const leadMap: Record<string, any> = {};
     
+    console.log('[ADMIN LEADS] Processing', sheetCalls.length, 'rows from Google Sheet');
+    
     sheetCalls.forEach((row, idx) => {
-      const businessName = row[headers.indexOf('Business Name')] || '';
-      const phone = row[headers.indexOf('Phone')] || '';
-      const address = row[headers.indexOf('Street Address')] || '';
-      const city = row[headers.indexOf('City')] || '';
-      const state = row[headers.indexOf('State')] || '';
+      const businessName = (row[headers.indexOf('Business Name')] || '').trim();
+      const phone = (row[headers.indexOf('Phone')] || '').trim();
+      const address = (row[headers.indexOf('Street Address')] || '').trim();
+      const city = (row[headers.indexOf('City')] || '').trim();
+      const state = (row[headers.indexOf('State')] || '').trim();
       const rating = row[headers.indexOf('Rating')] || '';
       const timesCalled = parseInt(row[headers.indexOf('Times Called')] || '1', 10);
-      const outcome = row[headers.indexOf('Outcome')] || '';
-      const date = row[headers.indexOf('Date')] || '';
-      const repEmail = row[headers.indexOf('Rep Email')] || '';
-      const repId = row[headers.indexOf('Rep ID')] || '';
-      const googlePlaceId = row[headers.indexOf('Google Place ID')] || '';
+      const outcome = (row[headers.indexOf('Outcome')] || '').trim();
+      const date = (row[headers.indexOf('Date')] || '').trim();
+      const repEmail = (row[headers.indexOf('Rep Email')] || '').trim();
+      const repId = (row[headers.indexOf('Rep ID')] || '').trim();
+      const googlePlaceId = (row[headers.indexOf('Google Place ID')] || '').trim();
 
-      const key = googlePlaceId || `${businessName}-${phone}`;
+      // Primary key: Google Place ID, fallback: business name (case-insensitive)
+      const key = googlePlaceId || businessName.toLowerCase();
       
-      if (key && businessName) {
-        if (!leadMap[key]) {
-          leadMap[key] = {
-            id: `sheet-lead-${idx}`,
-            name: businessName,
-            phone: phone,
-            address: address,
-            city: city,
-            state: state,
-            rating: rating,
-            times_called: timesCalled,
-            status: outcome ? outcome.replace(/_/g, ' ') : 'fresh',
-            last_called_at: date,
-            assigned_to_name: repEmail || repId || 'Unassigned',
-            google_place_id: googlePlaceId
-          };
-        } else {
-          // Update with more recent data
-          if (date > leadMap[key].last_called_at) {
-            leadMap[key].status = outcome ? outcome.replace(/_/g, ' ') : leadMap[key].status;
-            leadMap[key].last_called_at = date;
-            leadMap[key].assigned_to_name = repEmail || repId || leadMap[key].assigned_to_name;
-          }
-          // Keep highest times_called
-          if (timesCalled > leadMap[key].times_called) {
-            leadMap[key].times_called = timesCalled;
-          }
+      // Only skip if there's no business name at all
+      if (!businessName) {
+        console.log('[ADMIN LEADS] Skipping row', idx, '- no business name');
+        return;
+      }
+      
+      if (!leadMap[key]) {
+        leadMap[key] = {
+          id: `sheet-lead-${idx}`,
+          name: businessName,
+          phone: phone,
+          address: address,
+          city: city,
+          state: state,
+          rating: rating,
+          times_called: timesCalled,
+          status: outcome ? outcome.replace(/_/g, ' ') : 'fresh',
+          last_called_at: date,
+          assigned_to_name: repEmail || repId || 'Unassigned',
+          google_place_id: googlePlaceId
+        };
+      } else {
+        // Update with more recent data (compare dates)
+        const existingDate = leadMap[key].last_called_at || '';
+        if (date && date > existingDate) {
+          leadMap[key].status = outcome ? outcome.replace(/_/g, ' ') : leadMap[key].status;
+          leadMap[key].last_called_at = date;
+          leadMap[key].assigned_to_name = repEmail || repId || leadMap[key].assigned_to_name;
+        }
+        // Keep highest times_called (represents most recent call count)
+        if (timesCalled > leadMap[key].times_called) {
+          leadMap[key].times_called = timesCalled;
+        }
+        // Update phone if we didn't have one
+        if (!leadMap[key].phone && phone) {
+          leadMap[key].phone = phone;
         }
       }
     });
+
+    console.log('[ADMIN LEADS] Built', Object.keys(leadMap).length, 'unique leads');
 
     const formattedLeads = Object.values(leadMap)
       .sort((a, b) => (b.last_called_at || '').localeCompare(a.last_called_at || ''));
