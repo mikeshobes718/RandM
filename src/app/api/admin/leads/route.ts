@@ -67,8 +67,16 @@ export async function GET() {
           };
         }
 
-        // Today's calls (compare "M/D/YYYY" format)
-        const isToday = date === todayFormatted;
+        // Today's calls - normalize date format (remove leading zeros for comparison)
+        // Sheet might have "01/17/2026" but toLocaleDateString gives "1/17/2026"
+        const normalizeDate = (d: string) => {
+          const parts = d.split('/');
+          if (parts.length === 3) {
+            return `${parseInt(parts[0])}/${parseInt(parts[1])}/${parts[2]}`;
+          }
+          return d;
+        };
+        const isToday = normalizeDate(date) === todayFormatted;
         if (isToday) {
           repStats[repKey].calls_today++;
           totalCallsToday++;
