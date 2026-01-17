@@ -73,25 +73,9 @@ export async function GET(req: NextRequest) {
         bizName: biz?.name
       });
 
-      // Format last login - show time since signup for now (last_sign_in_at not available)
-      let lastLogin = 'Unknown';
-      const signupDate = user.created_at ? new Date(user.created_at) : null;
-      if (signupDate && !isNaN(signupDate.getTime())) {
-        const diffMs = now.getTime() - signupDate.getTime();
-        const diffDays = Math.floor(diffMs / 86400000);
-        
-        if (diffDays === 0) {
-          lastLogin = 'Today';
-        } else if (diffDays === 1) {
-          lastLogin = 'Yesterday';
-        } else if (diffDays < 7) {
-          lastLogin = `${diffDays} days ago`;
-        } else if (diffDays < 30) {
-          lastLogin = `${Math.floor(diffDays / 7)} weeks ago`;
-        } else {
-          lastLogin = signupDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        }
-      }
+      // Use signup date as a proxy for activity since last_sign_in_at doesn't exist
+      // Return ISO string so frontend can format it with formatDistanceToNow
+      const lastLogin = user.created_at || null;
 
       return {
         id: biz?.id || user.uid,
