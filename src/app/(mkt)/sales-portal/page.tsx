@@ -25,6 +25,7 @@ interface Lead {
   timesCalled: number;
   callStatus: string;
   lastCalledByEmail?: string;
+  noPhoneListed?: boolean; // True if we checked and there's no phone
 }
 
 // Sales Assets data
@@ -201,6 +202,9 @@ export default function SalesPortalPage() {
         // Update local state with revealed info
         if (data.phone) {
           setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, phone: data.phone, website: data.website || l.website } : l));
+        } else {
+          // Mark this lead as checked but no phone available
+          setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, noPhoneListed: true, website: data.website || l.website } : l));
         }
         // Show success toast
         const toast = document.createElement('div');
@@ -554,6 +558,10 @@ export default function SalesPortalPage() {
                                     <a href={`tel:${lead.phone}`} className="flex items-center gap-2 text-brand font-bold hover:underline">
                                       <span>📞</span> {lead.phone}
                                     </a>
+                                  ) : lead.noPhoneListed ? (
+                                    <span className="text-slate-400 font-medium flex items-center gap-2">
+                                      <span>📵</span> No Phone Listed
+                                    </span>
                                   ) : (
                                     <button 
                                       onClick={() => handleRevealContact(lead)}

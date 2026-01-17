@@ -134,14 +134,16 @@ export async function GET(req: Request) {
         const phoneIndex = headers.indexOf('Phone');
         const websiteIndex = headers.indexOf('Website');
         
-        // Build a map of placeId -> {phone, website} from Reveals sheet
-        const revealsMap: Record<string, { phone: string; website: string }> = {};
+        // Build a map of placeId -> {phone, website, noPhoneListed} from Reveals sheet
+        const revealsMap: Record<string, { phone: string | null; website: string; noPhoneListed: boolean }> = {};
         for (let i = 1; i < revealsData.length; i++) {
           const row = revealsData[i];
-          if (row[placeIdIndex] && row[phoneIndex]) {
+          if (row[placeIdIndex]) {
+            const cachedPhone = row[phoneIndex];
             revealsMap[row[placeIdIndex]] = {
-              phone: row[phoneIndex],
-              website: row[websiteIndex] || ''
+              phone: cachedPhone === 'NO_PHONE' ? null : cachedPhone || null,
+              website: row[websiteIndex] || '',
+              noPhoneListed: cachedPhone === 'NO_PHONE'
             };
           }
         }
@@ -149,11 +151,22 @@ export async function GET(req: Request) {
         // Merge into combinedLeads - for any lead without a phone that has a cached reveal
         combinedLeads = combinedLeads.map(lead => {
           if (!lead.phone && revealsMap[lead.id]) {
-            return {
-              ...lead,
-              phone: revealsMap[lead.id].phone,
-              website: lead.website || revealsMap[lead.id].website
-            };
+            const cached = revealsMap[lead.id];
+            if (cached.noPhoneListed) {
+              // Business was checked and has no phone
+              return {
+                ...lead,
+                noPhoneListed: true,
+                website: lead.website || cached.website
+              };
+            } else if (cached.phone) {
+              // Business has a cached phone
+              return {
+                ...lead,
+                phone: cached.phone,
+                website: lead.website || cached.website
+              };
+            }
           }
           return lead;
         });
