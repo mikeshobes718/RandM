@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { readSheetData } from '@/lib/googleSheets';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +15,7 @@ export async function GET() {
   };
 
   try {
-    // 1. MRR from subscriptions
+    // 1. MRR from subscriptions (from database)
     const { data: subs } = await supa.from('subscriptions').select('plan_id').eq('status', 'active');
     const mrr = (subs || []).reduce((sum, s) => {
       if (s.plan_id === 'unlimited') return sum + 199;
@@ -22,95 +23,102 @@ export async function GET() {
       return sum + 49;
     }, 0);
 
-    // 2. Active Customers (count both active and trial)
+    // 2. Active Customers (from database)
     const { count: activeCount } = await supa.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active');
     const { count: trialCount } = await supa.from('subscriptions').select('*', { count: 'exact', head: true }).or('status.eq.trialing,status.eq.trial');
     const activeCustomers = (activeCount || 0) + (trialCount || 0);
-    console.log(`[ADMIN OVERVIEW] Customers: ${activeCount} active + ${trialCount} trial = ${activeCustomers}`);
 
-    // 3. Active Reps
+    // 3. Active Reps (from database)
     let activeReps = 0;
     const { count: repsCount, error: repsErr } = await supa.from('users').select('*', { count: 'exact', head: true }).eq('role', 'sales_rep');
     if (!repsErr) activeReps = repsCount || 0;
 
-    // 4. Closes This Week
-    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { count: closesThisWeek } = await supa.from('leads').select('*', { count: 'exact', head: true }).eq('call_status', 'closed').gte('last_called_at', weekAgo);
-
-    // 5. Commissions Owed (Legacy or placeholders for now)
-    let commissionsOwed = 0;
-
-    // 6. Call Metrics
-    let callsToday = 0, callsThisWeek = 0, totalCalls = 0, totalCloses = 0;
-    const todayStart = new Date().toISOString().split('T')[0];
-    
-    const { count: ct } = await supa.from('call_log').select('*', { count: 'exact', head: true }).gte('timestamp', todayStart);
-    if (ct !== null) callsToday = ct;
-    
-    const { count: cw } = await supa.from('call_log').select('*', { count: 'exact', head: true }).gte('timestamp', weekAgo);
-    if (cw !== null) callsThisWeek = cw;
-    
-    const { count: tc } = await supa.from('call_log').select('*', { count: 'exact', head: true });
-    if (tc !== null) totalCalls = tc;
-    
-    const { count: tcl } = await supa.from('leads').select('*', { count: 'exact', head: true }).eq('call_status', 'closed');
-    if (tcl !== null) totalCloses = tcl;
-
-    // 7. Rep Activity (Top 5)
-    const { data: allUsers } = await supa.from('users').select('uid, email, rep_id');
-    const uidToUser = Object.fromEntries((allUsers || []).map(u => [u.uid, u]));
-
-    // 8. Recent Activity Feed
-    // We'll fetch call logs and manually join with users for 100% accuracy
-    const [recentCalls, recentUsers] = await Promise.all([
-      supa.from('call_log').select('timestamp, outcome, rep_id, lead_id').order('timestamp', { ascending: false }).limit(15),
-      supa.from('users').select('created_at, email, role').order('created_at', { ascending: false }).limit(5)
-    ]);
-
+    // 4-8. Call Metrics from Google Sheets
+    let callsToday = 0, callsThisWeek = 0, totalCalls = 0, totalCloses = 0, closesThisWeek = 0;
     const activity: any[] = [];
-    
-    // Process calls (Highest Priority for "Real" activity)
-    if (recentCalls.data) {
-      for (const c of recentCalls.data) {
-        const user = c.rep_id ? uidToUser[c.rep_id] : null;
-        let repEmail = user?.email;
-        if (!repEmail && c.rep_id) {
-          const { data: fallbackUser } = await supa.from('users').select('email').eq('rep_id', c.rep_id).maybeSingle();
-          repEmail = fallbackUser?.email;
-        }
 
-        const { data: leadData } = await supa.from('leads').select('name').eq('id', c.lead_id).maybeSingle();
+    const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+    
+    if (spreadsheetId) {
+      const rows = await readSheetData(spreadsheetId, 'Sheet1!A:P');
+      
+      if (rows && rows.length > 1) {
+        const dataRows = rows.slice(1); // Skip header
+        totalCalls = dataRows.length;
+
+        // Get today's date and week ago in MM/DD/YYYY format
+        const now = new Date();
+        const todayStr = now.toLocaleDateString('en-US', { 
+          timeZone: 'America/New_York',
+          month: '2-digit',
+          day: '2-digit',
+          year: 'numeric'
+        });
         
-        activity.push({
-          time: c.timestamp,
-          // If we have an email, use it. If we have a raw ID, use it. Otherwise 'System'.
-          event: `${repEmail || c.rep_id || 'System'} logged a call: ${c.outcome.replace('_', ' ')}`,
-          detail: leadData?.name || 'Business Lead',
-          type: c.outcome === 'closed' || c.outcome === 'close' ? 'close' : 'log'
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+        // Column indices
+        const DATE_COL = 0;
+        const TIME_COL = 1;
+        const NAME_COL = 2;
+        const OUTCOME_COL = 11;
+        const REP_EMAIL_COL = 14;
+        const REP_ID_COL = 15;
+
+        dataRows.forEach(row => {
+          const rowDate = row[DATE_COL];
+          const outcome = (row[OUTCOME_COL] || '').toLowerCase();
+          
+          // Check if closed
+          if (outcome === 'closed' || outcome === 'close') {
+            totalCloses++;
+          }
+
+          // Parse date
+          if (rowDate) {
+            const [month, day, year] = rowDate.split('/').map(Number);
+            const rowDateObj = new Date(year, month - 1, day);
+            
+            // Today's calls
+            if (rowDate === todayStr) {
+              callsToday++;
+            }
+            
+            // This week's calls
+            if (rowDateObj >= weekAgo) {
+              callsThisWeek++;
+              if (outcome === 'closed' || outcome === 'close') {
+                closesThisWeek++;
+              }
+            }
+          }
+        });
+
+        // Recent Activity (last 15 calls, most recent first)
+        const recentRows = dataRows.slice(-15).reverse();
+        recentRows.forEach(row => {
+          const date = row[DATE_COL] || '';
+          const time = row[TIME_COL] || '';
+          const name = row[NAME_COL] || 'Unknown Business';
+          const outcome = row[OUTCOME_COL] || '';
+          const repId = row[REP_ID_COL] || row[REP_EMAIL_COL] || 'System';
+
+          activity.push({
+            time: `${date} ${time}`.trim(),
+            event: `${repId} logged a call: ${outcome.replace(/_/g, ' ') || 'call'}`,
+            detail: name,
+            type: outcome.toLowerCase() === 'closed' || outcome.toLowerCase() === 'close' ? 'close' : 'log'
+          });
         });
       }
     }
-
-    // Process new users (Lower priority)
-    if (recentUsers.data) {
-      recentUsers.data.forEach(u => {
-        activity.push({
-          time: u.created_at,
-          event: `New user joined: ${u.email}`,
-          detail: `Account Role: ${u.role}`,
-          type: 'rep'
-        });
-      });
-    }
-
-    activity.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
 
     return NextResponse.json({
       mrr,
       activeCustomers: activeCustomers || 0,
       activeReps,
-      closesThisWeek: closesThisWeek || 0,
-      commissionsOwed,
+      closesThisWeek,
+      commissionsOwed: 0,
       callsToday,
       callsThisWeek,
       totalCalls,

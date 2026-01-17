@@ -143,8 +143,10 @@ export default function SalesPortalPage() {
         const finalRepId = user?.rep_id || localStorage.getItem('salesRepId') || "";
         setRepId(finalRepId);
         
-        if (finalRepId) {
-          fetch(`/api/sales/rep-stats?repId=${finalRepId}`)
+        // Fetch stats using both repId and email for best matching
+        const repEmail = user?.email || '';
+        if (finalRepId || repEmail) {
+          fetch(`/api/sales/rep-stats?repId=${encodeURIComponent(finalRepId)}&repEmail=${encodeURIComponent(repEmail)}`)
             .then(res => res.json())
             .then(statsData => setStats(statsData));
         }
@@ -247,8 +249,8 @@ export default function SalesPortalPage() {
         
         // Refresh stats
         const finalRepId = repId || localStorage.getItem('salesRepId');
-        if (finalRepId) {
-          fetch(`/api/sales/rep-stats?repId=${finalRepId}`)
+        if (finalRepId || userEmail) {
+          fetch(`/api/sales/rep-stats?repId=${encodeURIComponent(finalRepId || '')}&repEmail=${encodeURIComponent(userEmail)}`)
             .then(res => res.json())
             .then(statsData => setStats(statsData));
         }

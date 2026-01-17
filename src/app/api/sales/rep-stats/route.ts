@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { readSheetData } from '@/lib/googleSheets';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const repId = searchParams.get('repId'); // This is the static REP ID from users table
-  const supa = getSupabaseAdmin();
+  const repEmail = searchParams.get('repEmail'); // Also accept email
 
   const defaults = {
-    callsLogged: 0,
-    closesThisWeek: 0,
+    callsToday: 0,
+    appointments: 0,
+    closes: 0,
     commissionEarned: 0,
     pendingCommission: 0,
     payoutHistory: [],
@@ -18,88 +19,81 @@ export async function GET(req: Request) {
     estimatedNextPayout: 0
   };
 
-  if (!repId) {
-    return NextResponse.json(defaults);
-  }
-
   try {
-    // 1. Get the user's email and UUID using the static repId
-    const { data: userData, error: userError } = await supa
-      .from('users')
-      .select('uid, email')
-      .eq('rep_id', repId)
-      .maybeSingle();
-
-    if (userError || !userData) {
-      console.warn('[REP STATS] User not found for repId:', repId);
+    const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+    
+    if (!spreadsheetId) {
+      console.error('[REP STATS] GOOGLE_SHEETS_ID not set');
       return NextResponse.json(defaults);
     }
 
-    const uid = userData.uid;
-    const email = userData.email;
-
-    // 2. Stats for Today/Month (matching by email for reliability)
-    const today = new Date().toISOString().split('T')[0];
-    const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-
-    const { count: callsToday } = await supa
-      .from('call_log')
-      .select('*', { count: 'exact', head: true })
-      .eq('rep_id', uid)
-      .gte('timestamp', today);
-
-    const { count: apptsToday } = await supa
-      .from('call_log')
-      .select('*', { count: 'exact', head: true })
-      .eq('rep_id', uid)
-      .eq('outcome', 'callback')
-      .gte('timestamp', today);
-
-    const { count: closesMonth } = await supa
-      .from('leads')
-      .select('*', { count: 'exact', head: true })
-      .eq('last_called_by_email', email)
-      .eq('call_status', 'closed')
-      .gte('last_called_at', firstOfMonth);
-
-    // 4. Commissions
-    const { data: commissions } = await supa
-      .from('commissions')
-      .select('amount, status')
-      .eq('rep_id', uid);
-
-    const earned = (commissions || [])
-      .filter(c => c.status === 'paid')
-      .reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
+    // Read all data from Google Sheet
+    const rows = await readSheetData(spreadsheetId, 'Sheet1!A:P');
     
-    const pending = (commissions || [])
-      .filter(c => c.status === 'pending')
-      .reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
+    if (!rows || rows.length <= 1) {
+      return NextResponse.json(defaults);
+    }
 
-    // 5. Payout History
-    const { data: payouts } = await supa
-      .from('payouts')
-      .select('amount, paid_at')
-      .eq('rep_id', uid)
-      .order('paid_at', { ascending: false })
-      .limit(5);
+    // Get today's date and first of month in MM/DD/YYYY format
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('en-US', { 
+      timeZone: 'America/New_York',
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric'
+    });
+    
+    // First day of current month
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    // Column indices (0-based)
+    const DATE_COL = 0;
+    const OUTCOME_COL = 11;
+    const REP_EMAIL_COL = 14;
+    const REP_ID_COL = 15;
 
-    // Calculate next payout date (e.g., every other Friday)
-    const nextPayout = new Date();
-    nextPayout.setDate(nextPayout.getDate() + (5 - nextPayout.getDay() + 7) % 14 || 14);
+    // Filter for this rep's calls
+    const repCalls = rows.slice(1).filter(row => {
+      const rowRepId = row[REP_ID_COL] || '';
+      const rowRepEmail = row[REP_EMAIL_COL] || '';
+      
+      // Match by repId or email (case-insensitive)
+      if (repId && rowRepId.toLowerCase() === repId.toLowerCase()) return true;
+      if (repEmail && rowRepEmail.toLowerCase() === repEmail.toLowerCase()) return true;
+      return false;
+    });
+
+    // Filter for today's calls
+    const todaysCalls = repCalls.filter(row => row[DATE_COL] === todayStr);
+    
+    // Filter for this month's closes
+    const monthCloses = repCalls.filter(row => {
+      const rowDate = row[DATE_COL];
+      const outcome = (row[OUTCOME_COL] || '').toLowerCase();
+      
+      // Parse date (MM/DD/YYYY format)
+      if (!rowDate) return false;
+      const [month, day, year] = rowDate.split('/').map(Number);
+      const rowDateObj = new Date(year, month - 1, day);
+      
+      return rowDateObj >= firstOfMonth && (outcome === 'closed' || outcome === 'close');
+    });
+
+    // Count today's appointments
+    const todaysAppointments = todaysCalls.filter(row => {
+      const outcome = (row[OUTCOME_COL] || '').toLowerCase();
+      return outcome === 'appointment';
+    });
 
     return NextResponse.json({
-      callsToday: callsToday || 0,
-      appointments: apptsToday || 0,
-      closes: closesMonth || 0,
-      commissionEarned: earned,
-      pendingCommission: pending,
-      payoutHistory: (payouts || []).map(p => ({
-        date: new Date(p.paid_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        amount: parseFloat(p.amount)
-      })),
-      nextPayoutDate: pending > 0 ? nextPayout.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "TBD",
-      estimatedNextPayout: pending
+      callsToday: todaysCalls.length,
+      appointments: todaysAppointments.length,
+      closes: monthCloses.length,
+      commissionEarned: 0, // Would need a separate commissions sheet
+      pendingCommission: 0,
+      payoutHistory: [],
+      nextPayoutDate: "TBD",
+      estimatedNextPayout: 0
     });
   } catch (error: any) {
     console.error('[REP STATS API] Error:', error);
