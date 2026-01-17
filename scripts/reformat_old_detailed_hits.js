@@ -87,6 +87,11 @@ async function reformatOldData() {
         }
       }
 
+      // Ensure time has " EST" at the end
+      if (time && !time.includes('EST')) {
+        time = time.trim() + ' EST';
+      }
+
       // Generate txnId if missing
       if (!txnId || txnId.length < 5) {
         // Create a deterministic ID based on the row data
