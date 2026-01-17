@@ -191,7 +191,9 @@ export default function SalesPortalPage() {
             address: lead.address,
             rating: lead.rating,
             type: type
-          }
+          },
+          repEmail: userEmail,
+          repId: repId
         })
       });
       const data = await res.json();

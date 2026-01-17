@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getPlaceDetails } from '@/lib/googlePlaces';
+import { appendToSheet } from '@/lib/googleSheets';
 
 export async function POST(req: Request) {
   const supa = getSupabaseAdmin();
+  const spreadsheetId = '1WMK5Y71w_j0EeYcYwA-7q_S8N3Zib-lZ3maQEgyKu2c';
+  
   try {
-    const { googlePlaceId, leadData } = await req.json();
+    const { googlePlaceId, leadData, repEmail, repId } = await req.json();
 
     console.log('[REVEAL CONTACT] Received request for:', googlePlaceId);
 
@@ -16,12 +19,30 @@ export async function POST(req: Request) {
     // 1. First check if we already have this lead in the DB with phone
     const { data: existingLead } = await supa
       .from('leads')
-      .select('phone, website')
+      .select('name, phone, website')
       .eq('google_place_id', googlePlaceId)
       .maybeSingle();
 
     if (existingLead?.phone) {
       console.log('[REVEAL CONTACT] Phone already in DB:', existingLead.phone);
+      
+      // Log cached hit to sheet
+      try {
+        const estTimestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
+        await appendToSheet(spreadsheetId, 'Detailed Hit Log!A2', [
+          estTimestamp,
+          existingLead.name || leadData?.name || 'Unknown Business',
+          googlePlaceId,
+          'Reveal Contact (Cached)',
+          '$0.00',
+          'Database Cache',
+          repId || 'N/A',
+          repEmail || 'System'
+        ]);
+      } catch (sheetErr) {
+        console.error('[REVEAL CONTACT] Google Sheet Log Error (Cached):', sheetErr);
+      }
+
       return NextResponse.json({ 
         success: true, 
         phone: existingLead.phone, 
@@ -35,10 +56,6 @@ export async function POST(req: Request) {
     let details;
     try {
       details = await getPlaceDetails(googlePlaceId);
-      console.log('[REVEAL CONTACT] Google response:', {
-        hasPhone: !!details.nationalPhoneNumber || !!details.internationalPhoneNumber,
-        hasWebsite: !!details.websiteUri
-      });
     } catch (googleErr: any) {
       console.error('[REVEAL CONTACT] Google API error:', googleErr.message);
       return NextResponse.json({ 
@@ -52,13 +69,29 @@ export async function POST(req: Request) {
 
     if (!phone) {
       console.log('[REVEAL CONTACT] No phone found for this business');
-      // Still return success but with no phone - some businesses don't list their phone
       return NextResponse.json({ 
         success: true, 
         phone: null, 
         website,
         message: 'This business has no phone number listed on Google.'
       });
+    }
+
+    // Log charged hit to sheet
+    try {
+      const estTimestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
+      await appendToSheet(spreadsheetId, 'Detailed Hit Log!A2', [
+        estTimestamp,
+        leadData?.name || details.displayName?.text || 'Unknown Business',
+        googlePlaceId,
+        'Reveal Contact',
+        '$0.025',
+        'Google Places API',
+        repId || 'N/A',
+        repEmail || 'System'
+      ]);
+    } catch (sheetErr) {
+      console.error('[REVEAL CONTACT] Google Sheet Log Error (Charged):', sheetErr);
     }
 
     // 3. Save or Update in DB
@@ -96,7 +129,6 @@ export async function POST(req: Request) {
 
     if (dbError) {
       console.error('[REVEAL CONTACT] DB Error:', dbError);
-      // Still return the phone even if DB save fails
     }
 
     console.log('[REVEAL CONTACT] Success! Phone:', phone);
