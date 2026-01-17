@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const supa = getSupabaseAdmin();
-  console.log('[ADMIN CUSTOMERS API] Fetching all subscriptions...');
+  console.log('[ADMIN CUSTOMERS API] ===== START =====');
   
   try {
     // 1. Fetch ALL subscriptions first
@@ -13,15 +13,23 @@ export async function GET(req: NextRequest) {
       .from('subscriptions')
       .select('*');
 
+    console.log('[ADMIN CUSTOMERS API] Raw query result:', { 
+      count: allSubs?.length, 
+      error: subsError,
+      subs: allSubs 
+    });
+
     if (subsError) {
       console.error('[ADMIN CUSTOMERS API] Subscriptions fetch error:', subsError);
       throw subsError;
     }
 
     // Filter for active/trialing in memory to be 100% sure
-    const activeSubs = (allSubs || []).filter(s => 
-      s.status === 'active' || s.status === 'trialing' || s.status === 'trial'
-    );
+    const activeSubs = (allSubs || []).filter(s => {
+      const isActive = s.status === 'active' || s.status === 'trialing' || s.status === 'trial';
+      console.log(`[ADMIN CUSTOMERS API] Sub ${s.uid}: status=${s.status}, isActive=${isActive}`);
+      return isActive;
+    });
 
     console.log(`[ADMIN CUSTOMERS API] Found ${allSubs?.length || 0} total subscriptions, ${activeSubs.length} active/trial`);
 
