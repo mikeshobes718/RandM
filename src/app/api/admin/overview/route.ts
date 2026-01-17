@@ -23,10 +23,9 @@ export async function GET() {
       return sum + 49;
     }, 0);
 
-    // 2. Active Customers (from database)
-    const { count: activeCount } = await supa.from('subscriptions').select('*', { count: 'exact', head: true }).eq('status', 'active');
-    const { count: trialCount } = await supa.from('subscriptions').select('*', { count: 'exact', head: true }).or('status.eq.trialing,status.eq.trial');
-    const activeCustomers = (activeCount || 0) + (trialCount || 0);
+    // 2. Active Customers (count users with role='customer')
+    const { count: customerCount } = await supa.from('users').select('*', { count: 'exact', head: true }).eq('role', 'customer');
+    const activeCustomers = customerCount || 0;
 
     // 3. Active Reps (from database)
     let activeReps = 0;
@@ -40,7 +39,7 @@ export async function GET() {
     const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
     
     if (spreadsheetId) {
-      const rows = await readSheetData(spreadsheetId, 'Sheet1!A:P');
+      const rows = await readSheetData(spreadsheetId, 'Sheet1!A:Q'); // A-Q covers all 17 columns
       
       if (rows && rows.length > 1) {
         const dataRows = rows.slice(1); // Skip header

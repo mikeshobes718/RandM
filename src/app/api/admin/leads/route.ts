@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { readSheet } from '@/lib/googleSheets';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  const supa = getSupabaseAdmin();
+  
   try {
     // Use EST timezone for consistency with Google Sheets dates
     const now = new Date();
@@ -12,14 +15,22 @@ export async function GET() {
     
     console.log('[ADMIN LEADS] Today formatted (EST):', todayFormatted);
 
-    // 1. Read ALL data from Google Sheet (primary source of truth)
+    // 0. Get ALL sales reps from database (so we show everyone, even with 0 calls)
+    const { data: allSalesReps } = await supa
+      .from('users')
+      .select('uid, email, rep_id')
+      .eq('role', 'sales_rep');
+    
+    console.log('[ADMIN LEADS] All sales reps from DB:', allSalesReps?.length || 0);
+
+    // 1. Read ALL data from Google Sheet (primary source of truth for calls)
     const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
     let sheetCalls: any[] = [];
     let headers: string[] = [];
 
     if (spreadsheetId) {
       try {
-        const sheetData = await readSheet(spreadsheetId, 'Sheet1!A:P');
+        const sheetData = await readSheet(spreadsheetId, 'Sheet1!A:Q'); // Extended to column Q for Category
         if (sheetData && sheetData.length > 1) {
           headers = sheetData[0];
           sheetCalls = sheetData.slice(1);
@@ -29,7 +40,7 @@ export async function GET() {
       }
     }
 
-    // 2. Calculate per-rep metrics from Google Sheet
+    // 2. Initialize ALL sales reps with 0 metrics (so everyone shows up)
     const repStats: Record<string, { 
       calls_today: number; 
       appointments_today: number; 
@@ -38,9 +49,30 @@ export async function GET() {
       name: string 
     }> = {};
 
+    // Pre-populate with ALL sales reps from database
+    (allSalesReps || []).forEach(rep => {
+      const repKey = rep.email?.toLowerCase() || rep.uid;
+      repStats[repKey] = {
+        calls_today: 0,
+        appointments_today: 0,
+        closes_this_month: 0,
+        email: rep.email || '',
+        name: rep.rep_id || rep.email?.split('@')[0] || 'Unknown'
+      };
+    });
+
     let totalCallsToday = 0;
     let totalAppointmentsToday = 0;
     let totalClosesMonth = 0;
+
+    // Helper to normalize date format (remove leading zeros)
+    const normalizeDate = (d: string) => {
+      const parts = d.split('/');
+      if (parts.length === 3) {
+        return `${parseInt(parts[0])}/${parseInt(parts[1])}/${parts[2]}`;
+      }
+      return d;
+    };
 
     // Log first few rows for debugging
     if (sheetCalls.length > 0) {
@@ -48,15 +80,18 @@ export async function GET() {
       console.log('[ADMIN LEADS] First row date:', sheetCalls[0][headers.indexOf('Date')]);
     }
 
+    // Process sheet calls and update rep stats
     sheetCalls.forEach(row => {
       const date = row[headers.indexOf('Date')] || '';
-      const repEmail = row[headers.indexOf('Rep Email')] || '';
+      const repEmail = (row[headers.indexOf('Rep Email')] || '').toLowerCase();
       const repId = row[headers.indexOf('Rep ID')] || '';
       const outcome = (row[headers.indexOf('Outcome')] || '').toLowerCase();
 
       const repKey = repEmail || repId || 'unknown';
       
+      // If this rep exists in our stats (from DB or seen in sheet)
       if (repKey !== 'unknown') {
+        // Add rep if not already in stats (could be someone who logged before being added to DB)
         if (!repStats[repKey]) {
           repStats[repKey] = {
             calls_today: 0,
@@ -67,15 +102,7 @@ export async function GET() {
           };
         }
 
-        // Today's calls - normalize date format (remove leading zeros for comparison)
-        // Sheet might have "01/17/2026" but toLocaleDateString gives "1/17/2026"
-        const normalizeDate = (d: string) => {
-          const parts = d.split('/');
-          if (parts.length === 3) {
-            return `${parseInt(parts[0])}/${parseInt(parts[1])}/${parts[2]}`;
-          }
-          return d;
-        };
+        // Today's calls
         const isToday = normalizeDate(date) === todayFormatted;
         if (isToday) {
           repStats[repKey].calls_today++;
@@ -87,7 +114,7 @@ export async function GET() {
           }
         }
 
-        // This month's closes - parse date to check month
+        // This month's closes
         if (outcome === 'closed' || outcome === 'close') {
           try {
             const callDate = new Date(date);
@@ -104,7 +131,7 @@ export async function GET() {
       }
     });
 
-    // Convert rep stats to array
+    // Convert rep stats to array - includes ALL reps even those with 0 calls
     const repMetrics = Object.values(repStats)
       .filter(r => r.email || r.name)
       .map(r => ({

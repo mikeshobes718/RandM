@@ -89,16 +89,17 @@ export async function POST(req: Request) {
     const sheetCategory = leadData?.type || dbLeadData?.business_type || '';
     const timesCalled = (dbLeadData?.times_called || 0) + 1; // +1 for this call
 
-    // Format phone with country code (assume US +1 if not present)
-    let formattedPhone = sheetPhone;
-    if (formattedPhone && !formattedPhone.startsWith('+')) {
-      // Clean the phone number first
+    // Just pass the raw phone number - user will format in Google Sheets
+    // Only add +1 prefix if it's a 10-digit US number without country code
+    let formattedPhone = sheetPhone || '';
+    if (formattedPhone) {
       const cleanPhone = formattedPhone.replace(/\D/g, '');
       if (cleanPhone.length === 10) {
-        formattedPhone = `+1 ${cleanPhone.slice(0,3)}-${cleanPhone.slice(3,6)}-${cleanPhone.slice(6)}`;
+        formattedPhone = '+1' + cleanPhone; // Simple format: +15161234567
       } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
-        formattedPhone = `+1 ${cleanPhone.slice(1,4)}-${cleanPhone.slice(4,7)}-${cleanPhone.slice(7)}`;
+        formattedPhone = '+' + cleanPhone; // Already has country code
       }
+      // Otherwise keep as-is
     }
 
     // Get rep_id from users table (the static ID assigned by admin)

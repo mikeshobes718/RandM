@@ -11,8 +11,8 @@ export async function GET() {
       return NextResponse.json({ error: 'GOOGLE_SHEETS_ID not set', calls: [] }, { status: 500 });
     }
 
-    // Read all data from Google Sheet
-    const rows = await readSheetData(spreadsheetId, 'Sheet1!A:P');
+    // Read all data from Google Sheet (17 columns: A-Q)
+    const rows = await readSheetData(spreadsheetId, 'Sheet1!A:Q');
     
     if (!rows || rows.length <= 1) {
       return NextResponse.json({ calls: [] });
@@ -22,7 +22,7 @@ export async function GET() {
     // A(0): Date, B(1): Time, C(2): Business Name, D(3): Phone, E(4): Street Address,
     // F(5): City, G(6): State, H(7): Rating, I(8): Google Place ID, J(9): Website,
     // K(10): Times Called, L(11): Outcome, M(12): Notes, N(13): Follow-up Date,
-    // O(14): Rep Email, P(15): Rep ID
+    // O(14): Rep Email, P(15): Rep ID, Q(16): Category
 
     // Skip header row and process all call logs (most recent first)
     const formattedCalls = rows.slice(1).reverse().map((row, index) => {
