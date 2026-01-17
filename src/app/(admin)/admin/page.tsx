@@ -177,18 +177,22 @@ export default function AdminOverview() {
               </div>
             </div>
 
-            {/* Platform Health */}
+            {/* Sales Conversion */}
             <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col items-center justify-center">
               <h4 className="text-xs font-black text-slate-900 mb-6 uppercase tracking-[0.2em] w-full text-left flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                Platform Health
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                Lead Conversion
               </h4>
               <div className="text-center py-4">
-                <p className="text-5xl font-black text-slate-900 tracking-tighter mb-1">0%</p>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer Churn</p>
+                <p className="text-5xl font-black text-slate-900 tracking-tighter mb-1">
+                  {metrics.totalCalls > 0 
+                    ? `${(((metrics.totalCloses || 0) / metrics.totalCalls) * 100).toFixed(1)}%` 
+                    : '0%'}
+                </p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Call-to-Close Rate</p>
               </div>
-              <div className="mt-6 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
-                Perfect Retention
+              <div className="mt-6 px-4 py-2 rounded-xl bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest">
+                {metrics.totalAppointments || 0} Total Appointments
               </div>
             </div>
           </div>

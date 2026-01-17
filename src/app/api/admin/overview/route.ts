@@ -42,7 +42,7 @@ export async function GET() {
     if (!repsErr) activeReps = repsCount || 0;
 
     // 4-8. Call Metrics from Google Sheets
-    let callsToday = 0, callsThisWeek = 0, totalCalls = 0, totalCloses = 0, closesThisWeek = 0;
+    let callsToday = 0, callsThisWeek = 0, totalCalls = 0, totalCloses = 0, totalAppointments = 0, closesThisWeek = 0;
     let mostActiveRep = 'None';
     let mostPopularCategory = 'None';
     const activity: any[] = [];
@@ -91,6 +91,9 @@ export async function GET() {
           // Check if closed
           if (outcome === 'closed' || outcome === 'close') {
             totalCloses++;
+          }
+          if (outcome === 'appointment') {
+            totalAppointments++;
           }
 
           // Parse date
@@ -158,6 +161,7 @@ export async function GET() {
       activeCustomers: activeCustomers || 0,
       activeReps,
       closesThisWeek,
+      totalAppointments,
       commissionsOwed: commissionsUnpaid, // Backwards compatibility if needed
       callsToday,
       callsThisWeek,
