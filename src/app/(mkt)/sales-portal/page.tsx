@@ -206,21 +206,26 @@ export default function SalesPortalPage() {
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
       } else {
-        // Show error toast
-        const errorMsg = data.error || 'Failed to reveal contact. Please try again.';
+        // Show error toast with specific message
+        const errorMsg = data.error || 'Failed to reveal contact';
         const toast = document.createElement('div');
-        toast.className = 'fixed top-20 right-6 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm font-bold animate-fade-in';
-        toast.textContent = `✗ ${errorMsg}`;
+        toast.className = 'fixed top-20 right-6 bg-rose-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 text-sm font-bold animate-fade-in max-w-md';
+        // Check if it's a session error
+        if (errorMsg.includes('expired') || errorMsg.includes('token') || errorMsg.includes('auth')) {
+          toast.innerHTML = '✕ Your session has expired. <span class="underline cursor-pointer" onclick="window.location.reload()">Click here to refresh</span>';
+        } else {
+          toast.textContent = `✕ ${errorMsg}`;
+        }
         document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
+        setTimeout(() => toast.remove(), 8000);
       }
     } catch (err) {
       console.error("Reveal contact failed:", err);
       const toast = document.createElement('div');
-      toast.className = 'fixed top-20 right-6 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm font-bold animate-fade-in';
-      toast.textContent = '✗ Network error. Please try again.';
+      toast.className = 'fixed top-20 right-6 bg-rose-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 text-sm font-bold animate-fade-in max-w-md';
+      toast.innerHTML = '✕ Network error. <span class="underline cursor-pointer" onclick="window.location.reload()">Click here to refresh</span>';
       document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 4000);
+      setTimeout(() => toast.remove(), 8000);
     } finally {
       setRevealingId(null);
     }
