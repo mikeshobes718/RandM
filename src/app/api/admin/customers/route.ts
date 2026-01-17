@@ -5,106 +5,82 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   const supa = getSupabaseAdmin();
-  console.log('[ADMIN CUSTOMERS API] Starting fetch...');
+  console.log('[ADMIN CUSTOMERS API] Fetching all subscriptions...');
   
   try {
-    // 1. Fetch all subscriptions that are active or trialing
-    const { data: subsData, error: subsError } = await supa
+    // 1. Fetch ALL subscriptions first
+    const { data: allSubs, error: subsError } = await supa
       .from('subscriptions')
-      .select('*')
-      .in('status', ['active', 'trialing']);
+      .select('*');
 
     if (subsError) {
       console.error('[ADMIN CUSTOMERS API] Subscriptions fetch error:', subsError);
       throw subsError;
     }
 
-    console.log(`[ADMIN CUSTOMERS API] Found ${subsData?.length || 0} subscriptions`);
+    // Filter for active/trialing in memory to be 100% sure
+    const activeSubs = (allSubs || []).filter(s => 
+      s.status === 'active' || s.status === 'trialing' || s.status === 'trial'
+    );
 
-    const uids = (subsData || []).map(s => s.uid);
-    if (uids.length === 0) {
+    console.log(`[ADMIN CUSTOMERS API] Found ${allSubs?.length || 0} total subscriptions, ${activeSubs.length} active/trial`);
+
+    if (activeSubs.length === 0) {
       return NextResponse.json({ customers: [] });
     }
 
-    // 2. Fetch users for these subscriptions
-    const { data: usersData, error: usersError } = await supa
+    const uids = activeSubs.map(s => s.uid).filter(Boolean);
+    
+    // 2. Fetch users
+    const { data: usersData } = await supa
       .from('users')
-      .select('uid, email, role, created_at') // Removed last_sign_in_at which doesn't exist
+      .select('uid, email, role, created_at')
       .in('uid', uids);
 
-    if (usersError) {
-      console.error('[ADMIN CUSTOMERS API] Users fetch error:', usersError);
-      throw usersError;
-    }
-
-    // 3. Fetch businesses for these users
-    const { data: bizData, error: bizError } = await supa
+    // 3. Fetch businesses
+    const { data: bizData } = await supa
       .from('businesses')
       .select('id, name, owner_uid, created_at')
       .in('owner_uid', uids);
 
-    if (bizError) {
-      console.error('[ADMIN CUSTOMERS API] Businesses fetch error:', bizError);
-      throw bizError;
-    }
-
     const usersMap = Object.fromEntries((usersData || []).map(u => [u.uid, u]));
     const bizMap = Object.fromEntries((bizData || []).map(b => [b.owner_uid, b]));
 
-    // Skip the leads closed-by lookup to avoid schema issues
-    // This can be re-enabled once schema is stable
-    const closedByMap: Record<string, string> = {};
+    const customers = activeSubs.map(sub => {
+      const user = usersMap[sub.uid];
+      const biz = bizMap[sub.uid];
+      const role = user?.role || 'customer';
 
-    const customers = subsData
-      .map(sub => {
-        try {
-          const user = usersMap[sub.uid];
-          const biz = bizMap[sub.uid];
-          
-          if (!user) {
-            console.warn(`[ADMIN CUSTOMERS API] No user found for UID ${sub.uid}`);
-          }
+      const planId = sub.plan_id?.toLowerCase() || 'starter';
+      let plan = 'Starter';
+      let mrrValue = 49;
+      if (planId.includes('unlimited')) { plan = 'Unlimited'; mrrValue = 199; }
+      else if (planId.includes('pro') || planId.includes('mid') || planId.includes('growth')) { plan = 'Small Business'; mrrValue = 99; }
 
-          // Show ALL active subscribers. We'll include a role property 
-          // so the UI can badge them (Admin, Rep, or Customer).
-          const role = user?.role || 'customer';
+      const status = sub.status === 'active' ? 'Active' : (sub.status.startsWith('trial') ? 'Trial' : 'Churned');
+      const rawDate = biz?.created_at || user?.created_at || sub.updated_at;
+      const signedUpDate = rawDate ? new Date(rawDate) : new Date();
+      const now = new Date();
+      
+      let monthsActive = 0;
+      if (!isNaN(signedUpDate.getTime())) {
+        monthsActive = Math.max(0, (now.getFullYear() - signedUpDate.getUTCFullYear()) * 12 + (now.getMonth() - signedUpDate.getUTCMonth()));
+      }
 
-          const planId = sub.plan_id?.toLowerCase() || 'starter';
-          let plan = 'Starter';
-          let mrrValue = 49;
-          if (planId.includes('unlimited')) { plan = 'Unlimited'; mrrValue = 199; }
-          else if (planId.includes('pro') || planId.includes('mid') || planId.includes('growth')) { plan = 'Small Business'; mrrValue = 99; }
-
-          const status = sub.status === 'active' ? 'Active' : (sub.status === 'trialing' ? 'Trial' : 'Churned');
-          
-          const rawDate = biz?.created_at || user?.created_at || sub.updated_at;
-          const signedUpDate = rawDate ? new Date(rawDate) : new Date();
-          const now = new Date();
-          
-          let monthsActive = 0;
-          if (!isNaN(signedUpDate.getTime())) {
-            monthsActive = Math.max(0, (now.getFullYear() - signedUpDate.getUTCFullYear()) * 12 + (now.getMonth() - signedUpDate.getUTCMonth()));
-          }
-
-          return {
-            id: biz?.id || user?.uid || sub.uid,
-            name: biz?.name || 'Pending Setup',
-            plan,
-            mrr: `$${mrrValue}`,
-            signedUp: !isNaN(signedUpDate.getTime()) ? signedUpDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown',
-            closedBy: (biz?.name && closedByMap[biz.name.toLowerCase()]) || 'Self',
-            status,
-            months: monthsActive,
-            lastLogin: user?.last_sign_in_at || 'Never',
-            email: user?.email || 'No Email',
-            role: role // Include role so UI can badge it
-          };
-        } catch (itemErr) {
-          console.error('[ADMIN CUSTOMERS API] Error mapping customer item:', itemErr);
-          return null;
-        }
-      })
-      .filter((c): c is NonNullable<typeof c> => c !== null);
+      return {
+        id: biz?.id || user?.uid || sub.uid,
+        name: biz?.name || 'Pending Setup',
+        plan,
+        mrr: `$${mrrValue}`,
+        signedUp: !isNaN(signedUpDate.getTime()) ? signedUpDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown',
+        closedBy: 'Self',
+        status,
+        months: monthsActive,
+        lastLogin: 'Never',
+        email: user?.email || 'No Email',
+        role: role
+      };
+    });
 
     console.log(`[ADMIN CUSTOMERS API] Returning ${customers.length} customers`);
     return NextResponse.json({ customers });

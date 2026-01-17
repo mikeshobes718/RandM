@@ -424,7 +424,9 @@ export default function SalesPortalPage() {
                     disabled={!repId}
                     className="sales-input h-12 bg-white rounded-2xl border-slate-200 disabled:opacity-50"
                   >
+                    <option value="all">All Categories</option>
                     <option value="restaurant">Restaurant</option>
+                    <option value="bar">Bars & Nightlife</option>
                     <option value="dentist">Dentist</option>
                     <option value="plumber">Plumber</option>
                     <option value="hvac">HVAC</option>
