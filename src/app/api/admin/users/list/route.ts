@@ -1,21 +1,31 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
+import { cookies } from 'next/headers';
 
 export async function GET(req: Request) {
   try {
+    // Try to get token from Authorization header OR session cookie
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.split('Bearer ')[1] : null;
+    const sessionCookie = (await cookies()).get('idToken')?.value;
+    
+    const token = bearerToken || sessionCookie;
+    if (!token) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
-    const idToken = authHeader.split('Bearer ')[1];
     
     const authAdmin = getAuthAdmin();
     let decodedToken;
     try {
-      decodedToken = await authAdmin.verifyIdToken(idToken);
+      // Try to verify as session cookie first, then as ID token
+      try {
+        decodedToken = await authAdmin.verifySessionCookie(token, true);
+      } catch {
+        decodedToken = await authAdmin.verifyIdToken(token);
+      }
     } catch (error) {
-      console.error('Error verifying ID token:', error);
+      console.error('Error verifying token:', error);
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
