@@ -43,14 +43,14 @@ export default function AdminOverview() {
   const stats = useMemo(() => {
     if (!metrics) return [];
     return [
-      { label: "MRR", value: `$${(metrics.mrr || 0).toLocaleString()}`, color: "text-brand" },
+      { label: "REVENUE MTD", value: `$${(metrics.revenueMTD || metrics.mrr || 0).toLocaleString()}`, color: "text-brand" },
       { label: "Total Leads", value: (breakdown?.totalLeads || 0).toLocaleString(), color: "text-slate-900" },
       { label: "Customers", value: metrics.activeCustomers || 0, color: "text-slate-900" },
-      { label: "Active Reps", value: metrics.activeReps || 0, color: "text-slate-900" },
+      { label: "UNPAID COMMISSIONS", value: `$${(metrics.commissionsUnpaid || 0).toLocaleString()}`, color: "text-rose-600" },
       { label: "Closes This Week", value: metrics.closesThisWeek || 0, color: "text-emerald-500" },
       { label: "Calls Today", value: metrics.callsToday || 0, color: "text-indigo-500" },
       { label: "Calls This Week", value: metrics.callsThisWeek || 0, color: "text-indigo-500" },
-      { label: "Call-to-Close", value: (metrics.totalCalls || 0) > 0 ? `${(((metrics.totalCloses || 0) / metrics.totalCalls) * 100).toFixed(1)}%` : '0%', color: "text-rose-500" },
+      { label: "Active Reps", value: metrics.activeReps || 0, color: "text-slate-900" },
     ];
   }, [metrics, breakdown]);
 

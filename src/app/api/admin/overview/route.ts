@@ -15,13 +15,22 @@ export async function GET() {
   };
 
   try {
-    // 1. MRR from subscriptions (from database)
+    // 1. REVENUE MTD from subscriptions (from database)
+    // Using active subscriptions as a proxy for revenue this month
     const { data: subs } = await supa.from('subscriptions').select('plan_id').eq('status', 'active');
-    const mrr = (subs || []).reduce((sum, s) => {
+    const revenueMTD = (subs || []).reduce((sum, s) => {
       if (s.plan_id === 'unlimited') return sum + 199;
       if (s.plan_id === 'pro') return sum + 99;
       return sum + 49;
     }, 0);
+
+    // 1.5 Unpaid Commissions
+    const { data: unpaidCommData } = await supa
+      .from('commissions')
+      .select('amount')
+      .neq('status', 'paid');
+    
+    const commissionsUnpaid = (unpaidCommData || []).reduce((sum, c) => sum + Number(c.amount), 0);
 
     // 2. Active Customers (count users with role='customer')
     const { count: customerCount } = await supa.from('users').select('*', { count: 'exact', head: true }).eq('role', 'customer');
@@ -113,11 +122,12 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      mrr,
+      revenueMTD,
+      commissionsUnpaid,
       activeCustomers: activeCustomers || 0,
       activeReps,
       closesThisWeek,
-      commissionsOwed: 0,
+      commissionsOwed: commissionsUnpaid, // Backwards compatibility if needed
       callsToday,
       callsThisWeek,
       totalCalls,
