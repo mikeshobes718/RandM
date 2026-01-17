@@ -115,7 +115,7 @@ export default function AdminLeads() {
       {/* Leads Table (Moved below) */}
       <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
         <div className="p-8 border-b border-slate-50 flex flex-wrap items-center justify-between gap-4">
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">All Leads</h3>
+          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Leads from Call Log</h3>
           <div className="flex gap-3">
             <div className="relative">
               <svg className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

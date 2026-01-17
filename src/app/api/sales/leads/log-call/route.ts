@@ -80,14 +80,37 @@ export async function POST(req: Request) {
     // Merge leadData (from frontend) with dbLeadData (from DB)
     const sheetLeadName = leadData?.name || dbLeadData?.name || '';
     const sheetPhone = leadData?.phone || dbLeadData?.phone || '';
-    const sheetCity = leadData?.city || dbLeadData?.city || '';
-    const sheetState = leadData?.state || dbLeadData?.state || '';
     const sheetRating = leadData?.rating || dbLeadData?.rating || '';
-    const sheetAddress = leadData?.address || dbLeadData?.address || '';
+    const fullAddress = leadData?.address || dbLeadData?.address || '';
     const sheetWebsite = leadData?.website || dbLeadData?.website || '';
     const sheetPlaceId = googlePlaceId || dbLeadData?.google_place_id || '';
     const sheetCategory = leadData?.type || dbLeadData?.business_type || '';
     const timesCalled = (dbLeadData?.times_called || 0) + 1; // +1 for this call
+    
+    // Parse address into street, city, state (format: "123 Main St, City, ST 12345, Country")
+    let sheetStreetAddress = '';
+    let sheetCity = leadData?.city || dbLeadData?.city || '';
+    let sheetState = leadData?.state || dbLeadData?.state || '';
+    
+    if (fullAddress) {
+      const parts = fullAddress.split(',').map((p: string) => p.trim());
+      if (parts.length >= 3) {
+        // First part is usually street address
+        sheetStreetAddress = parts[0];
+        // Second part is city
+        if (!sheetCity && parts[1]) sheetCity = parts[1];
+        // Third part usually has state and zip (e.g., "NY 10032")
+        if (!sheetState && parts[2]) {
+          const stateMatch = parts[2].match(/^([A-Z]{2})/);
+          if (stateMatch) sheetState = stateMatch[1];
+        }
+      } else {
+        // Fallback: use full address as street
+        sheetStreetAddress = fullAddress;
+      }
+    }
+    
+    console.log('[LOG CALL API] Parsed address:', { street: sheetStreetAddress, city: sheetCity, state: sheetState, website: sheetWebsite });
 
     // Just pass the raw phone number - user will format in Google Sheets
     // Only add +1 prefix if it's a 10-digit US number without country code
@@ -152,7 +175,7 @@ export async function POST(req: Request) {
           timeStr,                           // B: Time (EST)
           sheetLeadName,                     // C: Business Name
           formattedPhone,                    // D: Phone (with country code)
-          sheetAddress,                      // E: Street Address
+          sheetStreetAddress,                // E: Street Address (parsed from full address)
           sheetCity,                         // F: City
           sheetState,                        // G: State
           sheetRating?.toString() || '',     // H: Rating
