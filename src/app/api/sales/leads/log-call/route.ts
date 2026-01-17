@@ -21,12 +21,27 @@ export async function POST(req: Request) {
       if (existingLead) {
         targetLeadId = existingLead.id;
       } else if (leadData) {
+        // Parse city/state for DB
+        let dbCity = leadData.city || '';
+        let dbState = leadData.state || '';
+        if (leadData.address && (!dbCity || !dbState)) {
+          const parts = leadData.address.split(',').map((p: string) => p.trim());
+          if (parts.length >= 3) {
+            if (!dbCity) dbCity = parts[parts.length - 3];
+            const stateZip = parts[parts.length - 2];
+            const stateMatch = stateZip?.match(/^([A-Z]{2})/);
+            if (stateMatch && !dbState) dbState = stateMatch[1];
+          }
+        }
+
         const { data: newLead, error: createError } = await supa
           .from('leads')
           .insert({
             google_place_id: googlePlaceId,
             name: leadData.name,
             address: leadData.address,
+            city: dbCity.toLowerCase(),
+            state: dbState,
             rating: leadData.rating,
             business_type: leadData.type,
             phone: leadData.phone,
@@ -97,11 +112,13 @@ export async function POST(req: Request) {
       if (parts.length >= 3) {
         // First part is usually street address
         sheetStreetAddress = parts[0];
-        // Second part is city
-        if (!sheetCity && parts[1]) sheetCity = parts[1];
-        // Third part usually has state and zip (e.g., "NY 10032")
-        if (!sheetState && parts[2]) {
-          const stateMatch = parts[2].match(/^([A-Z]{2})/);
+        
+        // Find city and state from parts
+        // Typically: [Street, City, ST Zip, Country]
+        if (!sheetCity) sheetCity = parts[parts.length - 3];
+        if (!sheetState) {
+          const stateZip = parts[parts.length - 2]; // e.g. "NY 10032"
+          const stateMatch = stateZip?.match(/^([A-Z]{2})/);
           if (stateMatch) sheetState = stateMatch[1];
         }
       } else {
@@ -225,6 +242,12 @@ export async function POST(req: Request) {
       call_status: outcome,
       next_followup: followupDate || null,
     };
+
+    // If city/state were missing in DB but we have them now, update them
+    if (!dbLeadData?.city && sheetCity) updatePayload.city = sheetCity.toLowerCase();
+    if (!dbLeadData?.state && sheetState) updatePayload.state = sheetState;
+    if (!dbLeadData?.business_type && sheetCategory) updatePayload.business_type = sheetCategory;
+    if (!dbLeadData?.website && sheetWebsite) updatePayload.website = sheetWebsite;
 
     if (repEmail) {
       updatePayload.last_called_by_email = repEmail;

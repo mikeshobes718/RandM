@@ -514,7 +514,7 @@ export default function SalesPortalPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 gap-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
                       {filteredLeads.length === 0 ? (
                         <div className="text-center py-12 text-slate-400 font-bold">No leads match your filters.</div>
                       ) : (

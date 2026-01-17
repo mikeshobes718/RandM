@@ -62,17 +62,32 @@ export async function POST(req: Request) {
     }
 
     // 3. Save or Update in DB
+    const fullAddress = leadData?.address || details.formattedAddress;
+    let dbCity = leadData?.city || '';
+    let dbState = leadData?.state || '';
+    
+    if (fullAddress && (!dbCity || !dbState)) {
+      const parts = fullAddress.split(',').map((p: string) => p.trim());
+      if (parts.length >= 3) {
+        if (!dbCity) dbCity = parts[parts.length - 3];
+        const stateZip = parts[parts.length - 2];
+        const stateMatch = stateZip?.match(/^([A-Z]{2})/);
+        if (stateMatch && !dbState) dbState = stateMatch[1];
+      }
+    }
+
     const { data: lead, error: dbError } = await supa
       .from('leads')
       .upsert({
         google_place_id: googlePlaceId,
         name: leadData?.name || details.displayName?.text,
-        address: leadData?.address || details.formattedAddress,
+        address: fullAddress,
         rating: leadData?.rating || details.rating,
         review_count: leadData?.reviewCount || details.userRatingCount,
         business_type: leadData?.type,
         google_maps_url: leadData?.googleMapsUrl || details.googleMapsUri,
-        city: leadData?.address?.split(',')?.slice(-3, -2)?.[0]?.trim()?.toLowerCase() || null,
+        city: dbCity.toLowerCase() || null,
+        state: dbState || null,
         phone: phone,
         website: website,
       }, { onConflict: 'google_place_id' })

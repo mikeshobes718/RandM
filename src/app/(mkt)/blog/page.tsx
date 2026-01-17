@@ -9,6 +9,13 @@ const POSTS = [
     isLive: false
   },
   {
+    title: "Reputation Growth & Protection: The Strategy Guide",
+    slug: "reputation-growth-protection",
+    date: "Jan 2026",
+    excerpt: "The complete blueprint for building a 5-star brand and protecting your business with private feedback channels.",
+    isLive: true
+  },
+  {
     title: "The 'Feedback Loop': How Businesses Are Recovering Customers Privately",
     slug: "the-review-filter",
     date: "Jan 2026",
