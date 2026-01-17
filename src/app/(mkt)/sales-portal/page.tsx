@@ -32,6 +32,7 @@ const ASSETS = [
   { name: "One-Page Overview.pdf", description: "Quick summary of the value proposition.", link: "/One_Page_Overview.pdf" },
   { name: "Path to Authentic Growth.pdf", description: "Visual guide to the compliant feedback process.", link: "/Path_to_Authentic_Growth.pdf" },
   { name: "Pricing Guide.pdf", description: "Standard pricing and enterprise options.", link: "/Pricing_Guide.pdf" },
+  { name: "Reputation Growth & Protection.pdf", description: "Complete guide to growing and protecting business reputation.", link: "/Reputation_Growth_and_Protection.pdf" },
 ];
 
 const OBJECTIONS = [
@@ -119,6 +120,7 @@ export default function SalesPortalPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterTimesCalled, setFilterTimesCalled] = useState("all");
   const [filterRating, setFilterRating] = useState("all");
+  const [sortRating, setSortRating] = useState<"asc" | "desc">("asc"); // Default: low to high (best for sales)
 
   // Sections Refs for scrolling
   const sectionRefs = {
@@ -292,6 +294,11 @@ export default function SalesPortalPage() {
         if (filterTimesCalled === "3+" && t < 3) return false;
       }
       return true;
+    })
+    .sort((a, b) => {
+      const ratingA = a.rating || 5;
+      const ratingB = b.rating || 5;
+      return sortRating === "asc" ? ratingA - ratingB : ratingB - ratingA;
     });
 
   return (
@@ -493,6 +500,15 @@ export default function SalesPortalPage() {
                           <option value="high">Premium (4.0 - 4.2)</option>
                         </select>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sort:</span>
+                        <button 
+                          onClick={() => setSortRating(sortRating === "asc" ? "desc" : "asc")}
+                          className="text-[10px] font-bold bg-slate-100 rounded-lg py-1 px-2 flex items-center gap-1 hover:bg-slate-200 transition-colors"
+                        >
+                          {sortRating === "asc" ? "⬆️ Low → High" : "⬇️ High → Low"}
+                        </button>
+                      </div>
                       <div className="ml-auto text-[10px] font-bold text-slate-400">
                         {filteredLeads.length} leads found
                       </div>
@@ -542,11 +558,14 @@ export default function SalesPortalPage() {
                                     </button>
                                   )}
                                   
-                                  {lead.website && (
-                                    <a href={lead.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-400 font-medium hover:text-slate-600">
-                                      <span>🌐</span> Website
-                                    </a>
-                                  )}
+                                  <a 
+                                    href={lead.website || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lead.address)}&query_place_id=${lead.id}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="flex items-center gap-2 text-slate-400 font-medium hover:text-slate-600"
+                                  >
+                                    <span>🌐</span> Website
+                                  </a>
 
                                   <a 
                                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lead.address)}&query_place_id=${lead.id}`}
