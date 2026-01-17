@@ -117,9 +117,9 @@ export default function AdminCustomers() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
+        <div className="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar relative">
+          <table className="w-full text-left border-collapse">
+            <thead className="sticky top-0 z-10 bg-white shadow-sm">
               <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 bg-slate-50/50">
                 <th className="px-8 py-4">Business Name</th>
                 <th className="px-4 py-4">Plan</th>
