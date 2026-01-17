@@ -43,6 +43,8 @@ export async function GET() {
 
     // 4-8. Call Metrics from Google Sheets
     let callsToday = 0, callsThisWeek = 0, totalCalls = 0, totalCloses = 0, closesThisWeek = 0;
+    let mostActiveRep = 'None';
+    let mostPopularCategory = 'None';
     const activity: any[] = [];
 
     const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
@@ -53,6 +55,9 @@ export async function GET() {
       if (rows && rows.length > 1) {
         const dataRows = rows.slice(1); // Skip header
         totalCalls = dataRows.length;
+
+        const repCounts: Record<string, number> = {};
+        const categoryCounts: Record<string, number> = {};
 
         // Get today's date and week ago in MM/DD/YYYY format
         const now = new Date();
@@ -72,10 +77,16 @@ export async function GET() {
         const OUTCOME_COL = 11;
         const REP_EMAIL_COL = 14;
         const REP_ID_COL = 15;
+        const CATEGORY_COL = 16;
 
         dataRows.forEach(row => {
           const rowDate = row[DATE_COL];
           const outcome = (row[OUTCOME_COL] || '').toLowerCase();
+          const repId = row[REP_ID_COL] || row[REP_EMAIL_COL];
+          const category = row[CATEGORY_COL];
+
+          if (repId) repCounts[repId] = (repCounts[repId] || 0) + 1;
+          if (category) categoryCounts[category] = (categoryCounts[category] || 0) + 1;
           
           // Check if closed
           if (outcome === 'closed' || outcome === 'close') {
@@ -102,6 +113,24 @@ export async function GET() {
           }
         });
 
+        // Find most active rep
+        let maxRepCalls = 0;
+        Object.entries(repCounts).forEach(([id, count]) => {
+          if (count > maxRepCalls) {
+            maxRepCalls = count;
+            mostActiveRep = id;
+          }
+        });
+
+        // Find most popular category
+        let maxCatCount = 0;
+        Object.entries(categoryCounts).forEach(([cat, count]) => {
+          if (count > maxCatCount) {
+            maxCatCount = count;
+            mostPopularCategory = cat;
+          }
+        });
+
         // Recent Activity (last 15 calls, most recent first)
         const recentRows = dataRows.slice(-15).reverse();
         recentRows.forEach(row => {
@@ -124,6 +153,8 @@ export async function GET() {
     return NextResponse.json({
       revenueMTD,
       commissionsUnpaid,
+      mostActiveRep,
+      mostPopularCategory,
       activeCustomers: activeCustomers || 0,
       activeReps,
       closesThisWeek,

@@ -43,10 +43,10 @@ export default function AdminOverview() {
   const stats = useMemo(() => {
     if (!metrics) return [];
     return [
-      { label: "REVENUE MTD", value: `$${(metrics.revenueMTD || metrics.mrr || 0).toLocaleString()}`, color: "text-brand" },
+      { label: "TOP REP ID", value: metrics.mostActiveRep || 'None', color: "text-brand" },
       { label: "Total Leads", value: (breakdown?.totalLeads || 0).toLocaleString(), color: "text-slate-900" },
       { label: "Customers", value: metrics.activeCustomers || 0, color: "text-slate-900" },
-      { label: "UNPAID COMMISSIONS", value: `$${(metrics.commissionsUnpaid || 0).toLocaleString()}`, color: "text-rose-600" },
+      { label: "TOP CATEGORY", value: metrics.mostPopularCategory || 'None', color: "text-rose-600" },
       { label: "Closes This Week", value: metrics.closesThisWeek || 0, color: "text-emerald-500" },
       { label: "Calls Today", value: metrics.callsToday || 0, color: "text-indigo-500" },
       { label: "Calls This Week", value: metrics.callsThisWeek || 0, color: "text-indigo-500" },
