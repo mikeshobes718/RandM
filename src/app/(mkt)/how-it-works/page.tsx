@@ -59,7 +59,7 @@ export default function HowItWorks() {
         {/* Visual Explainer Image */}
         <div className="relative mb-24 rounded-[40px] overflow-hidden border-8 border-white shadow-2xl shadow-brand/10 bg-slate-50 group">
           <img 
-            src="/visual-explainer.jpeg" 
+            src="/assets/detailed.png" 
             alt="Visual Explainer of how R&M works" 
             className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.02]"
           />

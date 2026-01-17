@@ -16,12 +16,9 @@ export default function AdminReps() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const idToken = localStorage.getItem('idToken');
         const [repsRes, usersRes] = await Promise.all([
           fetch('/api/admin/reps'),
-          fetch('/api/admin/users/list?limit=100', {
-            headers: { 'Authorization': `Bearer ${idToken}` }
-          })
+          fetch('/api/admin/users/list?limit=100')
         ]);
         
         const repsData = await repsRes.json();
@@ -41,12 +38,10 @@ export default function AdminReps() {
   const handleUpdateUser = async (uid: string, data: any) => {
     setUpdating(uid);
     try {
-      const idToken = localStorage.getItem('idToken');
       const res = await fetch('/api/admin/users/update', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ uid, ...data })
       });
