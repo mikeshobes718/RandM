@@ -66,26 +66,49 @@ export async function POST(req: Request) {
     }
 
     // 3. Resolve Lead Details for Google Sheets (Priority #1)
-    let sheetLeadName = leadData?.name;
-    let sheetPhone = leadData?.phone;
-    let sheetCity = leadData?.city;
-    let sheetState = leadData?.state;
-    let sheetRating = leadData?.rating;
-
-    if (!sheetLeadName && targetLeadId) {
+    // Fetch comprehensive lead data from DB
+    let dbLeadData: any = null;
+    if (targetLeadId) {
       const { data: dbLead } = await supa
         .from('leads')
-        .select('name, phone, city, state, rating')
+        .select('*')
         .eq('id', targetLeadId)
         .single();
-      
-      if (dbLead) {
-        sheetLeadName = dbLead.name;
-        sheetPhone = dbLead.phone;
-        sheetCity = dbLead.city;
-        sheetState = dbLead.state;
-        sheetRating = dbLead.rating;
+      dbLeadData = dbLead;
+    }
+
+    // Merge leadData (from frontend) with dbLeadData (from DB)
+    const sheetLeadName = leadData?.name || dbLeadData?.name || '';
+    const sheetPhone = leadData?.phone || dbLeadData?.phone || '';
+    const sheetCity = leadData?.city || dbLeadData?.city || '';
+    const sheetState = leadData?.state || dbLeadData?.state || '';
+    const sheetRating = leadData?.rating || dbLeadData?.rating || '';
+    const sheetAddress = leadData?.address || dbLeadData?.address || '';
+    const sheetWebsite = leadData?.website || dbLeadData?.website || '';
+    const sheetPlaceId = googlePlaceId || dbLeadData?.google_place_id || '';
+    const timesCalled = (dbLeadData?.times_called || 0) + 1; // +1 for this call
+
+    // Format phone with country code (assume US +1 if not present)
+    let formattedPhone = sheetPhone;
+    if (formattedPhone && !formattedPhone.startsWith('+')) {
+      // Clean the phone number first
+      const cleanPhone = formattedPhone.replace(/\D/g, '');
+      if (cleanPhone.length === 10) {
+        formattedPhone = `+1 ${cleanPhone.slice(0,3)}-${cleanPhone.slice(3,6)}-${cleanPhone.slice(6)}`;
+      } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
+        formattedPhone = `+1 ${cleanPhone.slice(1,4)}-${cleanPhone.slice(4,7)}-${cleanPhone.slice(7)}`;
       }
+    }
+
+    // Get rep_id from users table (the static ID assigned by admin)
+    let staticRepId = '';
+    if (repId) {
+      const { data: repData } = await supa
+        .from('users')
+        .select('rep_id')
+        .or(`rep_id.eq.${repId},uid.eq.${repId}`)
+        .maybeSingle();
+      staticRepId = repData?.rep_id || '';
     }
 
     // 4. APPEND TO GOOGLE SHEET (DO THIS FIRST)
@@ -97,18 +120,48 @@ export async function POST(req: Request) {
       console.error('[LOG CALL API] GOOGLE_SHEETS_ID environment variable is not set!');
     } else {
       try {
-        const timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
+        // Create date and time in separate columns with EST label
+        const now = new Date();
+        const dateOptions: Intl.DateTimeFormatOptions = { 
+          timeZone: 'America/New_York', 
+          year: 'numeric', 
+          month: '2-digit', 
+          day: '2-digit' 
+        };
+        const timeOptions: Intl.DateTimeFormatOptions = { 
+          timeZone: 'America/New_York', 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit',
+          hour12: true
+        };
+        
+        const dateStr = now.toLocaleDateString('en-US', dateOptions);
+        const timeStr = now.toLocaleTimeString('en-US', timeOptions) + ' EST';
+        
+        // Clean outcome - if blank or no_answer type, leave empty
+        const cleanOutcome = outcome && outcome !== 'no_answer' ? outcome : '';
+
+        // Row structure (17 columns):
+        // Date | Time | Business Name | Phone | Street Address | City | State | Rating | 
+        // Google Place ID | Website | Times Called | Outcome | Notes | Follow-up | Rep Email | Rep ID
         const rowValues = [
-          timestamp,
-          sheetLeadName || 'Unknown',
-          sheetPhone || 'N/A',
-          sheetCity || '',
-          sheetState || '',
-          sheetRating || '',
-          outcome,
-          notes || '',
-          followupDate || '',
-          repEmail || repId || 'system'
+          dateStr,                           // A: Date
+          timeStr,                           // B: Time (EST)
+          sheetLeadName,                     // C: Business Name
+          formattedPhone,                    // D: Phone (with country code)
+          sheetAddress,                      // E: Street Address
+          sheetCity,                         // F: City
+          sheetState,                        // G: State
+          sheetRating?.toString() || '',     // H: Rating
+          sheetPlaceId,                      // I: Google Place ID
+          sheetWebsite,                      // J: Website
+          timesCalled.toString(),            // K: Times Called
+          cleanOutcome,                      // L: Outcome (blank if no_answer)
+          notes || '',                       // M: Notes
+          followupDate || '',                // N: Follow-up Date
+          repEmail || '',                    // O: Rep Email
+          staticRepId,                       // P: Rep ID
         ];
 
         console.log('[LOG CALL API] Attempting to append to Google Sheet...', rowValues);
