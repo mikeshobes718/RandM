@@ -117,7 +117,16 @@ export default function FeaturesPage() {
             <p className="text-muted">Explore the powerful features that make Reviews & Marketing the choice for top operators.</p>
           </div>
           <div className="max-w-5xl mx-auto">
-            <FeatureTabs />
+            {/* Interactive Tabs Visual Explainer */}
+          <div className="relative mb-24 rounded-[40px] overflow-hidden border-8 border-white shadow-2xl shadow-brand/10 bg-slate-50 group">
+            <img 
+              src="/assets/detailed.png" 
+              alt="Detailed platform workflow" 
+              className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.02]" 
+            />
+            <div className="absolute inset-0 pointer-events-none border border-brand/5 rounded-[32px]"></div>
+          </div>
+          <FeatureTabs />
           </div>
         </div>
       </section>

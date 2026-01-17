@@ -26,7 +26,7 @@ export default function HowItWorks() {
           <div className="relative aspect-video rounded-[40px] overflow-hidden shadow-2xl shadow-brand/20 border-8 border-white bg-slate-100 group">
             <iframe 
               className="w-full h-full"
-              src="https://www.youtube.com/embed/w1DEmxfCy6A?autoplay=0&rel=0"
+              src="https://www.youtube.com/embed/y0Jb0wNecfk?autoplay=0&rel=0"
               title="Reviews & Marketing Explainer Video"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen

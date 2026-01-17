@@ -667,7 +667,7 @@ export default function SalesPortalPage() {
                 <div className="premium-card rounded-3xl bg-slate-900 aspect-video overflow-hidden shadow-xl shadow-slate-200 relative group">
                   <iframe
                     className="w-full h-full absolute inset-0"
-                    src="https://www.youtube.com/embed/w1DEmxfCy6A?rel=0&modestbranding=1"
+                    src="https://www.youtube.com/embed/y0Jb0wNecfk?rel=0&modestbranding=1"
                     title="Product Demo Video"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
