@@ -15,6 +15,7 @@ type Customer = {
   months: number;
   lastLogin: string;
   role: string;
+  email: string;
 };
 
 export default function AdminCustomers() {
