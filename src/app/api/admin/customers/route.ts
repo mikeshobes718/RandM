@@ -8,10 +8,10 @@ export async function GET(req: NextRequest) {
   console.log('[ADMIN CUSTOMERS API] ===== START =====');
   
   try {
-    // 1. Fetch ALL users with role 'customer' including last_sign_in_at
+    // 1. Fetch ALL users with role 'customer'
     const { data: customerUsers, error: usersError } = await supa
       .from('users')
-      .select('uid, email, role, created_at, last_sign_in_at')
+      .select('uid, email, role, created_at')
       .eq('role', 'customer')
       .order('created_at', { ascending: false });
 
@@ -73,28 +73,23 @@ export async function GET(req: NextRequest) {
         bizName: biz?.name
       });
 
-      // Format last login
-      let lastLogin = 'Never';
-      const lastSignIn = (user as any).last_sign_in_at;
-      if (lastSignIn) {
-        const loginDate = new Date(lastSignIn);
-        if (!isNaN(loginDate.getTime())) {
-          const diffMs = now.getTime() - loginDate.getTime();
-          const diffMins = Math.floor(diffMs / 60000);
-          const diffHours = Math.floor(diffMs / 3600000);
-          const diffDays = Math.floor(diffMs / 86400000);
-          
-          if (diffMins < 5) {
-            lastLogin = 'Just now';
-          } else if (diffMins < 60) {
-            lastLogin = `${diffMins}m ago`;
-          } else if (diffHours < 24) {
-            lastLogin = `${diffHours}h ago`;
-          } else if (diffDays < 7) {
-            lastLogin = `${diffDays}d ago`;
-          } else {
-            lastLogin = loginDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-          }
+      // Format last login - show time since signup for now (last_sign_in_at not available)
+      let lastLogin = 'Unknown';
+      const signupDate = user.created_at ? new Date(user.created_at) : null;
+      if (signupDate && !isNaN(signupDate.getTime())) {
+        const diffMs = now.getTime() - signupDate.getTime();
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        if (diffDays === 0) {
+          lastLogin = 'Today';
+        } else if (diffDays === 1) {
+          lastLogin = 'Yesterday';
+        } else if (diffDays < 7) {
+          lastLogin = `${diffDays} days ago`;
+        } else if (diffDays < 30) {
+          lastLogin = `${Math.floor(diffDays / 7)} weeks ago`;
+        } else {
+          lastLogin = signupDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         }
       }
 

@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { readSheet } from '@/lib/googleSheets';
-import { format, subDays } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const supa = getSupabaseAdmin();
-
   try {
     const now = new Date();
-    const todayFormatted = format(now, 'yyyy-MM-dd', { timeZone: 'America/New_York' });
-    const firstOfMonth = format(new Date(now.getFullYear(), now.getMonth(), 1), 'yyyy-MM-dd', { timeZone: 'America/New_York' });
+    // Google Sheets stores dates in M/D/YYYY format (e.g., "1/17/2026")
+    const todayFormatted = now.toLocaleDateString('en-US'); // e.g., "1/17/2026"
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString('en-US');
 
     // 1. Read ALL data from Google Sheet (primary source of truth)
     const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
@@ -62,7 +59,7 @@ export async function GET() {
           };
         }
 
-        // Today's calls
+        // Today's calls (compare "M/D/YYYY" format)
         if (date === todayFormatted) {
           repStats[repKey].calls_today++;
           totalCallsToday++;
@@ -73,10 +70,19 @@ export async function GET() {
           }
         }
 
-        // This month's closes
-        if (date >= firstOfMonth && outcome === 'closed') {
-          repStats[repKey].closes_this_month++;
-          totalClosesMonth++;
+        // This month's closes - parse date to check month
+        if (outcome === 'closed' || outcome === 'close') {
+          try {
+            const callDate = new Date(date);
+            if (!isNaN(callDate.getTime()) && 
+                callDate.getMonth() === now.getMonth() && 
+                callDate.getFullYear() === now.getFullYear()) {
+              repStats[repKey].closes_this_month++;
+              totalClosesMonth++;
+            }
+          } catch (e) {
+            // Skip invalid dates
+          }
         }
       }
     });
