@@ -16,28 +16,46 @@ export async function GET() {
 
     if (callsErr) throw callsErr;
 
-    // 2. Fetch all leads and users to join manually for 100% accuracy
+    // 2. Fetch all leads
     const leadIds = Array.from(new Set((calls || []).map(c => c.lead_id).filter(Boolean)));
-    const repIds = Array.from(new Set((calls || []).map(c => c.rep_id).filter(Boolean)));
+    const { data: leadsData } = await supa.from('leads').select('id, name, phone, last_called_by_email').in('id', leadIds.length > 0 ? leadIds : ['none']);
+    const leadsMap = Object.fromEntries((leadsData || []).map(l => [l.id, l]));
 
-    const [leadsRes, usersRes] = await Promise.all([
-      supa.from('leads').select('id, name, phone').in('id', leadIds),
-      supa.from('users').select('uid, email, rep_id').or(`uid.in.(${repIds.join(',')}),rep_id.in.(${repIds.join(',')})`)
-    ]);
-
-    const leadsMap = Object.fromEntries((leadsRes.data || []).map(l => [l.id, l]));
+    // 3. Fetch ALL users to build a comprehensive lookup
+    const { data: usersData } = await supa.from('users').select('uid, email, rep_id');
     
-    // Map both UID and static rep_id to email
-    const usersMap: Record<string, string> = {};
-    (usersRes.data || []).forEach(u => {
-      if (u.uid) usersMap[u.uid] = u.email;
-      if (u.rep_id) usersMap[u.rep_id] = u.email;
+    // Build multiple lookups for maximum matching
+    const uidToEmail: Record<string, string> = {};
+    const repIdToEmail: Record<string, string> = {};
+    (usersData || []).forEach(u => {
+      if (u.uid && u.email) uidToEmail[u.uid] = u.email;
+      if (u.rep_id && u.email) repIdToEmail[u.rep_id] = u.email;
     });
 
     const formattedCalls = (calls || []).map(c => {
       const lead = leadsMap[c.lead_id];
-      // Try to find email from map, otherwise use the raw ID, otherwise 'System'
-      const repEmail = usersMap[c.rep_id] || c.rep_id || 'System';
+      
+      // Priority order for resolving rep identity:
+      // 1. Look up rep_id as UID
+      // 2. Look up rep_id as static rep_id
+      // 3. Use last_called_by_email from lead record
+      // 4. If rep_id looks like an email, use it directly
+      // 5. Fall back to 'System'
+      let repEmail = 'System';
+      
+      if (c.rep_id) {
+        if (uidToEmail[c.rep_id]) {
+          repEmail = uidToEmail[c.rep_id];
+        } else if (repIdToEmail[c.rep_id]) {
+          repEmail = repIdToEmail[c.rep_id];
+        } else if (c.rep_id.includes('@')) {
+          repEmail = c.rep_id;
+        } else if (lead?.last_called_by_email) {
+          repEmail = lead.last_called_by_email;
+        }
+      } else if (lead?.last_called_by_email) {
+        repEmail = lead.last_called_by_email;
+      }
       
       return {
         id: c.id,
@@ -54,7 +72,7 @@ export async function GET() {
     return NextResponse.json({ calls: formattedCalls });
   } catch (err: any) {
     console.error('[ADMIN CALLS API] Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: err.message, calls: [] }, { status: 500 });
   }
 }
 
