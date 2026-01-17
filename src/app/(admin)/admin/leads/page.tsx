@@ -78,9 +78,9 @@ export default function AdminLeads() {
             Representative Breakdown
           </h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
+        <div className="overflow-x-auto max-h-[400px] overflow-y-auto custom-scrollbar relative">
+          <table className="w-full text-left border-collapse">
+            <thead className="sticky top-0 z-10 bg-white shadow-sm">
               <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 bg-slate-50/50">
                 <th className="px-8 py-4">Representative</th>
                 <th className="px-4 py-4 text-center">Calls Today</th>
@@ -132,7 +132,7 @@ export default function AdminLeads() {
           </div>
         </div>
 
-        <div className="overflow-x-auto max-h-[800px] overflow-y-auto custom-scrollbar relative">
+        <div className="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar relative">
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 z-10 bg-white shadow-sm">
               <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 bg-slate-50/50">
