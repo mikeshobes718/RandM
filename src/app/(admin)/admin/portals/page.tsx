@@ -83,24 +83,6 @@ export default function AdminPortals() {
           </Link>
         ))}
       </div>
-
-      <div className="bg-slate-900 rounded-[40px] p-10 text-white relative overflow-hidden shadow-2xl shadow-slate-900/20">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-brand/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-        <div className="relative z-10">
-          <h2 className="text-2xl font-black mb-4">Enterprise Controls</h2>
-          <p className="text-slate-400 font-medium max-w-xl mb-8">
-            Access restricted backend settings, API keys, and environment variables. Unauthorized access to these portals is strictly monitored.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/admin/settings" className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-black uppercase tracking-widest transition-colors">
-              Global Settings
-            </Link>
-            <Link href="/admin/logs" className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-black uppercase tracking-widest transition-colors">
-              Audit Logs
-            </Link>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

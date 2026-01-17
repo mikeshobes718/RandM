@@ -45,14 +45,6 @@ export default function AdminLeads() {
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">Performance Pool</h1>
             <p className="text-slate-500 font-medium mt-1">Real-time metrics across all sales representatives.</p>
           </div>
-          <div className="flex gap-3">
-            <Link 
-              href="/admin/leads/upload" 
-              className="h-14 px-8 bg-slate-100 text-slate-900 font-black rounded-2xl border border-slate-200 hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
-            >
-              Upload CSV
-            </Link>
-          </div>
         </div>
 
         {/* Aggregate Stats Bar */}
