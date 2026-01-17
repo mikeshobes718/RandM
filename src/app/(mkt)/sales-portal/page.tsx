@@ -432,7 +432,7 @@ export default function SalesPortalPage() {
                     <option value="hvac">HVAC</option>
                     <option value="lawyer">Lawyer</option>
                   </select>
-                  <Tooltip text="Fetch real-time business intelligence and local leads.">
+                  <Tooltip text="Sync live local business intelligence.">
                     <button 
                       disabled={loading || !city || !state || !repId}
                       className="primary-button h-12 rounded-2xl shadow-lg shadow-brand/20 disabled:opacity-50 disabled:cursor-not-allowed w-full"
