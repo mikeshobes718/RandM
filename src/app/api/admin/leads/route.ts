@@ -5,10 +5,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    // Use EST timezone for consistency with Google Sheets dates
     const now = new Date();
-    // Google Sheets stores dates in M/D/YYYY format (e.g., "1/17/2026")
-    const todayFormatted = now.toLocaleDateString('en-US'); // e.g., "1/17/2026"
-    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString('en-US');
+    const estOptions = { timeZone: 'America/New_York' };
+    const todayFormatted = now.toLocaleDateString('en-US', estOptions); // e.g., "1/17/2026"
+    
+    console.log('[ADMIN LEADS] Today formatted (EST):', todayFormatted);
 
     // 1. Read ALL data from Google Sheet (primary source of truth)
     const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
@@ -40,6 +42,12 @@ export async function GET() {
     let totalAppointmentsToday = 0;
     let totalClosesMonth = 0;
 
+    // Log first few rows for debugging
+    if (sheetCalls.length > 0) {
+      console.log('[ADMIN LEADS] Headers:', headers);
+      console.log('[ADMIN LEADS] First row date:', sheetCalls[0][headers.indexOf('Date')]);
+    }
+
     sheetCalls.forEach(row => {
       const date = row[headers.indexOf('Date')] || '';
       const repEmail = row[headers.indexOf('Rep Email')] || '';
@@ -60,7 +68,8 @@ export async function GET() {
         }
 
         // Today's calls (compare "M/D/YYYY" format)
-        if (date === todayFormatted) {
+        const isToday = date === todayFormatted;
+        if (isToday) {
           repStats[repKey].calls_today++;
           totalCallsToday++;
 
