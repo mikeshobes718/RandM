@@ -86,6 +86,7 @@ export async function POST(req: Request) {
     const sheetAddress = leadData?.address || dbLeadData?.address || '';
     const sheetWebsite = leadData?.website || dbLeadData?.website || '';
     const sheetPlaceId = googlePlaceId || dbLeadData?.google_place_id || '';
+    const sheetCategory = leadData?.type || dbLeadData?.business_type || '';
     const timesCalled = (dbLeadData?.times_called || 0) + 1; // +1 for this call
 
     // Format phone with country code (assume US +1 if not present)
@@ -144,7 +145,7 @@ export async function POST(req: Request) {
 
         // Row structure (17 columns):
         // Date | Time | Business Name | Phone | Street Address | City | State | Rating | 
-        // Google Place ID | Website | Times Called | Outcome | Notes | Follow-up | Rep Email | Rep ID
+        // Google Place ID | Website | Times Called | Outcome | Notes | Follow-up | Rep Email | Rep ID | Category
         const rowValues = [
           dateStr,                           // A: Date
           timeStr,                           // B: Time (EST)
@@ -162,6 +163,7 @@ export async function POST(req: Request) {
           followupDate || '',                // N: Follow-up Date
           repEmail || '',                    // O: Rep Email
           staticRepId,                       // P: Rep ID
+          sheetCategory,                     // Q: Category (business type)
         ];
 
         console.log('[LOG CALL API] Attempting to append to Google Sheet...', rowValues);

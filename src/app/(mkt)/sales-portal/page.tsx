@@ -94,9 +94,9 @@ export default function SalesPortalPage() {
   const [repId, setRepId] = useState("");
   const [userUid, setUserUid] = useState<string | null>(null);
   const [city, setCity] = useState("All Cities");
-  const [state, setState] = useState("CA");
+  const [state, setState] = useState("NY");
   const [country, setCountry] = useState("US");
-  const [type, setType] = useState("restaurant");
+  const [type, setType] = useState("dentist");
   
   // Available states and cities based on selected country
   const availableStates = country in LOCATIONS ? Object.keys(LOCATIONS[country]) : [];
@@ -233,7 +233,7 @@ export default function SalesPortalPage() {
         body: JSON.stringify({
           leadId: selectedLead.dbId,
           googlePlaceId: selectedLead.id,
-          leadData: selectedLead,
+          leadData: { ...selectedLead, type }, // Include selected category
           repId: userUid || repId, // Send user's UUID for proper tracking
           outcome: callOutcome,
           notes: callNotes,
