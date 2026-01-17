@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getPlaceDetails } from '@/lib/googlePlaces';
-import { appendToSheet } from '@/lib/googleSheets';
+import { appendToSheet, readSheetData } from '@/lib/googleSheets';
+
+const USAGE_SPREADSHEET_ID = '1WMK5Y71w_j0EeYcYwA-7q_S8N3Zib-lZ3maQEgyKu2c';
 
 export async function POST(req: Request) {
   const supa = getSupabaseAdmin();
-  const spreadsheetId = '1WMK5Y71w_j0EeYcYwA-7q_S8N3Zib-lZ3maQEgyKu2c';
   
   try {
     const { googlePlaceId, leadData, repEmail, repId } = await req.json();
@@ -16,7 +17,66 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing googlePlaceId' }, { status: 400 });
     }
 
-    // 1. First check if we already have this lead in the DB with phone
+    // ========================================
+    // STEP 1: Check the REVEALS Google Sheet first (Source of Truth)
+    // ========================================
+    try {
+      console.log('[REVEAL CONTACT] Checking Reveals sheet...');
+      const revealsData = await readSheetData(USAGE_SPREADSHEET_ID, 'Reveals!A:H');
+      
+      if (revealsData.length > 1) {
+        const headers = revealsData[0];
+        const placeIdIndex = headers.indexOf('Place ID');
+        const phoneIndex = headers.indexOf('Phone');
+        const websiteIndex = headers.indexOf('Website');
+        const businessNameIndex = headers.indexOf('Business Name');
+        
+        // Find existing reveal by Place ID
+        for (let i = 1; i < revealsData.length; i++) {
+          const row = revealsData[i];
+          if (row[placeIdIndex] === googlePlaceId && row[phoneIndex]) {
+            console.log('[REVEAL CONTACT] ✅ Found in Reveals sheet:', row[phoneIndex]);
+            
+            // Log the cached hit to Detailed Hit Log
+            try {
+              const now = new Date();
+              const estDate = now.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+              const estTime = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: true }) + ' EST';
+              const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+              
+              await appendToSheet(USAGE_SPREADSHEET_ID, 'Detailed Hit Log!A2', [
+                estDate,
+                estTime,
+                transactionId,
+                row[businessNameIndex] || leadData?.name || 'Unknown Business',
+                googlePlaceId,
+                'Reveal Contact (Cached from Sheet)',
+                '$0.00',
+                'Reveals Sheet Cache',
+                repId || 'N/A',
+                repEmail || 'System'
+              ]);
+            } catch (logErr) {
+              console.error('[REVEAL CONTACT] Log error:', logErr);
+            }
+
+            return NextResponse.json({ 
+              success: true, 
+              phone: row[phoneIndex], 
+              website: row[websiteIndex] || null,
+              source: 'reveals_sheet'
+            });
+          }
+        }
+      }
+    } catch (sheetErr) {
+      console.error('[REVEAL CONTACT] Error reading Reveals sheet:', sheetErr);
+      // Continue to check DB if sheet read fails
+    }
+
+    // ========================================
+    // STEP 2: Check database as fallback
+    // ========================================
     const { data: existingLead } = await supa
       .from('leads')
       .select('name, phone, website')
@@ -24,29 +84,41 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (existingLead?.phone) {
-      console.log('[REVEAL CONTACT] Phone already in DB:', existingLead.phone);
+      console.log('[REVEAL CONTACT] Found in DB, adding to Reveals sheet:', existingLead.phone);
       
-      // Log cached hit to sheet
+      // Add to Reveals sheet for future lookups
       try {
         const now = new Date();
         const estDate = now.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
         const estTime = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: true }) + ' EST';
-        const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         
-        await appendToSheet(spreadsheetId, 'Detailed Hit Log!A2', [
+        await appendToSheet(USAGE_SPREADSHEET_ID, 'Reveals!A2', [
+          estDate,
+          estTime,
+          existingLead.name || leadData?.name || 'Unknown Business',
+          googlePlaceId,
+          existingLead.phone,
+          existingLead.website || '',
+          repId || 'N/A',
+          repEmail || 'System'
+        ]);
+
+        // Log to Detailed Hit Log
+        const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        await appendToSheet(USAGE_SPREADSHEET_ID, 'Detailed Hit Log!A2', [
           estDate,
           estTime,
           transactionId,
           existingLead.name || leadData?.name || 'Unknown Business',
           googlePlaceId,
-          'Reveal Contact (Cached)',
+          'Reveal Contact (DB → Sheet)',
           '$0.00',
           'Database Cache',
           repId || 'N/A',
           repEmail || 'System'
         ]);
       } catch (sheetErr) {
-        console.error('[REVEAL CONTACT] Google Sheet Log Error (Cached):', sheetErr);
+        console.error('[REVEAL CONTACT] Error writing to Reveals sheet:', sheetErr);
       }
 
       return NextResponse.json({ 
@@ -57,7 +129,9 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. Fetch details from Google Places API
+    // ========================================
+    // STEP 3: Fetch from Google Places API (costs $0.025)
+    // ========================================
     console.log('[REVEAL CONTACT] Fetching from Google Places API...');
     let details;
     try {
@@ -72,6 +146,7 @@ export async function POST(req: Request) {
     
     const phone = details.nationalPhoneNumber || details.internationalPhoneNumber || null;
     const website = details.websiteUri || null;
+    const businessName = leadData?.name || details.displayName?.text || 'Unknown Business';
 
     if (!phone) {
       console.log('[REVEAL CONTACT] No phone found for this business');
@@ -83,30 +158,53 @@ export async function POST(req: Request) {
       });
     }
 
-    // Log charged hit to sheet
+    // ========================================
+    // STEP 4: Save to REVEALS sheet (Source of Truth)
+    // ========================================
+    const now = new Date();
+    const estDate = now.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+    const estTime = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: true }) + ' EST';
+    
     try {
-      const now = new Date();
-      const estDate = now.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
-      const estTime = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: true }) + ' EST';
+      await appendToSheet(USAGE_SPREADSHEET_ID, 'Reveals!A2', [
+        estDate,
+        estTime,
+        businessName,
+        googlePlaceId,
+        phone,
+        website || '',
+        repId || 'N/A',
+        repEmail || 'System'
+      ]);
+      console.log('[REVEAL CONTACT] ✅ Saved to Reveals sheet');
+    } catch (sheetErr) {
+      console.error('[REVEAL CONTACT] Error saving to Reveals sheet:', sheetErr);
+    }
+
+    // ========================================
+    // STEP 5: Log to Detailed Hit Log (cost tracking)
+    // ========================================
+    try {
       const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
-      await appendToSheet(spreadsheetId, 'Detailed Hit Log!A2', [
+      await appendToSheet(USAGE_SPREADSHEET_ID, 'Detailed Hit Log!A2', [
         estDate,
         estTime,
         transactionId,
-        leadData?.name || details.displayName?.text || 'Unknown Business',
+        businessName,
         googlePlaceId,
-        'Reveal Contact',
+        'Reveal Contact (NEW)',
         '$0.025',
         'Google Places API',
         repId || 'N/A',
         repEmail || 'System'
       ]);
-    } catch (sheetErr) {
-      console.error('[REVEAL CONTACT] Google Sheet Log Error (Charged):', sheetErr);
+    } catch (logErr) {
+      console.error('[REVEAL CONTACT] Log error:', logErr);
     }
 
-    // 3. Save or Update in DB
+    // ========================================
+    // STEP 6: Save to database (backup/search)
+    // ========================================
     const fullAddress = leadData?.address || details.formattedAddress;
     let dbCity = leadData?.city || '';
     let dbState = leadData?.state || '';
@@ -125,7 +223,7 @@ export async function POST(req: Request) {
       .from('leads')
       .upsert({
         google_place_id: googlePlaceId,
-        name: leadData?.name || details.displayName?.text,
+        name: businessName,
         address: fullAddress,
         rating: leadData?.rating || details.rating,
         review_count: leadData?.reviewCount || details.userRatingCount,
@@ -143,12 +241,13 @@ export async function POST(req: Request) {
       console.error('[REVEAL CONTACT] DB Error:', dbError);
     }
 
-    console.log('[REVEAL CONTACT] Success! Phone:', phone);
+    console.log('[REVEAL CONTACT] ✅ Success! Phone:', phone);
     return NextResponse.json({ 
       success: true, 
       phone, 
       website,
-      dbId: lead?.id 
+      dbId: lead?.id,
+      source: 'google_api'
     });
   } catch (error: any) {
     console.error('[REVEAL CONTACT] Error:', error);

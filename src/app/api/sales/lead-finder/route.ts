@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { searchBusinesses } from '@/lib/googlePlaces';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { readSheetData } from '@/lib/googleSheets';
 
 export const dynamic = 'force-dynamic';
+
+const USAGE_SPREADSHEET_ID = '1WMK5Y71w_j0EeYcYwA-7q_S8N3Zib-lZ3maQEgyKu2c';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -90,6 +93,43 @@ export async function GET(req: Request) {
         }));
         googlePlaceIdsFound = allDbLeads.map(l => l.google_place_id);
       }
+    }
+
+    // 1.5 STEP 1.5: Merge phone numbers from Reveals Sheet (Source of Truth)
+    try {
+      const revealsData = await readSheetData(USAGE_SPREADSHEET_ID, 'Reveals!A:H');
+      if (revealsData.length > 1) {
+        const headers = revealsData[0];
+        const placeIdIndex = headers.indexOf('Place ID');
+        const phoneIndex = headers.indexOf('Phone');
+        const websiteIndex = headers.indexOf('Website');
+        
+        // Build a map of placeId -> {phone, website} from Reveals sheet
+        const revealsMap: Record<string, { phone: string; website: string }> = {};
+        for (let i = 1; i < revealsData.length; i++) {
+          const row = revealsData[i];
+          if (row[placeIdIndex] && row[phoneIndex]) {
+            revealsMap[row[placeIdIndex]] = {
+              phone: row[phoneIndex],
+              website: row[websiteIndex] || ''
+            };
+          }
+        }
+        
+        // Merge into combinedLeads
+        combinedLeads = combinedLeads.map(lead => {
+          if (!lead.phone && revealsMap[lead.id]) {
+            return {
+              ...lead,
+              phone: revealsMap[lead.id].phone,
+              website: lead.website || revealsMap[lead.id].website
+            };
+          }
+          return lead;
+        });
+      }
+    } catch (revealsErr) {
+      console.warn('[LEAD FINDER API] Could not read Reveals sheet:', revealsErr);
     }
 
     // 2. STEP 2: Only call Google if we don't have enough leads or force requested
