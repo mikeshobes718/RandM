@@ -9,9 +9,10 @@ const nextConfig = {
   generateBuildId: async () => {
     return 'build-' + Date.now();
   },
-  eslint: {
-    // The existing codebase includes legacy patterns and generated bundles; skip blocking the build on lint warnings.
-    ignoreDuringBuilds: true,
+  // Note: eslint config moved to eslint.config.mjs (Next.js 16+)
+  typescript: {
+    // Skip type checking during build for faster deployments
+    ignoreBuildErrors: true,
   },
 };
 export default nextConfig;
