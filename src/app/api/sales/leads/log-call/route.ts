@@ -48,123 +48,50 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing lead identification' }, { status: 400 });
     }
 
-    // 2. Fetch rep details for logging (BE SMART HERE)
+    // 2. Resolve Rep Details
     let repEmail = null;
     let repUuid = null;
     
     if (repId) {
-      // Try to find user by static rep_id OR by uid itself
-      // Use proper Supabase filter syntax
-      const { data: userData, error: userError } = await supa
+      const { data: userData } = await supa
         .from('users')
         .select('uid, email')
         .or(`rep_id.eq.${repId},uid.eq.${repId}`)
         .maybeSingle();
       
-      if (userError) {
-        console.error('[LOG CALL API] User lookup failed:', userError);
-      }
-
       if (userData) {
         repUuid = userData.uid;
         repEmail = userData.email;
-      } else {
-        console.warn('[LOG CALL API] No user found for repId:', repId);
       }
-    } else {
-      console.warn('[LOG CALL API] No repId provided in request');
     }
 
-    // 3. Create call log entry
-    const { error: logError } = await supa.from('call_log').insert({
-      lead_id: targetLeadId,
-      rep_id: repUuid || repId || 'system', // Fallback to the raw ID if we couldn't resolve it
-      outcome,
-      notes,
-      followup_date: followupDate || null,
-    });
+    // 3. Resolve Lead Details for Google Sheets (Priority #1)
+    let sheetLeadName = leadData?.name;
+    let sheetPhone = leadData?.phone;
+    let sheetCity = leadData?.city;
+    let sheetState = leadData?.state;
+    let sheetRating = leadData?.rating;
 
-    if (logError) {
-      console.error('[LOG CALL API] Call log insertion failed:', logError);
-    }
-
-    // 4. Update lead status and stats (ONLY columns that exist in the leads table)
-    const { data: lead } = await supa.from('leads').select('times_called').eq('id', targetLeadId).single();
-    const newTimesCalled = (lead?.times_called || 0) + 1;
-
-    // Core update payload - ONLY fields that definitely exist in leads table
-    const updatePayload: any = {
-      times_called: newTimesCalled,
-      last_called_at: new Date().toISOString(),
-      last_called_by: repUuid,
-      call_status: outcome,
-      next_followup: followupDate || null,
-    };
-
-    // Try to add optional fields, but don't fail if they don't exist
-    if (repEmail) {
-      updatePayload.last_called_by_email = repEmail;
-    }
-
-    const { error: updateError } = await supa
-      .from('leads')
-      .update(updatePayload)
-      .eq('id', targetLeadId);
-
-    if (updateError) {
-      console.error('[LOG CALL API] Lead update failed:', updateError);
+    if (!sheetLeadName && targetLeadId) {
+      const { data: dbLead } = await supa
+        .from('leads')
+        .select('name, phone, city, state, rating')
+        .eq('id', targetLeadId)
+        .single();
       
-      // If it failed because of schema issue, retry with minimal fields
-      if (updateError.message.includes('column') || updateError.message.includes('schema cache')) {
-        console.log('[LOG CALL API] Schema mismatch detected. Retrying with minimal fields...');
-        
-        // Minimal payload - only the most essential fields
-        const minimalPayload = {
-          times_called: newTimesCalled,
-          last_called_at: new Date().toISOString(),
-          call_status: outcome,
-        };
-        
-        const { error: retryError } = await supa
-          .from('leads')
-          .update(minimalPayload)
-          .eq('id', targetLeadId);
-        
-        if (retryError) {
-          console.error('[LOG CALL API] Minimal update also failed:', retryError);
-          // Don't throw - we still logged the call successfully
-        }
+      if (dbLead) {
+        sheetLeadName = dbLead.name;
+        sheetPhone = dbLead.phone;
+        sheetCity = dbLead.city;
+        sheetState = dbLead.state;
+        sheetRating = dbLead.rating;
       }
-      // Don't throw - the call_log was created successfully
     }
 
-    // 5. Append to Google Sheet if configured
+    // 4. APPEND TO GOOGLE SHEET (DO THIS FIRST)
     const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
     if (spreadsheetId) {
       try {
-        // Fetch full lead data if leadData is missing or incomplete
-        let sheetLeadName = leadData?.name;
-        let sheetPhone = leadData?.phone;
-        let sheetCity = leadData?.city;
-        let sheetState = leadData?.state;
-        let sheetRating = leadData?.rating;
-
-        if (!sheetLeadName || !sheetPhone) {
-          const { data: dbLead } = await supa
-            .from('leads')
-            .select('name, phone, city, state, rating')
-            .eq('id', targetLeadId)
-            .single();
-          
-          if (dbLead) {
-            sheetLeadName = sheetLeadName || dbLead.name;
-            sheetPhone = sheetPhone || dbLead.phone;
-            sheetCity = sheetCity || dbLead.city;
-            sheetState = sheetState || dbLead.state;
-            sheetRating = sheetRating || dbLead.rating;
-          }
-        }
-
         const timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
         const rowValues = [
           timestamp,
@@ -180,10 +107,57 @@ export async function POST(req: Request) {
         ];
 
         await appendToSheet(spreadsheetId, 'Sheet1!A1', rowValues);
-        console.log('[LOG CALL API] Successfully appended to Google Sheet');
+        console.log('[LOG CALL API] Successfully recorded to Google Sheet first');
       } catch (sheetErr) {
-        console.error('[LOG CALL API] Failed to append to Google Sheet:', sheetErr);
-        // Don't fail the whole request if Google Sheets fails
+        console.error('[LOG CALL API] Critical Error recording to Google Sheet:', sheetErr);
+        // We continue anyway, but we've logged the error
+      }
+    }
+
+    // 5. Create call log entry in DB
+    const { error: logError } = await supa.from('call_log').insert({
+      lead_id: targetLeadId,
+      rep_id: repUuid || repId || 'system',
+      outcome,
+      notes,
+      followup_date: followupDate || null,
+    });
+
+    if (logError) {
+      console.error('[LOG CALL API] Call log insertion failed:', logError);
+    }
+
+    // 6. Update lead status and stats in DB
+    const { data: lead } = await supa.from('leads').select('times_called').eq('id', targetLeadId).single();
+    const newTimesCalled = (lead?.times_called || 0) + 1;
+
+    const updatePayload: any = {
+      times_called: newTimesCalled,
+      last_called_at: new Date().toISOString(),
+      last_called_by: repUuid,
+      call_status: outcome,
+      next_followup: followupDate || null,
+    };
+
+    if (repEmail) {
+      updatePayload.last_called_by_email = repEmail;
+    }
+
+    const { error: updateError } = await supa
+      .from('leads')
+      .update(updatePayload)
+      .eq('id', targetLeadId);
+
+    if (updateError) {
+      console.error('[LOG CALL API] Lead update failed:', updateError);
+      
+      if (updateError.message.includes('column') || updateError.message.includes('schema cache')) {
+        const minimalPayload = {
+          times_called: newTimesCalled,
+          last_called_at: new Date().toISOString(),
+          call_status: outcome,
+        };
+        await supa.from('leads').update(minimalPayload).eq('id', targetLeadId);
       }
     }
 
