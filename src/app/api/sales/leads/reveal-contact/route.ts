@@ -28,9 +28,15 @@ export async function POST(req: Request) {
       
       // Log cached hit to sheet
       try {
-        const estTimestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
+        const now = new Date();
+        const estDate = now.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+        const estTime = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: true }) + ' EST';
+        const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
         await appendToSheet(spreadsheetId, 'Detailed Hit Log!A2', [
-          estTimestamp,
+          estDate,
+          estTime,
+          transactionId,
           existingLead.name || leadData?.name || 'Unknown Business',
           googlePlaceId,
           'Reveal Contact (Cached)',
@@ -79,9 +85,15 @@ export async function POST(req: Request) {
 
     // Log charged hit to sheet
     try {
-      const estTimestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
+      const now = new Date();
+      const estDate = now.toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+      const estTime = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: true }) + ' EST';
+      const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
       await appendToSheet(spreadsheetId, 'Detailed Hit Log!A2', [
-        estTimestamp,
+        estDate,
+        estTime,
+        transactionId,
         leadData?.name || details.displayName?.text || 'Unknown Business',
         googlePlaceId,
         'Reveal Contact',
