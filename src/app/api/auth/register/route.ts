@@ -55,11 +55,28 @@ export async function POST(req: Request) {
 			return new NextResponse(`Registration failed: ${error.message}`, { status: 500 });
 		}
 
-		console.log('[REGISTER] ✅ User created:', userRecord.uid);
+	console.log('[REGISTER] ✅ User created:', userRecord.uid);
 
-		// Generate custom token for immediate login
-		const customToken = await auth.createCustomToken(userRecord.uid);
-		console.log('[REGISTER] ✅ Custom token generated');
+	// Create Supabase user record with role 'customer' by default
+	try {
+		const supa = getSupabaseAdmin();
+		await supa.from('users').upsert({
+			uid: userRecord.uid,
+			email: email.trim(),
+			role: 'customer',
+			created_at: new Date().toISOString()
+		}, {
+			onConflict: 'uid',
+			ignoreDuplicates: false
+		});
+		console.log('[REGISTER] ✅ Supabase user record created with role: customer');
+	} catch (supaError) {
+		console.error('[REGISTER] ⚠️ Failed to create Supabase user record (non-fatal):', supaError);
+	}
+
+	// Generate custom token for immediate login
+	const customToken = await auth.createCustomToken(userRecord.uid);
+	console.log('[REGISTER] ✅ Custom token generated');
 
 		// Generate verification link
 		let verificationLink: string;

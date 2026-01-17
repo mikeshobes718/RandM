@@ -55,11 +55,33 @@ export async function GET(req: Request) {
 
     // Fetch extra info from Supabase users table
     const supa = getSupabaseAdmin();
-    const { data: dbUser } = await supa
+    let dbUser = await supa
       .from('users')
       .select('role, rep_id')
       .eq('uid', uid)
-      .maybeSingle();
+      .maybeSingle()
+      .then(res => res.data);
+
+    // If user doesn't exist in Supabase, create them with role 'customer'
+    if (!dbUser) {
+      console.log(`[AUTH ME] Creating Supabase user record for ${uid} with role: customer`);
+      try {
+        await supa.from('users').upsert({
+          uid,
+          email,
+          role: 'customer',
+          created_at: new Date().toISOString()
+        }, {
+          onConflict: 'uid',
+          ignoreDuplicates: false
+        });
+        dbUser = { role: 'customer', rep_id: null };
+      } catch (upsertError) {
+        console.error('[AUTH ME] Failed to create user record:', upsertError);
+        // Continue with default values
+        dbUser = { role: 'customer', rep_id: null };
+      }
+    }
 
     return NextResponse.json({ 
       uid, 
