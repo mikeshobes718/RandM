@@ -92,6 +92,7 @@ export default function SalesPortalPage() {
   const [userRole, setUserRole] = useState("customer");
   const [userRepId, setUserRepId] = useState<string | null>(null);
   const [repId, setRepId] = useState("");
+  const [userUid, setUserUid] = useState<string | null>(null);
   const [city, setCity] = useState("All Cities");
   const [state, setState] = useState("CA");
   const [country, setCountry] = useState("US");
@@ -136,6 +137,7 @@ export default function SalesPortalPage() {
         setUserEmail(user?.email || "");
         setUserRole(user?.role || "customer");
         setUserRepId(user?.rep_id || null);
+        setUserUid(user?.uid || null);
         
         // Use static rep_id if available, fallback to localStorage for legacy or testing
         const finalRepId = user?.rep_id || localStorage.getItem('salesRepId') || "";
@@ -230,7 +232,7 @@ export default function SalesPortalPage() {
           leadId: selectedLead.dbId,
           googlePlaceId: selectedLead.id,
           leadData: selectedLead,
-          repId: repId,
+          repId: userUid || repId, // Send user's UUID for proper tracking
           outcome: callOutcome,
           notes: callNotes,
           followupDate: followupDate,
