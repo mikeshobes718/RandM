@@ -197,12 +197,15 @@ export default function SalesPortalPage() {
         })
       });
       const data = await res.json();
-      if (res.ok && data.phone) {
-        setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, phone: data.phone, website: data.website } : l));
+      if (res.ok && data.success) {
+        // Update local state with revealed info
+        if (data.phone) {
+          setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, phone: data.phone, website: data.website || l.website } : l));
+        }
         // Show success toast
         const toast = document.createElement('div');
         toast.className = 'fixed top-20 right-6 bg-emerald-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm font-bold animate-fade-in';
-        toast.textContent = '✓ Contact info revealed';
+        toast.textContent = data.phone ? '✓ Contact info revealed' : '✓ No phone listed for this business';
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
       } else {
@@ -212,7 +215,7 @@ export default function SalesPortalPage() {
         toast.className = 'fixed top-20 right-6 bg-rose-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 text-sm font-bold animate-fade-in max-w-md';
         // Check if it's a session error
         if (errorMsg.includes('expired') || errorMsg.includes('token') || errorMsg.includes('auth')) {
-          toast.innerHTML = '✕ Your session has expired. <span class="underline cursor-pointer" onclick="window.location.reload()">Click here to refresh</span>';
+          toast.innerHTML = '✕ Session expired. <span class="underline cursor-pointer" onclick="window.location.reload()">Click to refresh</span>';
         } else {
           toast.textContent = `✕ ${errorMsg}`;
         }

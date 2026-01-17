@@ -95,43 +95,6 @@ export async function GET(req: Request) {
       }
     }
 
-    // 1.5 STEP 1.5: Merge phone numbers from Reveals Sheet (Source of Truth)
-    try {
-      const revealsData = await readSheetData(USAGE_SPREADSHEET_ID, 'Reveals!A:H');
-      if (revealsData.length > 1) {
-        const headers = revealsData[0];
-        const placeIdIndex = headers.indexOf('Place ID');
-        const phoneIndex = headers.indexOf('Phone');
-        const websiteIndex = headers.indexOf('Website');
-        
-        // Build a map of placeId -> {phone, website} from Reveals sheet
-        const revealsMap: Record<string, { phone: string; website: string }> = {};
-        for (let i = 1; i < revealsData.length; i++) {
-          const row = revealsData[i];
-          if (row[placeIdIndex] && row[phoneIndex]) {
-            revealsMap[row[placeIdIndex]] = {
-              phone: row[phoneIndex],
-              website: row[websiteIndex] || ''
-            };
-          }
-        }
-        
-        // Merge into combinedLeads
-        combinedLeads = combinedLeads.map(lead => {
-          if (!lead.phone && revealsMap[lead.id]) {
-            return {
-              ...lead,
-              phone: revealsMap[lead.id].phone,
-              website: lead.website || revealsMap[lead.id].website
-            };
-          }
-          return lead;
-        });
-      }
-    } catch (revealsErr) {
-      console.warn('[LEAD FINDER API] Could not read Reveals sheet:', revealsErr);
-    }
-
     // 2. STEP 2: Only call Google if we don't have enough leads or force requested
     if (combinedLeads.length < 20 || forceGoogle) {
       // Live Search from Google (Cheap Search API)
@@ -160,6 +123,43 @@ export async function GET(req: Request) {
         }));
 
       combinedLeads = [...combinedLeads, ...newGoogleLeads];
+    }
+
+    // 3. STEP 3: Merge phone numbers from Reveals Sheet (Source of Truth) - AFTER all leads collected
+    try {
+      const revealsData = await readSheetData(USAGE_SPREADSHEET_ID, 'Reveals!A:H');
+      if (revealsData.length > 1) {
+        const headers = revealsData[0];
+        const placeIdIndex = headers.indexOf('Place ID');
+        const phoneIndex = headers.indexOf('Phone');
+        const websiteIndex = headers.indexOf('Website');
+        
+        // Build a map of placeId -> {phone, website} from Reveals sheet
+        const revealsMap: Record<string, { phone: string; website: string }> = {};
+        for (let i = 1; i < revealsData.length; i++) {
+          const row = revealsData[i];
+          if (row[placeIdIndex] && row[phoneIndex]) {
+            revealsMap[row[placeIdIndex]] = {
+              phone: row[phoneIndex],
+              website: row[websiteIndex] || ''
+            };
+          }
+        }
+        
+        // Merge into combinedLeads - for any lead without a phone that has a cached reveal
+        combinedLeads = combinedLeads.map(lead => {
+          if (!lead.phone && revealsMap[lead.id]) {
+            return {
+              ...lead,
+              phone: revealsMap[lead.id].phone,
+              website: lead.website || revealsMap[lead.id].website
+            };
+          }
+          return lead;
+        });
+      }
+    } catch (revealsErr) {
+      console.warn('[LEAD FINDER API] Could not read Reveals sheet:', revealsErr);
     }
 
     return NextResponse.json({ 
