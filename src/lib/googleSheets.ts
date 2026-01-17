@@ -43,6 +43,22 @@ export async function appendToSheet(spreadsheetId: string, range: string, values
   }
 }
 
+export async function readSheetData(spreadsheetId: string, range: string = 'Sheet1!A:P') {
+  try {
+    const sheets = await getAuthenticatedClient();
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+    });
+
+    return response.data.values || [];
+  } catch (error) {
+    console.error('[GOOGLE SHEETS] Error reading sheet:', error);
+    throw error;
+  }
+}
+
 export async function setSheetHeaders(spreadsheetId: string, headers: string[]) {
   try {
     const sheets = await getAuthenticatedClient();
