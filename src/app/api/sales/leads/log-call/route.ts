@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { appendToSheet } from '@/lib/googleSheets';
 
 export async function POST(req: Request) {
   const supa = getSupabaseAdmin();
@@ -135,6 +136,55 @@ export async function POST(req: Request) {
         }
       }
       // Don't throw - the call_log was created successfully
+    }
+
+    // 5. Append to Google Sheet if configured
+    const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+    if (spreadsheetId) {
+      try {
+        // Fetch full lead data if leadData is missing or incomplete
+        let sheetLeadName = leadData?.name;
+        let sheetPhone = leadData?.phone;
+        let sheetCity = leadData?.city;
+        let sheetState = leadData?.state;
+        let sheetRating = leadData?.rating;
+
+        if (!sheetLeadName || !sheetPhone) {
+          const { data: dbLead } = await supa
+            .from('leads')
+            .select('name, phone, city, state, rating')
+            .eq('id', targetLeadId)
+            .single();
+          
+          if (dbLead) {
+            sheetLeadName = sheetLeadName || dbLead.name;
+            sheetPhone = sheetPhone || dbLead.phone;
+            sheetCity = sheetCity || dbLead.city;
+            sheetState = sheetState || dbLead.state;
+            sheetRating = sheetRating || dbLead.rating;
+          }
+        }
+
+        const timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
+        const rowValues = [
+          timestamp,
+          sheetLeadName || 'Unknown',
+          sheetPhone || 'N/A',
+          sheetCity || '',
+          sheetState || '',
+          sheetRating || '',
+          outcome,
+          notes || '',
+          followupDate || '',
+          repEmail || repId || 'system'
+        ];
+
+        await appendToSheet(spreadsheetId, 'Sheet1!A1', rowValues);
+        console.log('[LOG CALL API] Successfully appended to Google Sheet');
+      } catch (sheetErr) {
+        console.error('[LOG CALL API] Failed to append to Google Sheet:', sheetErr);
+        // Don't fail the whole request if Google Sheets fails
+      }
     }
 
     return NextResponse.json({ success: true, leadId: targetLeadId });
