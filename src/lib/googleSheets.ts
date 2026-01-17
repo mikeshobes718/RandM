@@ -11,12 +11,14 @@ export async function appendToSheet(spreadsheetId: string, range: string, values
 
     const serviceAccount = JSON.parse(Buffer.from(serviceAccountB64, 'base64').toString('utf-8'));
 
-    const auth = new google.auth.JWT(
-      serviceAccount.client_email,
-      undefined,
-      serviceAccount.private_key,
-      SCOPES
-    );
+    // Ensure private_key has proper line breaks (fix escaped \n)
+    const privateKey = serviceAccount.private_key.replace(/\\n/g, '\n');
+
+    const auth = new google.auth.JWT({
+      email: serviceAccount.client_email,
+      key: privateKey,
+      scopes: SCOPES,
+    });
 
     const sheets = google.sheets({ version: 'v4', auth });
 
