@@ -7,29 +7,72 @@ export async function POST(req: Request) {
   try {
     const { googlePlaceId, leadData } = await req.json();
 
+    console.log('[REVEAL CONTACT] Received request for:', googlePlaceId);
+
     if (!googlePlaceId) {
       return NextResponse.json({ error: 'Missing googlePlaceId' }, { status: 400 });
     }
 
-    // 1. Fetch expensive details from Google (Atmosphere + Contact)
-    // We already have rating, but Google charges for the detail call anyway.
-    const details = await getPlaceDetails(googlePlaceId);
+    // 1. First check if we already have this lead in the DB with phone
+    const { data: existingLead } = await supa
+      .from('leads')
+      .select('phone, website')
+      .eq('google_place_id', googlePlaceId)
+      .maybeSingle();
+
+    if (existingLead?.phone) {
+      console.log('[REVEAL CONTACT] Phone already in DB:', existingLead.phone);
+      return NextResponse.json({ 
+        success: true, 
+        phone: existingLead.phone, 
+        website: existingLead.website,
+        source: 'database'
+      });
+    }
+
+    // 2. Fetch details from Google Places API
+    console.log('[REVEAL CONTACT] Fetching from Google Places API...');
+    let details;
+    try {
+      details = await getPlaceDetails(googlePlaceId);
+      console.log('[REVEAL CONTACT] Google response:', {
+        hasPhone: !!details.nationalPhoneNumber || !!details.internationalPhoneNumber,
+        hasWebsite: !!details.websiteUri
+      });
+    } catch (googleErr: any) {
+      console.error('[REVEAL CONTACT] Google API error:', googleErr.message);
+      return NextResponse.json({ 
+        error: `Google Places API error: ${googleErr.message}`,
+        suggestion: 'The place ID may be invalid or the API quota may be exceeded.'
+      }, { status: 500 });
+    }
     
     const phone = details.nationalPhoneNumber || details.internationalPhoneNumber || null;
     const website = details.websiteUri || null;
 
-    // 2. Save or Update in DB
+    if (!phone) {
+      console.log('[REVEAL CONTACT] No phone found for this business');
+      // Still return success but with no phone - some businesses don't list their phone
+      return NextResponse.json({ 
+        success: true, 
+        phone: null, 
+        website,
+        message: 'This business has no phone number listed on Google.'
+      });
+    }
+
+    // 3. Save or Update in DB
     const { data: lead, error: dbError } = await supa
       .from('leads')
       .upsert({
         google_place_id: googlePlaceId,
-        name: leadData.name,
-        address: leadData.address,
-        rating: leadData.rating,
-        review_count: leadData.reviewCount,
-        business_type: leadData.type,
-        google_maps_url: leadData.googleMapsUrl,
-        city: leadData.address?.split(',')?.slice(-3, -2)?.[0]?.trim()?.toLowerCase() || null,
+        name: leadData?.name || details.displayName?.text,
+        address: leadData?.address || details.formattedAddress,
+        rating: leadData?.rating || details.rating,
+        review_count: leadData?.reviewCount || details.userRatingCount,
+        business_type: leadData?.type,
+        google_maps_url: leadData?.googleMapsUrl || details.googleMapsUri,
+        city: leadData?.address?.split(',')?.slice(-3, -2)?.[0]?.trim()?.toLowerCase() || null,
         phone: phone,
         website: website,
       }, { onConflict: 'google_place_id' })
@@ -38,8 +81,10 @@ export async function POST(req: Request) {
 
     if (dbError) {
       console.error('[REVEAL CONTACT] DB Error:', dbError);
+      // Still return the phone even if DB save fails
     }
 
+    console.log('[REVEAL CONTACT] Success! Phone:', phone);
     return NextResponse.json({ 
       success: true, 
       phone, 
