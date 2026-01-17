@@ -59,6 +59,9 @@ export async function readSheetData(spreadsheetId: string, range: string = 'Shee
   }
 }
 
+// Alias for readSheetData (some files import as readSheet)
+export { readSheetData as readSheet };
+
 export async function setSheetHeaders(spreadsheetId: string, headers: string[]) {
   try {
     const sheets = await getAuthenticatedClient();
