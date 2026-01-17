@@ -90,7 +90,12 @@ export async function POST(req: Request) {
 
     // 4. APPEND TO GOOGLE SHEET (DO THIS FIRST)
     const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
-    if (spreadsheetId) {
+    
+    console.log('[LOG CALL API] Google Sheets ID:', spreadsheetId ? 'SET ✅' : 'MISSING ❌');
+    
+    if (!spreadsheetId) {
+      console.error('[LOG CALL API] GOOGLE_SHEETS_ID environment variable is not set!');
+    } else {
       try {
         const timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
         const rowValues = [
@@ -106,10 +111,13 @@ export async function POST(req: Request) {
           repEmail || repId || 'system'
         ];
 
+        console.log('[LOG CALL API] Attempting to append to Google Sheet...', rowValues);
         await appendToSheet(spreadsheetId, 'Sheet1!A1', rowValues);
-        console.log('[LOG CALL API] Successfully recorded to Google Sheet first');
-      } catch (sheetErr) {
-        console.error('[LOG CALL API] Critical Error recording to Google Sheet:', sheetErr);
+        console.log('[LOG CALL API] ✅ Successfully recorded to Google Sheet first');
+      } catch (sheetErr: any) {
+        console.error('[LOG CALL API] ❌ Critical Error recording to Google Sheet:', sheetErr);
+        console.error('[LOG CALL API] Error details:', sheetErr.message);
+        console.error('[LOG CALL API] Error stack:', sheetErr.stack);
         // We continue anyway, but we've logged the error
       }
     }
