@@ -155,7 +155,13 @@ export async function GET() {
     return NextResponse.json({ 
       leads: formattedLeads,
       repMetrics,
-      totalMetrics
+      totalMetrics,
+      debug: {
+        closesCount: closesData.length,
+        firstClose: closesData[0] || null,
+        usersCount: (users || []).length,
+        uidToEmailKeys: Object.keys(uidToEmail).length
+      }
     });
   } catch (err: any) {
     console.error('Admin Leads API error:', err);
