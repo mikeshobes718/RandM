@@ -2,9 +2,20 @@ import Link from "next/link";
 
 const POSTS = [
   {
+    title: "Reputation on Autopilot: Scaling Your Growth Compliantly",
+    slug: "reputation-on-autopilot",
+    date: "Feb 2026",
+    sortDate: "2026-02-01",
+    category: "Automation",
+    excerpt: "Discover the power of POS integration and how to automate your entire review request workflow while staying fully compliant.",
+    isLive: true,
+    image: "🤖"
+  },
+  {
     title: "Reputation Growth & Protection: The Strategy Guide",
     slug: "reputation-growth-protection",
     date: "Jan 2026",
+    sortDate: "2026-01-15",
     category: "Strategy",
     excerpt: "The complete blueprint for building a 5-star brand and protecting your business with private feedback channels.",
     isLive: true,
@@ -14,50 +25,18 @@ const POSTS = [
     title: "The 'Feedback Loop': How Businesses Are Recovering Customers Privately",
     slug: "the-review-filter",
     date: "Jan 2026",
+    sortDate: "2026-01-01",
     category: "Operations",
     excerpt: "Analysis of the fundamental shift from simply managing reviews to recovering customers through private feedback channels.",
     isLive: true,
     image: "🔄"
-  },
-  {
-    title: "Reputation on Autopilot: Scaling Your Growth Compliantly",
-    slug: "reputation-on-autopilot",
-    date: "Feb 2026",
-    category: "Automation",
-    excerpt: "Discover the power of POS integration and how to automate your entire review request workflow while staying fully compliant.",
-    isLive: true,
-    image: "🤖"
-  },
-  {
-    title: "Transparent Pricing for Sustainable Growth",
-    slug: "transparent-pricing",
-    date: "Jan 2026",
-    category: "Business",
-    excerpt: "Why offering tiered value from Starter to Unlimited is the best way to scale your local business reputation.",
-    isLive: false,
-    image: "💰"
-  },
-  {
-    title: "QR design principles that actually drive scans",
-    slug: "qr-design",
-    date: "April 2026",
-    category: "Design",
-    excerpt: "Placement, choice framing, and artwork guidelines for high-intent customer journeys.",
-    image: "📱"
-  },
-  {
-    title: "Scripts that turn service moments into ⭐⭐⭐⭐⭐ reviews",
-    slug: "scripts-that-convert",
-    date: "May 2026",
-    category: "Communication",
-    excerpt: "Use these proven prompts for in-person, text, and email follow-ups that feel human and convert.",
-    image: "✍️"
-  },
+  }
 ];
 
 export default function BlogPage() {
-  const featuredPost = POSTS.find(p => p.isLive);
-  const otherPosts = POSTS.filter(p => p !== featuredPost);
+  const sortedPosts = [...POSTS].sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime());
+  const featuredPost = sortedPosts[0];
+  const otherPosts = sortedPosts.slice(1);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-white">
@@ -123,8 +102,8 @@ export default function BlogPage() {
             {otherPosts.map((post) => (
               <Link 
                 key={post.title} 
-                href={post.isLive ? `/blog/${post.slug}` : "#"}
-                className={`group flex flex-col h-full bg-white rounded-[40px] border border-slate-100 p-8 shadow-xl shadow-slate-200/40 transition-all hover:border-brand/20 hover:-translate-y-2 ${!post.isLive ? 'grayscale opacity-70 cursor-default' : ''}`}
+                href={`/blog/${post.slug}`}
+                className="group flex flex-col h-full bg-white rounded-[40px] border border-slate-100 p-8 shadow-xl shadow-slate-200/40 transition-all hover:border-brand/20 hover:-translate-y-2"
               >
                 <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-3xl mb-8 group-hover:bg-brand/5 group-hover:scale-110 transition-all duration-500">
                   {post.image}
@@ -141,12 +120,10 @@ export default function BlogPage() {
                   {post.excerpt}
                 </p>
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-brand transition-all">
-                  {post.isLive ? 'Read Analysis' : 'Coming Soon'}
-                  {post.isLive && (
-                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                  )}
+                  Read Analysis
+                  <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
                 </div>
               </Link>
             ))}
