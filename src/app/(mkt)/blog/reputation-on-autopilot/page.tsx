@@ -88,7 +88,7 @@ export default function BlogPost() {
 
           <h2 className="text-2xl mt-12 mb-6">Conclusion</h2>
           <p>
-            Manual efforts get you started, but systems get you to the finish line. If you are serious about becoming the highest-rated business in your area, automation isn't an option—it's a requirement. We make sure that automation is done the right way: no incentives, no filtering, just easy access for your customers.
+            Manual efforts get you started, but systems get you to the finish line. If you are serious about becoming the highest-rated business in your area, automation isn't an option—it's a requirement. We make sure that automation is done the right way: no incentives, no gating, just easy access for your customers via smart Review Routing.
           </p>
         </div>
 

@@ -15,7 +15,7 @@ const VALUES = [
   },
   {
     title: 'Compliance Driven',
-    copy: 'We don’t incentivize or filter reviews. We provide a platform that respects both business owners and customer choice, fully aligned with platform policies.'
+    copy: 'We don’t incentivize or gate reviews. We use smart Review Routing that respects both business owners and customer choice, fully aligned with platform policies.'
   },
   {
     title: 'Actionable Insights',
@@ -61,7 +61,7 @@ export default function AboutPage() {
           <div className="space-y-8">
             <h2 className="text-3xl font-black tracking-tight">Why we built it</h2>
             <p className="text-muted leading-relaxed text-lg">
-              Our founders spent a decade in hospitality and home services chasing reviews. We designed a platform that blends premium branding with deep automation, letting teams focus on the guest experience while the software handles the follow-through. We believe in transparency: we don’t incentivize or filter reviews—customers choose what to share.
+              Our founders spent a decade in hospitality and home services chasing reviews. We designed a platform that blends premium branding with deep automation, letting teams focus on the guest experience while the software handles the follow-through. We believe in transparency: we don’t incentivize or gate reviews—we use smart Review Routing.
             </p>
             <div className="pt-4">
               <HomeCtaButtons align="start" />

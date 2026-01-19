@@ -27,7 +27,7 @@ const POSTS = [
     date: "Jan 2026",
     sortDate: "2026-01-01",
     category: "Operations",
-    excerpt: "Analysis of the fundamental shift from simply managing reviews to recovering customers through private feedback channels.",
+    excerpt: "Analysis of the fundamental shift from simply managing reviews to recovering customers through smart Review Routing.",
     isLive: true,
     image: "🔄"
   }

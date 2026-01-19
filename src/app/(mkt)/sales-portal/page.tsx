@@ -47,7 +47,7 @@ const OBJECTIONS = [
   },
   { 
     title: "Is it compliant with Google?", 
-    response: "Yes, 100%. We don’t incentivize or filter reviews—customers choose what to share. We provide a direct path for praise to Google and a private channel for feedback, fully aligned with Google's latest policies." 
+    response: "Yes, 100%. We don’t incentivize or gate reviews—we use smart Review Routing. We provide a direct path for praise to Google and a private channel for feedback, fully aligned with Google's latest policies." 
   }
 ];
 

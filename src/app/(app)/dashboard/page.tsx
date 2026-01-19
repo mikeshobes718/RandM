@@ -270,7 +270,7 @@ function DashboardContent() {
               </div>
               <div className="absolute inset-x-0 -top-10 opacity-0 group-hover/copy:opacity-100 transition-opacity pointer-events-none z-20 px-2">
                 <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
-                  The smart link that filters reviews before they reach Google.
+                  The smart link that routes reviews to the right place.
                 </div>
               </div>
             </div>

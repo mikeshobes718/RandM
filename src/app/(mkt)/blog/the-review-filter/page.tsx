@@ -103,7 +103,7 @@ export default function BlogPost() {
             Modern reputation management is evolving from a passive process of simply encouraging reviews to an active one of intelligently managing all forms of customer feedback. By listening to customers and resolving issues privately, businesses can now actively build a resilient public rating while simultaneously improving their service and building a marketing list.
           </p>
           <p className="font-bold text-slate-900">
-            We don’t incentivize or filter reviews—customers choose what to share. We just make it easier for them to talk to you first.
+            We don’t incentivize or gate reviews—we use smart Review Routing. We just make it easier for them to talk to you first.
           </p>
         </div>
 

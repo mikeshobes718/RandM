@@ -70,7 +70,7 @@ export default function FeaturesPage() {
               <p className="mt-2 font-bold text-brand">More reviews, more insights, fewer surprises.</p>
             </div>
             <p className="text-sm text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed italic">
-              "We provide customers a direct path to share their experience. We don’t incentivize or filter reviews—customers choose what to share."
+              "We provide customers a direct path to share their experience. We don’t incentivize or gate reviews—we use smart Review Routing."
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <HomeCtaButtons variant="hero" />

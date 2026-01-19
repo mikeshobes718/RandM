@@ -80,7 +80,7 @@ export default function Home() {
               Get more Google reviews the compliant way + recover unhappy customers privately. More reviews, more insights, fewer surprises.
             </p>
             <p className="text-sm text-slate-400 mb-10 font-medium">
-              We don’t incentivize or filter reviews—customers choose what to share.
+              We don’t incentivize or gate reviews—we use smart Review Routing.
             </p>
             <HomeCtaButtons variant="hero" />
           </div>

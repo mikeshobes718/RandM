@@ -79,7 +79,7 @@ export default function HowItWorks() {
             <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand font-black text-xl">2</div>
             <h3 className="text-xl font-bold text-slate-900">Listen</h3>
             <p className="text-slate-500 text-sm leading-relaxed font-medium">
-              We don’t incentivize or filter reviews—customers choose what to share. We provide a direct path for praise to Google or private feedback to you.
+              We don’t incentivize or gate reviews—we use smart Review Routing. We provide a direct path for praise to Google or private feedback to you.
             </p>
           </div>
           <div className="space-y-4">
