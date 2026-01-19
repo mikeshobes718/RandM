@@ -190,7 +190,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 pt-24 pb-12 sm:pt-32">
+    <div className="max-w-6xl mx-auto px-6 pt-24 pb-12 sm:pt-32" data-deployment-id="jan19-v2">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="flex items-center gap-5">
