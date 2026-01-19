@@ -562,9 +562,15 @@ export default function ContactsPage() {
                     placeholder="(555) 000-0000"
                     value={manualContact.phone}
                     onChange={(e) => {
-                      const formatter = new AsYouType(manualContact.country as CountryCode);
-                      const formatted = formatter.input(e.target.value);
-                      setManualContact({ ...manualContact, phone: formatted });
+                      const val = e.target.value;
+                      // If deleting, don't auto-format to avoid fighting the user
+                      if (val.length < manualContact.phone.length) {
+                        setManualContact({ ...manualContact, phone: val });
+                      } else {
+                        const formatter = new AsYouType(manualContact.country as CountryCode);
+                        const formatted = formatter.input(val);
+                        setManualContact({ ...manualContact, phone: formatted });
+                      }
                     }}
                     className="flex-1 h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
                   />
