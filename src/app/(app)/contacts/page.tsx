@@ -113,6 +113,8 @@ export default function ContactsPage() {
       setAddingManual(false);
     }
   };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
