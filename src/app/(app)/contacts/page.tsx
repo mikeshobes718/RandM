@@ -25,6 +25,9 @@ export default function ContactsPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [showGuide, setShowGuide] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [manualContact, setManualContact] = useState({ name: '', email: '', phone: '' });
+  const [addingManual, setAddingManual] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -71,7 +74,45 @@ export default function ContactsPage() {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleManualAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || (!manualContact.email && !manualContact.phone)) return;
+
+    setAddingManual(true);
+    setError(null);
+    setSuccessMsg(null);
+
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/contacts/import', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ contacts: [{ ...manualContact, source: 'manual' }] })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to add contact');
+      }
+
+      const result = await res.json();
+      if (result.imported === 0 && result.duplicatesSkipped > 0) {
+        throw new Error('This contact already exists in your list.');
+      }
+
+      setSuccessMsg('Contact added successfully!');
+      setShowAddModal(false);
+      setManualContact({ name: '', email: '', phone: '' });
+      fetchContacts(user);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setAddingManual(false);
+    }
+  };
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
@@ -271,6 +312,12 @@ export default function ContactsPage() {
             </button>
           )}
           <button 
+            onClick={() => setShowAddModal(true)}
+            className="secondary-button !h-12 px-6 text-[10px] font-black uppercase tracking-[0.1em] shadow-sm"
+          >
+            + Add Contact
+          </button>
+          <button 
             onClick={() => handleDownloadCSV(false)}
             disabled={contacts.length === 0}
             className="secondary-button !h-12 px-6 text-[10px] font-black uppercase tracking-[0.1em] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
@@ -448,6 +495,69 @@ export default function ContactsPage() {
           </div>
         </div>
       </div>
+
+      {/* Add Contact Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[40px] w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Add Contact</h3>
+                <p className="text-xs text-slate-400 font-medium mt-1 uppercase tracking-widest">Manual Entry</p>
+              </div>
+              <button 
+                onClick={() => setShowAddModal(false)}
+                className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleManualAdd} className="p-8 space-y-6">
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Full Name</label>
+                <input 
+                  type="text"
+                  placeholder="e.g. John Smith"
+                  value={manualContact.name}
+                  onChange={(e) => setManualContact({ ...manualContact, name: e.target.value })}
+                  className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Email Address</label>
+                <input 
+                  type="email"
+                  placeholder="john@example.com"
+                  value={manualContact.email}
+                  onChange={(e) => setManualContact({ ...manualContact, email: e.target.value })}
+                  className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Phone Number</label>
+                <input 
+                  type="tel"
+                  placeholder="(555) 000-0000"
+                  value={manualContact.phone}
+                  onChange={(e) => setManualContact({ ...manualContact, phone: e.target.value })}
+                  className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
+                />
+              </div>
+
+              <div className="pt-4">
+                <button 
+                  type="submit"
+                  disabled={addingManual || (!manualContact.email && !manualContact.phone)}
+                  className="primary-button w-full h-14 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand/20 disabled:opacity-50 transition-all"
+                >
+                  {addingManual ? 'Saving...' : 'Save Contact'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Import Guide Modal */}
       {showGuide && (
