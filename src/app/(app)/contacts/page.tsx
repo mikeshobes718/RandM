@@ -378,7 +378,7 @@ export default function ContactsPage() {
                 Refresh List
               </button>
             </div>
-            <div className="overflow-x-auto overflow-y-auto max-h-[600px] custom-scrollbar">
+            <div className="overflow-x-auto overflow-y-auto max-h-[400px] custom-scrollbar">
               <table className="w-full text-left border-collapse min-w-[800px]">
                 <thead className="sticky top-0 z-10 bg-slate-50 shadow-sm">
                   <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">

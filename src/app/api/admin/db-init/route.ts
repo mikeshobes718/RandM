@@ -42,7 +42,21 @@ export async function GET(req: NextRequest) {
       );
       CREATE INDEX IF NOT EXISTS ix_campaigns_business_id ON campaigns (business_id);
 
-      -- 3. Link existing tables
+      -- 3. Create Review Sources Table (Campaign Tracking)
+      CREATE TABLE IF NOT EXISTS review_sources (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        business_id uuid NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+        name text NOT NULL,
+        slug text NOT NULL,
+        is_active boolean DEFAULT true,
+        metadata jsonb DEFAULT '{}'::jsonb,
+        created_at timestamptz DEFAULT now(),
+        updated_at timestamptz DEFAULT now(),
+        UNIQUE(business_id, slug)
+      );
+      CREATE INDEX IF NOT EXISTS ix_review_sources_business_id ON review_sources (business_id);
+
+      -- 4. Link existing tables
       DO $$ 
       BEGIN 
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='review_requests' AND column_name='campaign_id') THEN
