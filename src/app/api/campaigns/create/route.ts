@@ -107,21 +107,23 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'No contacts with phone numbers found.' }, { status: 400 });
       }
 
-      // Check for Twilio configuration
       const sid = env.TWILIO_ACCOUNT_SID;
       const token = env.TWILIO_AUTH_TOKEN;
       const apiKeySid = env.TWILIO_API_KEY_SID;
       const apiKeySecret = env.TWILIO_API_KEY_SECRET;
       const fromNumber = env.TWILIO_PHONE_NUMBER;
 
-      if (!sid || (!token && !(apiKeySid && apiKeySecret))) {
+      const hasDirectAuth = sid && token;
+      const hasApiKeyAuth = sid && apiKeySid && apiKeySecret;
+
+      if (!hasDirectAuth && !hasApiKeyAuth) {
         return NextResponse.json({ 
-          error: 'SMS provider (Twilio) not configured. Please add TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN to environment variables.' 
+          error: 'Twilio SMS is not fully configured. Please add your Twilio credentials (SID and Auth Token or API Keys) to your environment variables.' 
         }, { status: 400 });
       }
 
       if (!fromNumber) {
-        return NextResponse.json({ error: 'TWILIO_PHONE_NUMBER is missing in environment variables.' }, { status: 400 });
+        return NextResponse.json({ error: 'Twilio phone number is missing in environment variables.' }, { status: 400 });
       }
 
       const twilioClient = twilio(apiKeySid || sid, apiKeySecret || token, { accountSid: sid });

@@ -12,6 +12,7 @@ function NewRequestContent() {
   const [body, setBody] = useState("");
   const [name, setName] = useState("");
   const [businessName, setBusinessName] = useState("Your Business");
+  const [businessId, setBusinessId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
@@ -36,6 +37,7 @@ function NewRequestContent() {
           });
           const data = await res.json();
           if (data.business?.name) setBusinessName(data.business.name);
+          if (data.business?.id) setBusinessId(data.business.id);
         } catch (err) {
           console.error('Error fetching business name:', err);
         } finally {
@@ -51,7 +53,7 @@ function NewRequestContent() {
 
   const previewText = body
     .replace(/{{business_name}}/g, businessName)
-    .replace(/{{link}}/g, 'reviewsandmarketing.com/r/xyz');
+    .replace(/{{link}}/g, businessId ? `reviewsandmarketing.com/r/${businessId}` : 'reviewsandmarketing.com/r/xyz');
 
   const handleStartCampaign = async () => {
     if (!name || !body || sending) return;

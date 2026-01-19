@@ -44,6 +44,7 @@ const DEFAULT_TEMPLATES = [
 export default function TemplatesPage() {
   const router = useRouter();
   const [businessName, setBusinessName] = useState("Your Business");
+  const [businessId, setBusinessId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filter, setFilter] = useState<"All" | "SMS" | "Email">("All");
   const [customName, setCustomName] = useState("");
@@ -55,13 +56,15 @@ export default function TemplatesPage() {
       .then(res => res.json())
       .then(data => {
         if (data.business?.name) setBusinessName(data.business.name);
+        if (data.business?.id) setBusinessId(data.business.id);
       });
   }, []);
 
   const previewTemplate = (body: string) => {
+    const link = businessId ? `reviewsandmarketing.com/r/${businessId}` : 'reviewsandmarketing.com/r/xyz';
     return body
       .replace(/{{business_name}}/g, businessName)
-      .replace(/{{link}}/g, 'reviewsandmarketing.com/r/xyz');
+      .replace(/{{link}}/g, link);
   };
 
   const handleUseTemplate = (template: any) => {
