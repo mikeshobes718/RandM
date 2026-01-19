@@ -135,7 +135,7 @@ function DashboardContent() {
   const landingUrl = useMemo(() => {
     if (!business?.id) return null;
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.reviewsandmarketing.com';
-    return `${origin}/r/${business.id}`;
+    return `${origin}/r/${business.id}?source=main-qr`;
   }, [business?.id]);
 
   const handleCopyLink = () => {

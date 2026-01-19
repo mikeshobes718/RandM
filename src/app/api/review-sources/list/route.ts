@@ -38,7 +38,8 @@ export async function GET(req: NextRequest) {
   try {
     const sql = getSql();
     if (sql) {
-      results = await sql`
+      // 1. Fetch custom sources
+      const sources = await sql`
         SELECT 
           s.*,
           (SELECT count(*)::int FROM review_events e WHERE e.business_id = s.business_id AND e.metadata->>'source' = s.slug) as scans
@@ -46,7 +47,28 @@ export async function GET(req: NextRequest) {
         WHERE s.business_id = ${businessId}
         ORDER BY s.created_at DESC
       `;
+      
+      // 2. Calculate scans for the "Main QR" (defaults like 'landing' or 'main-qr')
+      const mainScans = await sql`
+        SELECT count(*)::int 
+        FROM review_events 
+        WHERE business_id = ${businessId} 
+        AND (metadata->>'source' = 'landing' OR metadata->>'source' = 'main-qr' OR metadata->>'source' IS NULL)
+      `;
+
+      // 3. Add the virtual "Main QR" to the top of the list
+      const mainSource = {
+        id: 'main-qr-id',
+        business_id: businessId,
+        name: 'Main QR (Toolkit)',
+        slug: 'main-qr',
+        scans: mainScans[0].count,
+        created_at: new Date(0).toISOString() // Always first
+      };
+
+      results = [mainSource, ...sources];
     } else {
+      // Basic fallback
       const { data, error: supaError } = await supa
         .from('review_sources')
         .select('*')
