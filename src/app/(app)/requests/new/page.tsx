@@ -51,7 +51,7 @@ function NewRequestContent() {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': \`Bearer \${tok}\`
+          'Authorization': `Bearer ${tok}`
         },
         body: JSON.stringify({ name, type, body })
       });
