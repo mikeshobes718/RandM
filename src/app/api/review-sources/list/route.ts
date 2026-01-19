@@ -33,37 +33,35 @@ export async function GET(req: NextRequest) {
     console.error('Failed to ensure feedback tables:', e);
   }
 
-  const { data: sources, error } = await supa
-    .from('review_sources')
-    .select('*')
-    .eq('business_id', businessId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    if (error.message?.includes('schema cache')) {
-      console.log('[REVIEW SOURCES LIST] Schema cache error, falling back to direct SQL...');
-      const sql = getSql();
-      if (sql) {
-        try {
-          const results = await sql`
-            SELECT * FROM review_sources 
-            WHERE business_id = ${businessId}
-            ORDER BY created_at DESC
-          `;
-          return NextResponse.json({ sources: results || [] });
-        } catch (sqlErr: any) {
-          console.error('[REVIEW SOURCES LIST] SQL Fallback failed:', sqlErr);
-        }
-      }
+  // Fetch sources with scan counts
+  let results: any[] = [];
+  try {
+    const sql = getSql();
+    if (sql) {
+      results = await sql`
+        SELECT 
+          s.*,
+          (SELECT count(*)::int FROM review_events e WHERE e.business_id = s.business_id AND e.metadata->>'source' = s.slug) as scans
+        FROM review_sources s
+        WHERE s.business_id = ${businessId}
+        ORDER BY s.created_at DESC
+      `;
+    } else {
+      const { data, error: supaError } = await supa
+        .from('review_sources')
+        .select('*')
+        .eq('business_id', businessId)
+        .order('created_at', { ascending: false });
+      if (supaError) throw supaError;
+      results = data || [];
     }
-    // If table doesn't exist, return empty array instead of error
-    if (error.message?.includes('schema cache') || error.message?.includes('does not exist')) {
-      return NextResponse.json({ sources: [] });
-    }
-    return new NextResponse(error.message, { status: 500 });
+  } catch (err: any) {
+    console.error('[REVIEW SOURCES LIST] Error:', err);
+    if (err.message?.includes('does not exist')) return NextResponse.json({ sources: [] });
+    return new NextResponse(err.message, { status: 500 });
   }
 
-  return NextResponse.json({ sources: sources || [] });
+  return NextResponse.json({ sources: results || [] });
 }
 
 

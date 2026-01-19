@@ -5,6 +5,7 @@ type ReviewSource = {
   id: string;
   name: string;
   slug: string;
+  scans?: number;
 };
 
 type Campaign = {
@@ -150,7 +151,17 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
         <div className="space-y-6">
           <form onSubmit={createSource} className="space-y-4 bg-white/50 p-6 rounded-2xl border border-white shadow-sm">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Create New Tracking Source</label>
+              <div className="flex items-center gap-2 mb-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Create New Tracking Source</label>
+                <div className="group/tip relative">
+                  <span className="text-[10px] text-slate-300 cursor-help">ⓘ</span>
+                  <div className="absolute left-1/2 -translate-x-1/2 -top-10 opacity-0 group-hover/tip:opacity-100 transition-opacity pointer-events-none z-20 px-2 w-48">
+                    <div className="bg-slate-900 text-white text-[8px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+                      Create a unique code for a specific table or staff member to track exactly where scans come from.
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -211,7 +222,11 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-black text-slate-700 truncate">{source.name}</div>
-                        <div className="text-[9px] text-slate-400 font-mono truncate">{source.slug}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-[9px] text-slate-400 font-mono truncate">{source.slug}</div>
+                          <div className="w-1 h-1 rounded-full bg-slate-200"></div>
+                          <div className="text-[9px] font-black text-brand uppercase tracking-widest">{source.scans || 0} Scans</div>
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <a
