@@ -17,8 +17,11 @@ type Contact = {
 export default function ContactsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [showGuide, setShowGuide] = useState(false);
@@ -168,6 +171,71 @@ export default function ContactsPage() {
     fileInputRef.current?.click();
   };
 
+  const handleToggleSelectAll = () => {
+    if (selectedIds.size === filteredContacts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredContacts.map(c => c.id)));
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleDeleteContacts = async (all = false) => {
+    if (!user) return;
+    if (!all && selectedIds.size === 0) return;
+    
+    const confirmMsg = all 
+      ? "Are you sure you want to delete ALL contacts? This cannot be undone."
+      : `Are you sure you want to delete ${selectedIds.size} selected contacts?`;
+    
+    if (!confirm(confirmMsg)) return;
+
+    setDeleting(true);
+    setError(null);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/contacts/delete', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ 
+          contactIds: all ? [] : Array.from(selectedIds),
+          all 
+        })
+      });
+
+      if (!res.ok) throw new Error('Failed to delete contacts');
+
+      setSuccessMsg(all ? 'All contacts deleted' : `${selectedIds.size} contacts deleted`);
+      setSelectedIds(new Set());
+      fetchContacts(user);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const filteredContacts = contacts.filter(c => {
+    const query = searchQuery.toLowerCase();
+    return (
+      c.name?.toLowerCase().includes(query) ||
+      c.email?.toLowerCase().includes(query) ||
+      c.phone?.toLowerCase().includes(query)
+    );
+  });
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -194,6 +262,14 @@ export default function ContactsPage() {
           <p className="text-slate-500 font-medium mt-2">Manage your customer list and import data for campaigns.</p>
         </div>
         <div className="flex items-center gap-3">
+          {contacts.length > 0 && (
+            <button 
+              onClick={() => handleDeleteContacts(true)}
+              className="text-[10px] font-black text-red-500 hover:text-red-600 uppercase tracking-widest px-4 py-2"
+            >
+              Clear All
+            </button>
+          )}
           <button 
             onClick={() => handleDownloadCSV(false)}
             disabled={contacts.length === 0}
@@ -210,6 +286,37 @@ export default function ContactsPage() {
           </button>
         </div>
       </div>
+
+      {/* Search and Bulk Actions */}
+      {contacts.length > 0 && (
+        <div className="flex flex-col md:flex-row md:items-center gap-4 bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
+          <div className="relative flex-1">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">🔍</span>
+            <input 
+              type="text"
+              placeholder="Search by name, email, or phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
+            />
+          </div>
+          
+          {selectedIds.size > 0 && (
+            <div className="flex items-center gap-4 animate-in slide-in-from-right-2">
+              <span className="text-xs font-black text-slate-400 uppercase tracking-widest">
+                {selectedIds.size} Selected
+              </span>
+              <button 
+                onClick={() => handleDeleteContacts(false)}
+                disabled={deleting}
+                className="h-11 px-6 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-100 transition-colors flex items-center gap-2"
+              >
+                {deleting ? 'Deleting...' : 'Delete Selected'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Messages */}
       <div className="space-y-3">
@@ -261,7 +368,8 @@ export default function ContactsPage() {
             <div className="px-10 py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
               <div className="flex items-center gap-4">
                 <span className="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
-                <p className="text-sm font-black text-slate-900 uppercase tracking-widest">{contacts.length} Total Contacts</p>
+                <p className="text-sm font-black text-slate-900 uppercase tracking-widest">{filteredContacts.length} Contacts</p>
+                {searchQuery && <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">(Filtered)</span>}
               </div>
               <button 
                 onClick={() => fetchContacts(user)}
@@ -274,16 +382,32 @@ export default function ContactsPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-50">
-                    <th className="px-10 py-6">Name</th>
+                    <th className="px-6 py-6 w-10">
+                      <input 
+                        type="checkbox" 
+                        checked={filteredContacts.length > 0 && selectedIds.size === filteredContacts.length}
+                        onChange={handleToggleSelectAll}
+                        className="w-4 h-4 rounded border-slate-200 text-brand focus:ring-brand"
+                      />
+                    </th>
+                    <th className="px-4 py-6">Name</th>
                     <th className="px-6 py-6">Contact Info</th>
                     <th className="px-6 py-6">Source</th>
                     <th className="px-10 py-6 text-right">Date Added</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {contacts.map((contact) => (
+                  {filteredContacts.map((contact) => (
                     <tr key={contact.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-10 py-6">
+                      <td className="px-6 py-6">
+                        <input 
+                          type="checkbox" 
+                          checked={selectedIds.has(contact.id)}
+                          onChange={() => handleToggleSelect(contact.id)}
+                          className="w-4 h-4 rounded border-slate-200 text-brand focus:ring-brand"
+                        />
+                      </td>
+                      <td className="px-4 py-6">
                         <p className="font-black text-slate-900 group-hover:text-brand transition-colors">{contact.name || 'Unnamed'}</p>
                       </td>
                       <td className="px-6 py-6">
