@@ -63,6 +63,11 @@ function NewRequestContent() {
 
       if (!res.ok) {
         const data = await res.json();
+        // Check for session expiry specifically
+        if (data.error?.toLowerCase().includes('expired')) {
+          setError('✕ Your session has expired. Please refresh the page to continue.');
+          return;
+        }
         throw new Error(data.error || 'Failed to start campaign');
       }
 
@@ -79,7 +84,7 @@ function NewRequestContent() {
   };
 
   return (
-    <div className="space-y-10 animate-fade-in">
+    <div className="max-w-6xl mx-auto px-6 py-16 sm:py-24 space-y-12 animate-fade-in">
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">Send New Requests</h1>
         <p className="text-slate-500 font-medium mt-1">Send SMS or Email invitations to your customers.</p>
