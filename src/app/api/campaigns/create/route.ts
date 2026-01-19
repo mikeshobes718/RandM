@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getSupabaseAdmin, getSql } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
 
 export const dynamic = 'force-dynamic';
@@ -52,7 +52,31 @@ export async function POST(req: NextRequest) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+        console.log('[CAMPAIGNS CREATE] Schema error, falling back to direct SQL...');
+        const sql = getSql();
+        if (sql) {
+          try {
+            const result = await sql`
+              INSERT INTO campaigns (business_id, name, type, body, status, sent_count, click_count)
+              VALUES (${biz.id}, ${name}, ${type}, ${content}, 'completed', 0, 0)
+              RETURNING *
+            `;
+            if (result && result.length > 0) {
+              return NextResponse.json({ 
+                success: true, 
+                campaign: result[0],
+                message: 'Campaign created successfully (via SQL fallback)!' 
+              });
+            }
+          } catch (sqlErr: any) {
+            console.error('[CAMPAIGNS CREATE] SQL Fallback failed:', sqlErr);
+          }
+        }
+      }
+      throw error;
+    }
 
     return NextResponse.json({ 
       success: true, 

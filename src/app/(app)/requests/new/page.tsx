@@ -26,7 +26,12 @@ function NewRequestContent() {
     if (tName) setName(tName);
 
     // Fetch business name for preview
-    fetch('/api/dashboard/summary')
+    const tok = localStorage.getItem('idToken');
+    fetch('/api/dashboard/summary', {
+      headers: {
+        'Authorization': `Bearer ${tok}`
+      }
+    })
       .then(res => res.json())
       .then(data => {
         if (data.business?.name) setBusinessName(data.business.name);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getSupabaseAdmin, getSql } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
 
 export const dynamic = 'force-dynamic';
@@ -38,6 +38,22 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (error) {
+      if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+        console.log('[CAMPAIGNS LIST] Schema error, falling back to direct SQL...');
+        const sql = getSql();
+        if (sql) {
+          try {
+            const results = await sql`
+              SELECT * FROM campaigns 
+              WHERE business_id = ${biz.id}
+              ORDER BY created_at DESC
+            `;
+            return NextResponse.json({ campaigns: results || [] });
+          } catch (sqlErr: any) {
+            console.error('[CAMPAIGNS LIST] SQL Fallback failed:', sqlErr);
+          }
+        }
+      }
       if (error.message.includes('does not exist')) {
         return NextResponse.json({ campaigns: [] });
       }
