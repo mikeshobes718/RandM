@@ -26,30 +26,6 @@ export async function POST(req: NextRequest) {
 
     const supa = getSupabaseAdmin();
 
-    // --- ONE-TIME SETUP LOGIC ---
-    try {
-      await supa.rpc('execute_sql', { sql: `
-        CREATE TABLE IF NOT EXISTS contacts (
-          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-          business_id uuid NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-          name text,
-          email text,
-          phone text,
-          source text DEFAULT 'manual',
-          metadata jsonb DEFAULT '{}'::jsonb,
-          created_at timestamptz DEFAULT now(),
-          updated_at timestamptz DEFAULT now()
-        );
-        CREATE INDEX IF NOT EXISTS ix_contacts_business_id ON contacts (business_id);
-        CREATE INDEX IF NOT EXISTS ix_contacts_email ON contacts (email);
-        CREATE INDEX IF NOT EXISTS ix_contacts_phone ON contacts (phone);
-      ` });
-    } catch (e) {
-      // Fallback if rpc is not available
-      console.warn('[CONTACTS IMPORT] RPC execute_sql not available, relying on pre-existing table');
-    }
-    // ----------------------------
-
     // Get the user's business
     const { data: biz } = await supa
       .from('businesses')
@@ -80,32 +56,8 @@ export async function POST(req: NextRequest) {
       .select();
 
     if (error) {
-      // If table doesn't exist, create it and retry
-      if (error.message.includes('does not exist') || error.message.includes('schema cache')) {
-        console.log('[CONTACTS IMPORT] Table might not exist, attempting to handle...');
-        
-        // For now, store in review_contact_captures as a fallback
-        const capturesData = contactsToInsert.map(c => ({
-          business_id: biz.id,
-          contact_info: JSON.stringify({ name: c.name, email: c.email, phone: c.phone }),
-          sentiment: 'imported',
-        }));
-
-        const { error: captureError } = await supa
-          .from('review_contact_captures')
-          .insert(capturesData);
-
-        if (captureError) {
-          console.error('[CONTACTS IMPORT] Fallback also failed:', captureError);
-          throw new Error('Failed to import contacts. Please contact support.');
-        }
-
-        return NextResponse.json({ 
-          imported: contactsToInsert.length, 
-          message: 'Contacts imported successfully (stored in captures)' 
-        });
-      }
-      throw error;
+      console.error('[CONTACTS IMPORT] Insert failed:', error);
+      throw new Error('Failed to import contacts. Please ensure the contacts table is set up.');
     }
 
     return NextResponse.json({ 

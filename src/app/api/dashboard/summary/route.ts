@@ -41,30 +41,6 @@ export async function GET(req: NextRequest) {
 
     const supa = getSupabaseAdmin();
 
-    // --- ONE-TIME SETUP LOGIC ---
-    try {
-      await supa.rpc('execute_sql', { sql: `
-        CREATE TABLE IF NOT EXISTS contacts (
-          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-          business_id uuid NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-          name text, email text, phone text, source text DEFAULT 'manual', metadata jsonb DEFAULT '{}'::jsonb,
-          created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now()
-        );
-        CREATE TABLE IF NOT EXISTS campaigns (
-          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-          business_id uuid NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-          name text NOT NULL, type text NOT NULL, body text NOT NULL, status text DEFAULT 'draft',
-          sent_count integer DEFAULT 0, click_count integer DEFAULT 0, metadata jsonb DEFAULT '{}'::jsonb,
-          created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now()
-        );
-        CREATE INDEX IF NOT EXISTS ix_contacts_business_id ON contacts (business_id);
-        CREATE INDEX IF NOT EXISTS ix_campaigns_business_id ON campaigns (business_id);
-      ` });
-    } catch (e) {
-      console.warn('[DASHBOARD SUMMARY] RPC execute_sql not available');
-    }
-    // ----------------------------
-
     // Fetch plan status regardless of business existence
     let isPro = false;
     let planStatus = 'none';
@@ -393,13 +369,43 @@ export async function GET(req: NextRequest) {
       activityFeed = mergedFeed.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 10);
     } catch (e) {}
 
-    // Plan Usage
+    // Plan Usage & Limits
+    let requestsLimit = 100;
+    let planName = 'Small Business';
+    
+    if (planStatus === 'starter') {
+      requestsLimit = 3;
+      planName = 'Starter';
+    } else if (planStatus === 'active') {
+      const planId = (subscriptionData?.plan_id || '').toLowerCase();
+      if (planId.includes('mid') || planId.includes('growth')) {
+        requestsLimit = 100;
+        planName = 'Small Business';
+      } else {
+        requestsLimit = 999999; // Unlimited
+        planName = 'Unlimited';
+      }
+    } else {
+      planName = 'Free';
+    }
+
     const startOfMonth = startOfCurrentMonthUTC();
     const { count: requestsUsed } = await supa
       .from('review_requests')
       .select('*', { count: 'exact', head: true })
       .eq('business_id', biz.id)
       .gte('created_at', startOfMonth);
+
+    let contactsCount = 0;
+    try {
+      const { count: cCount } = await supa
+        .from('contacts')
+        .select('*', { count: 'exact', head: true })
+        .eq('business_id', biz.id);
+      contactsCount = cCount || 0;
+    } catch (e) {
+      console.warn('[DASHBOARD API] Contacts table might not exist');
+    }
 
     // Fetch real campaigns
     let recentCampaigns: any[] = [];

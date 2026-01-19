@@ -26,29 +26,6 @@ export async function POST(req: NextRequest) {
 
     const supa = getSupabaseAdmin();
 
-    // --- ONE-TIME SETUP LOGIC ---
-    try {
-      await supa.rpc('execute_sql', { sql: `
-        CREATE TABLE IF NOT EXISTS campaigns (
-          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-          business_id uuid NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-          name text NOT NULL,
-          type text NOT NULL, -- 'SMS' or 'Email'
-          body text NOT NULL,
-          status text DEFAULT 'draft', -- 'draft', 'sending', 'completed', 'failed'
-          sent_count integer DEFAULT 0,
-          click_count integer DEFAULT 0,
-          metadata jsonb DEFAULT '{}'::jsonb,
-          created_at timestamptz DEFAULT now(),
-          updated_at timestamptz DEFAULT now()
-        );
-        CREATE INDEX IF NOT EXISTS ix_campaigns_business_id ON campaigns (business_id);
-      ` });
-    } catch (e) {
-      console.warn('[CAMPAIGNS CREATE] RPC execute_sql not available');
-    }
-    // ----------------------------
-
     // Get the user's business
     const { data: biz } = await supa
       .from('businesses')
