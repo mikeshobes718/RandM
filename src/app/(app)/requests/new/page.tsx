@@ -65,7 +65,7 @@ function NewRequestContent() {
         const data = await res.json();
         // Check for session expiry specifically
         if (data.error?.toLowerCase().includes('expired')) {
-          setError('✕ Your session has expired. Please refresh the page to continue.');
+          setError('✕ Your session has expired. Click here to refresh the page and try again.');
           return;
         }
         throw new Error(data.error || 'Failed to start campaign');
@@ -84,7 +84,7 @@ function NewRequestContent() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-16 sm:py-24 space-y-12 animate-fade-in">
+    <div className="max-w-6xl mx-auto px-6 pt-24 pb-12 sm:pt-32 space-y-12 animate-fade-in">
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">Send New Requests</h1>
         <p className="text-slate-500 font-medium mt-1">Send SMS or Email invitations to your customers.</p>
@@ -93,7 +93,10 @@ function NewRequestContent() {
       {(error || success) && (
         <div className="space-y-3">
           {error && (
-            <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold animate-in slide-in-from-top-2">
+            <div 
+              onClick={() => error.includes('refresh') && window.location.reload()}
+              className={`p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold animate-in slide-in-from-top-2 ${error.includes('refresh') ? 'cursor-pointer hover:bg-red-100 transition-colors' : ''}`}
+            >
               ✕ {error}
             </div>
           )}

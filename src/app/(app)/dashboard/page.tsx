@@ -176,7 +176,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
+    <div className="max-w-6xl mx-auto px-6 pt-24 pb-12 sm:pt-32">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="flex items-center gap-5">
@@ -256,7 +256,7 @@ function DashboardContent() {
           
           <div className="space-y-8">
             <div className="relative group/copy">
-              <label className="text-[10px] font-black text-muted uppercase tracking-widest block mb-2">Your Smart Landing Link</label>
+              <label className="text-[10px] font-black text-muted uppercase tracking-widest block mb-2">Main QR Tracking Link</label>
               <div className="flex gap-2 p-1 bg-slate-50 border border-[#e2e8f0] rounded-2xl">
                 <div className="flex-1 h-11 bg-white rounded-xl px-4 flex items-center text-sm font-mono truncate text-slate-600 border border-[#f1f5f9] shadow-sm">
                   {landingUrl}
@@ -278,7 +278,10 @@ function DashboardContent() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start pt-8 border-t border-[#e2e8f0]/50">
-              <div className="md:col-span-4 flex flex-col items-center gap-4">
+              <div className="md:col-span-4 flex flex-col items-center gap-4 relative">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 px-3 py-1 bg-slate-900 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg">
+                  Main QR
+                </div>
                 <div className="bg-white p-4 border-4 border-slate-50 rounded-[32px] shadow-2xl shadow-slate-200/50 group-hover:scale-[1.02] transition-transform">
                   <img
                     src={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=8`}
@@ -353,10 +356,10 @@ function DashboardContent() {
                 <div>
                   <h3 className="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
                     <span className="w-6 h-6 rounded-lg bg-brand/10 text-brand flex items-center justify-center text-xs">✨</span>
-                    Smart Rep Engine
+                    Main QR (Smart Rep Engine)
                   </h3>
                   <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                    This QR code identifies happy customers automatically. If they pick 5 stars, they go to Google. If they pick less, they send you a private lead.
+                    This is your primary review link. It identifies happy customers automatically. If they pick 5 stars, they go to Google. If they pick less, they send you a private lead.
                   </p>
                 </div>
                 
