@@ -250,8 +250,9 @@ Troubleshooting
 - User must have `role = 'admin'` or `role = 'sales_rep'` in the `users` table
 - Or email must be in `NEXT_PUBLIC_ADMIN_EMAILS` env var
 
-More docs
----------
+## Technical Guides
 
-See `docs/DEPLOYMENT.md` for full architecture, hosting, environment, and runbooks (Vercel + EB).
-Last updated: Sat Jan 17 2026
+- [AI Agent & Engineer Technical Guide](./AI_ENGINEER_GUIDE.md) - **Read this first** if you are an AI assistant or developer working on the codebase.
+- [Deployment Guide](./docs/DEPLOYMENT.md) - Detailed architecture and hosting setup.
+
+Last updated: Mon Jan 19 2026
