@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import { app } from '@/lib/firebaseClient';
+import { AsYouType, CountryCode } from 'libphonenumber-js';
 
 type Contact = {
   id: string;
@@ -541,7 +542,12 @@ export default function ContactsPage() {
                 <div className="flex gap-2">
                   <select 
                     value={manualContact.country}
-                    onChange={(e) => setManualContact({ ...manualContact, country: e.target.value })}
+                    onChange={(e) => {
+                      const newCountry = e.target.value;
+                      const formatter = new AsYouType(newCountry as CountryCode);
+                      const formatted = formatter.input(manualContact.phone);
+                      setManualContact({ ...manualContact, country: newCountry, phone: formatted });
+                    }}
                     className="w-24 h-12 bg-slate-50 border border-slate-100 rounded-2xl px-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
                   >
                     <option value="US">🇺🇸 +1</option>
@@ -555,7 +561,11 @@ export default function ContactsPage() {
                     type="tel"
                     placeholder="(555) 000-0000"
                     value={manualContact.phone}
-                    onChange={(e) => setManualContact({ ...manualContact, phone: e.target.value })}
+                    onChange={(e) => {
+                      const formatter = new AsYouType(manualContact.country as CountryCode);
+                      const formatted = formatter.input(e.target.value);
+                      setManualContact({ ...manualContact, phone: formatted });
+                    }}
                     className="flex-1 h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
                   />
                 </div>
