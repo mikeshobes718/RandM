@@ -46,8 +46,14 @@ export function isReviewEventName(input: unknown): input is ReviewEventName {
 
 export async function ensureFeedbackTables(): Promise<void> {
   const config = resolveDbConfig();
-  if (!config) return;
+  if (!config) {
+    console.warn('[ENSURE TABLES] Missing DB config - skipping creation');
+    return;
+  }
   if (ensurePromise) return ensurePromise;
+  
+  console.log('[ENSURE TABLES] Starting table check/creation...');
+  
   ensurePromise = (async () => {
     const pool = new Pool({
       host: config.host,
@@ -57,8 +63,12 @@ export async function ensureFeedbackTables(): Promise<void> {
       database: config.database,
       ssl: { rejectUnauthorized: false },
     });
-    const client = await pool.connect();
+    
+    let client;
     try {
+      client = await pool.connect();
+      console.log('[ENSURE TABLES] Connected to database');
+      
       await client.query(`
         create table if not exists feedback (
           id uuid primary key default gen_random_uuid(),
@@ -77,6 +87,7 @@ export async function ensureFeedbackTables(): Promise<void> {
         alter table feedback add column if not exists archived boolean default false;
         create index if not exists ix_feedback_business_created on feedback (business_id, created_at desc);
       `);
+      
       await client.query(`
         create table if not exists review_events (
           id uuid primary key default gen_random_uuid(),
@@ -89,6 +100,7 @@ export async function ensureFeedbackTables(): Promise<void> {
         create index if not exists ix_review_events_business_created on review_events (business_id, created_at desc);
         create index if not exists ix_review_events_event_created on review_events (event, created_at desc);
       `);
+      
       await client.query(`
         create table if not exists review_sources (
           id uuid primary key default gen_random_uuid(),
@@ -99,14 +111,20 @@ export async function ensureFeedbackTables(): Promise<void> {
           unique(business_id, slug)
         );
       `);
+      
+      console.log('[ENSURE TABLES] Tables ensured successfully');
+      
       // Force PostgREST to reload schema cache
       try {
         await client.query('NOTIFY pgrst, \'reload schema\'');
       } catch (e) {
-        console.warn('Failed to notify PostgREST to reload schema:', e);
+        console.warn('[ENSURE TABLES] Failed to notify PostgREST:', e);
       }
+    } catch (err: any) {
+      console.error('[ENSURE TABLES] Error in table creation:', err.message);
+      throw err;
     } finally {
-      client.release();
+      if (client) client.release();
       await pool.end();
     }
   })();

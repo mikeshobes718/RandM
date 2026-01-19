@@ -34,12 +34,14 @@ export async function GET(req: NextRequest) {
   }
 
   // Fetch sources with scan counts
-  let results: any[] = [];
+  let customSources: any[] = [];
+  let mainQrScans = 0;
+
   try {
     const sql = getSql();
     if (sql) {
       // 1. Fetch custom sources
-      const sources = await sql`
+      customSources = await sql`
         SELECT 
           s.*,
           (SELECT count(*)::int FROM review_events e WHERE e.business_id = s.business_id AND e.metadata->>'source' = s.slug) as scans
@@ -49,41 +51,52 @@ export async function GET(req: NextRequest) {
       `;
       
       // 2. Calculate scans for the "Main QR" (defaults like 'landing' or 'main-qr')
-      const mainScans = await sql`
-        SELECT count(*)::int 
+      const mainScansResult = await sql`
+        SELECT count(*)::int as count
         FROM review_events 
         WHERE business_id = ${businessId} 
         AND (metadata->>'source' = 'landing' OR metadata->>'source' = 'main-qr' OR metadata->>'source' IS NULL)
       `;
-
-      // 3. Add the virtual "Main QR" to the top of the list
-      const mainSource = {
-        id: 'main-qr-id',
-        business_id: businessId,
-        name: 'Main QR (Toolkit)',
-        slug: 'main-qr',
-        scans: mainScans[0].count,
-        created_at: new Date(0).toISOString() // Always first
-      };
-
-      results = [mainSource, ...sources];
+      mainQrScans = mainScansResult[0]?.count || 0;
     } else {
-      // Basic fallback
+      // Basic fallback using Supabase client
       const { data, error: supaError } = await supa
         .from('review_sources')
         .select('*')
         .eq('business_id', businessId)
         .order('created_at', { ascending: false });
-      if (supaError) throw supaError;
-      results = data || [];
+      
+      if (!supaError && data) {
+        customSources = data;
+      }
+
+      // Fetch main scans count via Supabase
+      const { count: mainScansCount } = await supa
+        .from('review_events')
+        .select('*', { count: 'exact', head: true })
+        .eq('business_id', businessId)
+        .or('metadata->>source.eq.landing,metadata->>source.eq.main-qr,metadata->>source.is.null');
+      
+      mainQrScans = mainScansCount || 0;
     }
   } catch (err: any) {
     console.error('[REVIEW SOURCES LIST] Error:', err);
-    if (err.message?.includes('does not exist')) return NextResponse.json({ sources: [] });
-    return new NextResponse(err.message, { status: 500 });
+    // If table doesn't exist, we still want to show the Main QR
   }
 
-  return NextResponse.json({ sources: results || [] });
+  // Always include the virtual "Main QR" at the top
+  const mainSource = {
+    id: 'main-qr-id',
+    business_id: businessId,
+    name: 'Main QR (Toolkit)',
+    slug: 'main-qr',
+    scans: mainQrScans,
+    created_at: new Date(0).toISOString() // Always first
+  };
+
+  const results = [mainSource, ...customSources];
+
+  return NextResponse.json({ sources: results });
 }
 
 

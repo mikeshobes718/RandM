@@ -20,7 +20,7 @@ interface Props {
   businessId: string;
   landingUrl: string;
   rates?: { delivered: number; click: number; optOut: number };
-  recentCampaigns?: (Campaign & { id?: string });
+  recentCampaigns?: (Campaign & { id?: string })[];
 }
 
 export default function MultipleQrManager({ businessId, landingUrl, rates, recentCampaigns = [] }: Props) {
@@ -32,42 +32,48 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (businessId) {
-      fetchSources();
-    }
-  }, [businessId]);
-
-  const fetchSources = async () => {
-    try {
-      // Use onAuthStateChanged to ensure user is available
-      const unsubscribe = clientAuth.onAuthStateChanged(async (user) => {
+    const fetchSources = async () => {
+      if (!businessId) return;
+      setFetching(true);
+      
+      try {
+        // Wait for user to be available
+        let user = clientAuth.currentUser;
         if (!user) {
+          // Poll for a second if not immediately available
+          for (let i = 0; i < 10; i++) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            user = clientAuth.currentUser;
+            if (user) break;
+          }
+        }
+
+        if (!user) {
+          console.warn('[MultipleQrManager] No user found after polling');
           setFetching(false);
           return;
         }
-        
-        try {
-          const tok = await user.getIdToken(true);
-          const res = await fetch(`/api/review-sources/list?businessId=${businessId}`, {
-            headers: { Authorization: `Bearer ${tok}` }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setSources(data.sources || []);
-          }
-        } catch (e) {
-          console.error('Error fetching sources inside auth listener:', e);
-        } finally {
-          setFetching(false);
-        }
-      });
 
-      return () => unsubscribe();
-    } catch (e) {
-      console.error('Error setting up auth listener for sources:', e);
-      setFetching(false);
-    }
-  };
+        const tok = await user.getIdToken(true);
+        const res = await fetch(`/api/review-sources/list?businessId=${businessId}&t=${Date.now()}`, {
+          headers: { Authorization: `Bearer ${tok}` }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setSources(data.sources || []);
+        } else {
+          console.error('[MultipleQrManager] List API failed:', res.status);
+        }
+      } catch (e) {
+        console.error('[MultipleQrManager] Fetch error:', e);
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchSources();
+  }, [businessId]);
 
   const createSource = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,9 +93,16 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
         body: JSON.stringify({ businessId, name: newName.trim() })
       });
       if (res.ok) {
-        const data = await res.json();
-        setSources([data.source, ...sources]);
         setNewName('');
+        // Re-fetch everything to ensure sync
+        const tok2 = await user.getIdToken(true);
+        const res2 = await fetch(`/api/review-sources/list?businessId=${businessId}&t=${Date.now()}`, {
+          headers: { Authorization: `Bearer ${tok2}` }
+        });
+        if (res2.ok) {
+          const data2 = await res2.json();
+          setSources(data2.sources || []);
+        }
       } else {
         const errText = await res.text();
         setError(errText || 'Failed to create source');
