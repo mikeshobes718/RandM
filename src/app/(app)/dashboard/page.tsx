@@ -190,7 +190,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 pt-24 pb-12 sm:pt-32" data-deployment-id="jan19-v2">
+    <div className="max-w-6xl mx-auto px-6 pt-24 pb-12 sm:pt-32" data-deployment="jan19-final-v4">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div className="flex items-center gap-5">
@@ -209,7 +209,10 @@ function DashboardContent() {
           )}
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-3xl font-black tracking-tight">Dashboard</h1>
+              <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
+                Dashboard
+                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-md border border-slate-100">Live v2.1</span>
+              </h1>
               {business.business_type && (
                 <span className="bg-brand/5 text-brand text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-brand/10">
                   {business.business_type}

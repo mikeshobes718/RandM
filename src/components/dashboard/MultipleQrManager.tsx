@@ -369,7 +369,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
                         {(c as any).id && (
                           <button 
                             onClick={() => deleteCampaign((c as any).id)}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all sm:opacity-0 group-hover/campaign:opacity-100"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all ml-2"
                             title="Delete campaign record"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
