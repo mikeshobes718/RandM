@@ -50,6 +50,13 @@ const ServerEnvSchema = z.object({
   FIREBASE_CLIENT_X509_CERT_URL: z.string().url().optional(),
   FIREBASE_UNIVERSE_DOMAIN: z.string().min(1).optional(),
 
+  // Twilio SMS configuration
+  TWILIO_ACCOUNT_SID: z.string().min(1).optional(),
+  TWILIO_AUTH_TOKEN: z.string().min(1).optional(),
+  TWILIO_API_KEY_SID: z.string().min(1).optional(),
+  TWILIO_API_KEY_SECRET: z.string().min(1).optional(),
+  TWILIO_PHONE_NUMBER: z.string().min(1).optional(),
+
   // Admin portal configuration
   ADMIN_TOKEN: z.string().min(1).optional(),
 });

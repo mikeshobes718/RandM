@@ -3,6 +3,8 @@ import { getSupabaseAdmin, getSql } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { sendEmail } from '@/lib/emailService';
 import { brandedHtml } from '@/lib/emailTemplates';
+import { getEnv } from '@/lib/env';
+import twilio from 'twilio';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +29,7 @@ export async function POST(req: NextRequest) {
     }
 
     const supa = getSupabaseAdmin();
+    const env = getEnv();
 
     // Get the user's business
     const { data: biz } = await supa
@@ -102,20 +105,44 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'No contacts with phone numbers found.' }, { status: 400 });
       }
 
-      // Check for Twilio or similar (using placeholders for now as requested to be "real")
-      const twilioSid = process.env.TWILIO_ACCOUNT_SID;
-      const twilioAuth = process.env.TWILIO_AUTH_TOKEN;
-      const twilioFrom = process.env.TWILIO_FROM_NUMBER;
+      // Check for Twilio configuration
+      const sid = env.TWILIO_ACCOUNT_SID;
+      const token = env.TWILIO_AUTH_TOKEN;
+      const apiKeySid = env.TWILIO_API_KEY_SID;
+      const apiKeySecret = env.TWILIO_API_KEY_SECRET;
+      const fromNumber = env.TWILIO_PHONE_NUMBER;
 
-      if (!twilioSid || !twilioAuth) {
+      if (!sid || (!token && !(apiKeySid && apiKeySecret))) {
         return NextResponse.json({ 
-          error: 'SMS provider (Twilio) not configured. Please add TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN to environment variables to enable real SMS blasts.' 
+          error: 'SMS provider (Twilio) not configured. Please add TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN to environment variables.' 
         }, { status: 400 });
       }
 
-      // Implementation would go here using 'twilio' package
-      // For now, return error so the user knows they need the keys
-      return NextResponse.json({ error: 'SMS integration pending configuration. Please provide Twilio credentials.' }, { status: 400 });
+      if (!fromNumber) {
+        return NextResponse.json({ error: 'TWILIO_PHONE_NUMBER is missing in environment variables.' }, { status: 400 });
+      }
+
+      const twilioClient = twilio(apiKeySid || sid, apiKeySecret || token, { accountSid: sid });
+
+      for (const contact of smsContacts) {
+        try {
+          // Replace variables
+          let personalizedBody = content
+            .replace(/\{\{name\}\}/g, contact.name || 'there')
+            .replace(/\{\{business_name\}\}/g, biz.name || 'our business')
+            .replace(/\{\{link\}\}/g, biz.review_link || `https://reviewsandmarketing.com/r/${biz.id}`);
+
+          await twilioClient.messages.create({
+            body: personalizedBody,
+            from: fromNumber,
+            to: contact.phone!
+          });
+          sentCount++;
+        } catch (e: any) {
+          console.error(`[CAMPAIGNS CREATE] SMS failed for ${contact.phone}:`, e.message);
+          failedCount++;
+        }
+      }
     }
 
     // Create the campaign record
@@ -136,7 +163,6 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error('[CAMPAIGNS CREATE] DB Error:', error);
-      // Even if DB fails, sending happened
     }
 
     return NextResponse.json({ 
@@ -144,6 +170,11 @@ export async function POST(req: NextRequest) {
       campaign,
       message: `Campaign processed: ${sentCount} sent, ${failedCount} failed.` 
     });
+  } catch (error: any) {
+    console.error('[CAMPAIGNS CREATE API] Error:', error);
+    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+  }
+}
   } catch (error: any) {
     console.error('[CAMPAIGNS CREATE API] Error:', error);
     return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
