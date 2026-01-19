@@ -378,10 +378,10 @@ export default function ContactsPage() {
                 Refresh List
               </button>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-50">
+            <div className="overflow-x-auto overflow-y-auto max-h-[600px] custom-scrollbar">
+              <table className="w-full text-left border-collapse min-w-[800px]">
+                <thead className="sticky top-0 z-10 bg-slate-50 shadow-sm">
+                  <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                     <th className="px-6 py-6 w-10">
                       <input 
                         type="checkbox" 
@@ -396,7 +396,7 @@ export default function ContactsPage() {
                     <th className="px-10 py-6 text-right">Date Added</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-slate-50 bg-white">
                   {filteredContacts.map((contact) => (
                     <tr key={contact.id} className="hover:bg-slate-50/50 transition-colors group">
                       <td className="px-6 py-6">
