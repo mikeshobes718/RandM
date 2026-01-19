@@ -7,12 +7,21 @@ type ReviewSource = {
   slug: string;
 };
 
+type Campaign = {
+  name: string;
+  sent: number;
+  clicks: number;
+  date: string;
+};
+
 interface Props {
   businessId: string;
   landingUrl: string;
+  rates?: { delivered: number; click: number; optOut: number };
+  recentCampaigns?: Campaign[];
 }
 
-export default function MultipleQrManager({ businessId, landingUrl }: Props) {
+export default function MultipleQrManager({ businessId, landingUrl, rates, recentCampaigns = [] }: Props) {
   const [activeTab, setActiveTab] = useState<'qr' | 'campaigns'>('qr');
   const [sources, setSources] = useState<ReviewSource[]>([]);
   const [newName, setNewName] = useState('');
@@ -242,15 +251,33 @@ export default function MultipleQrManager({ businessId, landingUrl }: Props) {
               <h3 className="text-xl font-black mb-4">Outbound Campaigns</h3>
               
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-                  <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Total Outreach</p>
-                  <p className="text-2xl font-black">1,420</p>
-                  <p className="text-[10px] text-brand font-bold mt-1">+12% this week</p>
+                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl relative group/tip">
+                  <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1 flex items-center gap-1">
+                    Total Outreach
+                    <span className="text-white/20">ⓘ</span>
+                  </p>
+                  <p className="text-2xl font-black">
+                    {recentCampaigns.reduce((acc, c) => acc + c.sent, 0).toLocaleString()}
+                  </p>
+                  <p className="text-[10px] text-brand font-bold mt-1">Direct Outreach</p>
+                  <div className="absolute inset-x-0 -bottom-10 opacity-0 group-hover/tip:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+                    <div className="bg-slate-800 text-white text-[8px] py-1 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+                      Total SMS and Email requests sent across all campaigns.
+                    </div>
+                  </div>
                 </div>
-                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
-                  <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Avg. Click Rate</p>
-                  <p className="text-2xl font-black">18.4%</p>
-                  <p className="text-[10px] text-emerald-400 font-bold mt-1">Above industry avg</p>
+                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl relative group/tip">
+                  <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1 flex items-center gap-1">
+                    Avg. Click Rate
+                    <span className="text-white/20">ⓘ</span>
+                  </p>
+                  <p className="text-2xl font-black">{rates?.click || 0}%</p>
+                  <p className="text-[10px] text-emerald-400 font-bold mt-1">Live Factual Data</p>
+                  <div className="absolute inset-x-0 -bottom-10 opacity-0 group-hover/tip:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+                    <div className="bg-slate-800 text-white text-[8px] py-1 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+                      The percentage of recipients who clicked your review link.
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -258,26 +285,32 @@ export default function MultipleQrManager({ businessId, landingUrl }: Props) {
 
           <div className="space-y-3">
              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block px-1">Top Performing Sources</label>
-             {[
-               { name: 'SMS Follow-up', sent: 850, clicks: 210, rate: '24.7%', color: 'bg-brand' },
-               { name: 'Monthly Newsletter', sent: 570, clicks: 52, rate: '9.1%', color: 'bg-slate-400' }
-             ].map((c, i) => (
-               <div key={i} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                 <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl ${c.color} flex items-center justify-center text-white text-lg shadow-inner`}>
-                      {c.name.includes('SMS') ? '📱' : '✉️'}
-                    </div>
-                    <div>
-                      <p className="text-xs font-black text-slate-900">{c.name}</p>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase">{c.sent} Sent</p>
-                    </div>
-                 </div>
-                 <div className="text-right">
-                    <p className="text-sm font-black text-slate-900">{c.rate}</p>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Click Rate</p>
-                 </div>
+             {recentCampaigns.length === 0 ? (
+               <div className="text-center py-8 bg-white/30 border-2 border-dashed border-slate-200 rounded-3xl">
+                 <p className="text-xs text-slate-400 font-medium">No outbound campaigns sent yet.</p>
                </div>
-             ))}
+             ) : (
+               recentCampaigns.map((c, i) => {
+                 const clickRate = c.sent > 0 ? Math.round((c.clicks / c.sent) * 100) : 0;
+                 return (
+                   <div key={i} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                     <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white text-lg shadow-inner`}>
+                          {c.name.toLowerCase().includes('sms') ? '📱' : '✉️'}
+                        </div>
+                        <div>
+                          <p className="text-xs font-black text-slate-900">{c.name}</p>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase">{c.sent} Sent</p>
+                        </div>
+                     </div>
+                     <div className="text-right">
+                        <p className="text-sm font-black text-slate-900">{clickRate}%</p>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Click Rate</p>
+                     </div>
+                   </div>
+                 );
+               })
+             )}
           </div>
         </div>
       )}

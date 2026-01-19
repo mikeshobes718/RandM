@@ -525,7 +525,12 @@ function DashboardContent() {
               </div>
             )}
             <div className={!isPro ? "opacity-30 grayscale pointer-events-none blur-[1px]" : ""}>
-              <MultipleQrManager businessId={business.id!} landingUrl={landingUrl || ''} />
+              <MultipleQrManager 
+                businessId={business.id!} 
+                landingUrl={landingUrl || ''} 
+                rates={rates}
+                recentCampaigns={recentCampaigns}
+              />
             </div>
           </div>
         </div>
