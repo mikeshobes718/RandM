@@ -12,6 +12,8 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import { useSearchParams } from 'next/navigation';
 import { formatPhone } from '@/lib/phone';
+import { clientAuth } from '@/lib/firebaseClient';
+import { onAuthStateChanged } from "firebase/auth";
 
 type Business = {
   id: string | null;
@@ -87,11 +89,22 @@ function DashboardContent() {
   const isFromEdit = searchParams?.get('from') === 'edit';
 
   useEffect(() => {
-    const loadDashboardData = async () => {
+    const unsubscribe = onAuthStateChanged(clientAuth, (user) => {
+      loadDashboardData(user);
+    });
+
+    const loadDashboardData = async (user: any) => {
       setLoading(true);
       try {
-        const tok = localStorage.getItem('idToken');
-        const headers: Record<string, string> = tok ? { Authorization: `Bearer ${tok}` } : {};
+        const headers: Record<string, string> = {};
+        
+        if (user) {
+          const tok = await user.getIdToken();
+          headers['Authorization'] = `Bearer ${tok}`;
+        } else {
+          const tok = localStorage.getItem('idToken');
+          if (tok) headers['Authorization'] = `Bearer ${tok}`;
+        }
         
         const res = await fetch(`/api/dashboard/summary?t=${Date.now()}`, { cache: 'no-store', credentials: 'include', headers });
         if (!res.ok) throw new Error('Failed to load dashboard data');
@@ -129,7 +142,7 @@ function DashboardContent() {
       }
     };
 
-    loadDashboardData();
+    return () => unsubscribe();
   }, []);
 
   const landingUrl = useMemo(() => {

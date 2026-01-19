@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
+import { clientAuth } from '@/lib/firebaseClient';
 
 type ReviewSource = {
   id: string;
@@ -36,7 +37,9 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
 
   const fetchSources = async () => {
     try {
-      const tok = localStorage.getItem('idToken');
+      const user = clientAuth.currentUser;
+      if (!user) return;
+      const tok = await user.getIdToken(true);
       const res = await fetch(`/api/review-sources/list?businessId=${businessId}`, {
         headers: { Authorization: `Bearer ${tok}` }
       });
@@ -57,7 +60,9 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
     setLoading(true);
     setError(null);
     try {
-      const tok = localStorage.getItem('idToken');
+      const user = clientAuth.currentUser;
+      if (!user) return;
+      const tok = await user.getIdToken(true);
       const res = await fetch('/api/review-sources/create', {
         method: 'POST',
         headers: { 
@@ -84,7 +89,9 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
   const deleteSource = async (id: string) => {
     if (!confirm('Delete this QR source?')) return;
     try {
-      const tok = localStorage.getItem('idToken');
+      const user = clientAuth.currentUser;
+      if (!user) return;
+      const tok = await user.getIdToken(true);
       const res = await fetch('/api/review-sources/delete', {
         method: 'POST',
         headers: { 

@@ -3,6 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { clientAuth } from "@/lib/firebaseClient";
+import { onAuthStateChanged } from "firebase/auth";
 
 function NewRequestContent() {
   const searchParams = useSearchParams();
@@ -25,18 +27,26 @@ function NewRequestContent() {
     if (tBody) setBody(tBody);
     if (tName) setName(tName);
 
-    // Fetch business name for preview
-    const tok = localStorage.getItem('idToken');
-    fetch('/api/dashboard/summary', {
-      headers: {
-        'Authorization': `Bearer ${tok}`
+    const unsubscribe = onAuthStateChanged(clientAuth, async (user) => {
+      if (user) {
+        try {
+          const tok = await user.getIdToken();
+          const res = await fetch('/api/dashboard/summary', {
+            headers: { 'Authorization': `Bearer ${tok}` }
+          });
+          const data = await res.json();
+          if (data.business?.name) setBusinessName(data.business.name);
+        } catch (err) {
+          console.error('Error fetching business name:', err);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
       }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.business?.name) setBusinessName(data.business.name);
-      })
-      .finally(() => setLoading(false));
+    });
+
+    return () => unsubscribe();
   }, [searchParams]);
 
   const previewText = body
@@ -51,7 +61,13 @@ function NewRequestContent() {
     setSuccess(null);
 
     try {
-      const tok = localStorage.getItem('idToken');
+      const user = clientAuth.currentUser;
+      if (!user) {
+        setError('✕ You must be logged in to start a campaign.');
+        setSending(false);
+        return;
+      }
+      const tok = await user.getIdToken(true);
       const res = await fetch('/api/campaigns/create', {
         method: 'POST',
         headers: { 
@@ -84,10 +100,10 @@ function NewRequestContent() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 pt-24 pb-12 sm:pt-32 space-y-12 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Send New Requests</h1>
-        <p className="text-slate-500 font-medium mt-1">Send SMS or Email invitations to your customers.</p>
+    <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32 space-y-12 animate-fade-in">
+      <div className="space-y-4">
+        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Send New Requests</h1>
+        <p className="text-slate-500 font-medium">Send SMS or Email invitations to your customers.</p>
       </div>
 
       {(error || success) && (

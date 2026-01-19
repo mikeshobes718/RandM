@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import AdminGuard from '@/components/admin/AdminGuard';
+import { clientAuth } from '@/lib/firebaseClient';
 
 // Simple Tooltip component
 const Tooltip = ({ text, children }: { text: string; children: React.ReactNode }) => (
@@ -134,26 +135,46 @@ export default function SalesPortalPage() {
 
   useEffect(() => {
     // Fetch user for display and access check
-    fetch('/api/auth/me')
-      .then(res => res.json())
-      .then(user => {
-        setUserEmail(user?.email || "");
-        setUserRole(user?.role || "customer");
-        setUserRepId(user?.rep_id || null);
-        setUserUid(user?.uid || null);
-        
-        // Use static rep_id if available, fallback to localStorage for legacy or testing
-        const finalRepId = user?.rep_id || localStorage.getItem('salesRepId') || "";
-        setRepId(finalRepId);
-        
-        // Fetch stats using both repId and email for best matching
-        const repEmail = user?.email || '';
-        if (finalRepId || repEmail) {
-          fetch(`/api/sales/rep-stats?repId=${encodeURIComponent(finalRepId)}&repEmail=${encodeURIComponent(repEmail)}`)
-            .then(res => res.json())
-            .then(statsData => setStats(statsData));
+    const loadUser = async () => {
+      try {
+        const user = clientAuth.currentUser;
+        if (!user) {
+          // If SDK doesn't have it yet, try basic auth/me
+          const res = await fetch('/api/auth/me');
+          const userData = await res.json();
+          updateUserState(userData);
+          return;
         }
-      });
+        
+        const tok = await user.getIdToken(true);
+        const res = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${tok}` }
+        });
+        const userData = await res.json();
+        updateUserState(userData);
+      } catch (err) {
+        console.error('Error loading user:', err);
+      }
+    };
+
+    const updateUserState = (user: any) => {
+      setUserEmail(user?.email || "");
+      setUserRole(user?.role || "customer");
+      setUserRepId(user?.rep_id || null);
+      setUserUid(user?.uid || null);
+      
+      const finalRepId = user?.rep_id || localStorage.getItem('salesRepId') || "";
+      setRepId(finalRepId);
+      
+      const repEmail = user?.email || '';
+      if (finalRepId || repEmail) {
+        fetch(`/api/sales/rep-stats?repId=${encodeURIComponent(finalRepId)}&repEmail=${encodeURIComponent(repEmail)}`)
+          .then(res => res.json())
+          .then(statsData => setStats(statsData));
+      }
+    };
+
+    loadUser();
     
     // Fetch leaderboard
     fetch('/api/sales/leaderboard')
@@ -167,7 +188,16 @@ export default function SalesPortalPage() {
     setLoading(true);
     setSearched(true);
     try {
-      const res = await fetch(`/api/sales/lead-finder?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&country=${encodeURIComponent(country)}&type=${type}`);
+      const user = clientAuth.currentUser;
+      const headers: Record<string, string> = {};
+      if (user) {
+        const tok = await user.getIdToken(true);
+        headers['Authorization'] = `Bearer ${tok}`;
+      }
+      
+      const res = await fetch(`/api/sales/lead-finder?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&country=${encodeURIComponent(country)}&type=${type}`, {
+        headers
+      });
       const data = await res.json();
       setLeads(data.leads || []);
     } catch (err) {
@@ -182,9 +212,17 @@ export default function SalesPortalPage() {
     if (revealingId === lead.id) return; // Already processing
     setRevealingId(lead.id);
     try {
+      const user = clientAuth.currentUser;
+      if (!user) {
+        throw new Error('You must be logged in to reveal contact info');
+      }
+      const tok = await user.getIdToken(true);
       const res = await fetch('/api/sales/leads/reveal-contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${tok}`
+        },
         body: JSON.stringify({ 
           googlePlaceId: lead.id,
           leadData: {
@@ -243,9 +281,16 @@ export default function SalesPortalPage() {
     if (!selectedLead) return;
     setLoggingCall(true);
     try {
+      const user = clientAuth.currentUser;
+      if (!user) throw new Error('You must be logged in to log a call');
+      const tok = await user.getIdToken(true);
+      
       const res = await fetch('/api/sales/leads/log-call', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${tok}`
+        },
         body: JSON.stringify({
           leadId: selectedLead.dbId,
           googlePlaceId: selectedLead.id,
