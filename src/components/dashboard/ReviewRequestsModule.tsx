@@ -15,12 +15,20 @@ interface ReviewRequestsModuleProps {
   limit: number;
   recentCampaigns: Campaign[];
   isPro: boolean;
+  deliveredRate?: number;
+  clickRate?: number;
+  optOutRate?: number;
 }
 
-export default function ReviewRequestsModule({ used, limit, recentCampaigns, isPro }: ReviewRequestsModuleProps) {
-  const deliveredRate = 98.4;
-  const clickRate = used > 0 ? Math.round((recentCampaigns.reduce((a, b) => a + b.clicks, 0) / recentCampaigns.reduce((a, b) => a + b.sent, 0)) * 100) : 0;
-  const optOutRate = 0.8;
+export default function ReviewRequestsModule({ 
+  used, 
+  limit, 
+  recentCampaigns, 
+  isPro,
+  deliveredRate = 98.4,
+  clickRate = 0,
+  optOutRate = 0.8
+}: ReviewRequestsModuleProps) {
 
   return (
     <div className="premium-card p-8 rounded-[32px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden h-full">

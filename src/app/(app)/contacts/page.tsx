@@ -242,7 +242,7 @@ export default function ContactsPage() {
               >
                 {uploading ? 'Uploading...' : 'Upload CSV'}
               </button>
-              <Link href="/settings/integrations" className="h-14 px-10 border-2 border-slate-100 text-slate-400 text-[11px] font-black uppercase tracking-widest rounded-[20px] hover:bg-slate-50 hover:text-slate-600 transition-all flex items-center">
+              <Link href="/integrations/square" className="h-14 px-10 border-2 border-slate-100 text-slate-400 text-[11px] font-black uppercase tracking-widest rounded-[20px] hover:bg-slate-50 hover:text-slate-600 transition-all flex items-center">
                 Connect Square
               </Link>
             </div>
@@ -391,7 +391,7 @@ export default function ContactsPage() {
                   <span>💡</span> Pro Tip
                 </h4>
                 <p className="text-xs text-brand/80 font-medium leading-relaxed">
-                  Export your customers from <span className="font-bold underline">Square</span>, <span className="font-bold underline">Shopify</span>, or <span className="font-bold underline">Clover</span> as a CSV. Our system is designed to intelligently pick up those standard headers automatically.
+                  Export your customers from <Link href="/integrations/square" className="font-bold underline cursor-pointer">Square</Link>, <span className="font-bold underline">Shopify</span>, or <span className="font-bold underline">Clover</span> as a CSV. Our system is designed to intelligently pick up those standard headers automatically.
                 </p>
               </div>
             </div>

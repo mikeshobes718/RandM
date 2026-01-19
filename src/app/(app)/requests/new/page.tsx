@@ -11,6 +11,9 @@ function NewRequestContent() {
   const [name, setName] = useState("");
   const [businessName, setBusinessName] = useState("Your Business");
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Read from query params
@@ -35,12 +38,62 @@ function NewRequestContent() {
     .replace(/{{business_name}}/g, businessName)
     .replace(/{{link}}/g, 'reviewsandmarketing.com/r/xyz');
 
+  const handleStartCampaign = async () => {
+    if (!name || !body || sending) return;
+    
+    setSending(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const tok = localStorage.getItem('idToken');
+      const res = await fetch('/api/campaigns/create', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': \`Bearer \${tok}\`
+        },
+        body: JSON.stringify({ name, type, body })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to start campaign');
+      }
+
+      setSuccess('Campaign started successfully! You can track progress on the dashboard.');
+      // Redirect after a short delay
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 2000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <div className="space-y-10 animate-fade-in">
       <div>
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">Send New Requests</h1>
         <p className="text-slate-500 font-medium mt-1">Send SMS or Email invitations to your customers.</p>
       </div>
+
+      {(error || success) && (
+        <div className="space-y-3">
+          {error && (
+            <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold animate-in slide-in-from-top-2">
+              ✕ {error}
+            </div>
+          )}
+          {success && (
+            <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-600 text-sm font-bold animate-in slide-in-from-top-2">
+              ✓ {success}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-8">
         <div className="premium-card p-8 rounded-[40px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40">
@@ -108,12 +161,10 @@ function NewRequestContent() {
 
             <button 
               className="primary-button w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-brand/20 disabled:opacity-50 disabled:grayscale"
-              disabled={!body || !name}
-              onClick={() => {
-                alert('In production, this would trigger a campaign to your customers!');
-              }}
+              disabled={!body || !name || sending}
+              onClick={handleStartCampaign}
             >
-              Start Campaign Now
+              {sending ? "Starting..." : "Start Campaign Now"}
             </button>
           </div>
         </div>

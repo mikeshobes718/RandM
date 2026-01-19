@@ -82,6 +82,7 @@ function DashboardContent() {
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [planUsage, setPlanUsage] = useState({ used: 0, limit: 100, qrScans: 0, isUnlimited: false, planName: 'Small Business', contactsCount: 0 });
   const [recentCampaigns, setRecentCampaigns] = useState<Campaign[]>([]);
+  const [rates, setRates] = useState({ delivered: 0, click: 0, optOut: 0 });
 
   const isFromEdit = searchParams?.get('from') === 'edit';
 
@@ -106,6 +107,7 @@ function DashboardContent() {
         setSquareStatus(data.squareConnection ?? null);
         setPlanUsage(data.planUsage ?? { used: 0, limit: 100, qrScans: 0, isUnlimited: false });
         setRecentCampaigns(data.recentCampaigns ?? []);
+        setRates(data.rates ?? { delivered: 0, click: 0, optOut: 0 });
         
         // Onboarding redirect logic
         // 1. If no active plan, must pick one
@@ -386,6 +388,9 @@ function DashboardContent() {
           limit={planUsage.limit}
           recentCampaigns={recentCampaigns}
           isPro={isPro}
+          deliveredRate={rates.delivered}
+          clickRate={rates.click}
+          optOutRate={rates.optOut}
         />
       </div>
 
