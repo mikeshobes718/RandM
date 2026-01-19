@@ -104,12 +104,22 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
         setNewName('');
         console.log('[CREATE] Source created successfully:', data.source);
         
-        // Wait 500ms for DB to commit, then fetch the full list from the server
+        // Immediately add to local state for instant feedback
+        const newSource = { ...data.source, scans: 0 };
+        setSources(prev => {
+          const filtered = prev.filter(s => s.id !== newSource.id);
+          const updated = [newSource, ...filtered];
+          console.log('[CREATE] Updated local state. Total sources:', updated.length);
+          return updated;
+        });
+        
+        // Also fetch from server after a delay to ensure DB sync
         setTimeout(() => {
-          console.log('[CREATE] Re-fetching sources from server...');
+          console.log('[CREATE] Re-fetching from server for verification...');
           fetchSources();
-        }, 500);
+        }, 1000);
       } else {
+        console.error('[CREATE] Failed to create source:', data);
         setError(data.message || data.error || 'Failed to create tracking code. Please try again.');
       }
     } catch (e: any) {

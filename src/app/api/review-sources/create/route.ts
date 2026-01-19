@@ -80,11 +80,14 @@ export async function POST(req: NextRequest) {
 
   const slug = `${slugify(name)}-${Math.random().toString(36).substring(2, 6)}`;
 
+  console.log('[REVIEW SOURCES CREATE] Attempting to create source:', { businessId, name, slug });
+  
   const sql = getSql();
   let source: any = null;
 
   if (sql) {
     try {
+      console.log('[REVIEW SOURCES CREATE] Using direct SQL connection');
       const result = await sql`
         INSERT INTO review_sources (business_id, name, slug)
         VALUES (${businessId}, ${name}, ${slug})
@@ -92,14 +95,21 @@ export async function POST(req: NextRequest) {
       `;
       if (result && result.length > 0) {
         source = result[0];
+        console.log('[REVIEW SOURCES CREATE] SQL insert succeeded:', source.id);
+      } else {
+        console.warn('[REVIEW SOURCES CREATE] SQL returned empty result');
       }
     } catch (sqlErr: any) {
-      console.error('[REVIEW SOURCES] SQL Insert failed:', sqlErr);
+      console.error('[REVIEW SOURCES CREATE] SQL Insert failed:', sqlErr);
+      console.error('[REVIEW SOURCES CREATE] SQL Error details:', sqlErr.message);
       // Fallback to Supabase client if SQL fails
     }
+  } else {
+    console.log('[REVIEW SOURCES CREATE] No SQL client available, using Supabase');
   }
 
   if (!source) {
+    console.log('[REVIEW SOURCES CREATE] Attempting Supabase insert');
     const { data, error } = await supa
       .from('review_sources')
       .insert({
@@ -111,10 +121,12 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     if (error) {
-      console.error('[REVIEW SOURCES] Supabase Insert failed:', error);
+      console.error('[REVIEW SOURCES CREATE] Supabase Insert failed:', error);
+      console.error('[REVIEW SOURCES CREATE] Error details:', error.message, error.details, error.hint);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     source = data;
+    console.log('[REVIEW SOURCES CREATE] Supabase insert succeeded:', source?.id);
   }
 
   if (!source) {

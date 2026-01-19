@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
     const sql = getSql();
     if (sql) {
       // 1. Fetch custom sources
+      console.log('[REVIEW SOURCES LIST] Querying custom sources for business:', businessId);
       customSources = await sql`
         SELECT 
           s.*,
@@ -49,6 +50,7 @@ export async function GET(req: NextRequest) {
         WHERE s.business_id = ${businessId}
         ORDER BY s.created_at DESC
       `;
+      console.log('[REVIEW SOURCES LIST] Found', customSources.length, 'custom sources');
       
       // 2. Calculate scans for the "Main QR" (defaults like 'landing' or 'main-qr')
       const mainScansResult = await sql`
@@ -59,6 +61,7 @@ export async function GET(req: NextRequest) {
       `;
       mainQrScans = mainScansResult[0]?.count || 0;
     } else {
+      console.log('[REVIEW SOURCES LIST] Using Supabase client fallback');
       // Basic fallback using Supabase client
       const { data, error: supaError } = await supa
         .from('review_sources')
@@ -68,6 +71,9 @@ export async function GET(req: NextRequest) {
       
       if (!supaError && data) {
         customSources = data;
+        console.log('[REVIEW SOURCES LIST] Supabase returned', data.length, 'sources');
+      } else if (supaError) {
+        console.error('[REVIEW SOURCES LIST] Supabase error:', supaError);
       }
 
       // Fetch main scans count via Supabase
@@ -80,7 +86,8 @@ export async function GET(req: NextRequest) {
       mainQrScans = mainScansCount || 0;
     }
   } catch (err: any) {
-    console.error('[REVIEW SOURCES LIST] Error:', err);
+    console.error('[REVIEW SOURCES LIST] Error fetching sources:', err);
+    console.error('[REVIEW SOURCES LIST] Error stack:', err.stack);
     // If table doesn't exist, we still want to show the Main QR
   }
 
