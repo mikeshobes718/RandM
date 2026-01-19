@@ -10,6 +10,17 @@ interface PlanUsageCardProps {
   isUnlimited: boolean;
 }
 
+// Simple Tooltip component
+const Tooltip = ({ text, children }: { text: string; children: React.ReactNode }) => (
+  <div className="group relative inline-block">
+    {children}
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-[9px] font-bold rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-normal w-48 text-center shadow-xl border border-white/10 uppercase tracking-widest leading-relaxed">
+      {text}
+      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+    </div>
+  </div>
+);
+
 export default function PlanUsageCard({ planName, requestsUsed, requestsLimit, qrScans, isUnlimited }: PlanUsageCardProps) {
   const progress = isUnlimited ? 0 : Math.min(100, (requestsUsed / requestsLimit) * 100);
 
@@ -31,7 +42,12 @@ export default function PlanUsageCard({ planName, requestsUsed, requestsLimit, q
         <div className="space-y-8">
           <div>
             <div className="flex justify-between items-end mb-3">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Review Requests</span>
+              <Tooltip text="Direct outreach (SMS or Email) sent to customers this month. This is separate from passive QR scans.">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1 cursor-help">
+                  Review Requests
+                  <span className="text-slate-300">ⓘ</span>
+                </span>
+              </Tooltip>
               <div className="text-right">
                 <span className="text-lg font-black text-slate-900 leading-none">{requestsUsed}</span>
                 <span className="text-xs font-bold text-slate-400 ml-1">/ {isUnlimited ? '∞' : requestsLimit}</span>
@@ -48,7 +64,12 @@ export default function PlanUsageCard({ planName, requestsUsed, requestsLimit, q
           <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-lg">📱</div>
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">QR Scans</span>
+              <Tooltip text="Passive scans of your physical QR code or clicks on your link this month.">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1 cursor-help">
+                  QR Scans
+                  <span className="text-slate-300">ⓘ</span>
+                </span>
+              </Tooltip>
             </div>
             <div className="flex items-center gap-3 text-right">
               <span className="text-lg font-black text-slate-900 leading-none">{qrScans}</span>
