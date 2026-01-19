@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 
 interface Campaign {
+  id?: string;
   name: string;
   sent: number;
   clicks: number;
@@ -29,6 +30,24 @@ export default function ReviewRequestsModule({
   clickRate = 0,
   optOutRate = 0.8
 }: ReviewRequestsModuleProps) {
+
+  const handleDeleteCampaign = async (campaignId: string) => {
+    if (!confirm('Delete this campaign record?')) return;
+    try {
+      const user = (await import('@/lib/firebaseClient')).clientAuth.currentUser;
+      if (!user) return;
+      const tok = await user.getIdToken(true);
+      const res = await fetch(`/api/campaigns/list?id=${campaignId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${tok}` }
+      });
+      if (res.ok) {
+        window.location.reload();
+      }
+    } catch (e) {
+      console.error('Error deleting campaign:', e);
+    }
+  };
 
   return (
     <div className="premium-card p-8 rounded-[32px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden h-full">
@@ -94,9 +113,21 @@ export default function ReviewRequestsModule({
                     <p className="text-[9px] font-bold text-slate-400 uppercase">{new Date(c.date).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs font-black text-slate-900">{c.sent} sent</p>
-                  <p className="text-[9px] font-bold text-brand uppercase tracking-widest">{c.clicks} clicks</p>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-xs font-black text-slate-900">{c.sent} sent</p>
+                    <p className="text-[9px] font-bold text-brand uppercase tracking-widest">{c.clicks} clicks</p>
+                  </div>
+                  {c.id && (
+                    <button 
+                      onClick={() => handleDeleteCampaign(c.id!)}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

@@ -62,6 +62,7 @@ type ActivityItem = {
 };
 
 type Campaign = {
+  id?: string;
   name: string;
   sent: number;
   clicks: number;
