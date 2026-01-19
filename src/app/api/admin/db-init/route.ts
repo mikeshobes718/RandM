@@ -49,6 +49,30 @@ export async function GET(req: NextRequest) {
           ALTER TABLE review_requests ADD COLUMN campaign_id uuid REFERENCES campaigns(id) ON DELETE SET NULL;
         END IF;
       END $$;
+
+      -- 4. CLEANUP: Remove duplicates from contacts table
+      -- Keep the newest record for each (business_id, email) or (business_id, phone)
+      DELETE FROM contacts a USING (
+        SELECT MIN(ctid) as ctid, business_id, email
+        FROM contacts 
+        WHERE email IS NOT NULL
+        GROUP BY business_id, email 
+        HAVING COUNT(*) > 1
+      ) b
+      WHERE a.business_id = b.business_id 
+      AND a.email = b.email 
+      AND a.ctid <> b.ctid;
+
+      DELETE FROM contacts a USING (
+        SELECT MIN(ctid) as ctid, business_id, phone
+        FROM contacts 
+        WHERE phone IS NOT NULL
+        GROUP BY business_id, phone 
+        HAVING COUNT(*) > 1
+      ) b
+      WHERE a.business_id = b.business_id 
+      AND a.phone = b.phone 
+      AND a.ctid <> b.ctid;
     ` });
 
     if (error) {

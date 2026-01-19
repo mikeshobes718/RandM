@@ -47,9 +47,20 @@ export async function POST(req: NextRequest) {
           created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now()
         );
         CREATE INDEX IF NOT EXISTS ix_campaigns_business_id ON campaigns (business_id);
+
+        -- Add unique constraints for de-duplication (scoped to business)
+        DO $$ 
+        BEGIN 
+          IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uq_contacts_business_email') THEN
+            ALTER TABLE contacts ADD CONSTRAINT uq_contacts_business_email UNIQUE (business_id, email);
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uq_contacts_business_phone') THEN
+            ALTER TABLE contacts ADD CONSTRAINT uq_contacts_business_phone UNIQUE (business_id, phone);
+          END IF;
+        END $$;
       ` });
     } catch (e) {
-      console.warn('[CONTACTS IMPORT] RPC execute_sql not available, relying on pre-existing table');
+      console.warn('[CONTACTS IMPORT] RPC execute_sql failed or not available');
     }
     // ----------------------------
 
@@ -64,17 +75,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No business found. Please complete setup first.' }, { status: 400 });
     }
 
-    // Ensure contacts table exists by trying to create it (will silently fail if exists)
-    // We'll use a simple insert and handle errors
-    
-    // Prepare contacts for insert
-    const contactsToInsert = contacts.map((c: any) => ({
-      business_id: biz.id,
-      name: c.name || null,
-      email: c.email || null,
-      phone: c.phone || null,
-      source: c.source || 'csv_upload',
-    }));
+    // 1. Fetch existing contacts for this business to avoid duplicates
+    const { data: existingContacts } = await supa
+      .from('contacts')
+      .select('email, phone')
+      .eq('business_id', biz.id);
+
+    const existingEmails = new Set(existingContacts?.map(c => c.email?.toLowerCase()).filter(Boolean));
+    const existingPhones = new Set(existingContacts?.map(c => c.phone?.replace(/\D/g, '')).filter(Boolean));
+
+    // Prepare contacts for insert, filtering out duplicates
+    const contactsToInsert = contacts
+      .map((c: any) => ({
+        business_id: biz.id,
+        name: c.name || null,
+        email: c.email?.toLowerCase() || null,
+        phone: c.phone || null,
+        source: c.source || 'csv_upload',
+      }))
+      .filter((c: any) => {
+        // Only include if neither email nor phone is already in the DB
+        const hasExistingEmail = c.email && existingEmails.has(c.email);
+        const hasExistingPhone = c.phone && existingPhones.has(c.phone.replace(/\D/g, ''));
+        return !hasExistingEmail && !hasExistingPhone;
+      });
+
+    if (contactsToInsert.length === 0) {
+      return NextResponse.json({ 
+        imported: 0, 
+        message: 'All contacts were already in your list. No new duplicates added.' 
+      });
+    }
 
     // Try to insert
     const { data: inserted, error } = await supa
