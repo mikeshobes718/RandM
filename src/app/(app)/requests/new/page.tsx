@@ -100,7 +100,7 @@ function NewRequestContent() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-24 sm:py-32 space-y-12 animate-fade-in">
+    <div className="max-w-6xl mx-auto px-6 pt-12 pb-32 sm:pt-16 sm:pb-40 space-y-12 animate-fade-in">
       <div className="space-y-4">
         <h1 className="text-4xl font-black text-slate-900 tracking-tight">Send New Requests</h1>
         <p className="text-slate-500 font-medium">Send SMS or Email invitations to your customers.</p>
@@ -178,7 +178,14 @@ function NewRequestContent() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Message Content</label>
-                <Link href="/templates" className="text-[9px] font-black text-brand uppercase tracking-widest hover:underline">Change Template →</Link>
+                <div className="flex items-center gap-4">
+                  {type === 'SMS' && (
+                    <span className={`text-[9px] font-black uppercase tracking-widest ${body.length > 160 ? 'text-rose-500' : 'text-slate-400'}`}>
+                      {body.length} / 160 Characters
+                    </span>
+                  )}
+                  <Link href="/templates" className="text-[9px] font-black text-brand uppercase tracking-widest hover:underline">Change Template →</Link>
+                </div>
               </div>
               <textarea 
                 rows={5}
