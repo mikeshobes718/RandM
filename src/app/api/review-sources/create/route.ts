@@ -91,6 +91,7 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) {
+    console.error('[REVIEW SOURCES] Supabase Error:', error);
     if (error.message.includes('schema cache')) {
       console.log('[REVIEW SOURCES] Schema cache error, falling back to direct SQL...');
       const sql = getSql();
@@ -107,10 +108,11 @@ export async function POST(req: NextRequest) {
           }
         } catch (sqlErr: any) {
           console.error('[REVIEW SOURCES] SQL Fallback failed:', sqlErr);
+          return NextResponse.json({ error: sqlErr.message }, { status: 500 });
         }
       }
     }
-    return new NextResponse(error.message, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   return NextResponse.json({ source });

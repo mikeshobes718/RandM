@@ -82,7 +82,11 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
     setError(null);
     try {
       const user = clientAuth.currentUser;
-      if (!user) return;
+      if (!user) {
+        setError('Your session has timed out. Please refresh.');
+        setLoading(false);
+        return;
+      }
       const tok = await user.getIdToken(true);
       const res = await fetch('/api/review-sources/create', {
         method: 'POST',
@@ -92,23 +96,29 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
         },
         body: JSON.stringify({ businessId, name: newName.trim() })
       });
-      if (res.ok) {
+      
+      const data = await res.json().catch(() => ({}));
+      
+      if (res.ok && data.source) {
         setNewName('');
-        // Re-fetch everything to ensure sync
-        const tok2 = await user.getIdToken(true);
-        const res2 = await fetch(`/api/review-sources/list?businessId=${businessId}&t=${Date.now()}`, {
-          headers: { Authorization: `Bearer ${tok2}` }
+        // Add locally first for instant feedback
+        setSources(prev => [data.source, ...prev.filter(s => s.id !== data.source.id)]);
+        
+        // Then re-fetch in background to get scan counts
+        fetch(`/api/review-sources/list?businessId=${businessId}&t=${Date.now()}`, {
+          headers: { Authorization: `Bearer ${tok}` }
+        }).then(async r => {
+          if (r.ok) {
+            const d = await r.json();
+            setSources(d.sources || []);
+          }
         });
-        if (res2.ok) {
-          const data2 = await res2.json();
-          setSources(data2.sources || []);
-        }
       } else {
-        const errText = await res.text();
-        setError(errText || 'Failed to create source');
+        setError(data.message || data.error || 'Failed to create tracking code. Please try again.');
       }
-    } catch (e) {
-      setError('Something went wrong');
+    } catch (e: any) {
+      console.error('[MultipleQrManager] Create error:', e);
+      setError('Connection error. Please check your internet and try again.');
     } finally {
       setLoading(false);
     }
