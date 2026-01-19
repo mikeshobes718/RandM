@@ -179,6 +179,15 @@ export default function ContactsPage() {
 
   return (
     <div className="space-y-8 animate-fade-in max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Hidden file input for CSV imports */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileUpload} 
+        accept=".csv" 
+        className="hidden" 
+      />
+
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <h1 className="text-4xl font-black text-slate-900 tracking-tight">Contacts</h1>
