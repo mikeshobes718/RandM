@@ -96,6 +96,8 @@ export async function GET(req: NextRequest) {
 
   const results = [mainSource, ...customSources];
 
+  console.log(`[REVIEW SOURCES LIST] Returning ${results.length} sources for business ${businessId}:`, results.map(s => ({ id: s.id, name: s.name, slug: s.slug })));
+
   return NextResponse.json({ sources: results });
 }
 

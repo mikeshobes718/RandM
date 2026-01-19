@@ -118,8 +118,11 @@ export async function POST(req: NextRequest) {
   }
 
   if (!source) {
+    console.error('[REVIEW SOURCES CREATE] No source was created despite no errors');
     return NextResponse.json({ error: 'Failed to create source' }, { status: 500 });
   }
+
+  console.log('[REVIEW SOURCES CREATE] Successfully created source:', { id: source.id, name: source.name, slug: source.slug, business_id: source.business_id });
 
   return NextResponse.json({ source });
 }

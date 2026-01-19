@@ -31,47 +31,48 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchSources = async () => {
-      if (!businessId) return;
-      setFetching(true);
-      
-      try {
-        // Wait for user to be available
-        let user = clientAuth.currentUser;
-        if (!user) {
-          // Poll for a second if not immediately available
-          for (let i = 0; i < 10; i++) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            user = clientAuth.currentUser;
-            if (user) break;
-          }
+  const fetchSources = async () => {
+    if (!businessId) return;
+    setFetching(true);
+    
+    try {
+      // Wait for user to be available
+      let user = clientAuth.currentUser;
+      if (!user) {
+        // Poll for a second if not immediately available
+        for (let i = 0; i < 10; i++) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          user = clientAuth.currentUser;
+          if (user) break;
         }
-
-        if (!user) {
-          console.warn('[MultipleQrManager] No user found after polling');
-          setFetching(false);
-          return;
-        }
-
-        const tok = await user.getIdToken(true);
-        const res = await fetch(`/api/review-sources/list?businessId=${businessId}&t=${Date.now()}`, {
-          headers: { Authorization: `Bearer ${tok}` }
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          setSources(data.sources || []);
-        } else {
-          console.error('[MultipleQrManager] List API failed:', res.status);
-        }
-      } catch (e) {
-        console.error('[MultipleQrManager] Fetch error:', e);
-      } finally {
-        setFetching(false);
       }
-    };
 
+      if (!user) {
+        console.warn('[MultipleQrManager] No user found after polling');
+        setFetching(false);
+        return;
+      }
+
+      const tok = await user.getIdToken(true);
+      const res = await fetch(`/api/review-sources/list?businessId=${businessId}&t=${Date.now()}`, {
+        headers: { Authorization: `Bearer ${tok}` }
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        console.log('[FETCH] Sources from API:', data.sources);
+        setSources(data.sources || []);
+      } else {
+        console.error('[MultipleQrManager] List API failed:', res.status);
+      }
+    } catch (e) {
+      console.error('[MultipleQrManager] Fetch error:', e);
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  useEffect(() => {
     fetchSources();
   }, [businessId]);
 
@@ -101,9 +102,13 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
       
       if (res.ok && data.source) {
         setNewName('');
-        // Add locally for instant feedback - we don't need to re-fetch scan counts for a brand new source (it's 0)
-        const newSource = { ...data.source, scans: 0 };
-        setSources(prev => [newSource, ...prev.filter(s => s.id !== newSource.id)]);
+        console.log('[CREATE] Source created successfully:', data.source);
+        
+        // Wait 500ms for DB to commit, then fetch the full list from the server
+        setTimeout(() => {
+          console.log('[CREATE] Re-fetching sources from server...');
+          fetchSources();
+        }, 500);
       } else {
         setError(data.message || data.error || 'Failed to create tracking code. Please try again.');
       }
