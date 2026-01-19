@@ -101,18 +101,9 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
       
       if (res.ok && data.source) {
         setNewName('');
-        // Add locally first for instant feedback
-        setSources(prev => [data.source, ...prev.filter(s => s.id !== data.source.id)]);
-        
-        // Then re-fetch in background to get scan counts
-        fetch(`/api/review-sources/list?businessId=${businessId}&t=${Date.now()}`, {
-          headers: { Authorization: `Bearer ${tok}` }
-        }).then(async r => {
-          if (r.ok) {
-            const d = await r.json();
-            setSources(d.sources || []);
-          }
-        });
+        // Add locally for instant feedback - we don't need to re-fetch scan counts for a brand new source (it's 0)
+        const newSource = { ...data.source, scans: 0 };
+        setSources(prev => [newSource, ...prev.filter(s => s.id !== newSource.id)]);
       } else {
         setError(data.message || data.error || 'Failed to create tracking code. Please try again.');
       }

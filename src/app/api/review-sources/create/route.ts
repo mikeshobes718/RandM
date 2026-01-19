@@ -80,39 +80,45 @@ export async function POST(req: NextRequest) {
 
   const slug = `${slugify(name)}-${Math.random().toString(36).substring(2, 6)}`;
 
-  const { data: source, error } = await supa
-    .from('review_sources')
-    .insert({
-      business_id: businessId,
-      name,
-      slug,
-    })
-    .select()
-    .single();
+  const sql = getSql();
+  let source: any = null;
 
-  if (error) {
-    console.error('[REVIEW SOURCES] Supabase Error:', error);
-    if (error.message.includes('schema cache')) {
-      console.log('[REVIEW SOURCES] Schema cache error, falling back to direct SQL...');
-      const sql = getSql();
-      if (sql) {
-        try {
-          const result = await sql`
-            INSERT INTO review_sources (business_id, name, slug)
-            VALUES (${businessId}, ${name}, ${slug})
-            RETURNING *
-          `;
-          if (result && result.length > 0) {
-            // Success with fallback!
-            return NextResponse.json({ source: result[0] });
-          }
-        } catch (sqlErr: any) {
-          console.error('[REVIEW SOURCES] SQL Fallback failed:', sqlErr);
-          return NextResponse.json({ error: sqlErr.message }, { status: 500 });
-        }
+  if (sql) {
+    try {
+      const result = await sql`
+        INSERT INTO review_sources (business_id, name, slug)
+        VALUES (${businessId}, ${name}, ${slug})
+        RETURNING *
+      `;
+      if (result && result.length > 0) {
+        source = result[0];
       }
+    } catch (sqlErr: any) {
+      console.error('[REVIEW SOURCES] SQL Insert failed:', sqlErr);
+      // Fallback to Supabase client if SQL fails
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (!source) {
+    const { data, error } = await supa
+      .from('review_sources')
+      .insert({
+        business_id: businessId,
+        name,
+        slug,
+      })
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      console.error('[REVIEW SOURCES] Supabase Insert failed:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    source = data;
+  }
+
+  if (!source) {
+    return NextResponse.json({ error: 'Failed to create source' }, { status: 500 });
   }
 
   return NextResponse.json({ source });
