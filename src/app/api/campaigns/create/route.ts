@@ -69,24 +69,26 @@ export async function POST(req: NextRequest) {
 
       for (const contact of emailContacts) {
         try {
-          // Replace variables
+          const campaignLink = `https://reviewsandmarketing.com/r/${biz.id}?source=campaign`;
+          
+          // Replace variables in the content body
           let personalizedBody = content
             .replace(/\{\{name\}\}/g, contact.name || 'there')
             .replace(/\{\{business_name\}\}/g, biz.name || 'our business')
-            .replace(/\{\{link\}\}/g, biz.review_link || `https://reviewsandmarketing.com/r/${biz.id}`);
+            .replace(/\{\{link\}\}/g, campaignLink);
 
-          const html = brandedHtml({
-            title: name,
-            intro: personalizedBody,
-            ctaText: 'Leave a Review',
-            ctaUrl: biz.review_link || `https://reviewsandmarketing.com/r/${biz.id}`,
-          });
+          const { subject, html, text } = reviewRequestEmail(
+            contact.name || undefined, 
+            personalizedBody, 
+            biz.name, 
+            campaignLink
+          );
 
           const result = await sendEmail({
             to: contact.email!,
-            subject: name,
+            subject: subject,
             html,
-            text: personalizedBody
+            text: text
           });
 
           if (result.success) {
@@ -126,11 +128,13 @@ export async function POST(req: NextRequest) {
 
       for (const contact of smsContacts) {
         try {
+          const campaignLink = `https://reviewsandmarketing.com/r/${biz.id}?source=sms`;
+          
           // Replace variables
           let personalizedBody = content
             .replace(/\{\{name\}\}/g, contact.name || 'there')
             .replace(/\{\{business_name\}\}/g, biz.name || 'our business')
-            .replace(/\{\{link\}\}/g, biz.review_link || `https://reviewsandmarketing.com/r/${biz.id}`);
+            .replace(/\{\{link\}\}/g, campaignLink);
 
           await twilioClient.messages.create({
             body: personalizedBody,
