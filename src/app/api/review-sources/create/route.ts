@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireUid } from '@/lib/authServer';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getSupabaseAdmin, getSql } from '@/lib/supabaseAdmin';
 import { ensureFeedbackTables } from '@/lib/feedbackStorage';
 import { getPlanLimits } from '@/lib/entitlements';
 
@@ -90,7 +90,28 @@ export async function POST(req: NextRequest) {
     .select()
     .single();
 
-  if (error) return new NextResponse(error.message, { status: 500 });
+  if (error) {
+    if (error.message.includes('schema cache')) {
+      console.log('[REVIEW SOURCES] Schema cache error, falling back to direct SQL...');
+      const sql = getSql();
+      if (sql) {
+        try {
+          const result = await sql`
+            INSERT INTO review_sources (business_id, name, slug)
+            VALUES (${businessId}, ${name}, ${slug})
+            RETURNING *
+          `;
+          if (result && result.length > 0) {
+            // Success with fallback!
+            return NextResponse.json({ source: result[0] });
+          }
+        } catch (sqlErr: any) {
+          console.error('[REVIEW SOURCES] SQL Fallback failed:', sqlErr);
+        }
+      }
+    }
+    return new NextResponse(error.message, { status: 500 });
+  }
 
   return NextResponse.json({ source });
 }

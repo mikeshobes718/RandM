@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireUid } from '@/lib/authServer';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getSupabaseAdmin, getSql } from '@/lib/supabaseAdmin';
 import { ensureFeedbackTables } from '@/lib/feedbackStorage';
 
 export const runtime = 'nodejs';
@@ -40,6 +40,22 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: false });
 
   if (error) {
+    if (error.message?.includes('schema cache')) {
+      console.log('[REVIEW SOURCES LIST] Schema cache error, falling back to direct SQL...');
+      const sql = getSql();
+      if (sql) {
+        try {
+          const results = await sql`
+            SELECT * FROM review_sources 
+            WHERE business_id = ${businessId}
+            ORDER BY created_at DESC
+          `;
+          return NextResponse.json({ sources: results || [] });
+        } catch (sqlErr: any) {
+          console.error('[REVIEW SOURCES LIST] SQL Fallback failed:', sqlErr);
+        }
+      }
+    }
     // If table doesn't exist, return empty array instead of error
     if (error.message?.includes('schema cache') || error.message?.includes('does not exist')) {
       return NextResponse.json({ sources: [] });
