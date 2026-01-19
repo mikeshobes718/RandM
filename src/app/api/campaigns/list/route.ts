@@ -66,3 +66,52 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    // Auth check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const idToken = authHeader.split('Bearer ')[1];
+    const authAdmin = getAuthAdmin();
+    const decodedToken = await authAdmin.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    const { searchParams } = new URL(req.url);
+    const campaignId = searchParams.get('id');
+
+    if (!campaignId) {
+      return NextResponse.json({ error: 'Missing campaign ID' }, { status: 400 });
+    }
+
+    const supa = getSupabaseAdmin();
+
+    // Get the user's business
+    const { data: biz } = await supa
+      .from('businesses')
+      .select('id')
+      .eq('owner_uid', uid)
+      .single();
+
+    if (!biz) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Delete the campaign
+    const { error } = await supa
+      .from('campaigns')
+      .delete()
+      .eq('id', campaignId)
+      .eq('business_id', biz.id);
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('[CAMPAIGNS DELETE API] Error:', error);
+    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+  }
+}

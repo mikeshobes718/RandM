@@ -20,7 +20,7 @@ interface Props {
   businessId: string;
   landingUrl: string;
   rates?: { delivered: number; click: number; optOut: number };
-  recentCampaigns?: Campaign[];
+  recentCampaigns?: (Campaign & { id?: string });
 }
 
 export default function MultipleQrManager({ businessId, landingUrl, rates, recentCampaigns = [] }: Props) {
@@ -32,24 +32,39 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSources();
+    if (businessId) {
+      fetchSources();
+    }
   }, [businessId]);
 
   const fetchSources = async () => {
     try {
-      const user = clientAuth.currentUser;
-      if (!user) return;
-      const tok = await user.getIdToken(true);
-      const res = await fetch(`/api/review-sources/list?businessId=${businessId}`, {
-        headers: { Authorization: `Bearer ${tok}` }
+      // Use onAuthStateChanged to ensure user is available
+      const unsubscribe = clientAuth.onAuthStateChanged(async (user) => {
+        if (!user) {
+          setFetching(false);
+          return;
+        }
+        
+        try {
+          const tok = await user.getIdToken(true);
+          const res = await fetch(`/api/review-sources/list?businessId=${businessId}`, {
+            headers: { Authorization: `Bearer ${tok}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setSources(data.sources || []);
+          }
+        } catch (e) {
+          console.error('Error fetching sources inside auth listener:', e);
+        } finally {
+          setFetching(false);
+        }
       });
-      if (res.ok) {
-        const data = await res.json();
-        setSources(data.sources || []);
-      }
+
+      return () => unsubscribe();
     } catch (e) {
-      console.error('Error fetching sources:', e);
-    } finally {
+      console.error('Error setting up auth listener for sources:', e);
       setFetching(false);
     }
   };
@@ -105,6 +120,25 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
       }
     } catch (e) {
       console.error('Error deleting source:', e);
+    }
+  };
+
+  const deleteCampaign = async (campaignId: string) => {
+    if (!confirm('Delete this campaign record?')) return;
+    try {
+      const user = clientAuth.currentUser;
+      if (!user) return;
+      const tok = await user.getIdToken(true);
+      const res = await fetch(`/api/campaigns/list?id=${campaignId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${tok}` }
+      });
+      if (res.ok) {
+        // We need to trigger a refresh of the dashboard data
+        window.location.reload();
+      }
+    } catch (e) {
+      console.error('Error deleting campaign:', e);
     }
   };
 
@@ -317,7 +351,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
                recentCampaigns.map((c, i) => {
                  const clickRate = c.sent > 0 ? Math.round((c.clicks / c.sent) * 100) : 0;
                  return (
-                   <div key={i} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                   <div key={i} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm group/campaign">
                      <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white text-lg shadow-inner`}>
                           {c.name.toLowerCase().includes('sms') ? '📱' : '✉️'}
@@ -327,9 +361,21 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
                           <p className="text-[9px] font-bold text-slate-400 uppercase">{c.sent} Sent</p>
                         </div>
                      </div>
-                     <div className="text-right">
-                        <p className="text-sm font-black text-slate-900">{clickRate}%</p>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Click Rate</p>
+                     <div className="flex items-center gap-4">
+                        <div className="text-right">
+                           <p className="text-sm font-black text-slate-900">{clickRate}%</p>
+                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Click Rate</p>
+                        </div>
+                        {(c as any).id && (
+                          <button 
+                            onClick={() => deleteCampaign((c as any).id)}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover/campaign:opacity-100"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        )}
                      </div>
                    </div>
                  );

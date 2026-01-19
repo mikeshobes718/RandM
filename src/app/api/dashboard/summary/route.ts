@@ -419,6 +419,7 @@ export async function GET(req: NextRequest) {
       
       if (!campaignError && campaignData) {
         recentCampaigns = campaignData.map(c => ({
+          id: c.id,
           name: c.name,
           sent: c.sent_count || 0,
           clicks: c.click_count || 0,
