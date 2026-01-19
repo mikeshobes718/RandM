@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
+import { parsePhoneNumberFromString, CountryCode } from 'libphonenumber-js';
 
 export const dynamic = 'force-dynamic';
 
@@ -82,21 +83,34 @@ export async function POST(req: NextRequest) {
       .eq('business_id', biz.id);
 
     const existingEmails = new Set(existingContacts?.map(c => c.email?.toLowerCase()).filter(Boolean));
-    const existingPhones = new Set(existingContacts?.map(c => c.phone?.replace(/\D/g, '')).filter(Boolean));
+    const existingPhones = new Set(existingContacts?.map(c => {
+      const parsed = parsePhoneNumberFromString(c.phone || '');
+      return parsed ? parsed.format('E.164') : c.phone?.replace(/\D/g, '');
+    }).filter(Boolean));
 
     // Prepare contacts for insert, filtering out duplicates
     const contactsToInsert = contacts
-      .map((c: any) => ({
-        business_id: biz.id,
-        name: c.name || null,
-        email: c.email?.toLowerCase() || null,
-        phone: c.phone || null,
-        source: c.source || 'csv_upload',
-      }))
+      .map((c: any) => {
+        let normalizedPhone = c.phone || null;
+        if (c.phone) {
+          const parsed = parsePhoneNumberFromString(c.phone, (c.country as CountryCode) || 'US');
+          if (parsed) {
+            normalizedPhone = parsed.format('E.164');
+          }
+        }
+
+        return {
+          business_id: biz.id,
+          name: c.name || null,
+          email: c.email?.toLowerCase() || null,
+          phone: normalizedPhone,
+          source: c.source || 'csv_upload',
+        };
+      })
       .filter((c: any) => {
         // Only include if neither email nor phone is already in the DB
         const hasExistingEmail = c.email && existingEmails.has(c.email);
-        const hasExistingPhone = c.phone && existingPhones.has(c.phone.replace(/\D/g, ''));
+        const hasExistingPhone = c.phone && existingPhones.has(c.phone);
         return !hasExistingEmail && !hasExistingPhone;
       });
 

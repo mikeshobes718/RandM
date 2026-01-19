@@ -26,7 +26,7 @@ export default function ContactsPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [showGuide, setShowGuide] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [manualContact, setManualContact] = useState({ name: '', email: '', phone: '' });
+  const [manualContact, setManualContact] = useState({ name: '', email: '', phone: '', country: 'US' });
   const [addingManual, setAddingManual] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -538,13 +538,28 @@ export default function ContactsPage() {
               </div>
               <div>
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Phone Number</label>
-                <input 
-                  type="tel"
-                  placeholder="(555) 000-0000"
-                  value={manualContact.phone}
-                  onChange={(e) => setManualContact({ ...manualContact, phone: e.target.value })}
-                  className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
-                />
+                <div className="flex gap-2">
+                  <select 
+                    value={manualContact.country}
+                    onChange={(e) => setManualContact({ ...manualContact, country: e.target.value })}
+                    className="w-24 h-12 bg-slate-50 border border-slate-100 rounded-2xl px-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
+                  >
+                    <option value="US">🇺🇸 +1</option>
+                    <option value="CA">🇨🇦 +1</option>
+                    <option value="GB">🇬🇧 +44</option>
+                    <option value="AU">🇦🇺 +61</option>
+                    <option value="IE">🇮🇪 +353</option>
+                    <option value="NZ">🇳🇿 +64</option>
+                  </select>
+                  <input 
+                    type="tel"
+                    placeholder="(555) 000-0000"
+                    value={manualContact.phone}
+                    onChange={(e) => setManualContact({ ...manualContact, phone: e.target.value })}
+                    className="flex-1 h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
+                  />
+                </div>
+                <p className="text-[9px] text-slate-400 font-medium mt-2 ml-1">We'll format this automatically for SMS delivery.</p>
               </div>
 
               <div className="pt-4">
