@@ -23,6 +23,7 @@ Supabase's PostgREST API often fails with `404 Not Found` or `column does not ex
 - **Solution**: We use a dual-approach:
   1. **Direct SQL**: Use `getSql()` from `@/lib/supabaseAdmin` to run raw queries via the `postgres` library. This bypasses the cache entirely.
   2. **Manual Reload**: After any DDL change (CREATE TABLE, etc.), we call `NOTIFY pgrst, 'reload schema'` to force the cache to refresh.
+  3. **Auto-Provisioning**: Use the `ensureFeedbackTables()` function in `@/lib/feedbackStorage` inside your API routes. It checks for table existence and creates them if missing.
 
 ### Important Tables
 1. **`review_sources`**: Tracks different QR code origins (Lobby, Table 1, etc.).
@@ -30,6 +31,14 @@ Supabase's PostgREST API often fails with `404 Not Found` or `column does not ex
 3. **`campaigns`**: Tracks SMS/Email blasts (sent counts, click counts).
 4. **`review_requests`**: Individual records of every message sent to a customer.
 5. **`review_events`**: Tracks every interaction (page opened, QR scanned, link clicked).
+
+---
+
+## 🔐 Authentication Bridge
+The app uses **Firebase Auth** on the frontend and **Session Cookies** on the backend.
+- **Login**: Frontend signs in with Firebase, then calls `/api/auth/session` to set an `HttpOnly` cookie.
+- **Verification**: Backend routes use `requireUid()` from `@/lib/authServer.ts` to verify the cookie and get the user ID.
+- **Admin Access**: Handled by checking the `users.role` column in Supabase. Only roles `admin` and `sales_rep` can access internal portals.
 
 ---
 
@@ -41,6 +50,31 @@ Every phone reveal costs money ($0.025). We minimize this using this priority:
 2. **Check Supabase `businesses` table**: If the phone is already stored, use it.
 3. **Call Google Places API**: Only if 1 & 2 fail.
 4. **`NO_PHONE` Marker**: If Google says there is no phone, we save `NO_PHONE` to the sheet/DB so we never check that business again.
+
+### Google Sheets Tracking
+We maintain two critical sheets:
+1. **Detailed Hit Log**: Every single API call to Google Places is logged here for billing audits.
+2. **Reveals**: A permanent cache of every phone number we've paid to find.
+
+---
+
+## 🎨 Frontend State Patterns
+
+### Avoiding "Disappearing Data"
+When performing a `POST` (like adding a QR code), do NOT immediately re-fetch the list.
+- **Pattern**: 
+  1. Submit the form.
+  2. If the API returns `success`, update the local state (`setSources`) immediately with the new object.
+  3. This makes the app feel instant and prevents the "blink" or "disappearance" caused by database replication delays.
+- **Example**: See `src/components/dashboard/MultipleQrManager.tsx`.
+
+---
+
+## 🛠️ Internal Scripts (`/scripts`)
+The codebase contains several maintenance scripts:
+- `setup_marketing_tables.js`: Sets up the core DB schema.
+- `reformat_old_detailed_hits.js`: Fixes legacy Google Sheet data formats.
+- `check_tables.js`: Quick diagnostic to see if the DB is ready.
 
 ---
 
