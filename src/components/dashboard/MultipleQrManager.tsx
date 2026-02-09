@@ -113,11 +113,9 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
           return updated;
         });
         
-        // Also fetch from server after a delay to ensure DB sync
-        setTimeout(() => {
-          console.log('[CREATE] Re-fetching from server for verification...');
-          fetchSources();
-        }, 1000);
+        // REMOVED redundant re-fetch that causes "disappearance" due to DB lag
+        // The CREATE API already returns the full source object.
+        console.log('[CREATE] Skipping redundant re-fetch to maintain local state stability.');
       } else {
         console.error('[CREATE] Failed to create source:', data);
         setError(data.message || data.error || 'Failed to create tracking code. Please try again.');
@@ -273,6 +271,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
 
           <div className="space-y-3">
             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block px-1">Active Tracking Codes ({sources.length})</label>
+            <div className="max-h-[400px] overflow-y-auto pr-2 -mr-2 space-y-3">
             {sources.length === 0 ? (
               <div className="text-center py-12 bg-white/30 border-2 border-dashed border-slate-200 rounded-3xl">
                 <p className="text-xs text-slate-400 font-medium">No custom codes created yet.</p>
@@ -322,6 +321,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
                 })}
               </div>
             )}
+            </div>
           </div>
         </div>
       ) : (

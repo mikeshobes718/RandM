@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { ensureFeedbackTables, recordReviewEvent } from '@/lib/feedbackStorage';
 import { normalizePhone } from '@/lib/phone';
 import { checkPlanLimit } from '@/lib/entitlements';
+import { sendOwnerFeedbackNotification } from '@/lib/notifications';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -181,5 +182,17 @@ export async function POST(req: Request) {
     });
   }
 
-  return NextResponse.json({ ok: true, redirect: redirect || undefined });
+  // Trigger instant notification to business owner
+  // We do this in the background (don't await) to keep the response fast
+  sendOwnerFeedbackNotification({
+    businessId,
+    rating: normalizedRating,
+    customerName: sanitizedName || undefined,
+    customerEmail: sanitizedEmail || undefined,
+    customerPhone: sanitizedPhoneDigits || undefined,
+    comment: sanitizedComment || undefined,
+    source: entrySource,
+  }).catch(err => console.error('[API SUBMIT] Notification error:', err));
+
+  return NextResponse.json({ ok: true, redirect: redirect || undefined, feedback_id: feedbackId });
 }

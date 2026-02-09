@@ -58,128 +58,45 @@ export function proWelcomeEmailTemplate(): string {
 }
 
 export function brandedHtml({ title, greeting, intro, benefits, ctaText, ctaUrl, secondaryCta, securityNote, footerNote }: EmailParts): string {
-  // Dark mode safe colors
-  const benefitsList = benefits && benefits.length > 0 ? benefits.map(b => 
-    `<li style="margin:8px 0;color:#475569;font-size:14px;line-height:22px;">✓ ${escapeHtml(b)}</li>`
-  ).join('') : '';
-  
-  return `<!doctype html>
-  <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>${escapeHtml(title)}</title>
-    <style type="text/css">
-      body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-      table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-      img { -ms-interpolation-mode: bicubic; }
-      img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
-      table { border-collapse: collapse !important; }
-      body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
-      a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font-size: inherit !important; font-family: inherit !important; font-weight: inherit !important; line-height: inherit !important; }
-      @media screen and (max-width: 600px) {
-        .mobile-padding { padding: 20px !important; }
-        .mobile-br { display: block !important; height: 20px !important; }
-      }
-    </style>
-  </head>
-  <body style="margin:0;padding:0;background-color:#f4f7ff;font-family:'SF Pro Display','SF Pro Text',-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
-    <div style="display: none; max-height: 0px; overflow: hidden;">
-      ${escapeHtml(intro || title)}
+  // Use a simpler, more robust modern container layout
+  return `
+    <div style="background-color: #f4f7ff; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+      <div style="max-width: 600px; margin: 0 auto;">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 30px;">
+          <span style="font-size: 24px; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">R&M</span>
+        </div>
+        
+        <!-- Main Card -->
+        <div style="background-color: #ffffff; padding: 40px; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          ${greeting ? `<div style="color: #64748b; font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 16px;">${escapeHtml(greeting)}</div>` : ''}
+          <h1 style="color: #0f172a; font-size: 24px; font-weight: 800; margin-bottom: 24px; line-height: 1.2;">${escapeHtml(title)}</h1>
+          
+          <div style="color: #334155; font-size: 16px; line-height: 1.6; margin-bottom: 32px;">
+            ${intro ? escapeHtml(intro).replace(/\n/g, '<br/>') : '<em>(No message content)</em>'}
+          </div>
+
+          ${ctaText && ctaUrl ? `
+            <div style="text-align: center; margin-bottom: 32px;">
+              <a href="${ctaUrl}" style="background-color: #4f46e5; color: #ffffff; padding: 16px 32px; border-radius: 12px; font-weight: 800; text-decoration: none; display: inline-block;">
+                ${escapeHtml(ctaText)}
+              </a>
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 30px; color: #94a3b8; font-size: 12px;">
+          <p><strong>Reviews & Marketing</strong></p>
+          <p>${footerNote ? escapeHtml(footerNote) : ''}</p>
+          <div style="margin-top: 10px;">
+            <a href="https://reviewsandmarketing.com/privacy" style="color: #94a3b8; margin: 0 5px;">Privacy</a> • 
+            <a href="https://reviewsandmarketing.com/terms" style="color: #94a3b8; margin: 0 5px;">Terms</a>
+          </div>
+        </div>
+      </div>
     </div>
-    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-      <tr>
-        <td align="center" style="background-color: #f4f7ff; padding: 40px 10px;">
-          <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
-            <!-- Header -->
-            <tr>
-              <td align="center" style="padding: 0 0 30px 0;">
-                <a href="https://reviewsandmarketing.com" target="_blank" style="text-decoration: none;">
-                  <span style="font-size: 24px; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">R&M</span>
-                </a>
-              </td>
-            </tr>
-            <!-- Card -->
-            <tr>
-              <td style="background-color: #ffffff; padding: 48px; border-radius: 32px; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05); border: 1px solid #e2e8f0;" class="mobile-padding">
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                  ${greeting ? `
-                  <tr>
-                    <td style="padding: 0 0 16px 0; color: #64748b; font-size: 14px; font-weight: 700; text-transform: uppercase; tracking: 0.1em;">
-                      ${escapeHtml(greeting)}
-                    </td>
-                  </tr>` : ''}
-                  <tr>
-                    <td style="padding: 0 0 24px 0; color: #0f172a; font-size: 28px; font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;">
-                      ${escapeHtml(title)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 0 0 32px 0; color: #334155; font-size: 16px; line-height: 1.6; font-weight: 500;">
-                      ${intro ? intro.replace(/\n/g, '<br/>') : ''}
-                    </td>
-                  </tr>
-                  ${benefitsList ? `
-                  <tr>
-                    <td style="padding: 0 0 32px 0;">
-                      <ul style="margin: 0; padding: 0; list-style: none;">
-                        ${benefitsList}
-                      </ul>
-                    </td>
-                  </tr>` : ''}
-                  ${ctaText && ctaUrl ? `
-                  <tr>
-                    <td align="center" style="padding: 8px 0 32px 0;">
-                      <a href="${ctaUrl}" target="_blank" style="background-color: #4f46e5; border-radius: 16px; color: #ffffff; display: inline-block; font-size: 16px; font-weight: 800; line-height: 60px; text-align: center; text-decoration: none; width: 100%; max-width: 280px; -webkit-text-size-adjust: none; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.2);">
-                        ${escapeHtml(ctaText)}
-                      </a>
-                    </td>
-                  </tr>` : ''}
-                  ${secondaryCta ? `
-                  <tr>
-                    <td align="center" style="padding: 0 0 24px 0;">
-                      <a href="${secondaryCta.url}" target="_blank" style="color: #6366f1; font-size: 14px; font-weight: 700; text-decoration: none;">
-                        ${escapeHtml(secondaryCta.text)} →
-                      </a>
-                    </td>
-                  </tr>` : ''}
-                  ${securityNote ? `
-                  <tr>
-                    <td style="padding: 24px; background-color: #f8fafc; border-radius: 16px; color: #64748b; font-size: 13px; line-height: 1.5; border: 1px solid #f1f5f9;">
-                      ${escapeHtml(securityNote)}
-                    </td>
-                  </tr>` : ''}
-                </table>
-              </td>
-            </tr>
-            <!-- Footer -->
-            <tr>
-              <td align="center" style="padding: 40px 20px 0 20px;">
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                  <tr>
-                    <td align="center" style="color: #94a3b8; font-size: 12px; line-height: 1.5; font-weight: 500;">
-                      ${footerNote ? `<div style="margin-bottom: 20px;">${escapeHtml(footerNote)}</div>` : ''}
-                      <div style="font-weight: 700; color: #64748b; margin-bottom: 12px;">Reviews & Marketing</div>
-                      <div>
-                        <a href="https://reviewsandmarketing.com/privacy" style="color: #94a3b8; text-decoration: underline; margin: 0 8px;">Privacy</a>
-                        <a href="https://reviewsandmarketing.com/terms" style="color: #94a3b8; text-decoration: underline; margin: 0 8px;">Terms</a>
-                        <a href="https://reviewsandmarketing.com/support" style="color: #94a3b8; text-decoration: underline; margin: 0 8px;">Support</a>
-                      </div>
-                      <div style="margin-top: 20px; opacity: 0.6;">
-                        © ${new Date().getFullYear()} Reviews & Marketing. All rights reserved.
-                      </div>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-  </html>`;
+  `;
 }
 
 export function reviewRequestEmail(customerName: string | undefined, body: string, businessName?: string, link?: string): { subject: string; html: string; text: string } {
@@ -187,12 +104,57 @@ export function reviewRequestEmail(customerName: string | undefined, body: strin
   const greeting = customerName ? `Hi ${customerName},` : 'Hello!';
   
   // Extract content parts to avoid double injection of Subject/Hi there
-  let cleanBody = body;
+  // But ensure we never end up with empty content
+  let cleanBody = body.trim();
+  const originalBody = body.trim();
+  
+  // Remove "Subject:" line if present
   if (cleanBody.toLowerCase().startsWith('subject:')) {
-    cleanBody = cleanBody.substring(cleanBody.indexOf('\n') + 1).trim();
+    const firstNewline = cleanBody.indexOf('\n');
+    if (firstNewline !== -1) {
+      const afterSubject = cleanBody.substring(firstNewline + 1).trim();
+      // Only remove Subject line if there's content after it
+      if (afterSubject.length > 0) {
+        cleanBody = afterSubject;
+      }
+    }
   }
-  if (cleanBody.toLowerCase().startsWith('hi ') || cleanBody.toLowerCase().startsWith('hello')) {
-    cleanBody = cleanBody.substring(cleanBody.indexOf('\n') + 1).trim();
+  
+  // Remove greeting if it matches common patterns (but preserve content)
+  const lowerBody = cleanBody.toLowerCase();
+  const greetingPatterns = ['hi ', 'hello', 'hey '];
+  const hasGreeting = greetingPatterns.some(pattern => lowerBody.startsWith(pattern));
+  
+  if (hasGreeting) {
+    // Find the first meaningful line break (skip empty lines)
+    let firstNewline = cleanBody.indexOf('\n');
+    if (firstNewline === -1) {
+      // No newline, check if entire body is just greeting
+      if (cleanBody.length < 50) {
+        // Likely just a greeting, use original body
+        cleanBody = originalBody;
+      }
+    } else {
+      // Skip multiple newlines/whitespace
+      let afterGreeting = cleanBody.substring(firstNewline).trim();
+      // If we have substantial content after greeting, use it
+      if (afterGreeting.length > 10) {
+        cleanBody = afterGreeting;
+      } else {
+        // Not enough content, keep original
+        cleanBody = originalBody;
+      }
+    }
+  }
+  
+  // Final safety check: if cleanup resulted in empty or minimal content, use original body
+  if (!cleanBody || cleanBody.trim().length < 10) {
+    cleanBody = originalBody;
+  }
+
+  // Ensure we always have content - if still empty, use a default message
+  if (!cleanBody || cleanBody.trim().length === 0) {
+    cleanBody = 'We would love to hear about your experience. Please share your feedback with us!';
   }
 
   const html = brandedHtml({ 

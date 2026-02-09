@@ -171,7 +171,17 @@ export async function GET(req: NextRequest) {
         .eq('business_id', biz.id)
         .eq('event', 'page_opened')
         .gte('created_at', startOfMonth);
-      shareLinkScans = scanCount || 0;
+      
+      // Also count events with the main-qr-source- prefix
+      const { count: prefixedScanCount } = await supa
+        .from('review_events')
+        .select('*', { count: 'exact', head: true })
+        .eq('business_id', biz.id)
+        .eq('event', 'page_opened')
+        .gte('created_at', startOfMonth)
+        .ilike('metadata->>source', 'main-qr-source-%');
+
+      shareLinkScans = (scanCount || 0) + (prefixedScanCount || 0);
     } catch (e) {
       console.error('[DASHBOARD API] Error fetching stats:', e);
     }
@@ -294,7 +304,11 @@ export async function GET(req: NextRequest) {
         
         const sources: Record<string, number> = {};
         sourceData?.forEach(s => {
-          const src = (s.metadata as any)?.source || 'direct';
+          let src = (s.metadata as any)?.source || 'direct';
+          // Consolidate prefixed sources
+          if (src.startsWith('main-qr-source-')) {
+            src = src.replace('main-qr-source-', '');
+          }
           sources[src] = (sources[src] || 0) + 1;
         });
 
@@ -390,11 +404,20 @@ export async function GET(req: NextRequest) {
     }
 
     const startOfMonth = startOfCurrentMonthUTC();
-    const { count: requestsUsed } = await supa
+    const { count: individualRequestsUsed } = await supa
       .from('review_requests')
       .select('*', { count: 'exact', head: true })
       .eq('business_id', biz.id)
       .gte('created_at', startOfMonth);
+
+    const { data: monthCampaigns } = await supa
+      .from('campaigns')
+      .select('sent_count')
+      .eq('business_id', biz.id)
+      .gte('created_at', startOfMonth);
+    
+    const campaignRequestsUsed = monthCampaigns?.reduce((acc, c) => acc + (c.sent_count || 0), 0) || 0;
+    const requestsUsed = (individualRequestsUsed || 0) + campaignRequestsUsed;
 
     let contactsCount = 0;
     try {
@@ -421,8 +444,11 @@ export async function GET(req: NextRequest) {
         recentCampaigns = campaignData.map(c => ({
           id: c.id,
           name: c.name,
+          type: c.type,
           sent: c.sent_count || 0,
           clicks: c.click_count || 0,
+          failed: (c.metadata as any)?.failed_count || 0,
+          lastError: (c.metadata as any)?.last_error || null,
           date: c.created_at
         }));
       }

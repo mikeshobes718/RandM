@@ -2,11 +2,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin, getSql } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { sendEmail } from '@/lib/emailService';
-import { brandedHtml } from '@/lib/emailTemplates';
+import { reviewRequestEmail } from '@/lib/emailTemplates';
 import { getEnv } from '@/lib/env';
 import twilio from 'twilio';
 
 export const dynamic = 'force-dynamic';
+
+
+function formatToE164(phone: string): string {
+  // Strip everything but digits
+  let digits = phone.replace(/\D+/g, '');
+  if (digits.length === 10) {
+    return '+1' + digits;
+  }
+  if (digits.length === 11 && digits.startsWith('1')) {
+    return '+' + digits;
+  }
+  if (phone.startsWith('+')) {
+    return '+' + digits;
+  }
+  return '+' + digits; // Fallback
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,14 +73,46 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No contacts found. Please import contacts before starting a campaign.' }, { status: 400 });
     }
 
+    // Filter out contacts who have already left feedback or a review
+    const { data: existingFeedback } = await supa
+      .from('feedback')
+      .select('email, phone')
+      .eq('business_id', biz.id);
+
+    const { data: existingEvents } = await supa
+      .from('review_events')
+      .select('metadata')
+      .eq('business_id', biz.id)
+      .eq('event', 'google_opened');
+
+    const respondedEmails = new Set(existingFeedback?.map(f => f.email?.toLowerCase()).filter(Boolean));
+    const respondedPhones = new Set(existingFeedback?.map(f => f.phone?.replace(/\D+/g, '')).filter(Boolean));
+
+    existingEvents?.forEach(e => {
+      const meta = e.metadata as any;
+      if (meta?.email) respondedEmails.add(meta.email.toLowerCase());
+      if (meta?.phone) respondedPhones.add(meta.phone.replace(/\D+/g, ''));
+    });
+
+    const filteredContacts = contacts.filter(c => {
+      const emailMatch = c.email && respondedEmails.has(c.email.toLowerCase());
+      const phoneMatch = c.phone && respondedPhones.has(c.phone.replace(/\D+/g, ''));
+      return !emailMatch && !phoneMatch;
+    });
+
+    if (filteredContacts.length === 0) {
+      return NextResponse.json({ error: 'All contacts have already provided feedback or left a review.' }, { status: 400 });
+    }
+
     let sentCount = 0;
     let failedCount = 0;
+    let lastError: string | null = null;
 
     // Process sending
     if (type === 'Email') {
-      const emailContacts = contacts.filter(c => c.email);
+      const emailContacts = filteredContacts.filter(c => c.email);
       if (emailContacts.length === 0) {
-        return NextResponse.json({ error: 'No contacts with email addresses found.' }, { status: 400 });
+        return NextResponse.json({ error: 'No remaining contacts with email addresses found.' }, { status: 400 });
       }
 
       for (const contact of emailContacts) {
@@ -95,16 +143,18 @@ export async function POST(req: NextRequest) {
             sentCount++;
           } else {
             failedCount++;
+            lastError = result.error || 'Email delivery failed';
           }
-        } catch (e) {
+        } catch (e: any) {
           console.error(`[CAMPAIGNS CREATE] Failed to send email to ${contact.email}:`, e);
           failedCount++;
+          lastError = e.message;
         }
       }
     } else if (type === 'SMS') {
-      const smsContacts = contacts.filter(c => c.phone);
+      const smsContacts = filteredContacts.filter(c => c.phone);
       if (smsContacts.length === 0) {
-        return NextResponse.json({ error: 'No contacts with phone numbers found.' }, { status: 400 });
+        return NextResponse.json({ error: 'No remaining contacts with phone numbers found.' }, { status: 400 });
       }
 
       const sid = env.TWILIO_ACCOUNT_SID;
@@ -138,15 +188,18 @@ export async function POST(req: NextRequest) {
             .replace(/\{\{business_name\}\}/g, biz.name || 'our business')
             .replace(/\{\{link\}\}/g, campaignLink);
 
+          const toFormatted = formatToE164(contact.phone!);
+          console.log('[CAMPAIGNS CREATE] Sending SMS to:', toFormatted, 'original:', contact.phone);
           await twilioClient.messages.create({
             body: personalizedBody,
             from: fromNumber,
-            to: contact.phone!
+            to: toFormatted
           });
           sentCount++;
         } catch (e: any) {
-          console.error(`[CAMPAIGNS CREATE] SMS failed for ${contact.phone}:`, e.message);
+          console.error(`[CAMPAIGNS CREATE] SMS failed for ${contact.phone}:`, e.message, e.code, e.status);
           failedCount++;
+          lastError = e.message;
         }
       }
     }
@@ -162,7 +215,7 @@ export async function POST(req: NextRequest) {
         status: 'completed',
         sent_count: sentCount,
         click_count: 0,
-        metadata: { failed_count: failedCount }
+        metadata: { failed_count: failedCount, last_error: lastError }
       })
       .select()
       .single();

@@ -67,26 +67,33 @@ export default function HowItWorks() {
         </div>
 
         {/* Breakdown Sections */}
-        <div className="grid md:grid-cols-3 gap-12 mb-24">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-24">
           <div className="space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand font-black text-xl">1</div>
-            <h3 className="text-xl font-bold text-slate-900">Capture</h3>
+            <h3 className="text-xl font-bold text-slate-900">Connect</h3>
             <p className="text-slate-500 text-sm leading-relaxed font-medium">
-              Customers scan a branded QR code at your location or receive an automated email after a transaction.
+              Link your Google Profile and POS system in seconds. We generate custom QR codes and enable automatic follow-up texts or emails for every visit.
             </p>
           </div>
           <div className="space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand font-black text-xl">2</div>
-            <h3 className="text-xl font-bold text-slate-900">Listen</h3>
+            <h3 className="text-xl font-bold text-slate-900">Capture</h3>
             <p className="text-slate-500 text-sm leading-relaxed font-medium">
-              We don’t incentivize or gate reviews—we use smart Review Routing. We provide a direct path for praise to Google or private feedback to you.
+              Customers scan in-store or receive an automatic text via POS integration. We capture contact info and route them to the perfect feedback experience.
             </p>
           </div>
           <div className="space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand font-black text-xl">3</div>
-            <h3 className="text-xl font-bold text-slate-900">Improve</h3>
+            <h3 className="text-xl font-bold text-slate-900">Route</h3>
             <p className="text-slate-500 text-sm leading-relaxed font-medium">
-              Watch your public rating grow while you collect private insights to fix service issues and build a stronger customer database.
+              Happy customers are guided to Google to share their experience. Those with concerns are routed to a private channel so you can resolve issues before they become public.
+            </p>
+          </div>
+          <div className="space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand font-black text-xl">4</div>
+            <h3 className="text-xl font-bold text-slate-900">Grow</h3>
+            <p className="text-slate-500 text-sm leading-relaxed font-medium">
+              Watch your public rating climb while building a powerful customer database. Use these insights to improve operations and drive repeat business.
             </p>
           </div>
         </div>

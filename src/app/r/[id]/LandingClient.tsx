@@ -146,6 +146,8 @@ function LandingClientContent({ id }: { id: string }) {
   const handleGoogleReview = useCallback(async () => {
     if (!biz?.reviewLink) return;
     
+    let feedbackId: string | undefined;
+    
     // Contact info is optional for happy path
     if (email.trim() || phone.trim() || name.trim()) {
       if (email.trim() && !isValidEmail(email.trim())) {
@@ -156,7 +158,7 @@ function LandingClientContent({ id }: { id: string }) {
       try {
         setSubmitting(true);
         setError(null);
-        await fetch('/api/feedback/submit', {
+        const res = await fetch('/api/feedback/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -170,6 +172,8 @@ function LandingClientContent({ id }: { id: string }) {
             consent: true,
           }),
         });
+        const data = await res.json();
+        if (data.ok && data.feedback_id) feedbackId = data.feedback_id;
       } catch (e) {
         console.error('Failed to save contact info:', e);
       } finally {
@@ -177,7 +181,11 @@ function LandingClientContent({ id }: { id: string }) {
       }
     }
     
-    sendEvent('google_opened', { sentiment: sentiment || 'positive', rating: 5, metadata: { planned_rating: 5 } });
+    sendEvent('google_opened', { 
+      sentiment: sentiment || 'positive', 
+      rating: 5, 
+      metadata: { planned_rating: 5, feedback_id: feedbackId } 
+    });
     sendEvent('flow_completed', { metadata: { destination: 'google', sentiment: sentiment || 'positive', planned_rating: 5 } });
     
     let url = (biz.reviewLink || '').trim();
@@ -224,9 +232,11 @@ function LandingClientContent({ id }: { id: string }) {
   const confirmGoogleReviewWithRating = useCallback(async () => {
     if (!biz?.reviewLink || !plannedRating) return;
     
+    let feedbackId: string | undefined;
+    
     // Save their feedback with the planned rating
     try {
-      await fetch('/api/feedback/submit', {
+      const res = await fetch('/api/feedback/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -240,12 +250,24 @@ function LandingClientContent({ id }: { id: string }) {
           consent: true,
         }),
       });
-      sendEvent('feedback_submitted', { metadata: { sentiment: plannedRating >= 4 ? 'positive' : 'negative', planned_rating: plannedRating } });
+      const data = await res.json();
+      if (data.ok && data.feedback_id) feedbackId = data.feedback_id;
+      sendEvent('feedback_submitted', { 
+        metadata: { 
+          sentiment: plannedRating >= 4 ? 'positive' : 'negative', 
+          planned_rating: plannedRating,
+          feedback_id: feedbackId
+        } 
+      });
     } catch (e) {
       console.error('Failed to save feedback with rating:', e);
     }
 
-    sendEvent('google_opened', { sentiment: plannedRating >= 4 ? 'positive' : 'negative', rating: plannedRating, metadata: { planned_rating: plannedRating } });
+    sendEvent('google_opened', { 
+      sentiment: plannedRating >= 4 ? 'positive' : 'negative', 
+      rating: plannedRating, 
+      metadata: { planned_rating: plannedRating, feedback_id: feedbackId } 
+    });
     sendEvent('flow_completed', { metadata: { destination: 'google_from_feedback', sentiment: plannedRating >= 4 ? 'positive' : 'negative', planned_rating: plannedRating } });
     
     let url = (biz.reviewLink || '').trim();
@@ -356,9 +378,21 @@ function LandingClientContent({ id }: { id: string }) {
           consent: true,
         }),
       });
+      const data = await res.json();
       if (!res.ok) throw new Error('Unable to submit.');
-      sendEvent('feedback_submitted', { metadata: { sentiment: 'negative' } });
-      sendEvent('flow_completed', { metadata: { destination: 'private_feedback', sentiment: 'negative' } });
+      sendEvent('feedback_submitted', { 
+        metadata: { 
+          sentiment: 'negative',
+          feedback_id: data.feedback_id
+        } 
+      });
+      sendEvent('flow_completed', { 
+        metadata: { 
+          destination: 'private_feedback', 
+          sentiment: 'negative',
+          feedback_id: data.feedback_id
+        } 
+      });
       setSubmitted(true);
     } catch (e) {
       setError('Something went wrong. Please try again.');

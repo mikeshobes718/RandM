@@ -25,17 +25,33 @@ export async function GET(req: Request) {
       const { data: biz } = await supa.from('businesses').select('id, review_link').eq('owner_uid', uid);
       const allowed = new Set<string>();
       (biz || []).forEach((b: { id: string; review_link: string | null }) => {
-        if (b.review_link) allowed.add(b.review_link);
+        if (b.review_link) {
+          allowed.add(b.review_link);
+          try {
+            const url = new URL(b.review_link);
+            allowed.add(`${url.origin}${url.pathname}`);
+          } catch {}
+        }
         try {
           // Allow landing URL on both APP_URL base and current request origin (apex/www)
           const base = new URL(process.env.APP_URL || '');
-          allowed.add(new URL(`/r/${b.id}`, base).toString());
+          const landingPath = `/r/${b.id}`;
+          allowed.add(new URL(landingPath, base).toString());
+          
           const reqUrl = new URL(req.url);
           const currentOrigin = `${reqUrl.protocol}//${reqUrl.host}`;
-          allowed.add(new URL(`/r/${b.id}`, currentOrigin).toString());
+          allowed.add(new URL(landingPath, currentOrigin).toString());
         } catch {}
       });
-      if (!allowed.has(data)) {
+
+      // Normalize data for comparison (remove query params for the check)
+      let normalizedData = data;
+      try {
+        const url = new URL(data);
+        normalizedData = `${url.origin}${url.pathname}`;
+      } catch {}
+
+      if (!allowed.has(data) && !allowed.has(normalizedData)) {
         return new NextResponse('Starter plan allows QR only for your saved review link.', { status: 403 });
       }
     }

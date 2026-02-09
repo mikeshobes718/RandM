@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { ensureFeedbackTables, isReviewEventName, recordReviewEvent } from '@/lib/feedbackStorage';
+import { sendOwnerFeedbackNotification } from '@/lib/notifications';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -75,6 +76,18 @@ export async function POST(req: Request) {
     rating: normalizedRating ?? undefined,
     metadata: Object.keys(eventMetadata).length ? eventMetadata : undefined,
   });
+
+  // Trigger notification for meaningful events that aren't handled by /api/feedback/submit
+  // Specifically: google_opened (anonymous)
+  if (event === 'google_opened' && !eventMetadata.feedback_id) {
+    sendOwnerFeedbackNotification({
+      businessId,
+      rating: normalizedRating || 5,
+      source: src,
+      customerName: 'Anonymous Customer',
+      comment: '(Customer redirected to Google Maps)',
+    }).catch(err => console.error('[API EVENT] Notification error:', err));
+  }
 
   return NextResponse.json({ ok: true });
 }

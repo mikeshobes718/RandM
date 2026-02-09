@@ -64,8 +64,10 @@ type ActivityItem = {
 type Campaign = {
   id?: string;
   name: string;
+  type?: string;
   sent: number;
   clicks: number;
+  failed?: number;
   date: string;
 };
 

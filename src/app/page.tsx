@@ -32,22 +32,22 @@ const steps = [
   {
     num: "01",
     title: "Connect your business",
-    text: "Link your Google Business Profile in seconds. We’ll instantly generate a custom QR code for your physical location."
+    text: "Link your Google Profile and POS system in seconds. We generate custom QR codes and enable automatic follow-up texts or emails for every visit."
   },
   {
     num: "02",
-    title: "Share your QR code",
-    text: "Place the QR code throughout your business. Customers scan it to choose where to share their feedback—giving them a direct path to Google or a private message to you."
+    title: "Capture customer data",
+    text: "Customers scan in-store or receive an automatic text via POS integration. We capture contact info and route them to the perfect feedback experience."
   },
   {
     num: "03",
-    title: "Recover unhappy customers",
-    text: "If a customer has a less-than-perfect experience, they can message you privately. You get the chance to fix the issue before it ever becomes a public review."
+    title: "Route feedback intelligently",
+    text: "Happy customers are guided to Google to share their experience. Those with concerns are routed to a private channel so you can resolve issues before they become public."
   },
   {
     num: "04",
-    title: "Manage everything in one place",
-    text: "Track new reviews, watch ratings increase, organize customer contact info, and reply directly from a simple, easy-to-use dashboard."
+    title: "Grow your reputation",
+    text: "Watch your public rating climb while building a powerful customer database. Use these insights to improve operations and drive repeat business."
   }
 ];
 
