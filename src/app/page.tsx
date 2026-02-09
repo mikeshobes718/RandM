@@ -7,21 +7,21 @@ import NewsletterSignup from "../components/NewsletterSignup";
 const features = [
   {
     title: "Compliant Review Growth",
-    description: "Get more Google reviews the right way. We help happy customers share their experiences while giving you a private channel for feedback.",
+    description: "Get more Google reviews the right way. Our smart Review Routing guides happy customers to Google while providing a private channel for concerns.",
     icon: (
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h8M8 12h5m4 7h1a2 2 0 012-2v12l-4-2-4 2-4-2-4 2V7a2 2 0 012-2h1" />
     )
   },
   {
-    title: "Smart QR Codes",
-    description: "Custom branded QR codes for your physical location that track every scan in real-time.",
+    title: "POS & Smart QR Codes",
+    description: "Connect your POS system to automate outreach, and use custom branded QR codes in-store to capture names and contact info instantly.",
     icon: (
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
     )
   },
   {
     title: "Reputation Dashboard",
-    description: "Monitor your rating, track new reviews, and organize customer leads from one place.",
+    description: "Monitor your rating, track new reviews, and manage your growing customer database from one simple, connected workspace.",
     icon: (
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
     )
@@ -106,7 +106,7 @@ export default function Home() {
             </Link>
             <p className="text-muted">A simple 4-step system designed for busy operators.</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 max-w-6xl mx-auto mb-16">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 max-w-6xl mx-auto mb-16 items-start">
             {steps.map((step) => (
               <div key={step.num} className="relative group">
                 <div className="text-5xl font-black text-brand/10 mb-4 group-hover:text-brand/20 transition-colors">{step.num}</div>

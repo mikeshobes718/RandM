@@ -117,7 +117,10 @@ export async function POST(req: Request) {
     const referer = req.headers.get('referer') || '';
     const isEditRequest = referer.includes('edit=1');
     
-    if (!isEditRequest && (!sub || sub.status.toLowerCase() !== 'active')) {
+    // RELAXED PLAN CHECK: If they are on the onboarding page with a plan in the URL, allow it
+    const isOnboardingWithPlan = referer.includes('/onboarding/business') && referer.includes('plan=');
+    
+    if (!isEditRequest && !isOnboardingWithPlan && (!sub || sub.status.toLowerCase() !== 'active')) {
       const { data: existingBiz } = await supabase
         .from('businesses')
         .select('id')
