@@ -10,6 +10,8 @@ export async function GET(request: Request) {
   let uid = await requireUid().catch(() => null);
   let email = '';
 
+  console.log('[API/PLAN/STATUS] Initial UID from cookie:', uid);
+
   if (!uid) {
     const authHeader = request.headers.get('authorization') || '';
     const token = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7) : '';
@@ -18,7 +20,10 @@ export async function GET(request: Request) {
         const decoded = await verifyIdTokenViaRest(token);
         uid = decoded.uid;
         email = (decoded as any).email || '';
-      } catch {}
+        console.log('[API/PLAN/STATUS] UID from Bearer:', uid, 'Email:', email);
+      } catch (e) {
+        console.error('[API/PLAN/STATUS] Bearer token decode failed:', e);
+      }
     }
   }
 
@@ -27,16 +32,25 @@ export async function GET(request: Request) {
       const auth = getAuthAdmin();
       const user = await auth.getUser(uid);
       email = user.email || '';
-    } catch {}
+      console.log('[API/PLAN/STATUS] Email from Firebase Admin:', email);
+    } catch (e) {
+      console.error('[API/PLAN/STATUS] Firebase Admin getUser failed:', e);
+    }
   }
 
-  if (!uid) return new NextResponse('Unauthorized', { status: 401 });
+  if (!uid) {
+    console.warn('[API/PLAN/STATUS] No UID found, returning 401');
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
 
   // Co-founder override
   const coFounders = ['bladespindler@gmail.com', 'volurer295@ovbest.com'];
   if (email && coFounders.includes(email.toLowerCase())) {
+    console.log('[API/PLAN/STATUS] Override triggered for:', email);
     return NextResponse.json({ status: 'active', plan: 'pro' });
   }
+
+  console.log('[API/PLAN/STATUS] Proceeding to database check for UID:', uid);
 
   let data = null;
   let error = null;
