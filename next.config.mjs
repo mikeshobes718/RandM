@@ -2,10 +2,8 @@ import path from 'node:path';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
-  // Fix path issues by explicitly setting the correct working directory
+  // Removed 'output: standalone' - not needed for Vercel
   distDir: '.next',
-  outputFileTracingRoot: path.join(process.cwd()),
   generateBuildId: async () => {
     return 'build-' + Date.now();
   },

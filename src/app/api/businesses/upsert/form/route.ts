@@ -8,6 +8,19 @@ import { normalizePhone } from '@/lib/phone';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// Handle CORS preflight requests
+export async function OPTIONS(req: Request) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
+
 type Payload = {
   name: string;
   google_place_id?: string | null;
@@ -48,17 +61,26 @@ async function readPayload(req: Request): Promise<Payload> {
 }
 
 export async function POST(req: Request) {
+  console.log('[UPSERT/FORM] Request received from:', req.headers.get('referer') || 'unknown');
+  console.log('[UPSERT/FORM] Request method:', req.method);
+  console.log('[UPSERT/FORM] Content-Type:', req.headers.get('content-type'));
+
   // Auth: prefer session cookie; else idToken from header/body/form
   let uid: string | null = null;
   let email: string | null = null;
   let payload: Payload | null = null;
-  try { uid = await requireUid(); } catch {}
+  try { uid = await requireUid(); } catch (e) {
+    console.log('[UPSERT/FORM] requireUid failed:', e);
+  }
   if (!uid) {
     const authHeader = req.headers.get('authorization') || '';
     const bearer = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7) : '';
     payload = await readPayload(req);
     const candidate = bearer || payload?.idToken || '';
-    if (!candidate) return new NextResponse('Unauthorized', { status: 401 });
+    if (!candidate) {
+      console.error('[UPSERT/FORM] No auth token found');
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
     let auth: ReturnType<typeof getAuthAdmin> | null = null;
     try {
       auth = getAuthAdmin();
@@ -66,23 +88,32 @@ export async function POST(req: Request) {
         const decoded = await auth.verifyIdToken(candidate);
         uid = decoded.uid;
         email = (decoded as unknown as { email?: string }).email || null;
-      } catch {
+        console.log('[UPSERT/FORM] Auth verified via Firebase Admin, UID:', uid);
+      } catch (verifyErr) {
+        console.log('[UPSERT/FORM] Firebase verifyIdToken failed:', verifyErr);
         if (!payload?.email) throw new Error('no-auth');
         const u = await auth.getUserByEmail(payload.email);
         uid = u.uid;
         email = u.email || payload.email;
+        console.log('[UPSERT/FORM] Auth recovered via email lookup, UID:', uid);
       }
-    } catch {
+    } catch (adminErr) {
+      console.log('[UPSERT/FORM] Firebase Admin failed, trying REST:', adminErr);
       try {
         const viaRest = await verifyIdTokenViaRest(candidate);
         uid = viaRest.uid;
         email = viaRest.email ?? payload?.email ?? null;
-      } catch {
+        console.log('[UPSERT/FORM] Auth verified via REST, UID:', uid);
+      } catch (restErr) {
+        console.error('[UPSERT/FORM] REST auth also failed:', restErr);
         return new NextResponse('Unauthorized', { status: 401 });
       }
     }
   }
   if (!payload) payload = await readPayload(req);
+  
+  console.log('[UPSERT/FORM] Authenticated UID:', uid);
+  console.log('[UPSERT/FORM] Business name:', payload.name);
 
   const cleanedName = (payload.name || '').trim();
   if (!cleanedName) {

@@ -169,21 +169,20 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
     setLoading(true);
     setError('');
 
-    try {
-      const idToken = localStorage.getItem('idToken') || '';
-      
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      
-      if (idToken) {
-        headers['Authorization'] = `Bearer ${idToken}`;
-      }
+    // Retry logic for network issues
+    const makeRequest = async (attempt = 1): Promise<Response> => {
+      try {
+        const idToken = localStorage.getItem('idToken') || '';
+        
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        
+        if (idToken) {
+          headers['Authorization'] = `Bearer ${idToken}`;
+        }
 
-      const response = await fetch('/api/businesses/upsert/form', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
+        const payload = {
           name: businessName.trim(),
           contact_phone: normalizePhone(contactPhone),
           review_link: reviewLink.trim() || null,
@@ -195,12 +194,37 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
           address: selectedPlace?.formattedAddress || null,
           business_type: selectedPlace?.businessType || null,
           idToken,
-        }),
-        credentials: 'include',
-      });
+        };
+
+        console.log('[BusinessSetupForm] Submitting to /api/businesses/upsert/form, attempt', attempt);
+        console.log('[BusinessSetupForm] Payload:', payload);
+
+        const response = await fetch('/api/businesses/upsert/form', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+          credentials: 'include',
+        });
+
+        console.log('[BusinessSetupForm] Response status:', response.status, response.statusText);
+        return response;
+      } catch (err) {
+        console.error('[BusinessSetupForm] Fetch error on attempt', attempt, ':', err);
+        if (attempt < 3) {
+          console.log('[BusinessSetupForm] Retrying in 1 second...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return makeRequest(attempt + 1);
+        }
+        throw err;
+      }
+    };
+
+    try {
+      const response = await makeRequest();
 
       if (response.ok) {
         const data = await response.json();
+        console.log('[BusinessSetupForm] Success:', data);
         if (data.business) {
           localStorage.setItem('businessData', JSON.stringify(data.business));
         }
@@ -214,15 +238,19 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
         }
       } else {
         const errorText = await response.text().catch(() => 'Failed to save');
+        console.error('[BusinessSetupForm] Server error:', response.status, errorText);
         if (response.status === 401) {
-          setError('Session expired. Please refresh.');
+          setError('Session expired. Please refresh and try again.');
+        } else if (response.status === 403) {
+          setError('Permission denied. Please ensure you have selected a plan and try again.');
         } else {
-          setError(errorText || `Error: ${response.status}`);
+          setError(errorText || `Server error: ${response.status}`);
         }
       }
-    } catch (err) {
-      console.error('Save error:', err);
-      setError('Failed to save business.');
+    } catch (err: any) {
+      console.error('[BusinessSetupForm] Fatal error:', err);
+      const errorMessage = err?.message || 'Unknown error';
+      setError(`Network error: ${errorMessage}. Please check your connection and try again.`);
     } finally {
       setLoading(false);
     }
