@@ -33,7 +33,8 @@ export async function GET(request: Request) {
   if (!uid) return new NextResponse('Unauthorized', { status: 401 });
 
   // Co-founder override
-  if (email && email.toLowerCase() === 'bladespindler@gmail.com') {
+  const coFounders = ['bladespindler@gmail.com', 'volurer295@ovbest.com'];
+  if (email && coFounders.includes(email.toLowerCase())) {
     return NextResponse.json({ status: 'active', plan: 'pro' });
   }
 

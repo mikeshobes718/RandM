@@ -6,15 +6,28 @@ import Link from 'next/link';
 
 async function getPostLoginRedirect(): Promise<string> {
   try {
-    const response = await fetch('/api/businesses/me', {
+    // 1. Check if they have a business
+    const bizResponse = await fetch('/api/businesses/me', {
       credentials: 'include',
     });
-    if (response.ok) {
-      const data = await response.json();
-      if (data && data.business && data.business.id) {
+    if (bizResponse.ok) {
+      const bizData = await bizResponse.json();
+      if (bizData && bizData.business && bizData.business.id) {
         return '/dashboard';
       }
     }
+
+    // 2. No business, check if they have a plan
+    const planResponse = await fetch('/api/plan/status', {
+      credentials: 'include',
+    });
+    if (planResponse.ok) {
+      const planData = await planResponse.json();
+      if (planData && planData.status !== 'none') {
+        return '/onboarding/business';
+      }
+    }
+
     return '/select-plan';
   } catch (error) {
     return '/select-plan';
