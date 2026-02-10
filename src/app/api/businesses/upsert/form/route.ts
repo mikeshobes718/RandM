@@ -153,6 +153,17 @@ export async function POST(req: Request) {
     
     // Co-founder override for plan check
     const coFounders = ['bladespindler@gmail.com', 'volurer295@ovbest.com'];
+    
+    // Ensure we have an email if we only have a UID
+    if (uid && !email) {
+      try {
+        const u = await getAuthAdmin().getUser(uid);
+        email = u.email || null;
+      } catch (e) {
+        console.log('[UPSERT/FORM] Failed to fetch email for override check:', e);
+      }
+    }
+
     const isOverride = email && coFounders.includes(email.toLowerCase());
     
     if (!isEditRequest && !isOnboardingWithPlan && !isOverride && (!sub || sub.status.toLowerCase() !== 'active')) {
@@ -173,9 +184,6 @@ export async function POST(req: Request) {
   // Ensure users row exists
   try {
     if (uid) {
-      if (!email) {
-        try { const u = await getAuthAdmin().getUser(uid); email = u.email || null; } catch {}
-      }
       if (email) { await supabase.from('users').upsert({ uid, email }); }
     }
   } catch {}
