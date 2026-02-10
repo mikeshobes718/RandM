@@ -27,25 +27,35 @@ export default function SelectPlanPage() {
 
       // Check if they already have a plan to skip this step
       try {
+        console.log('[SELECT-PLAN] Checking plan status...');
         const res = await fetch('/api/plan/status');
         if (res.ok) {
           const data = await res.json();
+          console.log('[SELECT-PLAN] Plan status data:', data);
           if (data.status !== 'none') {
             // Already have a plan, check if they also have a business
+            console.log('[SELECT-PLAN] Active plan found, checking business...');
             const bizRes = await fetch('/api/businesses/me');
             if (bizRes.ok) {
               const bizData = await bizRes.json();
+              console.log('[SELECT-PLAN] Business data:', bizData);
               if (bizData.business?.google_place_id) {
+                console.log('[SELECT-PLAN] Business complete, redirecting to dashboard');
                 router.replace('/dashboard');
               } else {
+                console.log('[SELECT-PLAN] Business incomplete, redirecting to onboarding');
                 router.replace('/onboarding/business');
               }
               return;
             }
+          } else {
+            console.log('[SELECT-PLAN] No active plan found (status: none)');
           }
+        } else {
+          console.error('[SELECT-PLAN] Plan status fetch failed:', res.status);
         }
       } catch (err) {
-        console.error('Plan check error:', err);
+        console.error('[SELECT-PLAN] Plan check error:', err);
       }
 
       setAuthLoading(false);
