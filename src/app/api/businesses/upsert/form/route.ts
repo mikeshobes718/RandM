@@ -151,7 +151,11 @@ export async function POST(req: Request) {
     // RELAXED PLAN CHECK: If they are on the onboarding page with a plan in the URL, allow it
     const isOnboardingWithPlan = referer.includes('/onboarding/business') && referer.includes('plan=');
     
-    if (!isEditRequest && !isOnboardingWithPlan && (!sub || sub.status.toLowerCase() !== 'active')) {
+    // Co-founder override for plan check
+    const coFounders = ['bladespindler@gmail.com', 'volurer295@ovbest.com'];
+    const isOverride = email && coFounders.includes(email.toLowerCase());
+    
+    if (!isEditRequest && !isOnboardingWithPlan && !isOverride && (!sub || sub.status.toLowerCase() !== 'active')) {
       const { data: existingBiz } = await supabase
         .from('businesses')
         .select('id')
