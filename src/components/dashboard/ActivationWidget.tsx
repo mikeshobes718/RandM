@@ -14,9 +14,10 @@ interface ActivationWidgetProps {
   };
   recentFeedbackCount: number;
   isPro: boolean;
+  onStatusChange?: (isActivated: boolean) => void;
 }
 
-export default function ActivationWidget({ business, stats, recentFeedbackCount, isPro }: ActivationWidgetProps) {
+export default function ActivationWidget({ business, stats, recentFeedbackCount, isPro, onStatusChange }: ActivationWidgetProps) {
   const [checklist, setChecklist] = useState({
     googleConnected: !!business.google_place_id,
     qrCreated: !!business.id,
@@ -26,6 +27,7 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
     feedbackCaptured: recentFeedbackCount > 0,
     scriptInstalled: false,
   });
+
 
   useEffect(() => {
     // Load local-only state from localStorage
@@ -40,7 +42,7 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
             qrPlaced: parsed.qrPlaced || false,
             scriptInstalled: parsed.scriptInstalled || false,
           }));
-        } catch {}
+        } catch { }
       }
     }
   }, [business.id]);
@@ -59,10 +61,10 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
 
   const toggleStep = (key: keyof typeof checklist) => {
     if (key === 'googleConnected' || key === 'qrCreated' || key === 'firstUsage' || key === 'feedbackCaptured') return;
-    
+
     const newChecklist = { ...checklist, [key]: !checklist[key] };
     setChecklist(newChecklist);
-    
+
     if (business.id) {
       localStorage.setItem(`activation_${business.id}`, JSON.stringify(newChecklist));
     }
@@ -83,6 +85,11 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
   const progress = Math.round((steps.filter(s => s.done && s.required).length / totalRequired) * 100);
   const isActivated = checklist.googleConnected && checklist.qrCreated && checklist.qrDownloaded && checklist.qrPlaced && checklist.firstUsage;
 
+  useEffect(() => {
+    onStatusChange?.(isActivated);
+  }, [isActivated, onStatusChange]);
+
+
   return (
     <div className="premium-card p-6 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 h-full">
       <div className="flex items-center justify-between mb-6">
@@ -101,23 +108,22 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
       </div>
 
       <div className="w-full bg-slate-100 h-2 rounded-full mb-8 overflow-hidden">
-        <div 
-          className="bg-brand h-full transition-all duration-1000 ease-out" 
+        <div
+          className="bg-brand h-full transition-all duration-1000 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
         {steps.map((step) => (
           <div key={step.key} className="flex items-start gap-3 group">
-            <button 
+            <button
               onClick={() => step.toggleable && toggleStep(step.key as any)}
               disabled={!step.toggleable}
-              className={`mt-0.5 w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${
-                step.done 
-                  ? 'bg-emerald-500 border-emerald-500 text-white' 
-                  : 'border-slate-200 group-hover:border-brand/30'
-              } ${!step.toggleable && !step.done ? 'opacity-50' : ''}`}
+              className={`mt-0.5 w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0 ${step.done
+                ? 'bg-emerald-500 border-emerald-500 text-white'
+                : 'border-slate-200 group-hover:border-brand/30'
+                } ${!step.toggleable && !step.done ? 'opacity-50' : ''}`}
             >
               {step.done && (
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4">
@@ -126,11 +132,11 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
               )}
             </button>
             <div className="flex-1 min-w-0">
-              <p className={`text-xs font-bold ${step.done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+              <p className={`text-xs font-bold ${step.done ? 'text-slate-400 line-through' : 'text-slate-700'} truncate`}>
                 {step.label}
               </p>
               {step.key === 'qrDownloaded' && !step.done && (
-                <button 
+                <button
                   onClick={() => {
                     // Trigger download logic here or just mark as done
                     toggleStep('qrDownloaded');

@@ -57,7 +57,7 @@ function NewRequestContent() {
 
   const handleStartCampaign = async () => {
     if (!name || !body || sending) return;
-    
+
     setSending(true);
     setError(null);
     setSuccess(null);
@@ -72,7 +72,7 @@ function NewRequestContent() {
       const tok = await user.getIdToken(true);
       const res = await fetch('/api/campaigns/create', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${tok}`
         },
@@ -102,16 +102,16 @@ function NewRequestContent() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 pt-12 pb-32 sm:pt-16 sm:pb-40 space-y-12 animate-fade-in">
-      <div className="space-y-4">
-        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Send New Requests</h1>
-        <p className="text-slate-500 font-medium">Send SMS or Email invitations to your customers.</p>
+    <div className="max-w-6xl mx-auto px-6 pt-6 pb-24 sm:pt-10 sm:pb-32 space-y-8 animate-fade-in">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Send New Requests</h1>
+        <p className="text-slate-500 text-sm font-medium">Send SMS or Email invitations to your customers.</p>
       </div>
 
       {(error || success) && (
         <div className="space-y-3">
           {error && (
-            <div 
+            <div
               onClick={() => error.includes('refresh') && window.location.reload()}
               className={`p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm font-bold animate-in slide-in-from-top-2 ${error.includes('refresh') ? 'cursor-pointer hover:bg-red-100 transition-colors' : ''}`}
             >
@@ -129,28 +129,32 @@ function NewRequestContent() {
       <div className="grid lg:grid-cols-2 gap-8">
         <div className="premium-card p-8 rounded-[40px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40">
           <h2 className="text-xl font-black text-slate-900 mb-6">Campaign Setup</h2>
-          
+
           <div className="space-y-8">
             <div>
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Choose Channel</label>
               <div className="grid grid-cols-2 gap-4">
-                <button 
+                <button
                   onClick={() => setType('SMS')}
-                  className={`p-6 rounded-3xl border-2 transition-all group text-center ${
-                    type === 'SMS' ? 'border-brand bg-brand/5 shadow-lg shadow-brand/10' : 'border-slate-50 hover:border-slate-200 bg-slate-50/50'
-                  }`}
+                  className={`p-6 rounded-3xl border-2 transition-all duration-300 group text-center relative overflow-hidden ${type === 'SMS'
+                      ? 'border-brand bg-brand/5 shadow-xl shadow-brand/10 scale-[1.02]'
+                      : 'border-slate-50 hover:border-slate-200 bg-slate-50/50 hover:scale-[1.01]'
+                    }`}
                 >
-                  <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform">📱</span>
+                  {type === 'SMS' && <div className="absolute top-0 right-0 p-2 text-brand text-xs">✓</div>}
+                  <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform duration-300">📱</span>
                   <p className="font-black text-slate-900 uppercase tracking-widest text-xs">SMS Blast</p>
                   <p className="text-[10px] text-slate-400 mt-1 font-bold">Highest open rate</p>
                 </button>
-                <button 
+                <button
                   onClick={() => setType('Email')}
-                  className={`p-6 rounded-3xl border-2 transition-all group text-center ${
-                    type === 'Email' ? 'border-brand bg-brand/5 shadow-lg shadow-brand/10' : 'border-slate-50 hover:border-slate-200 bg-slate-50/50'
-                  }`}
+                  className={`p-6 rounded-3xl border-2 transition-all duration-300 group text-center relative overflow-hidden ${type === 'Email'
+                      ? 'border-brand bg-brand/5 shadow-xl shadow-brand/10 scale-[1.02]'
+                      : 'border-slate-50 hover:border-slate-200 bg-slate-50/50 hover:scale-[1.01]'
+                    }`}
                 >
-                  <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform">✉️</span>
+                  {type === 'Email' && <div className="absolute top-0 right-0 p-2 text-brand text-xs">✓</div>}
+                  <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform duration-300">✉️</span>
                   <p className="font-black text-slate-900 uppercase tracking-widest text-xs">Email Campaign</p>
                   <p className="text-[10px] text-slate-400 mt-1 font-bold">Best for newsletters</p>
                 </button>
@@ -159,7 +163,7 @@ function NewRequestContent() {
 
             <div>
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Campaign Name</label>
-              <input 
+              <input
                 type="text"
                 placeholder="e.g. Weekly Follow-up"
                 value={name}
@@ -189,7 +193,7 @@ function NewRequestContent() {
                   <Link href="/templates" className="text-[9px] font-black text-brand uppercase tracking-widest hover:underline">Change Template →</Link>
                 </div>
               </div>
-              <textarea 
+              <textarea
                 rows={5}
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
@@ -197,7 +201,7 @@ function NewRequestContent() {
               />
             </div>
 
-            <button 
+            <button
               className="primary-button w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-brand/20 disabled:opacity-50 disabled:grayscale"
               disabled={!body || !name || sending}
               onClick={handleStartCampaign}
@@ -213,7 +217,7 @@ function NewRequestContent() {
               <span className="text-6xl">{type === 'SMS' ? '📱' : '✉️'}</span>
             </div>
             <h3 className="text-xs font-black uppercase tracking-[0.2em] mb-10 text-white/40">Preview</h3>
-            
+
             <div className="relative mx-auto max-w-[280px]">
               {type === 'SMS' ? (
                 <div className="bg-white/5 border border-white/10 rounded-[32px] p-6 pt-12 aspect-[9/16] relative">
@@ -245,7 +249,7 @@ function NewRequestContent() {
               Compliance Check
             </h4>
             <p className="text-xs text-brand/70 leading-relaxed font-medium">
-              {type === 'SMS' 
+              {type === 'SMS'
                 ? "Your message includes mandatory opt-out instructions. SMS campaigns are subject to 10DLC registration requirements."
                 : "Your email includes a standard unsubscribe link in the footer to comply with CAN-SPAM regulations."}
             </p>

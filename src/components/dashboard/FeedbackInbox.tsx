@@ -31,7 +31,7 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
     if (saved) {
       try {
         setResolvedIds(JSON.parse(saved));
-      } catch {}
+      } catch { }
     }
   }, [businessId]);
 
@@ -43,10 +43,10 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
   }, [initialItems, resolvedIds]);
 
   const handleResolve = (id: string) => {
-    const newResolved = resolvedIds.includes(id) 
-      ? resolvedIds.filter(rid => rid !== id) 
+    const newResolved = resolvedIds.includes(id)
+      ? resolvedIds.filter(rid => rid !== id)
       : [...resolvedIds, id];
-    
+
     setResolvedIds(newResolved);
     localStorage.setItem(`resolved_feedback_${businessId}`, JSON.stringify(newResolved));
   };
@@ -83,11 +83,10 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
             <button
               key={f.id}
               onClick={() => setFilter(f.id as any)}
-              className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                filter === f.id 
-                  ? 'bg-slate-900 text-white shadow-lg' 
+              className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === f.id
+                  ? 'bg-slate-900 text-white shadow-lg'
                   : 'bg-white text-slate-400 border border-slate-200 hover:border-slate-300'
-              }`}
+                }`}
             >
               {f.label}
             </button>
@@ -108,21 +107,24 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
           filteredItems.map((item) => {
             const isEvent = item.type === 'event';
             const isResolved = item.status === 'resolved';
-            
+
             return (
               <div key={item.id} className={`p-6 transition-all group hover:bg-slate-50/50 ${isResolved ? 'opacity-60 grayscale-[0.5]' : ''}`}>
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm border border-slate-100 ${
-                      isEvent ? 'bg-blue-50 text-blue-600' : 
-                      item.rating >= 4 ? 'bg-emerald-50 text-emerald-600' :
-                      'bg-rose-50 text-rose-600'
-                    }`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm border border-slate-100 ${isEvent ? 'bg-blue-50 text-blue-600' :
+                        item.rating >= 4 ? 'bg-emerald-50 text-emerald-600' :
+                          item.rating <= 2 ? 'bg-rose-500 text-white border-none shadow-lg shadow-rose-200 animate-pulse' :
+                            'bg-rose-50 text-rose-600'
+                      }`}>
                       {isEvent ? '🚀' : item.rating >= 4 ? '⭐️' : '⚠️'}
                     </div>
                     <div>
-                      <p className="text-sm font-black text-slate-900 truncate max-w-[140px]">
+                      <p className="text-sm font-black text-slate-900 truncate max-w-[140px] flex items-center gap-2">
                         {isEvent ? 'Verified Redirect' : (item.name || 'Anonymous')}
+                        {!isEvent && item.rating <= 2 && !isResolved && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+                        )}
                       </p>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                         {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
@@ -130,11 +132,10 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
                     </div>
                   </div>
                   {!isEvent && (
-                    <span className={`text-[10px] font-black px-2 py-1 rounded-lg uppercase tracking-widest ${
-                      item.rating >= 4 ? 'bg-emerald-100 text-emerald-700' : 
-                      item.rating === 3 ? 'bg-slate-100 text-slate-600' :
-                      'bg-rose-100 text-rose-700'
-                    }`}>
+                    <span className={`text-[10px] font-black px-2 py-1 rounded-lg uppercase tracking-widest ${item.rating >= 4 ? 'bg-emerald-100 text-emerald-700' :
+                        item.rating === 3 ? 'bg-slate-100 text-slate-600' :
+                          'bg-rose-600 text-white shadow-sm'
+                      }`}>
                       {item.rating} Stars
                     </span>
                   )}
@@ -147,17 +148,16 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   {!isEvent && (
                     <>
-                      <button 
+                      <button
                         onClick={() => window.location.href = `mailto:${item.email}?subject=Feedback regarding your experience`}
                         className="px-3 py-1.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-black transition-all"
                       >
                         Reply
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleResolve(item.id)}
-                        className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all border ${
-                          isResolved ? 'bg-white text-slate-400 border-slate-200' : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50'
-                        }`}
+                        className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all border ${isResolved ? 'bg-white text-slate-400 border-slate-200' : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50'
+                          }`}
                       >
                         {isResolved ? 'Re-open' : 'Resolve'}
                       </button>
