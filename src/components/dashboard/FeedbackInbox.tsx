@@ -63,7 +63,7 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
   }, [items, filter]);
 
   return (
-    <div className="premium-card p-0 rounded-[32px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden h-full flex flex-col">
+    <div className="premium-card p-0 rounded-[32px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden flex flex-col">
       <div className="p-6 border-b border-slate-100 bg-slate-50/50">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-black text-slate-900">Feedback Inbox</h2>

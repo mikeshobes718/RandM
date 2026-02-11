@@ -25,7 +25,7 @@ export default function PlanUsageCard({ planName, requestsUsed, requestsLimit, q
   const progress = isUnlimited ? 0 : Math.min(100, (requestsUsed / requestsLimit) * 100);
 
   return (
-    <div className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 h-full flex flex-col justify-between">
+    <div className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col justify-between">
       <div>
         <div className="flex items-center justify-between mb-8">
           <div>
