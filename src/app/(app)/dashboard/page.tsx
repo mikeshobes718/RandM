@@ -289,15 +289,6 @@ function DashboardContent() {
             qrScans={planUsage.qrScans}
             isUnlimited={planUsage.isUnlimited}
           />
-          {!isActivated && (
-            <ActivationWidget
-              business={business}
-              stats={stats}
-              recentFeedbackCount={recentFeedback.length}
-              isPro={isPro}
-              onStatusChange={setIsActivated}
-            />
-          )}
         </div>
       </div>
 
@@ -453,6 +444,29 @@ function DashboardContent() {
                       </div>
                     </div>
 
+                    {/* Moved QR Tips directly here */}
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="p-6 bg-brand/5 rounded-2xl border border-brand/10 relative overflow-hidden group">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-brand mb-2">Pro Tip: QR Placement</h4>
+                        <p className="text-xs text-brand/80 leading-relaxed font-medium">
+                          The best locations are on <strong>desks, dining tables, and checkout counters</strong>. Add your QR code to printed receipts or table tents to increase scan rates by up to 40%.
+                        </p>
+                      </div>
+
+                      <div className="p-6 bg-slate-900 rounded-2xl border border-slate-800 relative overflow-hidden group">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Custom Design Service</h4>
+                        <p className="text-xs text-white leading-relaxed font-medium mb-4">
+                          Need a professional touch? We can design and print custom high-conversion QR assets for your physical store.
+                        </p>
+                        <button
+                          onClick={() => window.location.href = 'mailto:hello@reviewsandmarketing.com?subject=Custom Design Request'}
+                          className="px-4 h-9 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all shadow-lg"
+                        >
+                          Hire Us to Design
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="flex gap-2 items-center text-[10px] font-black text-slate-400 uppercase tracking-widest bg-amber-50 p-3 rounded-xl border border-amber-100">
                       <span className="text-amber-500 text-sm">💡</span>
                       <span>Pro Tip: Add this code to your printed receipts for the highest scan rate.</span>
@@ -476,38 +490,7 @@ function DashboardContent() {
             />
           </div>
 
-          {/* QR Best Practices & Helpful Tip */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <div className="p-8 bg-brand/5 rounded-[32px] border border-brand/10 relative overflow-hidden group">
-              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <span className="text-8xl">💡</span>
-              </div>
-              <h4 className="text-xs font-black uppercase tracking-widest text-brand mb-3">Pro Tip: QR Placement</h4>
-              <p className="text-sm text-brand/80 leading-relaxed font-medium mb-4">
-                The best locations are on <strong>desks, dining tables, and checkout counters</strong>. Add your QR code to printed receipts or table tents to increase scan rates by up to 40%.
-              </p>
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand/60">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse"></span>
-                Recommended: Scan it yourself to test the sequence
-              </div>
-            </div>
-
-            <div className="p-8 bg-slate-900 rounded-[32px] border border-slate-800 relative overflow-hidden group shadow-2xl shadow-slate-200">
-              <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <span className="text-8xl">🎨</span>
-              </div>
-              <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Custom Design Service</h4>
-              <p className="text-sm text-white leading-relaxed font-medium mb-6">
-                Need a professional touch? We can design and print custom high-conversion QR assets for your physical store.
-              </p>
-              <button
-                onClick={() => window.location.href = 'mailto:hello@reviewsandmarketing.com?subject=Custom Design Request'}
-                className="px-6 h-11 bg-white text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all shadow-lg"
-              >
-                Hire Us to Design
-              </button>
-            </div>
-          </div>
+          {/* QR Best Practices & Helpful Tip (removed from bottom as moved up) */}
         </div>
       )}
 
@@ -644,47 +627,6 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* Advanced Analytics & Insights Section */}
-          <div className="mt-12 relative mb-12">
-            {!isPro && (
-              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-white/40 backdrop-blur-[6px] rounded-[40px] border-2 border-dashed border-brand/20">
-                <div className="w-20 h-20 bg-brand text-white rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-brand/40 animate-bounce">
-                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-                <h2 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">Unlock Your Business Intelligence</h2>
-                <p className="text-slate-600 max-w-md mb-8 font-medium leading-relaxed">
-                  You're currently seeing <strong>less than 20%</strong> of your available data. Upgrade to Unlimited to track daily trends, see where every lead comes from, and analyze customer sentiment.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 items-center">
-                  <Link href="/pricing" className="primary-button h-14 px-10 text-lg shadow-xl shadow-brand/20">
-                    🚀 Upgrade Now
-                  </Link>
-                  <div className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/5 px-3 py-1.5 rounded-full border border-brand/10">
-                    Join 500+ Top Rated Businesses
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* This renders real data for Pro, or dummy "blurred" layout for Free users */}
-            <div className={!isPro ? "opacity-40 grayscale pointer-events-none select-none" : ""}>
-              <ProAnalytics data={analytics || {
-                history: Array.from({ length: 30 }, (_, i) => ({
-                  date: new Date(Date.now() - (30 - i) * 86400000).toISOString(),
-                  reviews: Math.floor(Math.random() * 10) + 2,
-                  scans: Math.floor(Math.random() * 30) + 10
-                })),
-                sentiment: { positive: 85, neutral: 10, negative: 5 },
-                ratingDistribution: { 1: 2, 2: 3, 3: 5, 4: 15, 5: 75 },
-                funnel: { scans: 450, selections: 320, completions: 180 },
-                sources: { "Main QR": 120, "Receipt": 45, "Instagram": 15 },
-                growth: 24
-              }} />
-            </div>
-          </div>
-
           {/* Tools Section */}
           <div className="lg:col-span-12">
             {/* Content moved to top row */}
@@ -806,38 +748,7 @@ function DashboardContent() {
               </div>
             </section>
 
-            {/* QR Best Practices & Helpful Tip */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="p-8 bg-brand/5 rounded-[32px] border border-brand/10 relative overflow-hidden group">
-                <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                  <span className="text-8xl">💡</span>
-                </div>
-                <h4 className="text-xs font-black uppercase tracking-widest text-brand mb-3">Pro Tip: QR Placement</h4>
-                <p className="text-sm text-brand/80 leading-relaxed font-medium mb-4">
-                  The best locations are on <strong>desks, dining tables, and checkout counters</strong>. Add your QR code to printed receipts or table tents to increase scan rates by up to 40%.
-                </p>
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand/60">
-                  <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse"></span>
-                  Recommended: Scan it yourself to test the sequence
-                </div>
-              </div>
-
-              <div className="p-8 bg-slate-900 rounded-[32px] border border-slate-800 relative overflow-hidden group shadow-2xl shadow-slate-200">
-                <div className="absolute -right-4 -bottom-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <span className="text-8xl">🎨</span>
-                </div>
-                <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3">Custom Design Service</h4>
-                <p className="text-sm text-white leading-relaxed font-medium mb-6">
-                  Need a professional touch? We can design and print custom high-conversion QR assets for your physical store.
-                </p>
-                <button
-                  onClick={() => window.location.href = 'mailto:hello@reviewsandmarketing.com?subject=Custom Design Request'}
-                  className="px-6 h-11 bg-white text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all shadow-lg"
-                >
-                  Hire Us to Design
-                </button>
-              </div>
-            </div>
+            {/* QR Best Practices & Helpful Tip (removed from bottom as moved up) */}
           </div>
         </div>
       )}
@@ -860,6 +771,60 @@ function DashboardContent() {
 
       {/* Legend Section */}
       <section className="mt-24 pt-12 border-t border-[#e2e8f0]">
+        {/* Advanced Analytics & Insights Section (moved to bottom) */}
+        {activeTab === 'analytics' && (
+          <div className="mt-12 relative mb-12">
+            {!isPro && (
+              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-white/40 backdrop-blur-[6px] rounded-[40px] border-2 border-dashed border-brand/20">
+                <div className="w-20 h-20 bg-brand text-white rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-brand/40 animate-bounce">
+                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h2 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">Unlock Your Business Intelligence</h2>
+                <p className="text-slate-600 max-w-md mb-8 font-medium leading-relaxed">
+                  You're currently seeing <strong>less than 20%</strong> of your available data. Upgrade to Unlimited to track daily trends, see where every lead comes from, and analyze customer sentiment.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 items-center">
+                  <Link href="/pricing" className="primary-button h-14 px-10 text-lg shadow-xl shadow-brand/20">
+                    🚀 Upgrade Now
+                  </Link>
+                  <div className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/5 px-3 py-1.5 rounded-full border border-brand/10">
+                    Join 500+ Top Rated Businesses
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* This renders real data for Pro, or dummy "blurred" layout for Free users */}
+            <div className={!isPro ? "opacity-40 grayscale pointer-events-none select-none" : ""}>
+              <ProAnalytics data={analytics || {
+                history: Array.from({ length: 30 }, (_, i) => ({
+                  date: new Date(Date.now() - (30 - i) * 86400000).toISOString(),
+                  reviews: Math.floor(Math.random() * 10) + 2,
+                  scans: Math.floor(Math.random() * 30) + 10
+                })),
+                sentiment: { positive: 85, neutral: 10, negative: 5 },
+                ratingDistribution: { 1: 2, 2: 3, 3: 5, 4: 15, 5: 75 },
+                funnel: { scans: 450, selections: 320, completions: 180 },
+                sources: { "Main QR": 120, "Receipt": 45, "Instagram": 15 },
+                growth: 24
+              }} />
+            </div>
+          </div>
+        )}
+
+        {!isActivated && (
+          <div className="mb-12">
+            <ActivationWidget
+              business={business}
+              stats={stats}
+              recentFeedbackCount={recentFeedback.length}
+              isPro={isPro}
+              onStatusChange={setIsActivated}
+            />
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           <div>
             <h4 className="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Metric Definitions</h4>

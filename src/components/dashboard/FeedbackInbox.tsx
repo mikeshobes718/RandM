@@ -154,6 +154,14 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
                       >
                         Reply
                       </button>
+                      {item.phone && (
+                        <button
+                          onClick={() => window.location.href = `sms:${item.phone}`}
+                          className="px-3 py-1.5 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-emerald-700 transition-all"
+                        >
+                          Text
+                        </button>
+                      )}
                       <button
                         onClick={() => handleResolve(item.id)}
                         className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all border ${isResolved ? 'bg-white text-slate-400 border-slate-200' : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50'

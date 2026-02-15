@@ -133,8 +133,17 @@ export default function ReviewRequestsModule({
         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Recent Outbound Sends</h4>
         <div className="max-h-[300px] overflow-y-auto pr-2 -mr-2">
         {recentCampaigns.length === 0 ? (
-          <div className="py-8 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-            <p className="text-xs text-slate-400 font-bold">No campaigns sent yet this month.</p>
+          <div className="py-12 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 px-6">
+            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100 text-xl">
+              ✉️
+            </div>
+            <p className="text-xs font-black text-slate-900 uppercase tracking-widest mb-1">No campaigns yet</p>
+            <p className="text-[10px] text-slate-400 font-medium max-w-[200px] mx-auto mb-6">
+              Start by importing your customers or sending a manual request.
+            </p>
+            <Link href="/requests/new" className="inline-flex items-center gap-2 text-[10px] font-black text-brand uppercase tracking-widest hover:underline">
+              Send your first request →
+            </Link>
           </div>
         ) : (
           <div className="space-y-2">
