@@ -27,17 +27,17 @@ export default function PlanUsageCard({ planName, requestsUsed, requestsLimit, q
 
   return (
     <section className="premium-card p-6 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Current Plan</p>
-          <h3 className="text-xl font-black text-slate-900 leading-none">{planName}</h3>
-        </div>
-        {!isPro && (
+      {!isPro && (
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Current Plan</p>
+            <h3 className="text-xl font-black text-slate-900 leading-none">{planName}</h3>
+          </div>
           <Link href="/pricing" className="secondary-button !h-8 px-4 !text-[10px] font-black shadow-sm">
             Upgrade
           </Link>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="space-y-6">
         <div>
