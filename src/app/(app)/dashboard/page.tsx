@@ -282,13 +282,15 @@ function DashboardContent() {
           <FeedbackInbox initialItems={recentFeedback} businessId={business.id!} />
         </div>
         <div className="lg:col-span-4 space-y-8">
-          <PlanUsageCard
-            planName={planUsage.planName}
-            requestsUsed={planUsage.used}
-            requestsLimit={planUsage.limit}
-            qrScans={planUsage.qrScans}
-            isUnlimited={planUsage.isUnlimited}
-          />
+          {!isPro && (
+            <PlanUsageCard
+              planName={planUsage.planName}
+              requestsUsed={planUsage.used}
+              requestsLimit={planUsage.limit}
+              qrScans={planUsage.qrScans}
+              isUnlimited={planUsage.isUnlimited}
+            />
+          )}
         </div>
       </div>
 
