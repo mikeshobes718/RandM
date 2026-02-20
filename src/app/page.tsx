@@ -179,7 +179,6 @@ export default function Home() {
         <div className="absolute inset-x-0 -top-24 -z-10 flex justify-center">
           <div className="h-[640px] w-[640px] rounded-full bg-gradient-to-r from-indigo-400 via-sky-400 to-purple-400 opacity-25 blur-3xl sm:w-[760px]" />
         </div>
-        <div className="absolute left-8 top-32 -z-10 hidden h-32 w-32 animate-pulse rounded-full bg-emerald-400/30 blur-2xl lg:block" />
 
         <div className="relative mx-auto grid max-w-7xl gap-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:items-center">
           <div className="space-y-10">
