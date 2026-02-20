@@ -53,7 +53,7 @@ const steps = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen selection:bg-brand/20">
+    <main className="min-h-screen selection:bg-brand/20 overflow-x-hidden">
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
