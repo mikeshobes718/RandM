@@ -42,13 +42,29 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
     })));
   }, [initialItems, resolvedIds]);
 
-  const handleResolve = (id: string) => {
-    const newResolved = resolvedIds.includes(id)
+  const handleResolve = async (id: string) => {
+    const isResolved = resolvedIds.includes(id);
+    const newResolved = isResolved
       ? resolvedIds.filter(rid => rid !== id)
       : [...resolvedIds, id];
 
     setResolvedIds(newResolved);
     localStorage.setItem(`resolved_feedback_${businessId}`, JSON.stringify(newResolved));
+
+    // Also sync with backend if possible
+    try {
+      const idToken = localStorage.getItem('idToken');
+      await fetch('/api/feedback/archive', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ id, archived: !isResolved })
+      });
+    } catch (e) {
+      console.error('Archive sync failed:', e);
+    }
   };
 
   const filteredItems = useMemo(() => {
@@ -181,37 +197,27 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {!isEvent && (
-                    <>
-                      <button
-                        onClick={() => window.location.href = `mailto:${item.email}?subject=Feedback regarding your experience`}
-                        className="px-3 py-1.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-black transition-all"
-                      >
-                        Email
-                      </button>
-                      {item.phone && (
-                        <button
-                          onClick={() => window.location.href = `sms:${item.phone}`}
-                          className="px-3 py-1.5 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-emerald-700 transition-all"
-                        >
-                          Text
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleResolve(item.id)}
-                        className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all border ${isResolved ? 'bg-white text-slate-400 border-slate-200' : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50'
-                          }`}
-                      >
-                        {isResolved ? 'Unarchive' : 'Archive'}
-                      </button>
-                    </>
+                  <button
+                    onClick={() => window.location.href = `mailto:${item.email}?subject=Feedback regarding your experience`}
+                    className="px-3 py-1.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-black transition-all"
+                  >
+                    Email
+                  </button>
+                  {item.phone && (
+                    <button
+                      onClick={() => window.location.href = `sms:${item.phone}`}
+                      className="px-3 py-1.5 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-emerald-700 transition-all"
+                    >
+                      Text
+                    </button>
                   )}
-                  {isEvent && (
-                    <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                      Verified Completion
-                    </div>
-                  )}
+                  <button
+                    onClick={() => handleResolve(item.id)}
+                    className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all border ${isResolved ? 'bg-white text-slate-400 border-slate-200' : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50'
+                      }`}
+                  >
+                    {isResolved ? 'Unarchive' : 'Archive'}
+                  </button>
                 </div>
               </div>
             );
