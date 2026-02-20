@@ -87,17 +87,17 @@ export default function ReviewRequestsModule({
   return (
     <div className="premium-card p-8 rounded-[32px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden h-full">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-          <div>
-            <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
-              Review Requests
-              <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-black rounded uppercase tracking-widest">Active</span>
-            </h2>
-            <p className="text-sm text-slate-500 font-medium mt-1">Send SMS & Email invitations to your customers.</p>
-          </div>
+        <div>
+          <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+            Customer Outreach
+            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-black rounded uppercase tracking-widest">Active</span>
+          </h2>
+          <p className="text-sm text-slate-500 font-medium mt-1">Manage your database and send SMS or Email invitations to your customers.</p>
+        </div>
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap gap-2">
               <Link href="/requests/new" className="primary-button !h-11 px-6 text-xs font-black uppercase tracking-widest shadow-lg shadow-brand/20 flex-1 sm:flex-none text-center">
-                Send Requests
+                Send Outreach
               </Link>
               <Link href="/contacts" className="secondary-button !h-11 px-4 text-xs font-black uppercase tracking-widest flex-1 sm:flex-none text-center">
                 Import Contacts
@@ -111,7 +111,7 @@ export default function ReviewRequestsModule({
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-8">
         <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Requests Sent</p>
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Outreach</p>
           <div className="flex items-baseline gap-1">
             <span className="text-xl font-black text-slate-900">{used}</span>
             <span className="text-xs font-bold text-slate-400">/ {limit === 999999 ? '∞' : limit}</span>
@@ -216,7 +216,7 @@ export default function ReviewRequestsModule({
         <div className="flex items-center gap-3 p-4 bg-slate-900 rounded-[20px] text-white">
           <span className="text-xl">ℹ️</span>
           <p className="text-[10px] font-medium leading-relaxed opacity-80">
-            <strong>What counts as a "Review Request"?</strong> One outbound SMS or email sent by the system to a customer. QR scans do <u>not</u> count as requests and are always unlimited.
+            <strong>What counts as "Outreach"?</strong> One outbound SMS or email sent by the system to a customer. This includes review requests and direct customer follow-ups. QR scans do <u>not</u> count as outreach and are always unlimited.
           </p>
         </div>
       </div>
