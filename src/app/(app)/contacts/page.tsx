@@ -29,6 +29,11 @@ export default function ContactsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [manualContact, setManualContact] = useState({ name: '', email: '', phone: '', country: 'US' });
   const [addingManual, setAddingManual] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [contactType, setContactType] = useState<'email' | 'sms'>('email');
+  const [contactSubject, setContactSubject] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+  const [isSending, setIsSending] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -233,6 +238,74 @@ export default function ContactsPage() {
     setSelectedIds(newSelected);
   };
 
+  const handleBulkContact = (type: 'email' | 'sms') => {
+    if (selectedIds.size === 0) return;
+    setContactType(type);
+    setContactSubject('');
+    setContactMessage('');
+    setShowContactModal(true);
+  };
+
+  const handleIndividualContact = (contact: Contact, type: 'email' | 'sms') => {
+    setSelectedIds(new Set([contact.id]));
+    setContactType(type);
+    setContactSubject('');
+    setContactMessage('');
+    setShowContactModal(true);
+  };
+
+  const handleSendOutreach = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || selectedIds.size === 0 || isSending) return;
+
+    setIsSending(true);
+    setError(null);
+    setSuccessMsg(null);
+
+    const selectedContacts = contacts.filter(c => selectedIds.has(c.id));
+    const recipients = selectedContacts
+      .map(c => contactType === 'email' ? c.email : c.phone)
+      .filter(Boolean) as string[];
+
+    if (recipients.length === 0) {
+      setError(`None of the selected contacts have a valid ${contactType === 'email' ? 'email address' : 'phone number'}.`);
+      setIsSending(false);
+      return;
+    }
+
+    try {
+      const token = await user.getIdToken();
+      const endpoint = contactType === 'email' ? '/api/campaigns/send-email' : '/api/campaigns/send-sms';
+      
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ 
+          recipients,
+          subject: contactSubject,
+          message: contactMessage,
+          contactIds: Array.from(selectedIds)
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Failed to send ${contactType.toUpperCase()}`);
+      }
+
+      setSuccessMsg(`Successfully sent ${contactType.toUpperCase()} outreach to ${recipients.length} contact${recipients.length > 1 ? 's' : ''}!`);
+      setShowContactModal(false);
+      setSelectedIds(new Set());
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   const handleDeleteContacts = async (all = false) => {
     if (!user) return;
     if (!all && selectedIds.size === 0) return;
@@ -356,13 +429,29 @@ export default function ContactsPage() {
               <span className="text-xs font-black text-slate-400 uppercase tracking-widest">
                 {selectedIds.size} Selected
               </span>
-              <button 
-                onClick={() => handleDeleteContacts(false)}
-                disabled={deleting}
-                className="h-11 px-6 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-100 transition-colors flex items-center gap-2"
-              >
-                {deleting ? 'Deleting...' : 'Delete Selected'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => handleBulkContact('email')}
+                  className="h-11 px-6 bg-brand/5 text-brand text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/10 transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                  Email Selected
+                </button>
+                <button 
+                  onClick={() => handleBulkContact('sms')}
+                  className="h-11 px-6 bg-brand/5 text-brand text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/10 transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                  SMS Selected
+                </button>
+                <button 
+                  onClick={() => handleDeleteContacts(false)}
+                  disabled={deleting}
+                  className="h-11 px-6 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-100 transition-colors flex items-center gap-2"
+                >
+                  {deleting ? 'Deleting...' : 'Delete Selected'}
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -443,6 +532,7 @@ export default function ContactsPage() {
                     <th className="px-4 py-6">Name</th>
                     <th className="px-6 py-6">Contact Info</th>
                     <th className="px-6 py-6">Source</th>
+                    <th className="px-6 py-6">Actions</th>
                     <th className="px-10 py-6 text-right">Date Added</th>
                   </tr>
                 </thead>
@@ -471,6 +561,28 @@ export default function ContactsPage() {
                         <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-lg border border-slate-200">
                           {contact.source || 'manual'}
                         </span>
+                      </td>
+                      <td className="px-6 py-6">
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {contact.email && (
+                            <button 
+                              onClick={() => handleIndividualContact(contact, 'email')}
+                              className="w-8 h-8 rounded-lg bg-brand/5 text-brand flex items-center justify-center hover:bg-brand/10 transition-colors"
+                              title="Email Contact"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            </button>
+                          )}
+                          {contact.phone && (
+                            <button 
+                              onClick={() => handleIndividualContact(contact, 'sms')}
+                              className="w-8 h-8 rounded-lg bg-brand/5 text-brand flex items-center justify-center hover:bg-brand/10 transition-colors"
+                              title="SMS Contact"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                            </button>
+                          )}
+                        </div>
                       </td>
                       <td className="px-10 py-6 text-right text-slate-400 text-xs font-bold">
                         {contact.created_at ? new Date(contact.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
@@ -585,6 +697,79 @@ export default function ContactsPage() {
                   className="primary-button w-full h-14 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand/20 disabled:opacity-50 transition-all"
                 >
                   {addingManual ? 'Saving...' : 'Save Contact'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Outreach Modal */}
+      {showContactModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[40px] w-full max-w-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">
+                  Send {contactType === 'email' ? 'Email' : 'SMS'} Outreach
+                </h3>
+                <p className="text-xs text-slate-400 font-medium mt-1 uppercase tracking-widest">
+                  To {selectedIds.size} selected contact{selectedIds.size > 1 ? 's' : ''}
+                </p>
+              </div>
+              <button 
+                onClick={() => setShowContactModal(false)}
+                className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleSendOutreach} className="p-8 space-y-6">
+              {contactType === 'email' && (
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Subject Line</label>
+                  <input 
+                    type="text"
+                    placeholder="e.g. A quick question about your visit"
+                    value={contactSubject}
+                    onChange={(e) => setContactSubject(e.target.value)}
+                    required
+                    className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
+                  />
+                </div>
+              )}
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Message Content</label>
+                <textarea 
+                  placeholder={contactType === 'email' ? "Write your email message here..." : "Write your SMS message here..."}
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  required
+                  className="w-full min-h-[160px] bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all resize-none"
+                />
+                <p className="text-[9px] text-slate-400 font-medium mt-2 ml-1">
+                  {contactType === 'sms' ? "Keep it short for best results. Standard SMS rates apply." : "Your brand name will be included in the footer."}
+                </p>
+              </div>
+
+              <div className="pt-4">
+                <button 
+                  type="submit"
+                  disabled={isSending || !contactMessage || (contactType === 'email' && !contactSubject)}
+                  className="primary-button w-full h-14 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand/20 disabled:opacity-50 transition-all flex items-center justify-center gap-3"
+                >
+                  {isSending ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                      Send {contactType.toUpperCase()} Outreach
+                    </>
+                  )}
                 </button>
               </div>
             </form>
