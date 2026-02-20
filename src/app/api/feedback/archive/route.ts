@@ -19,25 +19,42 @@ export async function POST(req: Request) {
     .from('feedback')
     .select('business_id')
     .eq('id', id)
-    .single();
+    .maybeSingle();
 
-  if (!feedback) return new NextResponse('Feedback not found', { status: 404 });
+  let businessId = feedback?.business_id;
+
+  if (!businessId) {
+    // Try review_events
+    const { data: event } = await supa
+      .from('review_events')
+      .select('business_id')
+      .eq('id', id)
+      .maybeSingle();
+    businessId = event?.business_id;
+  }
+
+  if (!businessId) return new NextResponse('Item not found', { status: 404 });
 
   const { data: business } = await supa
     .from('businesses')
     .select('id')
-    .eq('id', feedback.business_id)
+    .eq('id', businessId)
     .eq('owner_uid', uid)
-    .single();
+    .maybeSingle();
 
   if (!business) return new NextResponse('Forbidden', { status: 403 });
 
-  const { error } = await supa
+  // Update feedback table
+  await supa
     .from('feedback')
     .update({ archived: !!archived })
     .eq('id', id);
 
-  if (error) return new NextResponse(error.message, { status: 500 });
+  // Update review_events table (if it exists there)
+  await supa
+    .from('review_events')
+    .update({ archived: !!archived })
+    .eq('id', id);
 
   return NextResponse.json({ ok: true });
 }
