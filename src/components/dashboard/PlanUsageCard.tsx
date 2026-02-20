@@ -26,55 +26,57 @@ export default function PlanUsageCard({ planName, requestsUsed, requestsLimit, q
   const progress = isUnlimited ? 0 : Math.min(100, (requestsUsed / requestsLimit) * 100);
 
   return (
-    <section className="premium-card p-6 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
-      {!isPro && (
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Current Plan</p>
-            <h3 className="text-xl font-black text-slate-900 leading-none">{planName}</h3>
-          </div>
-          <Link href="/pricing" className="secondary-button !h-8 px-4 !text-[10px] font-black shadow-sm">
-            Upgrade
-          </Link>
-        </div>
-      )}
-
-      <div className="space-y-6">
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Review Requests</span>
-              <Tooltip text="Monthly automated review requests sent to customers.">
-                <span className="text-slate-300 cursor-help">ⓘ</span>
-              </Tooltip>
-            </div>
-            <div className="text-xs font-black text-slate-900">
-              {requestsUsed} <span className="text-slate-400 font-bold">/ {isUnlimited ? '∞' : requestsLimit}</span>
-            </div>
-          </div>
-          <div className="h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-            <div 
-              className={`h-full transition-all duration-1000 ${progress > 90 ? 'bg-rose-500' : progress > 70 ? 'bg-amber-500' : 'bg-brand'}`} 
-              style={{ width: `${isUnlimited ? '100%' : progress}%`, opacity: isUnlimited ? 0.1 : 1 }}
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm text-lg">📱</div>
+    <section className="premium-card p-5 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
+      <div className="flex flex-col md:flex-row md:items-center gap-8">
+        {!isPro && (
+          <div className="flex items-center justify-between md:border-r md:border-slate-100 md:pr-8 min-w-[200px]">
             <div>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Current Plan</p>
+              <h3 className="text-xl font-black text-slate-900 leading-none">{planName}</h3>
+            </div>
+            <Link href="/pricing" className="secondary-button !h-8 px-4 !text-[10px] font-black shadow-sm">
+              Upgrade
+            </Link>
+          </div>
+        )}
+
+        <div className="flex-1 flex flex-col md:flex-row md:items-center gap-8">
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">QR Scans</span>
-                <Tooltip text="Total times your QR codes have been scanned this month.">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Review Requests</span>
+                <Tooltip text="Monthly automated review requests sent to customers.">
                   <span className="text-slate-300 cursor-help">ⓘ</span>
                 </Tooltip>
               </div>
-              <div className="text-xs font-black text-slate-900">{qrScans}</div>
+              <div className="text-xs font-black text-slate-900">
+                {requestsUsed} <span className="text-slate-400 font-bold">/ {isUnlimited ? '∞' : requestsLimit}</span>
+              </div>
+            </div>
+            <div className="h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+              <div 
+                className={`h-full transition-all duration-1000 ${progress > 90 ? 'bg-rose-500' : progress > 70 ? 'bg-amber-500' : 'bg-brand'}`} 
+                style={{ width: `${isUnlimited ? '100%' : progress}%`, opacity: isUnlimited ? 0.1 : 1 }}
+              />
             </div>
           </div>
-          <div className="px-2 py-1 bg-emerald-50 text-emerald-600 text-[8px] font-black rounded uppercase tracking-widest border border-emerald-100">
-            {isPro ? 'Included' : 'Unlimited'}
+
+          <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100 min-w-[180px]">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm text-lg">📱</div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">QR Scans</span>
+                  <Tooltip text="Total times your QR codes have been scanned this month.">
+                    <span className="text-slate-300 cursor-help">ⓘ</span>
+                  </Tooltip>
+                </div>
+                <div className="text-xs font-black text-slate-900">{qrScans}</div>
+              </div>
+            </div>
+            <div className="px-2 py-1 bg-emerald-50 text-emerald-600 text-[8px] font-black rounded uppercase tracking-widest border border-emerald-100">
+              {isPro ? 'Included' : 'Unlimited'}
+            </div>
           </div>
         </div>
       </div>
