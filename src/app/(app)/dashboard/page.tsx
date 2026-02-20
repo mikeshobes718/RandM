@@ -309,13 +309,6 @@ function DashboardContent() {
         >
           Sequences
         </button>
-        <button
-          onClick={() => setActiveTab('analytics')}
-          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'analytics' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'
-            }`}
-        >
-          Analytics
-        </button>
       </div>
 
       {activeTab === 'review-toolkit' && (
@@ -348,28 +341,26 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start pt-8 border-t border-[#e2e8f0]/50">
-                  <div className="md:col-span-4 flex flex-col items-center gap-4 relative">
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 px-3 py-1 bg-slate-900 text-white text-[8px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg">
-                      Main QR
-                    </div>
-                    <div className="bg-white p-4 border-4 border-slate-50 rounded-[32px] shadow-2xl shadow-slate-200/50 group-hover:scale-[1.02] transition-transform">
+                <div className="flex flex-col lg:flex-row gap-8 items-stretch pt-8 border-t border-[#e2e8f0]/50">
+                  {/* Left: The QR Code itself */}
+                  <div className="lg:w-1/3 flex flex-col items-center justify-between gap-4 bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                    <div className="bg-white p-4 border-4 border-slate-50 rounded-[32px] shadow-2xl shadow-slate-200/50 group-hover:scale-[1.02] transition-transform w-full max-w-[220px] mx-auto">
                       <img
                         src={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=8`}
                         alt="QR Code"
-                        className="w-full aspect-square max-w-[160px]"
+                        className="w-full aspect-square"
                       />
                     </div>
-                    <div className="flex flex-col gap-2 w-full">
+                    <div className="flex flex-col gap-2 w-full mt-4">
                       <a
                         href={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=12`}
                         download={`${business.name.replace(/\s+/g, '-').toLowerCase()}-qr.png`}
-                        className="secondary-button !h-10 text-[10px] font-black uppercase tracking-widest bg-white shadow-sm hover:shadow-md transition-all"
+                        className="primary-button !h-11 w-full text-xs font-black uppercase tracking-widest shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
                       >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
-                        Download PNG
+                        Download Asset
                       </a>
                       <button
                         onClick={() => {
@@ -413,65 +404,78 @@ function DashboardContent() {
                         `);
                             printWindow.document.close();
                           } else {
-                            // Fallback to regular print if popup blocked
                             window.print();
                           }
                         }}
-                        className="text-[10px] font-black text-slate-400 hover:text-brand uppercase tracking-widest text-center py-2 transition-colors cursor-pointer"
+                        className="secondary-button !h-11 w-full text-xs font-black text-slate-500 uppercase tracking-widest bg-white border border-slate-200 transition-colors"
                       >
-                        Print for display
+                        Print QR Code
                       </button>
                     </div>
                   </div>
-                  <div className="md:col-span-8 space-y-6">
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+
+                  {/* Right: The Sequence Explanation */}
+                  <div className="lg:w-2/3 flex flex-col justify-between">
+                    <div className="mb-6">
+                      <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
                         <span className="w-6 h-6 rounded-lg bg-brand/10 text-brand flex items-center justify-center text-xs">✨</span>
-                        Main QR (Smart Rep Engine)
+                        Smart QR Engine
                       </h3>
-                      <p className="text-sm text-slate-500 leading-relaxed font-medium">
-                        This is your primary review link. It identifies happy customers automatically. If they pick 5 stars, they go to Google. If they pick less, they send you a private lead.
+                      <p className="text-sm text-slate-500 font-medium">
+                        Our system automatically filters customers based on their experience to protect and boost your reputation. Here's exactly what happens:
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="p-4 bg-slate-50 rounded-2xl border border-[#f1f5f9]">
-                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Best Place to Display</div>
-                        <p className="text-xs text-slate-600 font-bold">Checkout Counter</p>
+                    {/* Sequence Diagram */}
+                    <div className="bg-white rounded-2xl p-6 border border-slate-100 relative mb-8 shadow-sm">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
+                        {/* Step 1 */}
+                        <div className="flex flex-col items-center text-center w-full sm:w-1/3">
+                          <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl mb-3 shadow-sm border border-slate-100 z-10">📱</div>
+                          <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1">1. Customer Scans</h4>
+                          <p className="text-[10px] text-slate-500 font-medium px-2">They scan the code with their phone</p>
+                        </div>
+
+                        {/* Step 2 */}
+                        <div className="flex flex-col items-center text-center w-full sm:w-1/3">
+                          <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl mb-3 shadow-sm border border-blue-100 z-10">⭐</div>
+                          <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1">2. Star Rating</h4>
+                          <p className="text-[10px] text-slate-500 font-medium px-2">They select 1 to 5 stars privately</p>
+                        </div>
+
+                        {/* Step 3 (Branching) */}
+                        <div className="flex flex-col items-center text-center w-full sm:w-1/3 gap-3">
+                          <div className="w-full bg-emerald-50 border border-emerald-100 rounded-xl p-3 shadow-sm relative">
+                            <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-emerald-100 rounded-full flex items-center justify-center text-[10px] font-black text-emerald-600 shadow-sm">5</div>
+                            <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-0.5">Public Review</h4>
+                            <p className="text-[9px] text-emerald-600/80 font-medium">Routed to Google Maps</p>
+                          </div>
+                          
+                          <div className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm relative">
+                            <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-[10px] font-black text-slate-500 shadow-sm">1-4</div>
+                            <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-0.5">Private Feedback</h4>
+                            <p className="text-[9px] text-slate-500 font-medium">Sent directly to your inbox</p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="p-4 bg-slate-50 rounded-2xl border border-[#f1f5f9]">
-                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Expected Conversion</div>
-                        <p className="text-xs text-emerald-600 font-bold">+40% Review Rate</p>
+                      
+                      {/* Connecting Lines (Desktop only) */}
+                      <div className="hidden sm:block absolute top-[52px] left-[16%] right-[16%] h-[2px] bg-slate-100 z-0"></div>
+                    </div>
+
+                    {/* Pro Tips */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-auto">
+                      <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100/50">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1 flex items-center gap-1.5"><span className="text-sm">💡</span> Best Placement</h4>
+                        <p className="text-xs text-amber-800/80 font-medium">Add to checkout counters, receipts, and dining tables to increase scans by 40%.</p>
+                      </div>
+                      <div className="p-4 bg-slate-900 rounded-2xl border border-slate-800">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-1.5"><span className="text-sm">🎨</span> Need a Design?</h4>
+                        <p className="text-xs text-slate-300 font-medium mb-3">We design custom printed QR assets for your store.</p>
+                        <a href="mailto:hello@reviewsandmarketing.com?subject=Custom Design Request" className="inline-flex items-center justify-center h-8 text-[9px] font-black text-slate-900 bg-white hover:bg-slate-100 px-4 rounded-lg transition-colors uppercase tracking-widest shadow-sm">Request Design</a>
                       </div>
                     </div>
 
-                    {/* Moved QR Tips directly here */}
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="p-6 bg-brand/5 rounded-2xl border border-brand/10 relative overflow-hidden group">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-brand mb-2">Pro Tip: QR Placement</h4>
-                        <p className="text-xs text-brand/80 leading-relaxed font-medium">
-                          The best locations are on <strong>desks, dining tables, and checkout counters</strong>. Add your QR code to printed receipts or table tents to increase scan rates by up to 40%.
-                        </p>
-                      </div>
-
-                      <div className="p-6 bg-slate-900 rounded-2xl border border-slate-800 relative overflow-hidden group">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Custom Design Service</h4>
-                        <p className="text-xs text-white leading-relaxed font-medium mb-4">
-                          Need a professional touch? We can design and print custom high-conversion QR assets for your physical store.
-                        </p>
-                        <button
-                          onClick={() => window.location.href = 'mailto:hello@reviewsandmarketing.com?subject=Custom Design Request'}
-                          className="px-4 h-9 bg-white text-slate-900 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all shadow-lg"
-                        >
-                          Hire Us to Design
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 items-center text-[10px] font-black text-slate-400 uppercase tracking-widest bg-amber-50 p-3 rounded-xl border border-amber-100">
-                      <span className="text-amber-500 text-sm">💡</span>
-                      <span>Pro Tip: Add this code to your printed receipts for the highest scan rate.</span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -563,196 +567,6 @@ function DashboardContent() {
         </div>
       )}
 
-      {activeTab === 'analytics' && (
-        <div className="animate-fade-in mb-12">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-            <div className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 group relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <span className="text-4xl">⭐</span>
-              </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Google Rating</p>
-              <div className="flex items-end gap-3">
-                <div className="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                  {stats.averageRating !== null && stats.averageRating !== undefined ?
-                    stats.averageRating.toFixed(1) :
-                    <span className="text-2xl text-muted">N/A</span>
-                  }
-                </div>
-                <div className="flex mb-1 gap-0.5">
-                  {stats.averageRating !== null && stats.averageRating !== undefined ? (
-                    [1, 2, 3, 4, 5].map((s) => (
-                      <svg key={s} className={`w-4 h-4 ${s <= (stats.averageRating ?? 0) ? 'text-amber-400' : 'text-slate-200'}`} fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.08 3.33a1 1 0 00.96.7h3.4c.96 0 1.36 1.23.58 1.79l-2.75 1.99a1 1 0 00-.36 1.11l1.08 3.33c.3.92-.76 1.68-1.54 1.11l-2.75-1.99a1 1 0 00-1.18 0l-2.75 1.99c-.78.57-1.84-.19-1.54-1.11l1.08-3.33a1 1 0 00-.36-1.11L2.99 8.78c-.78-.56-.38-1.79.58-1.79h3.4a1 1 0 00.96-.7l1.08-3.33z" />
-                      </svg>
-                    ))
-                  ) : (
-                    <span className="text-[10px] text-muted font-medium">No reviews yet</span>
-                  )}
-                </div>
-              </div>
-              {/* Tooltip */}
-              <div className="absolute inset-x-0 -top-12 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                <div className="bg-slate-900 text-white text-[10px] py-2 px-3 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
-                  Your live public rating pulled directly from Google Maps.
-                </div>
-              </div>
-            </div>
-
-            <div className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 group relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <span className="text-4xl">📊</span>
-              </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">New Google Reviews</p>
-              <div className="text-5xl font-black text-slate-900 tracking-tighter leading-none">{stats.reviewsThisMonth}</div>
-              {/* Tooltip */}
-              <div className="absolute inset-x-0 -top-12 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                <div className="bg-slate-900 text-white text-[10px] py-2 px-3 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
-                  Number of customers successfully routed to your Google profile this month.
-                </div>
-              </div>
-            </div>
-
-            <div className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 group relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <span className="text-4xl">📱</span>
-              </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Link Scans This Month</p>
-              <div className="text-5xl font-black text-slate-900 tracking-tighter leading-none">{stats.shareLinkScans}</div>
-              {/* Tooltip */}
-              <div className="absolute inset-x-0 -top-12 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                <div className="bg-slate-900 text-white text-[10px] py-2 px-3 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
-                  Total times your landing page has been opened via QR code or direct link this month.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Tools Section */}
-          <div className="lg:col-span-12">
-            {/* Content moved to top row */}
-          </div>
-
-          {/* Secondary Tools */}
-          <div className="lg:col-span-7 space-y-12">
-            {/* Multiple QR Codes for All Users (Locked for Free) */}
-            <div className="relative group/qr">
-              {!isPro && (
-                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-white/60 backdrop-blur-[4px] rounded-[40px] border border-[#e2e8f0]">
-                  <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">Track Multiple Channels</h3>
-                  <p className="text-[10px] text-slate-500 max-w-[200px] mb-4 font-medium leading-relaxed">
-                    Create unique QR codes for every table, staff member, or flyer to see exactly what drives your growth.
-                  </p>
-                  <Link href="/pricing" className="primary-button !h-9 px-6 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/20 transition-transform hover:scale-105 active:scale-95">
-                    Upgrade Plan
-                  </Link>
-                </div>
-              )}
-              <div className={!isPro ? "opacity-30 grayscale pointer-events-none blur-[1px]" : ""}>
-                <MultipleQrManager
-                  businessId={business.id!}
-                  landingUrl={landingUrl || ''}
-                  rates={rates}
-                  recentCampaigns={recentCampaigns}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5 space-y-6">
-            <ContactsPanel count={planUsage.contactsCount || 0} />
-
-            {/* Integrations Card */}
-            <section className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40 group relative overflow-hidden">
-              {!isPro && (
-                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-white/60 backdrop-blur-[4px]">
-                  <div className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">POS Automations</h3>
-                  <p className="text-[10px] text-slate-500 max-w-[200px] mb-4 font-medium leading-relaxed">
-                    Automatically send review requests after every Square sale. Zero effort, maximum growth.
-                  </p>
-                  <Link href="/pricing" className="primary-button !h-9 px-6 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-brand/20 transition-transform hover:scale-105 active:scale-95">
-                    Unlock Automation
-                  </Link>
-                </div>
-              )}
-              <div className={!isPro ? "opacity-30 grayscale pointer-events-none blur-[1px]" : ""}>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-bold text-slate-900">Square Integration</h2>
-                    <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[8px] font-black rounded uppercase tracking-tighter border border-blue-100/50">BETA</span>
-                  </div>
-                  {squareStatus?.connected ? (
-                    <div className="flex items-center gap-2">
-                      <span className={`w-1.5 h-1.5 rounded-full ${squareStatus.isEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></span>
-                      <span className={`text-[10px] font-black uppercase tracking-widest ${squareStatus.isEnabled ? 'text-emerald-600' : 'text-slate-400'}`}>
-                        {squareStatus.isEnabled ? 'Active' : 'Paused'}
-                      </span>
-                    </div>
-                  ) : isPro ? (
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded">Ready to Connect</span>
-                  ) : (
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-brand bg-brand/5 px-2 py-1 rounded">Pro Feature</span>
-                  )}
-                </div>
-
-                {squareStatus?.connected ? (
-                  <div className="space-y-4">
-                    <p className="text-sm text-slate-600 leading-relaxed italic">
-                      "Reviews & Marketing is monitoring your Square account for new payments. Requests will be sent automatically."
-                    </p>
-                    <div className="flex items-center justify-between py-3 border-y border-[#e2e8f0]/50">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Last Sync</span>
-                        <span className="text-xs font-bold text-slate-700">
-                          {squareStatus.lastBackfillAt ? new Date(squareStatus.lastBackfillAt).toLocaleDateString() : 'Real-time monitoring active'}
-                        </span>
-                      </div>
-                      <Link href="/integrations/square" className="secondary-button !h-8 px-4 !text-[10px] font-black">
-                        Run Manual Backfill
-                      </Link>
-                    </div>
-                    <Link href="/integrations/square" className="text-[10px] font-bold text-brand hover:underline inline-flex items-center gap-1">
-                      Manage Integration Settings →
-                    </Link>
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-sm text-muted mb-6 leading-relaxed">
-                      Automatically send review requests to your Square customers after they finish their purchase.
-                    </p>
-                    <Link href="/integrations/square" className="text-sm font-bold text-brand hover:underline">
-                      {isPro ? 'Connect Square Account' : 'Upgrade to Connect Square'} →
-                    </Link>
-                  </>
-                )}
-              </div>
-
-              {/* Tooltip */}
-              <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
-                  {squareStatus?.connected
-                    ? squareStatus.isEnabled
-                      ? "Your Square POS is connected. Every new sale will trigger an automated review request email."
-                      : "Real-time monitoring is currently PAUSED. New Square sales will not trigger review requests."
-                    : "Connect your Square POS to automatically email customers a review link after every transaction."}
-                </div>
-              </div>
-            </section>
-
-            {/* QR Best Practices & Helpful Tip (removed from bottom as moved up) */}
-          </div>
-        </div>
-      )}
 
       {/* Moved Checklist (if finished) */}
       {isActivated && (
