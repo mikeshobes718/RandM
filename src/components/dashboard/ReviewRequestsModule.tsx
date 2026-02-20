@@ -94,17 +94,17 @@ export default function ReviewRequestsModule({
           </h2>
           <p className="text-sm text-slate-500 font-medium mt-1">Send SMS & Email invitations to your customers.</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/requests/new" className="primary-button !h-11 px-6 text-xs font-black uppercase tracking-widest shadow-lg shadow-brand/20">
-            Send Requests
-          </Link>
-          <Link href="/contacts" className="secondary-button !h-11 px-4 text-xs font-black uppercase tracking-widest">
-            Import
-          </Link>
-          <Link href="/templates" className="secondary-button !h-11 px-4 text-xs font-black uppercase tracking-widest">
-            Templates
-          </Link>
-        </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/requests/new" className="primary-button !h-11 px-6 text-xs font-black uppercase tracking-widest shadow-lg shadow-brand/20 flex-1 sm:flex-none text-center">
+                Send Requests
+              </Link>
+              <Link href="/contacts" className="secondary-button !h-11 px-4 text-xs font-black uppercase tracking-widest flex-1 sm:flex-none text-center">
+                Import
+              </Link>
+              <Link href="/templates" className="secondary-button !h-11 px-4 text-xs font-black uppercase tracking-widest flex-1 sm:flex-none text-center">
+                Templates
+              </Link>
+            </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-8">
