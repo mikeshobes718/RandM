@@ -94,7 +94,7 @@ export default function ReviewRequestsModule({
           </h2>
           <p className="text-sm text-slate-500 font-medium mt-1">Send SMS & Email invitations to your customers.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link href="/requests/new" className="primary-button !h-11 px-6 text-xs font-black uppercase tracking-widest shadow-lg shadow-brand/20">
             Send Requests
           </Link>

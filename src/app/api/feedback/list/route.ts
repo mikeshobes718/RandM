@@ -45,13 +45,27 @@ export async function GET(req: Request) {
     since.setUTCHours(0,0,0,0); since.setUTCDate(since.getUTCDate() - days + 1);
     
     // 1. Fetch private feedback (1-4 stars)
-    const { data: feedbackData } = await supa
-      .from('feedback')
-      .select('id,business_id,rating,name,email,phone,comment,marketing_consent,created_at,archived')
-      .in('business_id', ids)
-      .gte('created_at', since.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(limit);
+    let feedbackData: any[] = [];
+    try {
+      const { data } = await supa
+        .from('feedback')
+        .select('id,business_id,rating,name,email,phone,comment,marketing_consent,created_at,archived')
+        .in('business_id', ids)
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (data) feedbackData = data;
+    } catch (e) {
+      // Fallback if 'archived' column doesn't exist
+      const { data } = await supa
+        .from('feedback')
+        .select('id,business_id,rating,name,email,phone,comment,marketing_consent,created_at')
+        .in('business_id', ids)
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (data) feedbackData = data;
+    }
       
     // 2. Fetch 5-star contact captures
     let contactData: any[] = [];

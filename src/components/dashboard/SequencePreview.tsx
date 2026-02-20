@@ -12,11 +12,11 @@ export default function SequencePreview({ businessName, headline, subheading }: 
             {/* Intro text */}
             <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-center">
                 <p className="text-sm text-slate-600 font-medium max-w-2xl mx-auto leading-relaxed">
-                    Our smart routing engine works exactly the same whether a customer scans your physical QR code or clicks a link from an automated text message. Here's exactly what your customers see.
+                    Our smart routing engine automatically filters customers based on their experience to protect and boost your reputation. Here's exactly what your customers see.
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
+            <div className="max-w-3xl mx-auto">
                 
                 {/* FLOW 1: In-Store QR Flow */}
                 <div className="space-y-6 relative">
@@ -131,72 +131,6 @@ export default function SequencePreview({ businessName, headline, subheading }: 
                                         </div>
                                     </div>
                                     <p className="text-[10px] text-center text-slate-500 font-medium mt-6 italic">Feedback is sent directly to your Dashboard Inbox.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* FLOW 2: Automated POS / Text Flow */}
-                <div className="space-y-6 relative mt-16 xl:mt-0">
-                    <div className="absolute -left-6 top-0 bottom-0 w-px bg-slate-200 border-l border-dashed border-slate-300 hidden xl:block"></div>
-                    
-                    <h3 className="text-lg font-black text-slate-900 flex items-center gap-3 mb-8 xl:pl-6">
-                        <span className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl shadow-lg shadow-emerald-500/30">💬</span>
-                        POS / Text Flow
-                    </h3>
-
-                    <div className="xl:pl-6 space-y-6">
-                        {/* Step 1: Receive Text */}
-                        <div className="flex items-start gap-4">
-                            <div className="flex flex-col items-center gap-2 mt-2">
-                                <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-[10px] font-black flex items-center justify-center relative z-10 shadow-md">1</div>
-                                <div className="w-px h-24 bg-slate-200 border-l border-dashed border-slate-300"></div>
-                            </div>
-                            <div className="flex-1 premium-card p-6 rounded-3xl bg-white border border-slate-100 shadow-sm">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Customer Action</p>
-                                
-                                {/* SMS Bubble Mockup */}
-                                <div className="bg-[#e8f5e9] border border-emerald-100/50 rounded-2xl rounded-tl-sm p-4 max-w-[260px] relative shadow-sm ml-2">
-                                    <div className="absolute -left-2 top-0 w-4 h-4 bg-[#e8f5e9] border-t border-l border-emerald-100/50 -rotate-45 transform origin-top-left -z-10"></div>
-                                    <p className="text-[13px] text-slate-800 relative z-10 font-medium leading-relaxed">
-                                        Hi! Thanks for visiting <span className="font-bold">{businessName}</span>. We'd love to hear your feedback: <span className="text-blue-600 underline decoration-blue-300 underline-offset-2">rvws.io/xyz</span>
-                                    </p>
-                                </div>
-                                <p className="text-[10px] text-slate-500 font-medium mt-4 italic">Sent automatically via Square or Review Requests list.</p>
-                            </div>
-                        </div>
-
-                        {/* Step 2: Landing Page */}
-                        <div className="flex items-start gap-4">
-                            <div className="flex flex-col items-center gap-2 mt-2">
-                                <div className="w-6 h-6 rounded-full bg-slate-900 text-white text-[10px] font-black flex items-center justify-center relative z-10 shadow-md">2</div>
-                                <div className="w-px h-48 bg-slate-200 border-l border-dashed border-slate-300"></div>
-                            </div>
-                            <div className="flex-1 premium-card p-6 rounded-3xl bg-white border border-slate-100 shadow-sm opacity-60 hover:opacity-100 transition-opacity flex flex-col justify-center min-h-[220px]">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Step 1: The Landing Page</p>
-                                <div className="text-center">
-                                    <span className="text-4xl block mb-4">🔗</span>
-                                    <h4 className="text-sm font-bold text-slate-800 mb-2">Customer Clicks Link</h4>
-                                    <p className="text-xs text-slate-500 font-medium px-4">They are taken to the exact same Landing Page shown on the left.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Step 3: Branching logic */}
-                        <div className="flex items-start gap-4 relative">
-                            <div className="flex flex-col items-center gap-2 mt-2 absolute left-0 z-20">
-                                <div className="w-6 h-6 rounded-full bg-brand text-white text-[10px] font-black flex items-center justify-center shadow-lg shadow-brand/30">3</div>
-                            </div>
-                            <div className="flex-1 ml-10 mt-2 grid gap-4">
-                                <div className="p-8 bg-slate-50 rounded-3xl border border-slate-200 border-dashed text-center opacity-60 hover:opacity-100 transition-opacity flex flex-col items-center justify-center h-full min-h-[160px]">
-                                    <span className="text-3xl mb-3 block">🔄</span>
-                                    <p className="text-sm font-bold text-slate-800 mb-1">Smart Routing Rules Apply</p>
-                                    <p className="text-xs text-slate-500 font-medium mb-4">The experience is identical.</p>
-                                    <div className="flex items-center justify-center gap-4 text-[10px] uppercase tracking-widest font-black text-slate-400">
-                                        <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-100"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> 5 Stars</span>
-                                        <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-100"><span className="w-2 h-2 rounded-full bg-slate-300"></span> 1-4 Stars</span>
-                                    </div>
                                 </div>
                             </div>
                         </div>
