@@ -102,9 +102,6 @@ export default function ReviewRequestsModule({
               <Link href="/contacts" className="secondary-button !h-11 px-4 text-xs font-black uppercase tracking-widest flex-1 sm:flex-none text-center">
                 Import Contacts
               </Link>
-              <Link href="/contacts" className="secondary-button !h-11 px-4 text-xs font-black uppercase tracking-widest flex-1 sm:flex-none text-center bg-slate-50 border-slate-200">
-                View Database
-              </Link>
             </div>
             <p className="text-[10px] text-slate-400 font-medium leading-tight max-w-[320px]">
               Import excel files from your POS system or view your growing customer database to manage your leads.

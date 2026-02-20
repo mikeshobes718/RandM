@@ -262,18 +262,21 @@ function DashboardContent() {
             </p>
           </div>
         </div>
-        <div className="flex gap-3 items-center">
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full mr-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">System Normal</span>
+          <div className="flex gap-3 items-center">
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full mr-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">System Normal</span>
+            </div>
+            <Link href="/contacts" className="secondary-button text-sm !h-10 border-brand/20 text-brand hover:bg-brand/5">
+              View Contacts
+            </Link>
+            <Link href="/onboarding/business?edit=1" className="secondary-button text-sm !h-10">
+              Edit Business
+            </Link>
+            <Link href="/settings" className="secondary-button text-sm !h-10">
+              Settings
+            </Link>
           </div>
-          <Link href="/onboarding/business?edit=1" className="secondary-button text-sm !h-10">
-            Edit Business
-          </Link>
-          <Link href="/settings" className="secondary-button text-sm !h-10">
-            Settings
-          </Link>
-        </div>
       </div>
 
       {/* Top Row: Plan Usage (Horizontal) */}
