@@ -509,68 +509,18 @@ function DashboardContent() {
 
       {activeTab === 'sequences' && business && (
         <div className="animate-fade-in space-y-12 mb-12">
-          <div className="grid lg:grid-cols-12 gap-12">
-            <div className="lg:col-span-8">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-bold">Review Sequences</h2>
-                  <p className="text-sm text-muted font-medium">How your customers experience the review process.</p>
-                </div>
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold">Review Sequences</h2>
+                <p className="text-sm text-muted font-medium">How your customers experience the review process.</p>
               </div>
-              <SequencePreview
-                businessName={business.name}
-                headline={business.landing_headline || undefined}
-                subheading={business.landing_subheading || undefined}
-              />
             </div>
-
-            <div className="lg:col-span-4 space-y-8">
-              <section className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40">
-                <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400 mb-6">Landing Page Content</h3>
-                <div className="space-y-6">
-                  <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Headline</label>
-                    <input
-                      type="text"
-                      className="w-full h-11 bg-slate-50 border border-slate-100 rounded-xl px-4 text-sm font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
-                      placeholder="How was your experience?"
-                      defaultValue={business.landing_headline || ''}
-                      onBlur={(e) => handleUpdateContent('headline', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Subheading</label>
-                    <textarea
-                      className="w-full h-24 bg-slate-50 border border-slate-100 rounded-xl p-4 text-xs font-medium text-slate-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all resize-none"
-                      placeholder="Share your feedback..."
-                      defaultValue={business.landing_subheading || ''}
-                      onBlur={(e) => handleUpdateContent('subheading', e.target.value)}
-                    />
-                  </div>
-                  <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl text-[10px] text-blue-600 font-bold leading-relaxed">
-                    ℹ️ Changes save automatically when you click away. These appear on your public landing page.
-                  </div>
-                </div>
-              </section>
-
-              <section className="premium-card p-8 rounded-3xl bg-slate-900 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-20">
-                  <span className="text-4xl text-white">⚙️</span>
-                </div>
-                <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400 mb-6">Logic Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                    <span className="text-xs font-bold text-slate-300">Positive Threshold</span>
-                    <span className="text-xs font-black text-white">4+ Stars</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                    <span className="text-xs font-bold text-slate-300">Negative Routing</span>
-                    <span className="text-xs font-black text-white">Private Feed</span>
-                  </div>
-                </div>
-                <p className="mt-6 text-[10px] text-slate-400 font-medium">Advanced routing logic is managed automatically to maximize your review count.</p>
-              </section>
-            </div>
+            <SequencePreview
+              businessName={business.name}
+              headline={business.landing_headline || undefined}
+              subheading={business.landing_subheading || undefined}
+            />
           </div>
         </div>
       )}
