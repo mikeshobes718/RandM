@@ -467,7 +467,7 @@ function DashboardContent() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-auto">
                       <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100/50">
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1 flex items-center gap-1.5"><span className="text-sm">💡</span> Best Placement</h4>
-                        <p className="text-xs text-amber-800/80 font-medium">Add to checkout counters, receipts, and dining tables to increase scans by 40%.</p>
+                        <p className="text-xs text-amber-800/80 font-medium">Add to checkout counters, receipts, dining tables, business cards, mailers, and front doors to increase scans.</p>
                       </div>
                       <div className="p-4 bg-slate-900 rounded-2xl border border-slate-800">
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-1.5"><span className="text-sm">🎨</span> Need a Design?</h4>
