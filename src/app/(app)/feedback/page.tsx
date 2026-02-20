@@ -439,22 +439,32 @@ function FeedbackContent({ business }: { business: any }) {
                           <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-2 py-1 bg-blue-50 rounded">Verified</span>
                         </div>
                       ) : (
-                        <>
-                          {f.marketing_consent && f.email && (
+                        <div className="flex flex-col gap-2 w-full">
+                          {f.email && (
                             <a 
                               href={`mailto:${f.email}?subject=Follow-up from ${business?.name || 'our business'}`}
-                              className={primaryButtonClass + " !h-10 !px-0 w-full text-xs"}
+                              className="px-4 h-10 bg-slate-900 hover:bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all w-full flex items-center justify-center gap-2 shadow-sm"
                             >
-                              Send Reply
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                              Email
+                            </a>
+                          )}
+                          {f.phone && (
+                            <a 
+                              href={`sms:${f.phone}`}
+                              className="px-4 h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all w-full flex items-center justify-center gap-2 shadow-sm"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                              Text
                             </a>
                           )}
                           <button 
                             onClick={() => toggleArchive(f.id, f.archived)}
-                            className={secondaryButtonClass + " !h-10 !px-0 w-full text-xs"}
+                            className={secondaryButtonClass + " !h-10 !px-0 w-full text-[10px]"}
                           >
                             {f.archived ? 'Unarchive' : 'Archive'}
                           </button>
-                        </>
+                        </div>
                       )}
                     </div>
                   </div>
