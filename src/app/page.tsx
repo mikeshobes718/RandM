@@ -193,7 +193,7 @@ export default function Home() {
 
             <header className="space-y-6">
               <h1 className="text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                Turn one 5★ experience into five Google reviews
+                Turn one 5★ experience into five <span className="inline-flex"><span className="text-[#4285F4]">G</span><span className="text-[#EA4335]">o</span><span className="text-[#FBBC05]">o</span><span className="text-[#4285F4]">g</span><span className="text-[#34A853]">l</span><span className="text-[#EA4335]">e</span></span> reviews
               </h1>
               <p className="max-w-2xl text-xl text-slate-700 sm:text-2xl font-medium">
                 The fastest way to collect more reviews and boost your online reputation.
@@ -349,7 +349,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-stretch">
             {[
               {
                 number: "1",
@@ -367,19 +367,19 @@ export default function Home() {
                 description: "Happy customers are guided to Google to share their experience. Those with concerns are routed to a private inbox.",
               }
             ].map((item, index) => (
-              <div key={item.title} className="relative">
+              <div key={item.title} className="relative flex">
                 {/* Connection line for desktop */}
                 {index < 2 && (
                   <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-indigo-300 to-transparent -z-10" />
                 )}
-                <div className="group rounded-3xl border-2 border-slate-200/70 bg-white p-6 shadow-lg hover:shadow-2xl transition hover:-translate-y-1">
+                <div className="group rounded-3xl border-2 border-slate-200/70 bg-white p-6 shadow-lg hover:shadow-2xl transition hover:-translate-y-1 flex flex-col w-full">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white text-xl font-bold shadow-lg">
                       {item.number}
                     </div>
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 mb-2">{item.title}</h3>
-                  <p className="text-sm text-slate-600 leading-relaxed">{item.description}</p>
+                  <p className="text-sm text-slate-600 leading-relaxed flex-1">{item.description}</p>
                 </div>
               </div>
             ))}
