@@ -375,49 +375,49 @@ export default function ContactsPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight">Contacts</h1>
-          <p className="text-slate-500 font-medium mt-2">Manage your customer list and import data for campaigns.</p>
+          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Contacts</h1>
+          <p className="text-slate-500 text-sm font-medium mt-2">Manage your customer list and import data for campaigns.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {contacts.length > 0 && (
             <button 
               onClick={() => handleDeleteContacts(true)}
-              className="text-[10px] font-black text-red-500 hover:text-red-600 uppercase tracking-widest px-4 py-2"
+              className="text-[10px] font-black text-red-500 hover:text-red-600 uppercase tracking-widest px-2 py-2"
             >
               Clear All
             </button>
           )}
           <button 
             onClick={() => setShowAddModal(true)}
-            className="secondary-button !h-12 px-6 text-[10px] font-black uppercase tracking-[0.1em] shadow-sm"
+            className="secondary-button !h-10 sm:!h-12 px-4 sm:px-6 text-[10px] font-black uppercase tracking-[0.1em] shadow-sm flex-1 sm:flex-none"
           >
-            + Add Contact
+            + Add
           </button>
           <button 
             onClick={() => handleDownloadCSV(false)}
             disabled={contacts.length === 0}
-            className="secondary-button !h-12 px-6 text-[10px] font-black uppercase tracking-[0.1em] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            className="secondary-button !h-10 sm:!h-12 px-4 sm:px-6 text-[10px] font-black uppercase tracking-[0.1em] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex-1 sm:flex-none"
           >
-            Download CSV
+            CSV
           </button>
           <button 
             onClick={triggerFileInput}
             disabled={uploading}
-            className="primary-button !h-12 px-8 text-[10px] font-black uppercase tracking-[0.1em] shadow-xl shadow-brand/20 disabled:opacity-50 transition-all hover:scale-[1.02]"
+            className="primary-button !h-10 sm:!h-12 px-4 sm:px-8 text-[10px] font-black uppercase tracking-[0.1em] shadow-xl shadow-brand/20 disabled:opacity-50 transition-all hover:scale-[1.02] flex-1 sm:flex-none whitespace-nowrap"
           >
-            {uploading ? 'Importing...' : 'Import Contacts'}
+            {uploading ? '...' : 'Import'}
           </button>
         </div>
       </div>
 
       {/* Search and Bulk Actions */}
       {contacts.length > 0 && (
-        <div className="flex flex-col md:flex-row md:items-center gap-4 bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm">
-          <div className="relative flex-1">
+        <div className="flex flex-col gap-4 bg-white p-4 sm:p-6 rounded-[24px] sm:rounded-[32px] border border-slate-100 shadow-sm">
+          <div className="relative w-full">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">🔍</span>
             <input 
               type="text"
-              placeholder="Search by name, email, or phone..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
@@ -425,31 +425,31 @@ export default function ContactsPage() {
           </div>
           
           {selectedIds.size > 0 && (
-            <div className="flex items-center gap-4 animate-in slide-in-from-right-2">
-              <span className="text-xs font-black text-slate-400 uppercase tracking-widest">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 animate-in slide-in-from-top-2">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest w-full sm:w-auto mb-1 sm:mb-0">
                 {selectedIds.size} Selected
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <button 
                   onClick={() => handleBulkContact('email')}
-                  className="h-11 px-6 bg-brand/5 text-brand text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/10 transition-colors flex items-center gap-2"
+                  className="h-9 sm:h-11 px-3 sm:px-6 bg-brand/5 text-brand text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/10 transition-colors flex items-center gap-2 flex-1 sm:flex-none justify-center"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                  Email Selected
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                  Email
                 </button>
                 <button 
                   onClick={() => handleBulkContact('sms')}
-                  className="h-11 px-6 bg-brand/5 text-brand text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/10 transition-colors flex items-center gap-2"
+                  className="h-9 sm:h-11 px-3 sm:px-6 bg-brand/5 text-brand text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/10 transition-colors flex items-center gap-2 flex-1 sm:flex-none justify-center"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-                  SMS Selected
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                  SMS
                 </button>
                 <button 
                   onClick={() => handleDeleteContacts(false)}
                   disabled={deleting}
-                  className="h-11 px-6 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-100 transition-colors flex items-center gap-2"
+                  className="h-9 sm:h-11 px-3 sm:px-6 bg-red-50 text-red-600 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-100 transition-colors flex items-center gap-2 flex-1 sm:flex-none justify-center"
                 >
-                  {deleting ? 'Deleting...' : 'Delete Selected'}
+                  {deleting ? '...' : 'Delete'}
                 </button>
               </div>
             </div>
@@ -479,49 +479,49 @@ export default function ContactsPage() {
         )}
       </div>
 
-      <div className="bg-white rounded-[48px] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden min-h-[500px] flex flex-col">
+      <div className="bg-white rounded-[32px] sm:rounded-[48px] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden min-h-[500px] flex flex-col">
         {contacts.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-20 text-center">
-            <div className="w-24 h-24 bg-slate-50 rounded-[40px] flex items-center justify-center text-5xl mx-auto mb-8 border border-slate-100 shadow-inner">
+          <div className="flex-1 flex flex-col items-center justify-center p-10 sm:p-20 text-center">
+            <div className="w-20 h-20 sm:w-24 h-24 bg-slate-50 rounded-[32px] sm:rounded-[40px] flex items-center justify-center text-4xl sm:text-5xl mx-auto mb-6 sm:mb-8 border border-slate-100 shadow-inner">
               👥
             </div>
-            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">No contacts yet</h3>
-            <p className="text-base text-slate-400 font-medium max-w-md mx-auto mt-3 leading-relaxed">
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 uppercase tracking-tight">No contacts yet</h3>
+            <p className="text-sm sm:text-base text-slate-400 font-medium max-w-md mx-auto mt-3 leading-relaxed">
               Build your audience. Import your customer list from a CSV file or connect your Square account to start sending smart review requests.
             </p>
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <div className="mt-8 sm:mt-10 flex flex-wrap justify-center gap-3 sm:gap-4">
               <button 
                 onClick={triggerFileInput}
                 disabled={uploading}
-                className="h-14 px-10 bg-slate-900 text-white text-[11px] font-black uppercase tracking-widest rounded-[20px] hover:scale-[1.05] active:scale-[0.95] transition-all shadow-2xl shadow-slate-300 disabled:opacity-50"
+                className="h-12 sm:h-14 px-8 sm:px-10 bg-slate-900 text-white text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-[16px] sm:rounded-[20px] hover:scale-[1.05] active:scale-[0.95] transition-all shadow-2xl shadow-slate-300 disabled:opacity-50"
               >
-                {uploading ? 'Uploading...' : 'Upload CSV'}
+                {uploading ? '...' : 'Upload CSV'}
               </button>
-              <Link href="/integrations/square" className="h-14 px-10 border-2 border-slate-100 text-slate-400 text-[11px] font-black uppercase tracking-widest rounded-[20px] hover:bg-slate-50 hover:text-slate-600 transition-all flex items-center">
+              <Link href="/integrations/square" className="h-12 sm:h-14 px-8 sm:px-10 border-2 border-slate-100 text-slate-400 text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-[16px] sm:rounded-[20px] hover:bg-slate-50 hover:text-slate-600 transition-all flex items-center">
                 Connect Square
               </Link>
             </div>
           </div>
         ) : (
           <>
-            <div className="px-10 py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
-              <div className="flex items-center gap-4">
+            <div className="px-6 sm:px-10 py-6 sm:py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+              <div className="flex items-center gap-3 sm:gap-4">
                 <span className="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
-                <p className="text-sm font-black text-slate-900 uppercase tracking-widest">{filteredContacts.length} Contacts</p>
-                {searchQuery && <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">(Filtered)</span>}
+                <p className="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-widest">{filteredContacts.length} Contacts</p>
+                {searchQuery && <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:inline">(Filtered)</span>}
               </div>
               <button 
                 onClick={() => fetchContacts(user)}
-                className="text-[10px] font-black text-brand hover:text-brand-dark uppercase tracking-widest bg-brand/5 px-4 py-2 rounded-xl transition-colors"
+                className="text-[9px] sm:text-[10px] font-black text-brand hover:text-brand-dark uppercase tracking-widest bg-brand/5 px-3 sm:px-4 py-2 rounded-xl transition-colors"
               >
-                Refresh List
+                Refresh
               </button>
             </div>
-            <div className="overflow-x-auto overflow-y-auto max-h-[400px] custom-scrollbar">
-              <table className="w-full text-left border-collapse min-w-[800px]">
+            <div className="overflow-x-auto overflow-y-auto max-h-[600px] custom-scrollbar">
+              <table className="w-full text-left border-collapse min-w-[600px] sm:min-w-[800px]">
                 <thead className="sticky top-0 z-10 bg-slate-50 shadow-sm">
-                  <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                    <th className="px-6 py-6 w-10">
+                  <tr className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-400">
+                    <th className="px-4 sm:px-6 py-4 sm:py-6 w-10">
                       <input 
                         type="checkbox" 
                         checked={filteredContacts.length > 0 && selectedIds.size === filteredContacts.length}
@@ -529,17 +529,17 @@ export default function ContactsPage() {
                         className="w-4 h-4 rounded border-slate-200 text-brand focus:ring-brand"
                       />
                     </th>
-                    <th className="px-4 py-6">Name</th>
-                    <th className="px-6 py-6">Contact Info</th>
-                    <th className="px-6 py-6">Source</th>
-                    <th className="px-6 py-6">Actions</th>
-                    <th className="px-10 py-6 text-right">Date Added</th>
+                    <th className="px-2 sm:px-4 py-4 sm:py-6">Name</th>
+                    <th className="px-4 sm:px-6 py-4 sm:py-6">Contact Info</th>
+                    <th className="px-4 sm:px-6 py-4 sm:py-6 hidden sm:table-cell">Source</th>
+                    <th className="px-4 sm:px-6 py-4 sm:py-6">Actions</th>
+                    <th className="px-6 sm:px-10 py-4 sm:py-6 text-right">Added</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50 bg-white">
                   {filteredContacts.map((contact) => (
                     <tr key={contact.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-6 py-6">
+                      <td className="px-4 sm:px-6 py-4 sm:py-6">
                         <input 
                           type="checkbox" 
                           checked={selectedIds.has(contact.id)}
@@ -547,45 +547,45 @@ export default function ContactsPage() {
                           className="w-4 h-4 rounded border-slate-200 text-brand focus:ring-brand"
                         />
                       </td>
-                      <td className="px-4 py-6">
-                        <p className="font-black text-slate-900 group-hover:text-brand transition-colors">{contact.name || 'Unnamed'}</p>
+                      <td className="px-2 sm:px-4 py-4 sm:py-6">
+                        <p className="font-black text-slate-900 group-hover:text-brand transition-colors text-sm sm:text-base">{contact.name || 'Unnamed'}</p>
                       </td>
-                      <td className="px-6 py-6">
-                        <div className="flex flex-col gap-1">
-                          {contact.email && <p className="text-xs font-bold text-slate-600">{contact.email}</p>}
-                          {contact.phone && <p className="text-[10px] font-medium text-slate-400">{contact.phone}</p>}
-                          {!contact.email && !contact.phone && <span className="text-slate-300 italic text-xs">No info</span>}
+                      <td className="px-4 sm:px-6 py-4 sm:py-6">
+                        <div className="flex flex-col gap-0.5 sm:gap-1">
+                          {contact.email && <p className="text-[11px] sm:text-xs font-bold text-slate-600 truncate max-w-[120px] sm:max-w-none">{contact.email}</p>}
+                          {contact.phone && <p className="text-[9px] sm:text-[10px] font-medium text-slate-400">{contact.phone}</p>}
+                          {!contact.email && !contact.phone && <span className="text-slate-300 italic text-[10px] sm:text-xs">No info</span>}
                         </div>
                       </td>
-                      <td className="px-6 py-6">
-                        <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-lg border border-slate-200">
+                      <td className="px-4 sm:px-6 py-4 sm:py-6 hidden sm:table-cell">
+                        <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-black uppercase tracking-widest rounded-md border border-slate-200">
                           {contact.source || 'manual'}
                         </span>
                       </td>
-                      <td className="px-6 py-6">
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <td className="px-4 sm:px-6 py-4 sm:py-6">
+                        <div className="flex items-center gap-1.5 sm:gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                           {contact.email && (
                             <button 
                               onClick={() => handleIndividualContact(contact, 'email')}
-                              className="w-8 h-8 rounded-lg bg-brand/5 text-brand flex items-center justify-center hover:bg-brand/10 transition-colors"
-                              title="Email Contact"
+                              className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-brand/5 text-brand flex items-center justify-center hover:bg-brand/10 transition-colors"
+                              title="Email"
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                              <svg className="w-3.5 h-3.5 sm:w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                             </button>
                           )}
                           {contact.phone && (
                             <button 
                               onClick={() => handleIndividualContact(contact, 'sms')}
-                              className="w-8 h-8 rounded-lg bg-brand/5 text-brand flex items-center justify-center hover:bg-brand/10 transition-colors"
-                              title="SMS Contact"
+                              className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-brand/5 text-brand flex items-center justify-center hover:bg-brand/10 transition-colors"
+                              title="SMS"
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                              <svg className="w-3.5 h-3.5 sm:w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
                             </button>
                           )}
                         </div>
                       </td>
-                      <td className="px-10 py-6 text-right text-slate-400 text-xs font-bold">
-                        {contact.created_at ? new Date(contact.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
+                      <td className="px-6 sm:px-10 py-4 sm:py-6 text-right text-slate-400 text-[10px] sm:text-xs font-bold">
+                        {contact.created_at ? new Date(contact.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-'}
                       </td>
                     </tr>
                   ))}
@@ -595,17 +595,17 @@ export default function ContactsPage() {
           </>
         )}
 
-        <div className="mt-auto p-10 border-t border-slate-50 bg-slate-50/30">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-200"></span>
-              <span>Supported Formats:</span>
-              <span className="bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-slate-600">.CSV</span>
-              <span className="bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-slate-600">.XLSX</span>
+        <div className="mt-auto p-6 sm:p-10 border-t border-slate-50 bg-slate-50/30">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-200 hidden sm:inline"></span>
+              <span>Formats:</span>
+              <span className="bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm text-slate-600">.CSV</span>
+              <span className="bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm text-slate-600">.XLSX</span>
             </div>
-            <div className="h-4 w-px bg-slate-200"></div>
-            <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
-              Need help? <button onClick={() => setShowGuide(true)} className="text-brand font-black hover:underline">Read the import guide</button>
+            <div className="hidden sm:block h-4 w-px bg-slate-200"></div>
+            <p className="text-[9px] sm:text-[10px] font-medium text-slate-400 uppercase tracking-widest text-center sm:text-left">
+              Need help? <button onClick={() => setShowGuide(true)} className="text-brand font-black hover:underline">Read Guide</button>
             </p>
           </div>
         </div>
