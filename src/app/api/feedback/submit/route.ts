@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { ensureFeedbackTables, recordReviewEvent } from '@/lib/feedbackStorage';
 import { normalizePhone } from '@/lib/phone';
-import { checkPlanLimit } from '@/lib/entitlements';
-import { sendOwnerFeedbackNotification } from '@/lib/notifications';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -125,12 +123,6 @@ export async function POST(req: Request) {
   if (error) return new NextResponse(error.message, { status: 500 });
   if (!biz) return new NextResponse('not found', { status: 404 });
 
-  // Enforce plan limits
-  const limitCheck = await checkPlanLimit(businessId);
-  if (!limitCheck.allowed) {
-    return new NextResponse(limitCheck.reason, { status: 403 });
-  }
-
   try { await ensureFeedbackTables(); } catch {}
 
   let feedbackId: string | null = null;
@@ -150,6 +142,30 @@ export async function POST(req: Request) {
         .select('id')
         .single();
       if (!insertError && data?.id) feedbackId = data.id;
+
+      // Also save to contacts table for the database
+      if (sanitizedEmail || sanitizedPhoneDigits) {
+        try {
+          const { data: existing } = await supa
+            .from('contacts')
+            .select('id')
+            .eq('business_id', businessId)
+            .eq(sanitizedEmail ? 'email' : 'phone', sanitizedEmail || sanitizedPhoneDigits)
+            .maybeSingle();
+
+          if (!existing) {
+            await supa.from('contacts').insert({
+              business_id: businessId,
+              email: sanitizedEmail || null,
+              name: sanitizedName || 'Unknown',
+              phone: sanitizedPhoneDigits || null,
+              source: 'feedback'
+            });
+          }
+        } catch (e) {
+          console.error('Failed to sync feedback to contacts:', e);
+        }
+      }
     } catch {
       // ignore insert error; feedback table may not exist yet or REST may be unavailable
     }
@@ -158,6 +174,30 @@ export async function POST(req: Request) {
   const redirect = normalizedRating >= 5
     ? (biz.google_maps_write_review_uri || biz.review_link || '')
     : '';
+
+  // Also save to contacts table for the database if we have contact info
+  if (sanitizedEmail || sanitizedPhoneDigits) {
+    try {
+      const { data: existing } = await supa
+        .from('contacts')
+        .select('id')
+        .eq('business_id', businessId)
+        .eq(sanitizedEmail ? 'email' : 'phone', sanitizedEmail || sanitizedPhoneDigits)
+        .maybeSingle();
+
+      if (!existing) {
+        await supa.from('contacts').insert({
+          business_id: businessId,
+          email: sanitizedEmail || null,
+          name: sanitizedName || 'Unknown',
+          phone: sanitizedPhoneDigits || null,
+          source: 'feedback'
+        });
+      }
+    } catch (e) {
+      console.error('Failed to sync feedback/redirect to contacts:', e);
+    }
+  }
 
   const meta: Record<string, unknown> = { source: entrySource };
   if (feedbackId) meta.feedback_id = feedbackId;
@@ -182,17 +222,5 @@ export async function POST(req: Request) {
     });
   }
 
-  // Trigger instant notification to business owner
-  // We do this in the background (don't await) to keep the response fast
-  sendOwnerFeedbackNotification({
-    businessId,
-    rating: normalizedRating,
-    customerName: sanitizedName || undefined,
-    customerEmail: sanitizedEmail || undefined,
-    customerPhone: sanitizedPhoneDigits || undefined,
-    comment: sanitizedComment || undefined,
-    source: entrySource,
-  }).catch(err => console.error('[API SUBMIT] Notification error:', err));
-
-  return NextResponse.json({ ok: true, redirect: redirect || undefined, feedback_id: feedbackId });
+  return NextResponse.json({ ok: true, redirect: redirect || undefined });
 }
