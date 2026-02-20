@@ -29,7 +29,17 @@ function FeedbackContent({ business }: { business: any }) {
   const [typeFilter, setTypeFilter] = useState<'all' | 'feedback' | 'google' | 'contact' | 'event'>('all');
   const [showArchived, setShowArchived] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const itemsPerPage = 10;
+
+  const handleCopyLink = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.reviewsandmarketing.com';
+    const url = `${origin}/r/${business?.id}?source=followup`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   useEffect(() => {
     loadFeedback();
@@ -463,6 +473,14 @@ function FeedbackContent({ business }: { business: any }) {
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                               Text
                             </a>
+                          )}
+                          {!isEvent && f.type !== 'google' && (
+                            <button
+                              onClick={(e) => handleCopyLink(e, f.id)}
+                              className="px-4 h-10 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all w-full flex items-center justify-center gap-2 shadow-sm border border-blue-100"
+                            >
+                              {copiedId === f.id ? 'Copied!' : 'Copy Review Link'}
+                            </button>
                           )}
                           <button 
                             onClick={() => toggleArchive(f.id, f.archived)}

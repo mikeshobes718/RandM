@@ -426,35 +426,43 @@ function DashboardContent() {
                       </p>
                     </div>
 
-                    {/* Sequence Diagram */}
-                    <div className="bg-white rounded-2xl p-6 border border-slate-100 relative mb-8 shadow-sm">
-                      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
-                        {/* Step 1 */}
-                        <div className="flex flex-col items-center text-center w-full sm:w-1/3">
-                          <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl mb-3 shadow-sm border border-slate-100 z-10">📱</div>
-                          <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1">1. Customer Scans</h4>
-                          <p className="text-[10px] text-slate-500 font-medium px-2">They scan the code with their phone</p>
-                        </div>
+                      {/* Sequence Diagram */}
+                      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-100 relative mb-8 shadow-sm">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-10 sm:gap-6 relative z-10">
+                          {/* Step 1 */}
+                          <div className="flex flex-col items-center text-center w-full sm:w-1/3 relative">
+                            <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl mb-3 shadow-sm border border-slate-100 z-10 relative bg-white">📱</div>
+                            <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1">1. Customer Scans</h4>
+                            <p className="text-[10px] text-slate-500 font-medium px-2">They scan the code with their phone</p>
+                            {/* Mobile Line */}
+                            <div className="sm:hidden absolute top-14 bottom-[-40px] w-px bg-slate-100 z-0"></div>
+                          </div>
 
-                        {/* Step 2 */}
-                        <div className="flex flex-col items-center text-center w-full sm:w-1/3">
-                          <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl mb-3 shadow-sm border border-blue-100 z-10">⭐</div>
-                          <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1">2. Star Rating</h4>
-                          <p className="text-[10px] text-slate-500 font-medium px-2">They select 1 to 5 stars privately</p>
-                        </div>
+                          {/* Step 2 */}
+                          <div className="flex flex-col items-center text-center w-full sm:w-1/3 relative">
+                            <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl mb-3 shadow-sm border border-blue-100 z-10 relative bg-white">⭐</div>
+                            <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1">2. Star Rating</h4>
+                            <p className="text-[10px] text-slate-500 font-medium px-2">They select 1 to 5 stars privately</p>
+                            {/* Mobile Line */}
+                            <div className="sm:hidden absolute top-14 bottom-[-40px] w-px bg-slate-100 z-0"></div>
+                          </div>
 
                         {/* Step 3 (Branching) */}
-                        <div className="flex flex-col items-center text-center w-full sm:w-1/3 gap-3">
-                          <div className="w-full bg-emerald-50 border border-emerald-100 rounded-xl p-3 shadow-sm relative">
-                            <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-emerald-100 rounded-full flex items-center justify-center text-[10px] font-black text-emerald-600 shadow-sm">5</div>
-                            <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-0.5">Public Review</h4>
-                            <p className="text-[9px] text-emerald-600/80 font-medium">Routed to Google Maps</p>
+                        <div className="flex flex-col w-full sm:w-1/3 gap-3">
+                          <div className="w-full bg-emerald-50 border border-emerald-100 rounded-xl p-3 shadow-sm flex items-center gap-3 text-left">
+                            <div className="w-8 h-8 flex-shrink-0 bg-white border border-emerald-100 rounded-full flex items-center justify-center text-[12px] font-black text-emerald-600 shadow-sm">5</div>
+                            <div>
+                              <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-0.5">Public Review</h4>
+                              <p className="text-[9px] text-emerald-600/80 font-medium">Routed to Google Maps</p>
+                            </div>
                           </div>
                           
-                          <div className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm relative">
-                            <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-[10px] font-black text-slate-500 shadow-sm">1-4</div>
-                            <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-0.5">Private Feedback</h4>
-                            <p className="text-[9px] text-slate-500 font-medium">Sent directly to your inbox</p>
+                          <div className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm flex items-center gap-3 text-left">
+                            <div className="w-8 h-8 flex-shrink-0 bg-white border border-slate-200 rounded-full flex items-center justify-center text-[10px] font-black text-slate-500 shadow-sm">1-4</div>
+                            <div>
+                              <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-0.5">Private Feedback</h4>
+                              <p className="text-[9px] text-slate-500 font-medium">Sent directly to your inbox</p>
+                            </div>
                           </div>
                         </div>
                       </div>

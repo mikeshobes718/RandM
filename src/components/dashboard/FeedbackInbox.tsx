@@ -25,6 +25,16 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
   const [filter, setFilter] = useState<'all' | 'negative' | 'neutral' | 'positive' | 'needs_response'>('all');
   const [items, setItems] = useState<FeedbackItem[]>(initialItems);
   const [resolvedIds, setResolvedIds] = useState<string[]>([]);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyLink = (e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.reviewsandmarketing.com';
+    const url = `${origin}/r/${businessId}?source=followup`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   useEffect(() => {
     const saved = localStorage.getItem(`resolved_feedback_${businessId}`);
@@ -128,32 +138,32 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
             return (
               <div key={item.id} className={`p-5 rounded-2xl border transition-all ${isResolved ? 'bg-slate-50/50 border-slate-100 opacity-60' : 'bg-white border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200'}`}>
                 <div className="flex items-start justify-between gap-4 mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg border ${item.rating >= 4 ? 'bg-emerald-50 text-emerald-600' :
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div className={`w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center text-lg border ${item.rating >= 4 ? 'bg-emerald-50 text-emerald-600' :
                       item.rating <= 2 ? 'bg-rose-500 text-white border-none shadow-lg shadow-rose-200 animate-pulse' :
                         'bg-rose-50 text-rose-600'
                       }`}>
                       {isEvent ? '🚀' : item.rating >= 4 ? '⭐️' : '⚠️'}
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-black text-slate-900">{isEvent ? 'Verified Redirect' : (item.name || 'Anonymous')}</h4>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="text-sm font-black text-slate-900 truncate">{isEvent ? 'Verified Redirect' : (item.name || 'Anonymous')}</h4>
                         {!isEvent && item.rating <= 2 && !isResolved && (
-                          <span className="px-1.5 py-0.5 bg-rose-100 text-rose-600 text-[8px] font-black rounded uppercase tracking-tighter">Urgent</span>
+                          <span className="px-1.5 py-0.5 bg-rose-100 text-rose-600 text-[8px] font-black rounded uppercase tracking-tighter flex-shrink-0">Urgent</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-3 mt-1">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex-shrink-0">
                           {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                         </p>
                         {!isEvent && item.email && (
-                          <a href={`mailto:${item.email}`} className="text-[10px] font-bold text-slate-400 hover:text-brand transition-colors uppercase tracking-widest flex items-center gap-1">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                            {item.email}
+                          <a href={`mailto:${item.email}`} className="text-[10px] font-bold text-slate-400 hover:text-brand transition-colors uppercase tracking-widest flex items-center gap-1 truncate">
+                            <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            <span className="truncate">{item.email}</span>
                           </a>
                         )}
                         {!isEvent && item.phone && (
-                          <a href={`sms:${item.phone}`} className="text-[10px] font-bold text-slate-400 hover:text-brand transition-colors uppercase tracking-widest flex items-center gap-1">
+                          <a href={`sms:${item.phone}`} className="text-[10px] font-bold text-slate-400 hover:text-brand transition-colors uppercase tracking-widest flex items-center gap-1 flex-shrink-0">
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                             {item.phone}
                           </a>
@@ -162,7 +172,7 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
                     </div>
                   </div>
                   {!isEvent && (
-                    <div className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${item.rating >= 4 ? 'bg-emerald-100 text-emerald-700' :
+                    <div className={`px-2 py-1 rounded-lg flex-shrink-0 text-[10px] font-black uppercase tracking-widest ${item.rating >= 4 ? 'bg-emerald-100 text-emerald-700' :
                       item.rating === 3 ? 'bg-slate-100 text-slate-600' :
                         'bg-rose-600 text-white shadow-sm'
                       }`}>
@@ -196,24 +206,32 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
                   )}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 pt-3 mt-4 border-t border-slate-100">
                   <button
                     onClick={() => window.location.href = `mailto:${item.email}?subject=Feedback regarding your experience`}
-                    className="px-3 py-1.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-black transition-all"
+                    className="px-3 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all flex-1 sm:flex-none text-center shadow-sm"
                   >
                     Email
                   </button>
                   {item.phone && (
                     <button
                       onClick={() => window.location.href = `sms:${item.phone}`}
-                      className="px-3 py-1.5 bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-emerald-700 transition-all"
+                      className="px-3 py-2 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all flex-1 sm:flex-none text-center shadow-sm"
                     >
                       Text
                     </button>
                   )}
+                  {!isEvent && (
+                    <button
+                      onClick={(e) => handleCopyLink(e, item.id)}
+                      className="px-3 py-2 bg-blue-50 text-blue-600 border border-blue-100 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-100 transition-all flex-1 sm:flex-none text-center shadow-sm"
+                    >
+                      {copiedId === item.id ? 'Copied!' : 'Copy Review Link'}
+                    </button>
+                  )}
                   <button
                     onClick={() => handleResolve(item.id)}
-                    className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all border ${isResolved ? 'bg-white text-slate-400 border-slate-200' : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50'
+                    className={`px-3 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all border flex-1 sm:flex-none text-center sm:ml-auto shadow-sm ${isResolved ? 'bg-white text-slate-400 border-slate-200' : 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50'
                       }`}
                   >
                     {isResolved ? 'Unarchive' : 'Archive'}
