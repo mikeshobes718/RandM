@@ -47,30 +47,59 @@ export async function GET(req: Request) {
     // 1. Fetch private feedback (1-4 stars)
     const { data: feedbackData } = await supa
       .from('feedback')
-      .select('id,business_id,rating,name,email,phone,comment,marketing_consent,created_at')
+      .select('id,business_id,rating,name,email,phone,comment,marketing_consent,created_at,archived')
       .in('business_id', ids)
       .gte('created_at', since.toISOString())
       .order('created_at', { ascending: false })
       .limit(limit);
       
     // 2. Fetch 5-star contact captures
-    const { data: contactData } = await supa
-      .from('review_contact_captures')
-      .select('id,business_id,name,email,phone,marketing_consent:consent,created_at')
-      .in('business_id', ids)
-      .gte('created_at', since.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(limit);
+    let contactData: any[] = [];
+    try {
+      const { data } = await supa
+        .from('review_contact_captures')
+        .select('id,business_id,name,email,phone,marketing_consent:consent,created_at,archived')
+        .in('business_id', ids)
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (data) contactData = data;
+    } catch (e) {
+      // Fallback if 'archived' column doesn't exist
+      const { data } = await supa
+        .from('review_contact_captures')
+        .select('id,business_id,name,email,phone,marketing_consent:consent,created_at')
+        .in('business_id', ids)
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (data) contactData = data;
+    }
 
     // 3. Fetch "google_opened" events for anonymous entries
-    const { data: googleEvents } = await supa
-      .from('review_events')
-      .select('id,business_id,created_at')
-      .in('business_id', ids)
-      .eq('event', 'google_opened')
-      .gte('created_at', since.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(limit);
+    let googleEvents: any[] = [];
+    try {
+      const { data } = await supa
+        .from('review_events')
+        .select('id,business_id,created_at,archived')
+        .in('business_id', ids)
+        .eq('event', 'google_opened')
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (data) googleEvents = data;
+    } catch (e) {
+      // Fallback if 'archived' column doesn't exist
+      const { data } = await supa
+        .from('review_events')
+        .select('id,business_id,created_at')
+        .in('business_id', ids)
+        .eq('event', 'google_opened')
+        .gte('created_at', since.toISOString())
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (data) googleEvents = data;
+    }
 
     // 4. Fetch actual Google Reviews
     const googleReviews: any[] = [];
@@ -98,15 +127,15 @@ export async function GET(req: Request) {
 
     // Merge everything
     const merged = [
-      ...(feedbackData || []).map(f => ({ ...f, type: 'feedback', archived: false })),
-      ...(contactData || []).map(c => ({ 
+      ...(feedbackData || []).map(f => ({ ...f, type: 'feedback', archived: !!f.archived })),
+      ...contactData.map(c => ({ 
         ...c, 
         type: 'contact', 
         rating: 5, 
         comment: '5-star review (Contact form completed)', 
-        archived: false
+        archived: !!c.archived
       })),
-      ...(googleEvents || []).map(e => ({
+      ...googleEvents.map(e => ({
         id: e.id,
         business_id: e.business_id,
         rating: 5,
@@ -115,7 +144,7 @@ export async function GET(req: Request) {
         phone: null,
         comment: null,
         marketing_consent: false,
-        archived: false,
+        archived: !!e.archived,
         created_at: e.created_at,
         type: 'event'
       })),
