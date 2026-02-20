@@ -276,21 +276,21 @@ function DashboardContent() {
         </div>
       </div>
 
-      {/* Top Row: Feedback Inbox & Priority Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
-        <div className="lg:col-span-8">
-          <FeedbackInbox initialItems={recentFeedback} businessId={business.id!} />
-        </div>
-        <div className="lg:col-span-4 space-y-8">
-          <PlanUsageCard
-            planName={planUsage.planName}
-            requestsUsed={planUsage.used}
-            requestsLimit={planUsage.limit}
-            qrScans={planUsage.qrScans}
-            isUnlimited={planUsage.isUnlimited}
-            isPro={isPro}
-          />
-        </div>
+      {/* Top Row: Plan Usage (Horizontal) */}
+      <div className="mb-8">
+        <PlanUsageCard
+          planName={planUsage.planName}
+          requestsUsed={planUsage.used}
+          requestsLimit={planUsage.limit}
+          qrScans={planUsage.qrScans}
+          isUnlimited={planUsage.isUnlimited}
+          isPro={isPro}
+        />
+      </div>
+
+      {/* Feedback Inbox */}
+      <div className="mb-12">
+        <FeedbackInbox initialItems={recentFeedback} businessId={business.id!} />
       </div>
 
       {/* Tabs Navigation */}
