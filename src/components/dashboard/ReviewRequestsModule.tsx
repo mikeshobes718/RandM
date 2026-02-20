@@ -101,9 +101,6 @@ export default function ReviewRequestsModule({
               <Link href="/contacts" className="secondary-button !h-11 px-4 text-xs font-black uppercase tracking-widest flex-1 sm:flex-none text-center">
                 Import
               </Link>
-              <Link href="/templates" className="secondary-button !h-11 px-4 text-xs font-black uppercase tracking-widest flex-1 sm:flex-none text-center">
-                Templates
-              </Link>
             </div>
       </div>
 
