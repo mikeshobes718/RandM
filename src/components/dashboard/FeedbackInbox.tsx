@@ -63,45 +63,41 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
   }, [items, filter]);
 
   return (
-    <div className="premium-card p-0 rounded-[32px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden flex flex-col">
-      <div className="p-6 border-b border-slate-100 bg-slate-50/50">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-black text-slate-900">Feedback Inbox</h2>
-          <Link href="/feedback" className="text-[10px] font-black text-brand uppercase tracking-widest hover:underline">
-            View All Activity →
-          </Link>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {[
-            { id: 'all', label: 'All' },
-            { id: 'negative', label: 'Negative' },
-            { id: 'neutral', label: 'Neutral' },
-            { id: 'positive', label: 'Positive' },
-            { id: 'needs_response', label: 'Needs Response' },
-          ].map((f) => (
-            <button
-              key={f.id}
-              onClick={() => setFilter(f.id as any)}
-              className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === f.id
-                  ? 'bg-slate-900 text-white shadow-lg'
-                  : 'bg-white text-slate-400 border border-slate-200 hover:border-slate-300'
-                }`}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+    <section className="premium-card p-8 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-xl font-bold">Feedback Inbox</h2>
+        <Link href="/feedback" className="text-[10px] font-black text-brand uppercase tracking-widest hover:underline">
+          View All Activity →
+        </Link>
       </div>
 
-      <div className="flex-1 overflow-y-auto max-h-[600px] divide-y divide-slate-100">
+      <div className="flex flex-wrap gap-2 mb-8">
+        {[
+          { id: 'all', label: 'All' },
+          { id: 'negative', label: 'Negative' },
+          { id: 'neutral', label: 'Neutral' },
+          { id: 'positive', label: 'Positive' },
+          { id: 'needs_response', label: 'Needs Response' },
+        ].map((f) => (
+          <button
+            key={f.id}
+            onClick={() => setFilter(f.id as any)}
+            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === f.id
+              ? 'bg-slate-900 text-white shadow-lg'
+              : 'bg-white text-slate-400 border border-slate-200 hover:border-slate-300'
+              }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-4">
         {filteredItems.length === 0 ? (
-          <div className="py-20 text-center px-6">
-            <div className="w-16 h-16 bg-slate-50 rounded-[24px] flex items-center justify-center mx-auto mb-4 border border-slate-100">
-              <span className="text-2xl">📥</span>
-            </div>
-            <p className="text-sm font-black text-slate-900 uppercase tracking-widest mb-1">Clear for now</p>
-            <p className="text-xs text-slate-400 font-medium max-w-[180px] mx-auto">No feedback matches your current filter.</p>
+          <div className="py-12 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 text-2xl">📥</div>
+            <h3 className="text-sm font-bold text-slate-900 mb-1">Clear for now</h3>
+            <p className="text-xs text-slate-400 font-medium">No feedback matches your current filter.</p>
           </div>
         ) : (
           filteredItems.map((item) => {
@@ -109,50 +105,49 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
             const isResolved = item.status === 'resolved';
 
             return (
-              <div key={item.id} className={`p-6 transition-all group hover:bg-slate-50/50 ${isResolved ? 'opacity-60 grayscale-[0.5]' : ''}`}>
-                <div className="flex justify-between items-start mb-3">
+              <div key={item.id} className={`p-5 rounded-2xl border transition-all ${isResolved ? 'bg-slate-50/50 border-slate-100 opacity-60' : 'bg-white border-slate-100 shadow-sm hover:shadow-md hover:border-slate-200'}`}>
+                <div className="flex items-start justify-between gap-4 mb-3">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-sm border border-slate-100 ${isEvent ? 'bg-blue-50 text-blue-600' :
-                        item.rating >= 4 ? 'bg-emerald-50 text-emerald-600' :
-                          item.rating <= 2 ? 'bg-rose-500 text-white border-none shadow-lg shadow-rose-200 animate-pulse' :
-                            'bg-rose-50 text-rose-600'
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg border ${item.rating >= 4 ? 'bg-emerald-50 text-emerald-600' :
+                      item.rating <= 2 ? 'bg-rose-500 text-white border-none shadow-lg shadow-rose-200 animate-pulse' :
+                        'bg-rose-50 text-rose-600'
                       }`}>
                       {isEvent ? '🚀' : item.rating >= 4 ? '⭐️' : '⚠️'}
                     </div>
                     <div>
-                      <p className="text-sm font-black text-slate-900 truncate max-w-[140px] flex items-center gap-2">
-                        {isEvent ? 'Verified Redirect' : (item.name || 'Anonymous')}
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-black text-slate-900">{isEvent ? 'Verified Redirect' : (item.name || 'Anonymous')}</h4>
                         {!isEvent && item.rating <= 2 && !isResolved && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+                          <span className="px-1.5 py-0.5 bg-rose-100 text-rose-600 text-[8px] font-black rounded uppercase tracking-tighter">Urgent</span>
                         )}
-                      </p>
+                      </div>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                         {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                       </p>
                     </div>
                   </div>
                   {!isEvent && (
-                    <span className={`text-[10px] font-black px-2 py-1 rounded-lg uppercase tracking-widest ${item.rating >= 4 ? 'bg-emerald-100 text-emerald-700' :
-                        item.rating === 3 ? 'bg-slate-100 text-slate-600' :
-                          'bg-rose-600 text-white shadow-sm'
+                    <div className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${item.rating >= 4 ? 'bg-emerald-100 text-emerald-700' :
+                      item.rating === 3 ? 'bg-slate-100 text-slate-600' :
+                        'bg-rose-600 text-white shadow-sm'
                       }`}>
                       {item.rating} Stars
-                    </span>
+                    </div>
                   )}
                 </div>
 
-                <p className="text-xs text-slate-600 leading-relaxed italic mb-4">
+                <p className="text-xs text-slate-600 font-medium leading-relaxed mb-4 italic">
                   {isEvent ? 'Customer was successfully routed to your Google Profile to leave a public review.' : `"${item.comment || 'No comment provided'}"`}
                 </p>
 
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-2">
                   {!isEvent && (
                     <>
                       <button
                         onClick={() => window.location.href = `mailto:${item.email}?subject=Feedback regarding your experience`}
                         className="px-3 py-1.5 bg-slate-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-black transition-all"
                       >
-                        Reply
+                        Email
                       </button>
                       {item.phone && (
                         <button
@@ -172,7 +167,8 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
                     </>
                   )}
                   {isEvent && (
-                    <div className="px-3 py-1.5 bg-blue-50 text-blue-600 text-[9px] font-black uppercase tracking-widest rounded-lg">
+                    <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                       Verified Completion
                     </div>
                   )}
@@ -182,6 +178,6 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
           })
         )}
       </div>
-    </div>
+    </section>
   );
 }
