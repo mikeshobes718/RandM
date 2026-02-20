@@ -140,6 +140,27 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
                   {isEvent ? 'Customer was successfully routed to your Google Profile to leave a public review.' : `"${item.comment || 'No comment provided'}"`}
                 </p>
 
+                <div className="flex flex-wrap gap-x-6 gap-y-2 mb-4">
+                  {item.email && (
+                    <a 
+                      href={`mailto:${item.email}?subject=Feedback regarding your experience`}
+                      className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-brand transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                      {item.email}
+                    </a>
+                  )}
+                  {item.phone && (
+                    <a 
+                      href={`sms:${item.phone}`}
+                      className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-brand transition-colors"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                      {item.phone}
+                    </a>
+                  )}
+                </div>
+
                 <div className="flex items-center gap-2">
                   {!isEvent && (
                     <>
@@ -162,7 +183,7 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
                         className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all border ${isResolved ? 'bg-white text-slate-400 border-slate-200' : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50'
                           }`}
                       >
-                        {isResolved ? 'Re-open' : 'Resolve'}
+                        {isResolved ? 'Unarchive' : 'Archive'}
                       </button>
                     </>
                   )}
