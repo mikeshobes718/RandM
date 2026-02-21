@@ -55,6 +55,10 @@ function NewRequestContent() {
     .replace(/{{business_name}}/g, businessName)
     .replace(/{{link}}/g, businessId ? `reviewsandmarketing.com/r/${businessId}` : 'reviewsandmarketing.com/r/xyz');
 
+  const finalPreviewText = (type === 'SMS' && businessName && !previewText.toLowerCase().includes(businessName.toLowerCase()))
+    ? `${businessName}: ${previewText}`
+    : previewText;
+
   const handleStartCampaign = async () => {
     if (!name || !body || sending) return;
 
@@ -223,17 +227,17 @@ function NewRequestContent() {
                 <div className="bg-white/5 border border-white/10 rounded-[32px] p-6 pt-12 aspect-[9/16] relative">
                   <div className="absolute top-4 left-1/2 -translate-x-1/2 w-12 h-1 bg-white/10 rounded-full"></div>
                   <div className="bg-[#242424] rounded-2xl p-4 text-[11px] leading-relaxed shadow-xl border border-white/5">
-                    {previewText || "Your message will appear here..."}
+                    {finalPreviewText || "Your message will appear here..."}
                   </div>
                 </div>
               ) : (
                 <div className="bg-white text-slate-900 rounded-3xl p-6 min-h-[400px] shadow-2xl">
                   <div className="border-b border-slate-100 pb-4 mb-4">
                     <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1">Subject</p>
-                    <p className="text-xs font-bold">{previewText.split('\n')[0].replace('Subject: ', '') || "No Subject"}</p>
+                    <p className="text-xs font-bold">{finalPreviewText.split('\n')[0].replace('Subject: ', '') || "No Subject"}</p>
                   </div>
                   <div className="text-[11px] leading-relaxed whitespace-pre-wrap">
-                    {previewText.split('\n').slice(1).join('\n').trim() || "Your email body will appear here..."}
+                    {finalPreviewText.split('\n').slice(1).join('\n').trim() || "Your email body will appear here..."}
                   </div>
                 </div>
               )}
