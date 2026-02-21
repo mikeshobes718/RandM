@@ -73,7 +73,11 @@ export async function POST(req: Request) {
     consent,
   } = body as Record<string, unknown>;
 
-  if (typeof businessId !== 'string' || !businessId) {
+  // Try to extract businessId from the URL or query params if not in body
+  const parsedUrl = new URL(req.url);
+  const finalBusinessId = businessId || parsedUrl.searchParams.get('businessId') || parsedUrl.searchParams.get('id');
+
+  if (typeof finalBusinessId !== 'string' || !finalBusinessId) {
     return new NextResponse('missing businessId', { status: 400 });
   }
 
@@ -92,11 +96,14 @@ export async function POST(req: Request) {
   const entrySource = sanitizeSource(source);
 
   if (normalizedRating < 5) {
-    if (!sanitizedComment || !sanitizedName || !sanitizedEmail) {
-      return new NextResponse('Please include your name, email, and feedback so we can follow up.', { status: 400 });
+    if (!sanitizedComment || !sanitizedName || (!sanitizedEmail && !sanitizedPhoneDigits)) {
+      return new NextResponse('Please include your name, feedback, and at least one contact method (email or phone).', { status: 400 });
     }
-    if (!isValidEmail(sanitizedEmail)) {
+    if (sanitizedEmail && !isValidEmail(sanitizedEmail)) {
       return new NextResponse('Enter a valid email address so we can stay in touch.', { status: 400 });
+    }
+    if (!marketingConsent) {
+      return new NextResponse('Please agree to be contacted so we can resolve your issue.', { status: 400 });
     }
   }
 
@@ -105,14 +112,14 @@ export async function POST(req: Request) {
   let { data: biz, error } = await supa
     .from('businesses')
     .select(baseColumns)
-    .eq('id', businessId)
+    .eq('id', finalBusinessId)
     .maybeSingle();
 
   if (error && /column/.test(error.message || '')) {
     const fallback = await supa
       .from('businesses')
       .select('id,name,review_link')
-      .eq('id', businessId)
+      .eq('id', finalBusinessId)
       .maybeSingle();
     if (fallback.data) {
       biz = fallback.data as typeof biz;
@@ -131,7 +138,7 @@ export async function POST(req: Request) {
       const { data, error: insertError } = await supa
         .from('feedback')
         .insert({
-          business_id: businessId,
+          business_id: finalBusinessId,
           rating: normalizedRating,
           name: sanitizedName || null,
           email: sanitizedEmail || null,
@@ -143,30 +150,36 @@ export async function POST(req: Request) {
         .single();
       if (!insertError && data?.id) feedbackId = data.id;
 
-      // Also save to contacts table for the database
-      if (sanitizedEmail || sanitizedPhoneDigits) {
-        try {
-          const { data: existing } = await supa
-            .from('contacts')
-            .select('id')
-            .eq('business_id', businessId)
-            .eq(sanitizedEmail ? 'email' : 'phone', sanitizedEmail || sanitizedPhoneDigits)
-            .maybeSingle();
+          // Also save to contacts table for the database
+          if (sanitizedEmail || sanitizedPhoneDigits) {
+            try {
+              // Try to find by email OR phone depending on what we have
+              let query = supa.from('contacts').select('id').eq('business_id', finalBusinessId);
+              
+              if (sanitizedEmail && sanitizedPhoneDigits) {
+                query = query.or(`email.eq.${sanitizedEmail},phone.eq.${sanitizedPhoneDigits}`);
+              } else if (sanitizedEmail) {
+                query = query.eq('email', sanitizedEmail);
+              } else if (sanitizedPhoneDigits) {
+                query = query.eq('phone', sanitizedPhoneDigits);
+              }
+              
+              const { data: existing } = await query.limit(1).maybeSingle();
 
-          if (!existing) {
-            await supa.from('contacts').insert({
-              business_id: businessId,
-              email: sanitizedEmail || null,
-              name: sanitizedName || 'Unknown',
-              phone: sanitizedPhoneDigits || null,
-              source: 'feedback'
-            });
+              if (!existing) {
+                await supa.from('contacts').insert({
+                  business_id: finalBusinessId,
+                  email: sanitizedEmail || null,
+                  name: sanitizedName || 'Unknown',
+                  phone: sanitizedPhoneDigits || null,
+                  source: 'feedback'
+                });
+              }
+            } catch (e) {
+              console.error('Failed to sync feedback to contacts:', e);
+            }
           }
-        } catch (e) {
-          console.error('Failed to sync feedback to contacts:', e);
-        }
-      }
-    } catch {
+        } catch {
       // ignore insert error; feedback table may not exist yet or REST may be unavailable
     }
   }
@@ -178,16 +191,22 @@ export async function POST(req: Request) {
   // Also save to contacts table for the database if we have contact info
   if (sanitizedEmail || sanitizedPhoneDigits) {
     try {
-      const { data: existing } = await supa
-        .from('contacts')
-        .select('id')
-        .eq('business_id', businessId)
-        .eq(sanitizedEmail ? 'email' : 'phone', sanitizedEmail || sanitizedPhoneDigits)
-        .maybeSingle();
+      // Try to find by email OR phone depending on what we have
+      let query = supa.from('contacts').select('id').eq('business_id', finalBusinessId);
+      
+      if (sanitizedEmail && sanitizedPhoneDigits) {
+        query = query.or(`email.eq.${sanitizedEmail},phone.eq.${sanitizedPhoneDigits}`);
+      } else if (sanitizedEmail) {
+        query = query.eq('email', sanitizedEmail);
+      } else if (sanitizedPhoneDigits) {
+        query = query.eq('phone', sanitizedPhoneDigits);
+      }
+      
+      const { data: existing } = await query.limit(1).maybeSingle();
 
       if (!existing) {
         await supa.from('contacts').insert({
-          business_id: businessId,
+          business_id: finalBusinessId,
           email: sanitizedEmail || null,
           name: sanitizedName || 'Unknown',
           phone: sanitizedPhoneDigits || null,
