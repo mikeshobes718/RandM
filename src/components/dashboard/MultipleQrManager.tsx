@@ -178,6 +178,30 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
   };
 
   const [showExample, setShowExample] = useState(false);
+  const [showExamplesDropdown, setShowExamplesDropdown] = useState(false);
+
+  const placementExamples = [
+    {
+      title: "Restaurant Tables",
+      description: "Elegant acrylic stands on every table for instant feedback.",
+      image: "/Users/mike/.cursor/projects/Users-mike/assets/qr_example_table.png"
+    },
+    {
+      title: "Checkout Counters",
+      description: "Strategic placement next to the payment terminal.",
+      image: "/Users/mike/.cursor/projects/Users-mike/assets/qr_example_counter.png"
+    },
+    {
+      title: "Business Cards",
+      description: "A digital bridge on the back of every card you hand out.",
+      image: "/Users/mike/.cursor/projects/Users-mike/assets/qr_example_card.png"
+    },
+    {
+      title: "Storefront Doors",
+      description: "Capture reviews as customers exit your establishment.",
+      image: "/Users/mike/.cursor/projects/Users-mike/assets/qr_example_door.png"
+    }
+  ];
 
   return (
     <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed group relative min-h-[400px]">
@@ -239,6 +263,36 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
               <button className="w-full sm:w-auto px-6 py-2.5 bg-white text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-all shadow-lg active:scale-95">
                 Request Design
               </button>
+            </div>
+
+            <div className="mt-6 border-t border-amber-200/50 pt-6">
+              <button 
+                onClick={() => setShowExamplesDropdown(!showExamplesDropdown)}
+                className="flex items-center justify-between w-full group/btn"
+              >
+                <span className="text-[10px] font-black text-amber-900 uppercase tracking-widest">View Placement Examples</span>
+                <svg className={`w-4 h-4 text-amber-400 transition-transform ${showExamplesDropdown ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {showExamplesDropdown && (
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                  {placementExamples.map((ex, i) => (
+                    <div key={i} className="bg-white rounded-2xl overflow-hidden border border-amber-100 shadow-sm group/ex">
+                      <div className="aspect-video relative overflow-hidden">
+                        <img src={ex.image} alt={ex.title} className="object-cover w-full h-full group-hover/ex:scale-110 transition-transform duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover/ex:opacity-100 transition-opacity flex items-end p-3">
+                          <p className="text-[8px] text-white font-medium leading-tight">{ex.description}</p>
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{ex.title}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
