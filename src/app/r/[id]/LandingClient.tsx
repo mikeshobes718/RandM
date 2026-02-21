@@ -1,9 +1,7 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState, Suspense } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { formatPhone, normalizePhone } from '@/lib/phone';
-import Link from 'next/link';
-import { inputClass } from '@/lib/styles';
 
 type Biz = {
   id: string;
@@ -14,16 +12,9 @@ type Biz = {
   logoUrl?: string | null;
   headline?: string | null;
   subheading?: string | null;
-  website?: string | null;
 };
 
-type ReviewEventName = 
-  | 'page_opened' 
-  | 'rating_selected' 
-  | 'feedback_submitted' 
-  | 'google_opened'
-  | 'sentiment_selected'
-  | 'flow_completed';
+type ReviewEventName = 'page_opened' | 'rating_selected' | 'feedback_submitted' | 'google_opened';
 
 function normalizeHexColor(color?: string | null): string | null {
   if (!color) return null;
@@ -41,13 +32,23 @@ function normalizeHexColor(color?: string | null): string | null {
 }
 
 function mixWithWhite(color: string, ratio: number): string {
-  const normalized = normalizeHexColor(color) || '#4f46e5';
+  const normalized = normalizeHexColor(color) || '#2563eb';
   const clampRatio = Math.min(1, Math.max(0, ratio));
   const r = parseInt(normalized.slice(1, 3), 16);
   const g = parseInt(normalized.slice(3, 5), 16);
   const b = parseInt(normalized.slice(5, 7), 16);
   const mix = (channel: number) => Math.round(channel + (255 - channel) * clampRatio);
   return `#${[mix(r), mix(g), mix(b)].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
+function getReadableTextColor(color?: string | null): string {
+  const normalized = normalizeHexColor(color);
+  if (!normalized) return '#ffffff';
+  const r = parseInt(normalized.slice(1, 3), 16);
+  const g = parseInt(normalized.slice(3, 5), 16);
+  const b = parseInt(normalized.slice(5, 7), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? '#111827' : '#ffffff';
 }
 
 function normalizeSource(value: string | null): string {
@@ -68,20 +69,19 @@ function isValidEmail(email: string): boolean {
   return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
 }
 
-function LandingClientContent({ id }: { id: string }) {
+export default function LandingClient({ id }: { id: string }) {
   const searchParams = useSearchParams();
   const [biz, setBiz] = useState<Biz | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sentiment, setSentiment] = useState<'positive' | 'negative' | null>(null);
+  const [rating, setRating] = useState<number | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [comment, setComment] = useState('');
+  const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [showRatingPrompt, setShowRatingPrompt] = useState(false);
-  const [plannedRating, setPlannedRating] = useState<number | null>(null);
 
   const entrySource = useMemo(() => {
     if (!searchParams) return 'landing';
@@ -111,13 +111,17 @@ function LandingClientContent({ id }: { id: string }) {
     })();
   }, [id]);
 
+  useEffect(() => {
+    setSubmitted(false);
+    setError(null);
+  }, [rating]);
+
   const sendEvent = useCallback(
-    (event: ReviewEventName, payload?: { sentiment?: string; metadata?: Record<string, unknown>; rating?: number }) => {
+    (event: ReviewEventName, payload?: { rating?: number; metadata?: Record<string, unknown> }) => {
       const businessId = biz?.id || id;
       if (!businessId) return;
       const body: Record<string, unknown> = { businessId, event, source: entrySource };
-      if (payload?.sentiment) body.sentiment = payload.sentiment;
-      if (payload?.rating !== undefined) body.rating = payload.rating;
+      if (payload?.rating != null) body.rating = payload.rating;
       if (payload?.metadata && Object.keys(payload.metadata).length) body.metadata = payload.metadata;
       fetch('/api/feedback/event', {
         method: 'POST',
@@ -130,179 +134,25 @@ function LandingClientContent({ id }: { id: string }) {
 
   const pageOpened = useRef(false);
   useEffect(() => {
+    pageOpened.current = false;
+  }, [id]);
+  useEffect(() => {
     if (!biz || pageOpened.current) return;
     pageOpened.current = true;
     sendEvent('page_opened');
   }, [biz, sendEvent]);
 
-  const handleSentiment = useCallback(
-    (value: 'positive' | 'negative') => {
-      setSentiment(value);
-      sendEvent('sentiment_selected', { sentiment: value });
+  const handleRating = useCallback(
+    (value: number) => {
+      setRating(value);
+      sendEvent('rating_selected', { rating: value });
     },
     [sendEvent],
   );
 
-  const handleGoogleReview = useCallback(async () => {
-    if (!biz?.reviewLink) return;
-    
-    let feedbackId: string | undefined;
-    
-    // Contact info is optional for happy path
-    if (email.trim() || phone.trim() || name.trim()) {
-      if (email.trim() && !isValidEmail(email.trim())) {
-        setError('Please enter a valid email address.');
-        return;
-      }
-
-      try {
-        setSubmitting(true);
-        setError(null);
-        const res = await fetch('/api/feedback/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            businessId: biz.id,
-            rating: 5, // Happy path = 5 stars
-            source: entrySource,
-            name: name.trim() || 'Valued Customer',
-            email: email.trim() || 'no-email@provided.com',
-            phone: normalizePhone(phone).slice(0, 10) || undefined,
-            comment: '(Customer planning to leave 5-star review on Google)',
-            consent: true,
-          }),
-        });
-        const data = await res.json();
-        if (data.ok && data.feedback_id) feedbackId = data.feedback_id;
-      } catch (e) {
-        console.error('Failed to save contact info:', e);
-      } finally {
-        setSubmitting(false);
-      }
-    }
-    
-    sendEvent('google_opened', { 
-      sentiment: sentiment || 'positive', 
-      rating: 5, 
-      metadata: { planned_rating: 5, feedback_id: feedbackId } 
-    });
-    sendEvent('flow_completed', { metadata: { destination: 'google', sentiment: sentiment || 'positive', planned_rating: 5 } });
-    
-    let url = (biz.reviewLink || '').trim();
-    if (!url.startsWith('http')) url = `https://${url}`;
-    
-    // Force 5 stars for the happy path where possible
-    if (url.includes('google.com/search')) {
-      if (url.includes('#lrd=')) {
-        url = url.replace(/,(\d),1$/, ',5,1');
-      } else {
-        const separator = url.includes('#') ? '' : '#';
-        url = `${url}${separator}lrd=0x0:0x0,5,1`;
-      }
-    } else if (url.includes('placeid=') && !url.includes('search.google.com')) {
-      const placeIdMatch = url.match(/([?&]placeid=)([^&]+)/);
-      if (placeIdMatch) {
-        const prefix = placeIdMatch[1];
-        const fullPlaceId = placeIdMatch[2];
-        const cleanPlaceId = fullPlaceId.split(',')[0];
-        const newPlaceId = `${cleanPlaceId},1,5`;
-        url = url.replace(placeIdMatch[0], `${prefix}${newPlaceId}`);
-      }
-    }
-
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }, [biz, email, phone, name, entrySource, sendEvent, sentiment]);
-
-  const handleNegativeGoogleReview = useCallback(() => {
-    if (!comment.trim()) {
-      setError('Please tell us what went wrong first.');
-      return;
-    }
-    if (!email.trim()) {
-      setError('Please provide your email address so we can make this right.');
-      return;
-    }
-    if (!isValidEmail(email.trim())) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-    setShowRatingPrompt(true);
-  }, [comment, email]);
-
-  const confirmGoogleReviewWithRating = useCallback(async () => {
-    if (!biz?.reviewLink || !plannedRating) return;
-    
-    let feedbackId: string | undefined;
-    
-    // Save their feedback with the planned rating
-    try {
-      const res = await fetch('/api/feedback/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessId: biz.id,
-          rating: plannedRating,
-          source: entrySource,
-          name: name.trim() || 'Valued Customer',
-          email: email.trim(),
-          phone: normalizePhone(phone).slice(0, 10) || undefined,
-          comment: comment.trim() || `(Customer planning to leave ${plannedRating}-star review on Google)`,
-          consent: true,
-        }),
-      });
-      const data = await res.json();
-      if (data.ok && data.feedback_id) feedbackId = data.feedback_id;
-      sendEvent('feedback_submitted', { 
-        metadata: { 
-          sentiment: plannedRating >= 4 ? 'positive' : 'negative', 
-          planned_rating: plannedRating,
-          feedback_id: feedbackId
-        } 
-      });
-    } catch (e) {
-      console.error('Failed to save feedback with rating:', e);
-    }
-
-    sendEvent('google_opened', { 
-      sentiment: plannedRating >= 4 ? 'positive' : 'negative', 
-      rating: plannedRating, 
-      metadata: { planned_rating: plannedRating, feedback_id: feedbackId } 
-    });
-    sendEvent('flow_completed', { metadata: { destination: 'google_from_feedback', sentiment: plannedRating >= 4 ? 'positive' : 'negative', planned_rating: plannedRating } });
-    
-    let url = (biz.reviewLink || '').trim();
-    if (!url.startsWith('http')) url = `https://${url}`;
-    
-    // Robustly inject or replace the rating in the Google URL
-    if (url.includes('google.com/search')) {
-      if (url.includes('#lrd=')) {
-        // Format is #lrd=HEX:HEX,3,1 (where 3 is the rating)
-        url = url.replace(/,(\d),1$/, `,${plannedRating},1`);
-      } else {
-        // Append it if not present
-        const separator = url.includes('#') ? '' : '#';
-        url = `${url}${separator}lrd=0x0:0x0,${plannedRating},1`;
-      }
-    } else if (url.includes('placeid=') && !url.includes('search.google.com')) {
-      // ONLY append to placeid if it's NOT search.google.com (which we know 404s)
-      const placeIdMatch = url.match(/([?&]placeid=)([^&]+)/);
-      if (placeIdMatch) {
-        const prefix = placeIdMatch[1];
-        const fullPlaceId = placeIdMatch[2];
-        const cleanPlaceId = fullPlaceId.split(',')[0];
-        const newPlaceId = `${cleanPlaceId},1,${plannedRating}`;
-        url = url.replace(placeIdMatch[0], `${prefix}${newPlaceId}`);
-      }
-    }
-    // If it's search.google.com/local/writereview?placeid=..., we leave it ALONE to avoid 404s
-    // since Google doesn't seem to support pre-filling stars via that specific shortcut URL.
-
-    console.log('[DEBUG] Redirecting to Google with URL:', url);
-    window.open(url, '_blank', 'noopener,noreferrer');
-    setShowRatingPrompt(false);
-  }, [biz, comment, email, phone, name, entrySource, sendEvent, plannedRating]);
-
-  const primaryColor = useMemo(() => normalizeHexColor(biz?.brandColor) || '#4f46e5', [biz?.brandColor]);
+  const primaryColor = useMemo(() => normalizeHexColor(biz?.brandColor) || '#2563eb', [biz?.brandColor]);
+  const buttonColor = useMemo(() => normalizeHexColor(biz?.buttonColor) || primaryColor, [biz?.buttonColor, primaryColor]);
+  const buttonTextColor = useMemo(() => getReadableTextColor(buttonColor), [buttonColor]);
   const backgroundStyle = useMemo(
     () => ({
       background: `radial-gradient(circle at top, ${mixWithWhite(primaryColor, 0.92)} 0%, ${mixWithWhite(primaryColor, 0.97)} 45%, #ffffff 100%)`,
@@ -310,395 +160,212 @@ function LandingClientContent({ id }: { id: string }) {
     [primaryColor],
   );
   const cardBorderColor = useMemo(() => mixWithWhite(primaryColor, 0.85), [primaryColor]);
+  const starActiveColor = useMemo(() => mixWithWhite(primaryColor, 0.2), [primaryColor]);
 
+  const headline = biz?.headline?.trim() || 'How was your experience today?';
+  const subheading = biz?.subheading?.trim() || (biz?.name ? `Share your feedback with ${biz.name}.` : 'Your voice helps us improve.');
   const displayName = biz?.name || (loading ? 'Loading…' : 'Reviews & Marketing');
 
-  async function submitContactCapture() {
-    if (!biz || submitting) return;
-    // Both optional for happy path
-    if (email.trim() && !isValidEmail(email.trim())) {
-      setError('Please enter a valid email address.');
-      return;
+  async function submit() {
+    if (!biz || rating == null || submitting) return;
+
+    if (rating < 5) {
+      const trimmedName = name.trim();
+      const trimmedEmail = email.trim();
+      const trimmedComment = comment.trim();
+      if (!trimmedComment || !trimmedName || (!trimmedEmail && !phone)) {
+        setError('Please share your name, feedback, and at least one contact method (email or phone).');
+        return;
+      }
+      if (trimmedEmail && !isValidEmail(trimmedEmail)) {
+        setError('Enter a valid email address so we can stay in touch.');
+        return;
+      }
+      if (!consent) {
+        setError('Please agree to be contacted so we can resolve your issue.');
+        return;
+      }
     }
+
     try {
       setSubmitting(true);
       setError(null);
-      const payload = {
+      const payload: Record<string, unknown> = {
         businessId: biz.id,
-        name: name.trim() || undefined,
-        email: email.trim() || undefined,
-        phone: normalizePhone(phone).slice(0, 10) || undefined,
-        consent: true,
+        rating,
         source: entrySource,
       };
-      const res = await fetch('/api/feedback/contact-capture', {
+      if (rating < 5) {
+        payload.name = name.trim();
+        payload.email = email.trim();
+        const phoneDigits = normalizePhone(phone).slice(0, 10);
+        payload.phone = phoneDigits || undefined;
+        payload.comment = comment.trim();
+        payload.consent = consent;
+      }
+      const res = await fetch('/api/feedback/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Unable to save your information.');
-      sendEvent('flow_completed', { metadata: { destination: 'contact_capture', sentiment: 'positive' } });
-      setSubmitted(true);
-      handleGoogleReview();
-    } catch (e) {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  async function submitFeedback() {
-    if (!biz || submitting) return;
-    if (!comment.trim()) {
-      setError('Please tell us what went wrong.');
-      return;
-    }
-    if (!email.trim()) {
-      setError('Please provide your email address.');
-      return;
-    }
-    if (email.trim() && !isValidEmail(email.trim())) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-    try {
-      setSubmitting(true);
-      setError(null);
-      const res = await fetch('/api/feedback/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessId: biz.id,
-          rating: 1, // Defaulting to 1 for negative sentiment private feedback
-          source: entrySource,
-          name: name.trim() || 'Valued Customer',
-          email: email.trim(),
-          phone: normalizePhone(phone).slice(0, 10) || undefined,
-          comment: comment.trim(),
-          consent: true,
-        }),
-      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Unable to submit right now. Please try again.');
+      }
       const data = await res.json();
-      if (!res.ok) throw new Error('Unable to submit.');
-      sendEvent('feedback_submitted', { 
-        metadata: { 
-          sentiment: 'negative',
-          feedback_id: data.feedback_id
-        } 
-      });
-      sendEvent('flow_completed', { 
-        metadata: { 
-          destination: 'private_feedback', 
-          sentiment: 'negative',
-          feedback_id: data.feedback_id
-        } 
-      });
+      if (rating >= 5 && data.redirect) {
+        window.location.assign(data.redirect as string);
+        return;
+      }
       setSubmitted(true);
+      if (rating >= 5) {
+        setError(null);
+      }
     } catch (e) {
-      setError('Something went wrong. Please try again.');
+      const message = e instanceof Error && e.message ? e.message : 'Something went wrong. Please try again.';
+      setError(message);
     } finally {
       setSubmitting(false);
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-        <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
-
-  if (error && !biz) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 text-center">
-        <div className="max-w-md">
-          <h1 className="text-xl font-bold mb-2 text-slate-900">This link is unavailable</h1>
-          <p className="text-slate-500 text-sm mb-6 font-medium">The business may have updated their link or it is no longer active.</p>
-          <Link href="/" className="primary-button !h-10 !text-xs">Return Home</Link>
-        </div>
-      </div>
-    );
-  }
+  const fiveStar = rating === 5;
+  const ltFive = rating != null && rating < 5;
 
   return (
-    <main className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 relative overflow-hidden" style={backgroundStyle}>
-      <div className="absolute top-0 right-0 w-64 h-64 bg-brand/5 blur-3xl rounded-full -mr-32 -mt-32 pointer-events-none"></div>
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 blur-3xl rounded-full -ml-32 -mb-32 pointer-events-none"></div>
-
-      <div className="w-full max-w-xl relative z-10">
+    <main className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6" style={backgroundStyle}>
+      <div className="w-full max-w-xl">
         <div
-          className="premium-card p-8 sm:p-12 rounded-[40px] shadow-2xl transition-all duration-500"
+          className="rounded-3xl border bg-white/90 backdrop-blur-sm p-6 sm:p-8 shadow-xl transition"
           style={{ borderColor: cardBorderColor }}
         >
-          {biz?.logoUrl ? (
-            <div className="flex justify-center mb-8">
+          {biz?.logoUrl && (
+            <div className="flex justify-center mb-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={biz.logoUrl} alt={`${displayName} logo`} className="h-20 w-auto object-contain drop-shadow-sm" referrerPolicy="no-referrer" />
-            </div>
-          ) : (
-            <div className="flex justify-center mb-8">
-              <div className="px-6 py-3 rounded-2xl bg-brand/10 text-brand flex items-center justify-center text-xl font-bold tracking-tight">
-                {biz?.name || 'Reviews & Marketing'}
-              </div>
+              <img src={biz.logoUrl} alt={`${displayName} logo`} className="h-16 w-auto object-contain" referrerPolicy="no-referrer" />
             </div>
           )}
+          <div className="text-center space-y-2">
+            <div className="text-xs uppercase tracking-wide text-gray-500">{displayName}</div>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">{headline}</h1>
+            <p className="text-gray-600 text-sm sm:text-base">{subheading}</p>
+          </div>
 
-          {/* Screen 1: Sentiment Selection */}
-          {!sentiment && !submitted && (
-            <div className="animate-fade-in text-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-500 mb-6">
-                Verified Feedback
-              </div>
-              <div className="space-y-3 mb-10">
-                <h1 className="text-2xl sm:text-4xl font-black text-slate-900 leading-tight tracking-tight">How was your experience today?</h1>
-                <p className="text-slate-500 text-sm sm:text-lg font-medium">
-                  {biz?.subheading?.trim() || (biz?.name ? `Share your feedback with ${biz.name}.` : 'Your voice helps us improve.')}
-                </p>
-              </div>
-              <div className="flex flex-col gap-4">
+          <div className="mt-6 flex items-center justify-center gap-3">
+            {[1, 2, 3, 4, 5].map((n) => {
+              const active = rating != null && rating >= n;
+              return (
                 <button
-                  onClick={() => handleSentiment('positive')}
-                  className="w-full h-16 rounded-2xl bg-[#22C55E] text-white text-xl font-black shadow-lg shadow-emerald-200 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                  key={n}
+                  type="button"
+                  aria-label={`${n} star${n > 1 ? 's' : ''}`}
+                  aria-pressed={active}
+                  onClick={() => handleRating(n)}
+                  className={`p-2 rounded-full transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 ${active ? 'scale-110' : 'scale-100'}`}
+                  style={{ color: active ? starActiveColor : '#d1d5db' }}
                 >
-                  😊 Great!
+                  <svg className="w-12 h-12" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
                 </button>
-                <button
-                  onClick={() => handleSentiment('negative')}
-                  className="w-full h-12 rounded-2xl bg-[#6B7280] text-white text-md font-bold hover:bg-slate-600 active:scale-[0.98] transition-all"
-                >
-                  😕 Could be better
-                </button>
-              </div>
-            </div>
+              );
+            })}
+          </div>
+
+          {rating == null && !loading && (
+            <p className="text-center text-gray-500 mt-5">Tap a star to continue.</p>
           )}
 
-          {/* Screen 2A: Happy Path */}
-          {sentiment === 'positive' && !submitted && (
-            <div className="animate-fade-in">
-              <button 
-                onClick={() => setSentiment(null)}
-                className="flex items-center gap-1 text-slate-400 hover:text-slate-600 font-bold text-xs uppercase tracking-widest mb-6 transition-colors"
+          {fiveStar && (
+            <div className="mt-6 space-y-4">
+              <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-3 text-sm text-center">
+                Thanks for the love! Tap below to post a quick Google review.
+              </div>
+              <button
+                type="button"
+                onClick={submit}
+                disabled={submitting}
+                className="w-full rounded-2xl px-4 py-3 text-base font-semibold shadow-md transition disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ backgroundColor: buttonColor, color: buttonTextColor }}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
-                Back
+                {submitting ? 'Opening Google…' : 'Leave a Google review'}
               </button>
-              
-              <div className="text-center space-y-3 mb-10">
-                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">Thanks! We'd love your review on Google</h2>
-              </div>
-
-              <div className="space-y-8">
-                <button
-                  onClick={handleGoogleReview}
-                  className="w-full h-16 rounded-2xl bg-brand text-white text-lg font-black shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                >
-                  ⭐ Leave Google Review
-                </button>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
-                  <div className="relative flex justify-center text-xs uppercase font-black tracking-widest text-slate-300"><span className="bg-white px-4">Optional</span></div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <p className="text-sm font-bold text-slate-600">Want special offers?</p>
-                  </div>
-                  <div className="space-y-3">
-                    <input
-                      className={inputClass}
-                      placeholder="Email Address (optional)"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <input
-                      className={inputClass}
-                      placeholder="Phone Number (optional)"
-                      value={phone}
-                      onChange={(e) => setPhone(formatPhone(e.target.value))}
-                    />
-                  </div>
-                  <button
-                    onClick={submitContactCapture}
-                    disabled={submitting}
-                    className="w-full h-12 rounded-2xl bg-slate-100 text-slate-900 font-bold hover:bg-slate-200 transition-all"
-                  >
-                    {submitting ? 'Saving...' : 'Keep Me Updated'}
-                  </button>
-                </div>
-              </div>
+              <p className="text-xs text-gray-500 text-center">Opens Google in a new tab.</p>
             </div>
           )}
 
-          {/* Screen 2B: Feedback Path */}
-          {sentiment === 'negative' && !submitted && (
-            <div className="animate-fade-in">
-              <button 
-                onClick={() => setSentiment(null)}
-                className="flex items-center gap-1 text-slate-400 hover:text-slate-600 font-bold text-xs uppercase tracking-widest mb-6 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
-                Back
-              </button>
-
-              <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); submitFeedback(); }}>
-                <div className="p-6 bg-slate-50 rounded-3xl border border-dashed border-slate-200 text-center mb-8">
-                  <h3 className="text-lg font-bold text-slate-900 mb-1">Tell Us More</h3>
-                  <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                    Your feedback goes straight to our team so we can make things right.
-                  </p>
+          {ltFive && (
+          <div className="mt-6">
+            {submitted ? (
+              <div className="rounded-xl bg-blue-50 text-blue-700 px-4 py-6 text-center text-sm">
+                Thanks for sharing. We’ll review your note right away and, if you asked us to reach out, we’ll be in touch.
+              </div>
+            ) : (
+              <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+                <div className="text-center text-amber-700 text-sm">
+                  We’re sorry it wasn’t perfect. This note stays private with our team.
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">What went wrong?</label>
-                  <textarea
-                    className={inputClass + " min-h-32 py-4 resize-none"}
-                    placeholder="Tell us about your experience..."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">How can we reach you to make this right?</label>
-                  <div className="space-y-3">
+                <textarea
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 min-h-32 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                  placeholder="Tell us what happened so we can make it right."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  required
+                />
+                <input
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                  placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+                <input
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                  placeholder="Email (optional if phone provided)"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <input
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                  placeholder="Phone (optional)"
+                  value={phone}
+                  onChange={(e) => setPhone(formatPhone(normalizePhone(e.target.value).slice(0, 10)))}
+                />
+                <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                  <label className="flex items-start gap-3 cursor-pointer">
                     <input
-                      className={inputClass}
-                      placeholder="Email Address"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                      checked={consent}
+                      onChange={(e) => setConsent(e.target.checked)}
                       required
                     />
-                    <input
-                      className={inputClass}
-                      placeholder="Phone Number (optional)"
-                      value={phone}
-                      onChange={(e) => setPhone(formatPhone(e.target.value))}
-                    />
-                  </div>
+                    <div className="text-xs text-gray-500 leading-tight">
+                      <span className="font-medium text-gray-700 block mb-0.5">I agree to be contacted</span>
+                      By checking this box, you agree to receive SMS and email communications from us regarding your feedback and future promotions. You can opt-out at any time.
+                    </div>
+                  </label>
                 </div>
-
                 <button
                   type="submit"
-                  disabled={submitting}
-                  className="w-full h-14 rounded-2xl bg-brand text-white text-lg font-black shadow-xl shadow-brand/20 active:scale-[0.98] transition-all"
+                  disabled={submitting || !consent}
+                  className="w-full rounded-2xl bg-gray-900 text-white px-4 py-3 text-base font-semibold shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed mt-2"
                 >
-                  {submitting ? 'Sending...' : 'Submit Feedback'}
+                  {submitting ? 'Sending…' : 'Send private feedback'}
                 </button>
-
-                <div className="pt-4 text-center">
-                  <button
-                    type="button"
-                    onClick={handleNegativeGoogleReview}
-                    className="text-slate-400 hover:text-slate-600 text-xs font-bold transition-colors underline underline-offset-4"
-                  >
-                    Or leave a public review on Google
-                  </button>
-                </div>
               </form>
-            </div>
-          )}
-
-          {/* Thank You Screen (After Submission) */}
-          {submitted && (
-            <div className="animate-fade-in py-10 text-center">
-              <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-8">
-                <svg className="w-12 h-12 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h3 className="text-3xl font-black text-slate-900 mb-3">Thank you for your feedback</h3>
-              <p className="text-slate-500 font-medium leading-relaxed max-w-xs mx-auto">
-                We appreciate you taking the time to let us know. A member of our team will be in touch soon.
-              </p>
-              
-              {biz?.website && (
-                <div className="mt-12">
-                  <a 
-                    href={biz.website.startsWith('http') ? biz.website : `https://${biz.website}`}
-                    className="text-brand font-bold hover:underline flex items-center justify-center gap-1"
-                  >
-                    Return to {biz.name} website
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                  </a>
-                </div>
-              )}
-            </div>
+            )}
+          </div>
           )}
 
           {error && (
-            <div className="mt-8 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-bold text-center animate-shake">
+            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 text-sm text-center">
               {error}
             </div>
           )}
-
-          {/* Rating Prompt Modal */}
-          {showRatingPrompt && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-              <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-fade-in">
-                <h3 className="text-xl font-black text-slate-900 mb-2 text-center">What rating are you planning to leave?</h3>
-                <p className="text-sm text-slate-500 text-center mb-6">This helps us track feedback accurately.</p>
-                
-                <div className="flex justify-center gap-2 mb-8">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      onClick={() => setPlannedRating(star)}
-                      className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl font-bold transition-all ${
-                        plannedRating === star
-                          ? 'bg-brand text-white scale-110 shadow-lg'
-                          : 'bg-slate-100 text-slate-400 hover:bg-slate-200 hover:scale-105'
-                      }`}
-                    >
-                      {star}★
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setShowRatingPrompt(false);
-                      setPlannedRating(null);
-                    }}
-                    className="flex-1 h-12 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200 transition-all"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={confirmGoogleReviewWithRating}
-                    disabled={!plannedRating}
-                    className="flex-1 h-12 rounded-xl bg-brand text-white font-black shadow-lg shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Continue to Google
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-8 text-center">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            Powered by <span className="text-slate-600">Reviews & Marketing</span>
-          </p>
         </div>
       </div>
     </main>
-  );
-}
-
-export default function LandingClient({ id }: { id: string }) {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-        <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full"></div>
-      </div>
-    }>
-      <LandingClientContent id={id} />
-    </Suspense>
   );
 }
