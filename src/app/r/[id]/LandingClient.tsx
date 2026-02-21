@@ -194,14 +194,17 @@ export default function LandingClient({ id }: { id: string }) {
         businessId: biz.id,
         rating,
         source: entrySource,
+        name: name.trim() || undefined,
+        email: email.trim() || undefined,
+        phone: normalizePhone(phone).slice(0, 10) || undefined,
       };
+      
       if (rating < 5) {
-        payload.name = name.trim();
-        payload.email = email.trim();
-        const phoneDigits = normalizePhone(phone).slice(0, 10);
-        payload.phone = phoneDigits || undefined;
         payload.comment = comment.trim();
         payload.consent = consent;
+      } else {
+        // For 5-star reviews, if they leave contact info, we assume consent for offers
+        payload.consent = !!(payload.email || payload.phone);
       }
       const res = await fetch('/api/feedback/submit', {
         method: 'POST',
@@ -291,6 +294,37 @@ export default function LandingClient({ id }: { id: string }) {
                 {submitting ? 'Opening Google…' : 'Leave a Google review'}
               </button>
               <p className="text-xs text-gray-500 text-center">Opens Google in a new tab.</p>
+              
+              <div className="pt-6 border-t border-gray-100 mt-6">
+                <div className="flex items-center justify-center gap-4 mb-5">
+                  <div className="h-px bg-gray-200 flex-1"></div>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Optional</span>
+                  <div className="h-px bg-gray-200 flex-1"></div>
+                </div>
+                <h3 className="text-center font-bold text-gray-700 text-sm mb-4">Want special offers or updates?</h3>
+                <div className="space-y-3">
+                  <input
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                    placeholder="Your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                  <input
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                    placeholder="Email Address"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <input
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                    placeholder="Phone Number"
+                    value={phone}
+                    onChange={(e) => setPhone(formatPhone(normalizePhone(e.target.value).slice(0, 10)))}
+                  />
+                </div>
+                <p className="text-[10px] text-gray-400 text-center mt-3">Fill this out before clicking the review button above if you'd like us to stay in touch!</p>
+              </div>
             </div>
           )}
 
