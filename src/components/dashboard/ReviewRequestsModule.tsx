@@ -100,7 +100,7 @@ export default function ReviewRequestsModule({
           </p>
           <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
             <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
-              "All your contacts are organized here so you can send Rebates, coupons, upcoming promotions, reviews requests and thank you's to your customer to get them back in your store!"
+              "All your contacts are organized here so you can send rebates, coupons, upcoming promotions, review requests, and thank-yous to your customers to get them back into your store!"
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -234,15 +234,6 @@ export default function ReviewRequestsModule({
             ))}
           </div>
         )}
-        </div>
-      </div>
-
-      <div className="mt-8 pt-6 border-t border-slate-100">
-        <div className="flex items-center gap-3 p-4 bg-slate-900 rounded-[20px] text-white">
-          <span className="text-xl">ℹ️</span>
-          <p className="text-[10px] font-medium leading-relaxed opacity-80">
-            <strong>What counts as "Outreach"?</strong> One outbound SMS or email sent by the system to a customer. This includes review requests and direct customer follow-ups. QR scans do <u>not</u> count as outreach and are always unlimited.
-          </p>
         </div>
       </div>
     </div>
