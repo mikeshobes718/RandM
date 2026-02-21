@@ -31,23 +31,23 @@ const features = [
 const steps = [
   {
     num: "01",
-    title: "Connect your business",
-    text: "Link your Google Profile in seconds. We generate custom QR codes and enable automatic follow-up texts or emails for every visit."
+    title: "Connect & Sync",
+    text: "Link your Google Profile and sync your customers via POS integration or Excel uploads to instantly organize your database."
   },
   {
     num: "02",
-    title: "Capture customer data",
-    text: "Customers scan in-store to share their experience. We capture contact info and route them to the perfect feedback experience."
+    title: "Automate Outreach",
+    text: "Set up automatic triggers and follow-up sequences. Our system sends the texts and emails so you don't have to lift a finger."
   },
   {
     num: "03",
     title: "Route feedback intelligently",
-    text: "Happy customers are guided to Google to share their experience. Those with concerns are routed to a private channel so you can resolve issues before they become public."
+    text: "Happy customers are guided to Google to share their experience. Those with concerns are routed to a private channel to resolve issues instantly."
   },
   {
     num: "04",
     title: "Grow your reputation",
-    text: "Watch your public rating climb while building a powerful customer database. Use these insights to improve operations and drive repeat business."
+    text: "Watch your public rating climb while building a powerful customer database. Use these insights to drive repeat business on autopilot."
   }
 ];
 
