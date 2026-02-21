@@ -379,14 +379,6 @@ export default function ContactsPage() {
           <p className="text-slate-500 text-sm font-medium mt-2">Manage your customer list and import data for campaigns.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          {contacts.length > 0 && (
-            <button 
-              onClick={() => handleDeleteContacts(true)}
-              className="text-[10px] font-black text-red-500 hover:text-red-600 uppercase tracking-widest px-2 py-2 order-last sm:order-none w-full sm:w-auto"
-            >
-              Clear All
-            </button>
-          )}
           <button 
             onClick={() => setShowAddModal(true)}
             className="secondary-button !h-10 sm:!h-12 px-4 sm:px-6 text-[10px] font-black uppercase tracking-[0.1em] shadow-sm flex-1 sm:flex-none"
@@ -596,17 +588,29 @@ export default function ContactsPage() {
         )}
 
         <div className="mt-auto p-6 sm:p-10 border-t border-slate-50 bg-slate-50/30">
-          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-            <div className="flex items-center gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-200 hidden sm:inline"></span>
-              <span>Formats:</span>
-              <span className="bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm text-slate-600">.CSV</span>
-              <span className="bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm text-slate-600">.XLSX</span>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+              <div className="flex items-center gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-200 hidden sm:inline"></span>
+                <span>Formats:</span>
+                <span className="bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm text-slate-600">.CSV</span>
+                <span className="bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm text-slate-600">.XLSX</span>
+              </div>
+              <div className="hidden sm:block h-4 w-px bg-slate-200"></div>
+              <p className="text-[9px] sm:text-[10px] font-medium text-slate-400 uppercase tracking-widest text-center sm:text-left">
+                Need help? <button onClick={() => setShowGuide(true)} className="text-brand font-black hover:underline">Read Guide</button>
+              </p>
             </div>
-            <div className="hidden sm:block h-4 w-px bg-slate-200"></div>
-            <p className="text-[9px] sm:text-[10px] font-medium text-slate-400 uppercase tracking-widest text-center sm:text-left">
-              Need help? <button onClick={() => setShowGuide(true)} className="text-brand font-black hover:underline">Read Guide</button>
-            </p>
+
+            {contacts.length > 0 && (
+              <button 
+                onClick={() => handleDeleteContacts(true)}
+                className="text-[9px] sm:text-[10px] font-black text-rose-400 hover:text-rose-600 uppercase tracking-[0.2em] transition-colors flex items-center gap-2"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h14"/></svg>
+                Clear All Contacts
+              </button>
+            )}
           </div>
         </div>
       </div>
