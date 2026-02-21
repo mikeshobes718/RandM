@@ -144,6 +144,8 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
         .slice(0, 5)
     : [];
 
+  const [showSources, setShowSources] = useState(false);
+
   return (
     <div className="space-y-6 mt-12">
       {/* Conversion Funnel Row */}
@@ -274,48 +276,54 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
           </div>
         )}
 
-        {topSources.length > 0 ? (
-          <div className="lg:col-span-6 premium-card p-8 rounded-3xl group relative">
-            <h2 className="text-lg font-bold mb-2">Top Performing Sources</h2>
-            <p className="text-xs text-muted font-medium mb-8">Which QR codes or links are driving results.</p>
-            <div className="space-y-4">
-              {topSources.map(([src, count], i) => (
-                <div key={src} className="flex items-center justify-between p-3 bg-accent/30 rounded-xl border border-[#e2e8f0]/50">
-                  <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 flex items-center justify-center bg-white rounded-full text-[10px] font-black border border-[#e2e8f0]">{i+1}</span>
-                    <span className="text-sm font-bold capitalize">{src.replace(/-/g, ' ')}</span>
+        <div className="lg:col-span-6 premium-card p-8 rounded-3xl group relative">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-bold">Top Performing Sources</h2>
+            <button 
+              onClick={() => setShowSources(!showSources)}
+              className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/5 px-3 py-1.5 rounded-lg hover:bg-brand/10 transition-colors"
+            >
+              {showSources ? 'Hide Details' : 'View Breakdown'}
+            </button>
+          </div>
+          <p className="text-xs text-muted font-medium mb-8">Which QR codes or links are driving results.</p>
+          
+          {showSources ? (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+              {topSources.length > 0 ? (
+                topSources.map(([src, count], i) => (
+                  <div key={src} className="flex items-center justify-between p-3 bg-accent/30 rounded-xl border border-[#e2e8f0]/50">
+                    <div className="flex items-center gap-3">
+                      <span className="w-6 h-6 flex items-center justify-center bg-white rounded-full text-[10px] font-black border border-[#e2e8f0]">{i+1}</span>
+                      <span className="text-sm font-bold capitalize">{src.replace(/-/g, ' ')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-black">{count}</span>
+                      <span className="text-[10px] font-bold text-muted uppercase">Leads</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-black">{count}</span>
-                    <span className="text-[10px] font-bold text-muted uppercase">Leads</span>
-                  </div>
-                </div>
-              ))}
-              {topSources.length === 1 && (
-                <div className="p-4 border-2 border-dashed border-[#e2e8f0] rounded-2xl flex flex-col items-center justify-center text-center mt-4">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Scale your reach</p>
-                  <p className="text-[10px] text-slate-400">Add more QR codes for your staff, tables, or menu to compare performance.</p>
+                ))
+              ) : (
+                <div className="py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <p className="text-xs text-slate-400 font-medium">No sources recorded yet.</p>
                 </div>
               )}
             </div>
-            {/* Tooltip */}
-            <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-              <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
-                Ranked list of your QR codes and links, showing which ones generate the most customer leads.
-              </div>
+          ) : (
+            <div className="py-12 flex flex-col items-center justify-center text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 group-hover:bg-slate-100 transition-colors cursor-pointer" onClick={() => setShowSources(true)}>
+              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm mb-4 text-xl">📊</div>
+              <p className="text-xs font-bold text-slate-900 uppercase tracking-widest">Click to view source breakdown</p>
+              <p className="text-[10px] text-slate-400 mt-1">See which QR codes are performing best.</p>
+            </div>
+          )}
+          
+          {/* Tooltip */}
+          <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
+            <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+              Ranked list of your QR codes and links, showing which ones generate the most customer leads.
             </div>
           </div>
-        ) : (
-          <div className="lg:col-span-6 premium-card p-8 rounded-3xl flex flex-col items-center justify-center text-center">
-            <div className="w-12 h-12 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mb-4">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-            </div>
-            <h2 className="text-lg font-bold text-slate-900 mb-2">No Sources Tracked Yet</h2>
-            <p className="text-xs text-muted max-w-[240px] leading-relaxed">
-              Once you create multiple QR codes, you'll see a breakdown of which ones are driving the most growth here.
-            </p>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );
