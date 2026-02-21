@@ -219,37 +219,27 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
 
       {activeTab === 'qr' ? (
         <div className="space-y-6">
-          <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-4 relative group/example">
-            <button 
-              onClick={() => setShowExample(!showExample)}
-              className="flex items-center justify-between w-full text-left"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-sm">💡</span>
-                <span className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Best Placement Guide</span>
-              </div>
-              <span className={`text-amber-400 transition-transform ${showExample ? 'rotate-180' : ''}`}>▼</span>
-            </button>
+          <div className="bg-amber-50 border border-amber-100 rounded-3xl p-6 relative group/example">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg shadow-sm">💡</div>
+              <h3 className="text-sm font-black text-amber-900 uppercase tracking-widest">Best Placement</h3>
+            </div>
+            <p className="text-xs text-amber-800 font-bold leading-relaxed mb-6">
+              Add to checkout counters, receipts, dining tables, business cards, mailers, and front doors to increase scans. You need to nicely design it and put it around your store. You can do it yourself or have us design it. Be creative!
+            </p>
             
-            {showExample && (
-              <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2">
-                <p className="text-[11px] text-amber-800 font-medium leading-relaxed">
-                  Add to checkout counters, receipts, dining tables, business cards, mailers, and front doors to increase scans. You need to nicely design it and put it around your store. You can do it yourself or have us design it. Be creative!
-                </p>
-                <div className="p-4 bg-slate-900 rounded-xl flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg">🎨</span>
-                    <div>
-                      <p className="text-[10px] font-black text-white uppercase tracking-widest">Need a design?</p>
-                      <p className="text-[9px] text-white/60 font-medium">Custom printed QR assets for your store.</p>
-                    </div>
-                  </div>
-                  <button className="px-3 py-1.5 bg-white text-slate-900 text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-slate-100 transition-colors whitespace-nowrap">
-                    Request Design
-                  </button>
+            <div className="p-5 bg-slate-900 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+              <div className="flex items-center gap-4">
+                <span className="text-2xl">🎨</span>
+                <div>
+                  <p className="text-[10px] font-black text-white uppercase tracking-widest">Need a design?</p>
+                  <p className="text-[9px] text-white/50 font-medium">We design custom printed QR assets for your store.</p>
                 </div>
               </div>
-            )}
+              <button className="w-full sm:w-auto px-6 py-2.5 bg-white text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-all shadow-lg active:scale-95">
+                Request Design
+              </button>
+            </div>
           </div>
 
           <form onSubmit={createSource} className="space-y-4 bg-white/50 p-6 rounded-2xl border border-white shadow-sm">
