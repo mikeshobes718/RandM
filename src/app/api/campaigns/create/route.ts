@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
     const decodedToken = await authAdmin.verifyIdToken(idToken);
     const uid = decodedToken.uid;
 
-    const body = await req.json();
-    const { name, type, body: content } = body;
+    const bodyData = await req.json();
+    const { name, type, body: content, targetList } = bodyData;
 
     if (!name || !type || !content) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -59,10 +59,23 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch all contacts for this business
-    const { data: contacts, error: contactsErr } = await supa
+    let contactsQuery = supa
       .from('contacts')
-      .select('name, email, phone')
+      .select('name, email, phone, source, created_at')
       .eq('business_id', biz.id);
+
+    // Apply target list filtering
+    if (targetList === 'Square Customers') {
+      contactsQuery = contactsQuery.ilike('source', '%square%');
+    } else if (targetList === 'Manual Uploads (CSV)') {
+      contactsQuery = contactsQuery.in('source', ['manual', 'csv_upload']);
+    } else if (targetList === 'Recent Customers (Last 7 Days)') {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      contactsQuery = contactsQuery.gte('created_at', sevenDaysAgo.toISOString());
+    }
+
+    const { data: contacts, error: contactsErr } = await contactsQuery;
 
     if (contactsErr) {
       console.error('[CAMPAIGNS CREATE] Error fetching contacts:', contactsErr);
@@ -70,7 +83,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!contacts || contacts.length === 0) {
-      return NextResponse.json({ error: 'No contacts found. Please import contacts before starting a campaign.' }, { status: 400 });
+      return NextResponse.json({ error: 'No matching contacts found for the selected target list.' }, { status: 400 });
     }
 
     // Filter out contacts who have already left feedback or a review
@@ -94,11 +107,25 @@ export async function POST(req: NextRequest) {
       if (meta?.phone) respondedPhones.add(meta.phone.replace(/\D+/g, ''));
     });
 
-    const filteredContacts = contacts.filter(c => {
-      const emailMatch = c.email && respondedEmails.has(c.email.toLowerCase());
-      const phoneMatch = c.phone && respondedPhones.has(c.phone.replace(/\D+/g, ''));
-      return !emailMatch && !phoneMatch;
-    });
+    let filteredContacts = contacts;
+    
+    if (targetList === 'Never Contacted') {
+      // Find contacts who have never received a campaign
+      // This is a simplified check - ideally we'd track campaign recipients individually
+      // For now, we'll just use the standard "hasn't responded" logic as a proxy
+      filteredContacts = contacts.filter(c => {
+        const emailMatch = c.email && respondedEmails.has(c.email.toLowerCase());
+        const phoneMatch = c.phone && respondedPhones.has(c.phone.replace(/\D+/g, ''));
+        return !emailMatch && !phoneMatch;
+      });
+    } else {
+      // Standard filter: exclude people who already reviewed/gave feedback
+      filteredContacts = contacts.filter(c => {
+        const emailMatch = c.email && respondedEmails.has(c.email.toLowerCase());
+        const phoneMatch = c.phone && respondedPhones.has(c.phone.replace(/\D+/g, ''));
+        return !emailMatch && !phoneMatch;
+      });
+    }
 
     if (filteredContacts.length === 0) {
       return NextResponse.json({ error: 'All contacts have already provided feedback or left a review.' }, { status: 400 });
