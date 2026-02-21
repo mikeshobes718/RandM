@@ -188,6 +188,11 @@ export async function POST(req: NextRequest) {
             .replace(/\{\{business_name\}\}/g, biz.name || 'our business')
             .replace(/\{\{link\}\}/g, campaignLink);
 
+          // Add business name prefix for SMS if not already present
+          if (type === 'SMS' && biz.name && !personalizedBody.toLowerCase().includes(biz.name.toLowerCase())) {
+            personalizedBody = `${biz.name}: ${personalizedBody}`;
+          }
+
           const toFormatted = formatToE164(contact.phone!);
           console.log('[CAMPAIGNS CREATE] Sending SMS to:', toFormatted, 'original:', contact.phone);
           await twilioClient.messages.create({
