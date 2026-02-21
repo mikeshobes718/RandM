@@ -90,6 +90,9 @@ export default function SequencePreview({ businessName, headline, subheading }: 
                                         </p>
                                         <p className="text-sm font-black text-slate-800">Redirected to Google Maps</p>
                                         <p className="text-[10px] text-slate-500 font-medium mt-1">Directly to your public review page.</p>
+                                        <div className="mt-3 p-2 bg-white/50 rounded-lg border border-emerald-100">
+                                            <p className="text-[9px] text-emerald-700 font-bold italic">Optional: Customer can also join your contact list for special offers!</p>
+                                        </div>
                                     </div>
                                     <span className="text-3xl opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all z-10">🚀</span>
                                 </div>
@@ -115,6 +118,11 @@ export default function SequencePreview({ businessName, headline, subheading }: 
                                             
                                             <div className="bg-slate-100/80 rounded-xl p-4 text-[11px] text-slate-400 font-medium border border-slate-200/60 shadow-inner min-h-[80px]">
                                                 Please tell us what went wrong so our manager can contact you personally.
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-2 px-1">
+                                                <div className="w-3 h-3 rounded border border-slate-300 bg-white"></div>
+                                                <p className="text-[8px] text-slate-400 font-medium">I agree to be contacted regarding my feedback.</p>
                                             </div>
                                             
                                             <div className="mt-auto space-y-4">
