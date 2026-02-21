@@ -122,6 +122,7 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
           font: { size: 8 },
           color: '#94a3b8',
           maxTicksLimit: 5,
+          padding: 8,
         }
       },
       x: {
@@ -131,10 +132,19 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
         ticks: {
           font: { size: 8 },
           color: '#94a3b8',
-          maxRotation: 45,
-          minRotation: 45,
+          maxRotation: 0,
+          minRotation: 0,
           autoSkip: true,
-          maxTicksLimit: 7,
+          maxTicksLimit: 5,
+          padding: 8,
+          callback: function(value, index, values) {
+            const label = this.getLabelForValue(value);
+            // On mobile, show even fewer labels to prevent jank
+            if (window.innerWidth < 768) {
+              return index % 6 === 0 ? label : '';
+            }
+            return label;
+          }
         }
       }
     }
@@ -204,8 +214,8 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 premium-card p-8 rounded-3xl">
-          <div className="flex items-center justify-between mb-8">
+        <div className="lg:col-span-8 premium-card p-4 sm:p-8 rounded-3xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
             <div>
               <h2 className="text-xl font-bold">Performance Overview</h2>
               <p className="text-xs text-muted font-medium mt-1">Daily reviews and scans for the last 30 days.</p>
