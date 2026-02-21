@@ -96,6 +96,10 @@ export async function POST(req: NextRequest) {
           const parsed = parsePhoneNumberFromString(c.phone, (c.country as CountryCode) || 'US');
           if (parsed) {
             normalizedPhone = parsed.format('E.164');
+          } else {
+            // Fallback for non-standard formats
+            normalizedPhone = c.phone.replace(/\D/g, '');
+            if (normalizedPhone.length === 10) normalizedPhone = '+1' + normalizedPhone;
           }
         }
 
