@@ -42,6 +42,13 @@ export default function ContactsPage() {
       setUser(firebaseUser);
       if (firebaseUser) {
         fetchContacts(firebaseUser);
+        
+        // Auto-open outreach modal if requested via query param
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('outreach') === '1') {
+          setContactType('email');
+          setShowContactModal(true);
+        }
       } else {
         setLoading(false);
       }
@@ -730,6 +737,26 @@ export default function ContactsPage() {
             </div>
 
             <form onSubmit={handleSendOutreach} className="p-8 space-y-6">
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 mb-4">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Recipients</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedIds.size > 0 ? (
+                    contacts.filter(c => selectedIds.has(c.id)).slice(0, 5).map(c => (
+                      <span key={c.id} className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600">
+                        {c.name || c.email || c.phone}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-[10px] font-bold text-red-400">No contacts selected</span>
+                  )}
+                  {selectedIds.size > 5 && (
+                    <span className="px-2 py-1 bg-brand/5 border border-brand/10 rounded-lg text-[10px] font-black text-brand">
+                      + {selectedIds.size - 5} more
+                    </span>
+                  )}
+                </div>
+              </div>
+
               {contactType === 'email' && (
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Subject Line</label>
