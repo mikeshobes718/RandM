@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { sendEmail } from '@/lib/emailService';
-import { reviewRequestEmail } from '@/lib/emailTemplates';
+import { directOutreachEmail } from '@/lib/emailTemplates';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,22 +45,12 @@ export async function POST(req: NextRequest) {
     let failedCount = 0;
     let lastError: string | null = null;
 
-    const campaignLink = `https://reviewsandmarketing.com/r/${biz.id}?source=direct-outreach`;
+    const campaignLink = biz.review_link || `https://reviewsandmarketing.com/r/${biz.id}?source=direct-outreach`;
+
+    const { html, text } = directOutreachEmail(subject, message, biz.name, campaignLink);
 
     for (const email of recipients) {
       try {
-        const personalizedBody = message
-          .replace(/\{\{name\}\}/g, 'there')
-          .replace(/\{\{business_name\}\}/g, biz.name || 'our business')
-          .replace(/\{\{link\}\}/g, campaignLink);
-
-        const { html, text } = reviewRequestEmail(
-          undefined,
-          personalizedBody,
-          biz.name,
-          campaignLink
-        );
-
         const result = await sendEmail({
           to: email,
           subject,
