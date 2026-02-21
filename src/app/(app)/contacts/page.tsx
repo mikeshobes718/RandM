@@ -382,7 +382,7 @@ export default function ContactsPage() {
           {contacts.length > 0 && (
             <button 
               onClick={() => handleDeleteContacts(true)}
-              className="text-[10px] font-black text-red-500 hover:text-red-600 uppercase tracking-widest px-2 py-2"
+              className="text-[10px] font-black text-red-500 hover:text-red-600 uppercase tracking-widest px-2 py-2 order-last sm:order-none w-full sm:w-auto"
             >
               Clear All
             </button>
