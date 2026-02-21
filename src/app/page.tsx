@@ -88,7 +88,7 @@ export default function Home() {
         
         {/* Subtle background element */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-full -z-10 pointer-events-none opacity-[0.03]">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,var(--brand),transparent_70%)]"></div>
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,#4f46e5,transparent_70%)]"></div>
         </div>
       </section>
 
