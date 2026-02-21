@@ -59,29 +59,31 @@ function NewRequestContent() {
     ? `${businessName}: ${previewText}`
     : previewText;
 
-  const handleStartCampaign = async () => {
-    if (!name || !body || sending) return;
+    const [targetList, setTargetList] = useState("All Contacts");
 
-    setSending(true);
-    setError(null);
-    setSuccess(null);
+    const handleStartCampaign = async () => {
+      if (!name || !body || sending) return;
 
-    try {
-      const user = clientAuth.currentUser;
-      if (!user) {
-        setError('✕ You must be logged in to start a campaign.');
-        setSending(false);
-        return;
-      }
-      const tok = await user.getIdToken(true);
-      const res = await fetch('/api/campaigns/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tok}`
-        },
-        body: JSON.stringify({ name, type, body })
-      });
+      setSending(true);
+      setError(null);
+      setSuccess(null);
+
+      try {
+        const user = clientAuth.currentUser;
+        if (!user) {
+          setError('✕ You must be logged in to start a campaign.');
+          setSending(false);
+          return;
+        }
+        const tok = await user.getIdToken(true);
+        const res = await fetch('/api/campaigns/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${tok}`
+          },
+          body: JSON.stringify({ name, type, body, targetList })
+        });
 
       if (!res.ok) {
         const data = await res.json();
@@ -178,10 +180,16 @@ function NewRequestContent() {
 
             <div>
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Target Contact List</label>
-              <select className="w-full h-12 bg-slate-50 border-none rounded-2xl px-4 text-xs font-bold appearance-none cursor-pointer">
-                <option>All Contacts</option>
-                <option>Recent Customers (Last 7 Days)</option>
-                <option>Square Customers</option>
+              <select 
+                value={targetList}
+                onChange={(e) => setTargetList(e.target.value)}
+                className="w-full h-12 bg-slate-50 border-none rounded-2xl px-4 text-xs font-bold appearance-none cursor-pointer"
+              >
+                <option value="All Contacts">All Contacts</option>
+                <option value="Recent Customers (Last 7 Days)">Recent Customers (Last 7 Days)</option>
+                <option value="Square Customers">Square Customers</option>
+                <option value="Manual Uploads (CSV)">Manual Uploads (CSV)</option>
+                <option value="Never Contacted">Never Contacted</option>
               </select>
             </div>
 
