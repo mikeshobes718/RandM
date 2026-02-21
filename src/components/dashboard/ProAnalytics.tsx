@@ -119,8 +119,9 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
           color: 'rgba(0,0,0,0.03)',
         },
         ticks: {
-          font: { size: 10 },
+          font: { size: 8 },
           color: '#94a3b8',
+          maxTicksLimit: 5,
         }
       },
       x: {
@@ -128,8 +129,12 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
           display: false,
         },
         ticks: {
-          font: { size: 10 },
+          font: { size: 8 },
           color: '#94a3b8',
+          maxRotation: 45,
+          minRotation: 45,
+          autoSkip: true,
+          maxTicksLimit: 7,
         }
       }
     }
