@@ -8,6 +8,7 @@ type EmailParts = {
   secondaryCta?: { text: string; url: string };
   securityNote?: string;
   footerNote?: string;
+  unsubscribeNote?: boolean;
 };
 
 // Plan-specific welcome email templates
@@ -57,117 +58,144 @@ export function proWelcomeEmailTemplate(): string {
   });
 }
 
-export function brandedHtml({ title, greeting, intro, benefits, ctaText, ctaUrl, secondaryCta, securityNote, footerNote }: EmailParts): string {
-  // Use a simpler, more robust modern container layout
-  return `
-    <div style="background-color: #f4f7ff; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-      <div style="max-width: 600px; margin: 0 auto;">
-        <!-- Header -->
-        <div style="text-align: center; margin-bottom: 30px;">
-          <span style="font-size: 24px; font-weight: 900; color: #0f172a; letter-spacing: -0.02em;">R&M</span>
-        </div>
-        
-        <!-- Main Card -->
-        <div style="background-color: #ffffff; padding: 40px; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-          ${greeting ? `<div style="color: #64748b; font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 16px;">${escapeHtml(greeting)}</div>` : ''}
-          <h1 style="color: #0f172a; font-size: 24px; font-weight: 800; margin-bottom: 24px; line-height: 1.2;">${escapeHtml(title)}</h1>
-          
-          <div style="color: #334155; font-size: 16px; line-height: 1.6; margin-bottom: 32px;">
-            ${intro ? escapeHtml(intro).replace(/\n/g, '<br/>') : '<em>(No message content)</em>'}
-          </div>
-
-          ${ctaText && ctaUrl ? `
-            <div style="text-align: center; margin-bottom: 32px;">
-              <a href="${ctaUrl}" style="background-color: #4f46e5; color: #ffffff; padding: 16px 32px; border-radius: 12px; font-weight: 800; text-decoration: none; display: inline-block;">
-                ${escapeHtml(ctaText)}
-              </a>
-            </div>
-          ` : ''}
-        </div>
-
-        <!-- Footer -->
-        <div style="text-align: center; margin-top: 30px; color: #94a3b8; font-size: 12px;">
-          <p><strong>Reviews & Marketing</strong></p>
-          <p>${footerNote ? escapeHtml(footerNote) : ''}</p>
-          <div style="margin-top: 10px;">
-            <a href="https://reviewsandmarketing.com/privacy" style="color: #94a3b8; margin: 0 5px;">Privacy</a> • 
-            <a href="https://reviewsandmarketing.com/terms" style="color: #94a3b8; margin: 0 5px;">Terms</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+export function brandedHtml({ title, greeting, intro, benefits, ctaText, ctaUrl, secondaryCta, securityNote, footerNote, unsubscribeNote }: EmailParts): string {
+  // Dark mode safe colors
+  const benefitsList = benefits && benefits.length > 0 ? benefits.map(b => 
+    `<li style="margin:6px 0;color:#475569;font-size:14px;line-height:20px;">✓ ${escapeHtml(b)}</li>`
+  ).join('') : '';
+  
+  return `<!doctype html>
+  <html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title>${escapeHtml(title)}</title>
+    <style>
+      @media (prefers-color-scheme: dark) {
+        .dark-mode-bg { background-color: #1e293b !important; }
+        .dark-mode-text { color: #e2e8f0 !important; }
+        .dark-mode-border { border-color: #334155 !important; }
+      }
+    </style>
+  </head>
+  <body style="margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <!-- Main card -->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:16px;border:1px solid #e5e7eb;box-shadow:0 10px 30px rgba(2,6,23,0.06);">
+            <!-- Header with gradient and logo -->
+            <tr>
+              <td style="padding:32px 40px;border-bottom:1px solid #eef2ff;background:linear-gradient(135deg,#2563eb 0%,#7c3aed 100%);border-radius:16px 16px 0 0;">
+                <table width="100%"><tr>
+                  <td>
+                    <div style="font-weight:800;font-size:20px;color:#ffffff;letter-spacing:-0.02em;">⚡ Reviews & Marketing</div>
+                    <div style="font-size:13px;color:#e0e7ff;margin-top:4px;font-weight:500;">Reputation Toolkit</div>
+                  </td>
+                </tr></table>
+              </td>
+            </tr>
+            <!-- Body content -->
+            <tr>
+              <td style="padding:36px 40px;">
+                ${greeting ? `<p style="margin:0 0 20px 0;color:#0f172a;font-size:16px;font-weight:600;">${escapeHtml(greeting)}</p>` : ''}
+                <h1 style="margin:0 0 16px 0;font-size:24px;color:#0f172a;font-weight:700;line-height:1.3;">${escapeHtml(title)}</h1>
+                ${intro ? `<p style="margin:0 0 20px 0;color:#334155;font-size:15px;line-height:24px;">${escapeHtml(intro)}</p>` : ''}
+                ${benefitsList ? `<ul style="margin:16px 0;padding-left:0;list-style:none;">${benefitsList}</ul>` : ''}
+                ${ctaText && ctaUrl ? `
+                <div style=\"margin:28px 0;\">
+                  <!--[if mso]>
+                  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${ctaUrl}" style="height:48px;v-text-anchor:middle;width:200px;" arcsize="25%" stroke="f" fillcolor="#4f46e5">
+                    <w:anchorlock/>
+                    <center style="color:#ffffff;font-family:sans-serif;font-size:16px;font-weight:bold;">${escapeHtml(ctaText)}</center>
+                  </v:roundrect>
+                  <![endif]-->
+                  <!--[if !mso]><!-->
+                  <a href="${ctaUrl}" style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);color:#fff;text-decoration:none;padding:14px 32px;border-radius:12px;font-weight:700;font-size:16px;display:inline-block;box-shadow:0 4px 12px rgba(79,70,229,0.3);transition:transform 0.2s,box-shadow 0.2s;" target="_blank">${escapeHtml(ctaText)}</a>
+                  <!--<![endif]-->
+                </div>` : ''}
+                ${secondaryCta ? `<div style=\"margin:12px 0;\"><a href=\"${secondaryCta.url}\" style=\"color:#6366f1;text-decoration:none;font-size:14px;font-weight:600;\" target=\"_blank\">${escapeHtml(secondaryCta.text)} →</a></div>` : ''}
+                ${securityNote ? `<p style=\"margin:24px 0 0 0;padding:12px;background:#f1f5f9;border-left:3px solid #64748b;color:#475569;font-size:13px;line-height:20px;border-radius:4px;\">${escapeHtml(securityNote)}</p>` : ''}
+                ${footerNote ? `<p style=\"margin:20px 0 0 0;color:#64748b;font-size:13px;line-height:20px;\">${escapeHtml(footerNote)}</p>` : ''}
+              </td>
+            </tr>
+            <!-- Footer -->
+            <tr>
+              <td style="padding:24px 40px;border-top:1px solid #e5e7eb;border-radius:0 0 16px 16px;background:#fafafa;">
+                <table width="100%">
+                  <tr>
+                    <td style="color:#64748b;font-size:12px;line-height:18px;">
+                      <div style="margin-bottom:12px;">
+                        <strong style="color:#0f172a;font-size:13px;">Reviews & Marketing</strong><br/>
+                        Need help? <a href="mailto:support@reviewsandmarketing.com" style="color:#6366f1;text-decoration:none;">support@reviewsandmarketing.com</a>
+                      </div>
+                      <div style="margin:8px 0;">
+                        <a href="https://reviewsandmarketing.com/privacy" style="color:#64748b;text-decoration:none;margin-right:12px;">Privacy</a>
+                        <a href="https://reviewsandmarketing.com/terms" style="color:#64748b;text-decoration:none;margin-right:12px;">Terms</a>
+                        <a href="https://reviewsandmarketing.com/support" style="color:#64748b;text-decoration:none;">Support</a>
+                      </div>
+                      <div style="margin-top:12px;color:#94a3b8;font-size:11px;">
+                        © ${new Date().getFullYear()} Reviews & Marketing. All rights reserved.
+                      </div>
+                      ${unsubscribeNote ? `
+                      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb;color:#94a3b8;font-size:11px;line-height:16px;">
+                        You're receiving this because you are a customer or have interacted with our business.
+                        To stop receiving these emails, reply with "unsubscribe" in the subject line or
+                        <a href="mailto:support@reviewsandmarketing.com?subject=unsubscribe" style="color:#94a3b8;">click here to unsubscribe</a>.
+                      </div>` : ''}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- Spacer for mobile -->
+          <div style="height:16px;"></div>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>`;
 }
 
-export function reviewRequestEmail(customerName: string | undefined, body: string, businessName?: string, link?: string): { subject: string; html: string; text: string } {
+export function reviewRequestEmail(customerName: string | undefined, bodyContent: string, businessName?: string, ctaUrl?: string): { subject: string; html: string; text: string } {
   const subject = businessName ? `Share your experience with ${businessName}` : 'We\'d love your feedback!';
   const greeting = customerName ? `Hi ${customerName},` : 'Hello!';
-  
-  // Extract content parts to avoid double injection of Subject/Hi there
-  // But ensure we never end up with empty content
-  let cleanBody = body.trim();
-  const originalBody = body.trim();
-  
-  // Remove "Subject:" line if present
-  if (cleanBody.toLowerCase().startsWith('subject:')) {
-    const firstNewline = cleanBody.indexOf('\n');
-    if (firstNewline !== -1) {
-      const afterSubject = cleanBody.substring(firstNewline + 1).trim();
-      // Only remove Subject line if there's content after it
-      if (afterSubject.length > 0) {
-        cleanBody = afterSubject;
-      }
-    }
-  }
-  
-  // Remove greeting if it matches common patterns (but preserve content)
-  const lowerBody = cleanBody.toLowerCase();
-  const greetingPatterns = ['hi ', 'hello', 'hey '];
-  const hasGreeting = greetingPatterns.some(pattern => lowerBody.startsWith(pattern));
-  
-  if (hasGreeting) {
-    // Find the first meaningful line break (skip empty lines)
-    let firstNewline = cleanBody.indexOf('\n');
-    if (firstNewline === -1) {
-      // No newline, check if entire body is just greeting
-      if (cleanBody.length < 50) {
-        // Likely just a greeting, use original body
-        cleanBody = originalBody;
-      }
-    } else {
-      // Skip multiple newlines/whitespace
-      let afterGreeting = cleanBody.substring(firstNewline).trim();
-      // If we have substantial content after greeting, use it
-      if (afterGreeting.length > 10) {
-        cleanBody = afterGreeting;
-      } else {
-        // Not enough content, keep original
-        cleanBody = originalBody;
-      }
-    }
-  }
-  
-  // Final safety check: if cleanup resulted in empty or minimal content, use original body
-  if (!cleanBody || cleanBody.trim().length < 10) {
-    cleanBody = originalBody;
-  }
-
-  // Ensure we always have content - if still empty, use a default message
-  if (!cleanBody || cleanBody.trim().length === 0) {
-    cleanBody = 'We would love to hear about your experience. Please share your feedback with us!';
-  }
-
+  // If bodyContent looks like a URL, treat it as a link (legacy usage)
+  const isLink = /^https?:\/\//.test(bodyContent);
+  const intro = isLink
+    ? (businessName 
+        ? `Thank you for choosing ${businessName}! We hope you had a great experience. Would you mind taking a moment to share your feedback?`
+        : 'Thank you for your business! We hope you had a great experience and would love to hear about it.')
+    : bodyContent;
+  const linkUrl = isLink ? bodyContent : (ctaUrl || '');
   const html = brandedHtml({ 
-    title: businessName ? `Experience at ${businessName}` : 'We value your feedback', 
+    title: 'We value your feedback', 
     greeting,
-    intro: cleanBody, 
-    ctaText: 'Leave a Review', 
-    ctaUrl: link || 'https://reviewsandmarketing.com',
-    footerNote: 'Your review helps us improve and helps others make informed decisions. Thank you!' 
+    intro, 
+    ctaText: linkUrl ? 'Leave a Review' : undefined,
+    ctaUrl: linkUrl || undefined,
+    footerNote: 'Your review helps us improve and helps others make informed decisions. Thank you!',
+    unsubscribeNote: true,
   });
-  
-  const text = `${greeting}\n\n${cleanBody}\n\nLeave a review: ${link}\n\nThank you!`;
+  const text = `${greeting}\n\n${intro}${linkUrl ? `\n\nLeave a review: ${linkUrl}` : ''}\n\nThank you!\n\n---\nTo unsubscribe from future emails, reply with "unsubscribe" in the subject line.`;
   return { subject, html, text };
+}
+
+export function directOutreachEmail(subject: string, messageBody: string, businessName: string, ctaUrl?: string): { html: string; text: string } {
+  const html = brandedHtml({
+    title: subject,
+    greeting: 'Hello!',
+    intro: messageBody,
+    ctaText: ctaUrl ? 'Leave a Review' : undefined,
+    ctaUrl: ctaUrl || undefined,
+    footerNote: `This message was sent to you by ${businessName}.`,
+    unsubscribeNote: true,
+  });
+  const text = `${messageBody}${ctaUrl ? `\n\nLeave a Review: ${ctaUrl}` : ''}\n\n---\nSent by ${businessName}. To unsubscribe, reply with "unsubscribe" in the subject line.`;
+  return { html, text };
 }
 
 export function inviteEmail(inviter: string, link: string, recipientName?: string): { subject: string; html: string; text: string } {
