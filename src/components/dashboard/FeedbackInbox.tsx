@@ -207,12 +207,14 @@ export default function FeedbackInbox({ initialItems, businessId }: FeedbackInbo
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 pt-3 mt-4 border-t border-slate-100">
-                  <button
-                    onClick={() => window.location.href = `mailto:${item.email}?subject=Feedback regarding your experience`}
-                    className="px-3 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all flex-1 sm:flex-none text-center shadow-sm"
-                  >
-                    Email
-                  </button>
+                  {item.email && (
+                    <button
+                      onClick={() => window.location.href = `mailto:${item.email}?subject=Feedback regarding your experience`}
+                      className="px-3 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all flex-1 sm:flex-none text-center shadow-sm"
+                    >
+                      Email
+                    </button>
+                  )}
                   {item.phone && (
                     <button
                       onClick={() => window.location.href = `sms:${item.phone}`}
