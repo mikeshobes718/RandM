@@ -550,48 +550,46 @@ function DashboardContent() {
 
       {/* Legend Section */}
       <section className="mt-24 pt-12 border-t border-[#e2e8f0]">
-        {/* Advanced Analytics & Insights Section (moved to bottom) */}
-        {activeTab === 'analytics' && (
-          <div className="mt-12 relative mb-12">
-            {!isPro && (
-              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-white/40 backdrop-blur-[6px] rounded-[40px] border-2 border-dashed border-brand/20">
-                <div className="w-20 h-20 bg-brand text-white rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-brand/40 animate-bounce">
-                  <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-                <h2 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">Unlock Your Business Intelligence</h2>
-                <p className="text-slate-600 max-w-md mb-8 font-medium leading-relaxed">
-                  You're currently seeing <strong>less than 20%</strong> of your available data. Upgrade to Unlimited to track daily trends, see where every lead comes from, and analyze customer sentiment.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 items-center">
-                  <Link href="/pricing" className="primary-button h-14 px-10 text-lg shadow-xl shadow-brand/20">
-                    🚀 Upgrade Now
-                  </Link>
-                  <div className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/5 px-3 py-1.5 rounded-full border border-brand/10">
-                    Join 500+ Top Rated Businesses
-                  </div>
+        {/* Advanced Analytics & Insights Section (always visible at bottom for perceived value) */}
+        <div className="mt-12 relative mb-12">
+          {!isPro && (
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-white/40 backdrop-blur-[6px] rounded-[40px] border-2 border-dashed border-brand/20">
+              <div className="w-20 h-20 bg-brand text-white rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-brand/40 animate-bounce">
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h2 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">Unlock Your Business Intelligence</h2>
+              <p className="text-slate-600 max-w-md mb-8 font-medium leading-relaxed">
+                You're currently seeing <strong>less than 20%</strong> of your available data. Upgrade to Unlimited to track daily trends, see where every lead comes from, and analyze customer sentiment.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <Link href="/pricing" className="primary-button h-14 px-10 text-lg shadow-xl shadow-brand/20">
+                  🚀 Upgrade Now
+                </Link>
+                <div className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/5 px-3 py-1.5 rounded-full border border-brand/10">
+                  Join 500+ Top Rated Businesses
                 </div>
               </div>
-            )}
-
-            {/* This renders real data for Pro, or dummy "blurred" layout for Free users */}
-            <div className={!isPro ? "opacity-40 grayscale pointer-events-none select-none" : ""}>
-              <ProAnalytics data={analytics || {
-                history: Array.from({ length: 30 }, (_, i) => ({
-                  date: new Date(Date.now() - (30 - i) * 86400000).toISOString(),
-                  reviews: Math.floor(Math.random() * 10) + 2,
-                  scans: Math.floor(Math.random() * 30) + 10
-                })),
-                sentiment: { positive: 85, neutral: 10, negative: 5 },
-                ratingDistribution: { 1: 2, 2: 3, 3: 5, 4: 15, 5: 75 },
-                funnel: { scans: 450, selections: 320, completions: 180 },
-                sources: { "Main QR": 120, "Receipt": 45, "Instagram": 15 },
-                growth: 24
-              }} />
             </div>
+          )}
+
+          {/* This renders real data for Pro, or dummy "blurred" layout for Free users */}
+          <div className={!isPro ? "opacity-40 grayscale pointer-events-none select-none" : ""}>
+            <ProAnalytics data={analytics || {
+              history: Array.from({ length: 30 }, (_, i) => ({
+                date: new Date(Date.now() - (30 - i) * 86400000).toISOString(),
+                reviews: Math.floor(Math.random() * 10) + 2,
+                scans: Math.floor(Math.random() * 30) + 10
+              })),
+              sentiment: { positive: 85, neutral: 10, negative: 5 },
+              ratingDistribution: { 1: 2, 2: 3, 3: 5, 4: 15, 5: 75 },
+              funnel: { scans: 450, selections: 320, completions: 180 },
+              sources: { "Main QR": 120, "Receipt": 45, "Instagram": 15 },
+              growth: 24
+            }} />
           </div>
-        )}
+        </div>
 
         {!isActivated && (
           <div className="mb-12">
