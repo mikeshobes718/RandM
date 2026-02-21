@@ -245,14 +245,12 @@ function DashboardContent() {
                 Dashboard
                 <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-md border border-slate-100">Live v2.1</span>
               </h1>
-              {business.business_type && (
-                <span className="bg-brand/5 text-brand text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-brand/10">
-                  {business.business_type}
-                </span>
-              )}
+              <div className="flex items-center gap-2 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">System Normal</span>
+              </div>
             </div>
             <p className="text-muted text-sm font-medium flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Connected to {business.name}
               {business.address && (
                 <span className="text-slate-400 font-normal border-l border-[#e2e8f0] pl-2 ml-1">
@@ -263,10 +261,6 @@ function DashboardContent() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2 items-center lg:flex-nowrap">
-          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-full">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">System Normal</span>
-          </div>
           <Link href="/contacts" className="inline-flex items-center gap-2 px-4 h-10 bg-brand text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all hover:bg-brand/90 hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-brand/20">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             Contacts
