@@ -203,7 +203,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Twilio phone number is missing in environment variables.' }, { status: 400 });
       }
 
-      const twilioClient = twilio(apiKeySid || sid, apiKeySecret || token, { accountSid: sid });
+      const twilioClient = twilio(sid, token);
 
       for (const contact of smsContacts) {
         try {
