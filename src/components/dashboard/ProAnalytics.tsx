@@ -13,6 +13,7 @@ import {
   ArcElement
 } from 'chart.js';
 import { Line, Doughnut, Bar } from 'react-chartjs-2';
+import { useState } from 'react';
 
 ChartJS.register(
   CategoryScale,
