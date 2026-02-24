@@ -9,6 +9,7 @@ interface PlanUsageCardProps {
   qrScans: number;
   isUnlimited: boolean;
   isPro?: boolean;
+  planStatus?: string;
 }
 
 // Simple Tooltip component
@@ -22,14 +23,15 @@ const Tooltip = ({ text, children }: { text: string; children: React.ReactNode }
   </div>
 );
 
-export default function PlanUsageCard({ planName, requestsUsed, requestsLimit, qrScans, isUnlimited, isPro }: PlanUsageCardProps) {
+export default function PlanUsageCard({ planName, requestsUsed, requestsLimit, qrScans, isUnlimited, isPro, planStatus }: PlanUsageCardProps) {
   const progress = isUnlimited ? 0 : Math.min(100, (requestsUsed / requestsLimit) * 100);
+  const isFree = !planStatus || planStatus === 'none' || planStatus === 'free';
 
   return (
     <section className="bg-white rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
       <div className="flex flex-col lg:flex-row lg:items-stretch">
-        {/* Left: Plan Info */}
-        {!isPro && (
+        {/* Left: Plan Info (Only show Upgrade if on Free plan) */}
+        {isFree && (
           <div className="p-6 lg:p-8 bg-slate-50/50 border-b lg:border-b-0 lg:border-r border-slate-100 flex flex-row lg:flex-col items-center lg:items-start justify-between lg:justify-center gap-4 min-w-[220px]">
             <div>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Current Plan</p>
