@@ -149,37 +149,7 @@ export async function POST(req: Request) {
         .select('id')
         .single();
       if (!insertError && data?.id) feedbackId = data.id;
-
-          // Also save to contacts table for the database
-          if (sanitizedEmail || sanitizedPhoneDigits) {
-            try {
-              // Try to find by email OR phone depending on what we have
-              let query = supa.from('contacts').select('id').eq('business_id', finalBusinessId);
-              
-              if (sanitizedEmail && sanitizedPhoneDigits) {
-                query = query.or(`email.eq.${sanitizedEmail},phone.eq.${sanitizedPhoneDigits}`);
-              } else if (sanitizedEmail) {
-                query = query.eq('email', sanitizedEmail);
-              } else if (sanitizedPhoneDigits) {
-                query = query.eq('phone', sanitizedPhoneDigits);
-              }
-              
-              const { data: existing } = await query.limit(1).maybeSingle();
-
-              if (!existing) {
-                await supa.from('contacts').insert({
-                  business_id: finalBusinessId,
-                  email: sanitizedEmail || null,
-                  name: sanitizedName || 'Unknown',
-                  phone: sanitizedPhoneDigits || null,
-                  source: 'feedback'
-                });
-              }
-            } catch (e) {
-              console.error('Failed to sync feedback to contacts:', e);
-            }
-          }
-        } catch {
+    } catch {
       // ignore insert error; feedback table may not exist yet or REST may be unavailable
     }
   }
@@ -192,7 +162,7 @@ export async function POST(req: Request) {
   if (sanitizedEmail || sanitizedPhoneDigits) {
     try {
       // Try to find by email OR phone depending on what we have
-      let query = supa.from('contacts').select('id').eq('business_id', finalBusinessId);
+      let query = supa.from('contacts').select('id, name, email, phone').eq('business_id', finalBusinessId);
       
       if (sanitizedEmail && sanitizedPhoneDigits) {
         query = query.or(`email.eq.${sanitizedEmail},phone.eq.${sanitizedPhoneDigits}`);
@@ -205,6 +175,7 @@ export async function POST(req: Request) {
       const { data: existing } = await query.limit(1).maybeSingle();
 
       if (!existing) {
+        // Create new contact
         await supa.from('contacts').insert({
           business_id: finalBusinessId,
           email: sanitizedEmail || null,
@@ -212,6 +183,16 @@ export async function POST(req: Request) {
           phone: sanitizedPhoneDigits || null,
           source: 'feedback'
         });
+      } else {
+        // Update existing contact if we have new information
+        const updates: Record<string, any> = {};
+        if (sanitizedName && (existing.name === 'Unknown' || !existing.name)) updates.name = sanitizedName;
+        if (sanitizedEmail && !existing.email) updates.email = sanitizedEmail;
+        if (sanitizedPhoneDigits && !existing.phone) updates.phone = sanitizedPhoneDigits;
+
+        if (Object.keys(updates).length > 0) {
+          await supa.from('contacts').update(updates).eq('id', existing.id);
+        }
       }
     } catch (e) {
       console.error('Failed to sync feedback/redirect to contacts:', e);
