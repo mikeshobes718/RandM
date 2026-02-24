@@ -122,10 +122,13 @@ function DashboardContent() {
   const landingUrl = useMemo(() => {
     if (!business?.id) return '';
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.reviewsandmarketing.com';
-    // Use slug if available, otherwise fallback to id
-    const path = business.slug || business.id;
+    // Use DB slug if available, else derive from name, else fallback to id
+    const computedSlug = business.name
+      ? business.name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 50)
+      : null;
+    const path = business.slug || computedSlug || business.id;
     return `${origin}/r/${path}?source=main-qr`;
-  }, [business?.id, business?.slug]);
+  }, [business?.id, business?.slug, business?.name]);
 
   const isFromEdit = searchParams?.get('from') === 'edit';
 
