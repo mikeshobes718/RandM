@@ -15,6 +15,21 @@ type Contact = {
   created_at: string;
 };
 
+function formatPhoneDisplay(phone: string): string {
+  if (!phone) return phone;
+  try {
+    const formatter = new AsYouType('US' as CountryCode);
+    // Strip to E.164 or digits first
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 10) return formatter.input(digits);
+    if (digits.length === 11 && digits.startsWith('1')) return formatter.input(digits.slice(1));
+    // Already formatted or international
+    return phone;
+  } catch {
+    return phone;
+  }
+}
+
 export default function ContactsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -34,6 +49,7 @@ export default function ContactsPage() {
   const [contactSubject, setContactSubject] = useState('');
   const [contactMessage, setContactMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [recipientSearch, setRecipientSearch] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -306,6 +322,7 @@ export default function ContactsPage() {
       setSuccessMsg(`Successfully sent ${contactType.toUpperCase()} outreach to ${recipients.length} contact${recipients.length > 1 ? 's' : ''}!`);
       setShowContactModal(false);
       setSelectedIds(new Set());
+      setRecipientSearch('');
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -552,7 +569,7 @@ export default function ContactsPage() {
                       <td className="px-4 sm:px-6 py-4 sm:py-6">
                         <div className="flex flex-col gap-0.5 sm:gap-1">
                           {contact.email && <p className="text-[11px] sm:text-xs font-bold text-slate-600 truncate max-w-[120px] sm:max-w-none">{contact.email}</p>}
-                          {contact.phone && <p className="text-[9px] sm:text-[10px] font-medium text-slate-400">{contact.phone}</p>}
+                          {contact.phone && <p className="text-[9px] sm:text-[10px] font-medium text-slate-400">{formatPhoneDisplay(contact.phone)}</p>}
                           {!contact.email && !contact.phone && <span className="text-slate-300 italic text-[10px] sm:text-xs">No info</span>}
                         </div>
                       </td>
@@ -729,7 +746,7 @@ export default function ContactsPage() {
                 </p>
               </div>
               <button 
-                onClick={() => setShowContactModal(false)}
+                onClick={() => { setShowContactModal(false); setRecipientSearch(''); }}
                 className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -737,24 +754,109 @@ export default function ContactsPage() {
             </div>
 
             <form onSubmit={handleSendOutreach} className="p-8 space-y-6">
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 mb-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Recipients</p>
-                <div className="flex flex-wrap gap-2">
-                  {selectedIds.size > 0 ? (
-                    contacts.filter(c => selectedIds.has(c.id)).slice(0, 5).map(c => (
-                      <span key={c.id} className="px-2 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600">
-                        {c.name || c.email || c.phone}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-[10px] font-bold text-red-400">No contacts selected</span>
-                  )}
-                  {selectedIds.size > 5 && (
-                    <span className="px-2 py-1 bg-brand/5 border border-brand/10 rounded-lg text-[10px] font-black text-brand">
-                      + {selectedIds.size - 5} more
-                    </span>
+              {/* Recipients Section with dynamic search */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Recipients
+                    {selectedIds.size > 0 && (
+                      <span className="ml-2 px-1.5 py-0.5 bg-brand text-white rounded-md text-[9px]">{selectedIds.size}</span>
+                    )}
+                  </p>
+                  {selectedIds.size > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedIds(new Set())}
+                      className="text-[9px] font-black text-slate-400 hover:text-red-400 uppercase tracking-widest transition-colors"
+                    >
+                      Clear all
+                    </button>
                   )}
                 </div>
+
+                {/* Search input */}
+                <div className="relative mb-2">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search contacts to add..."
+                    value={recipientSearch}
+                    onChange={(e) => setRecipientSearch(e.target.value)}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl pl-8 pr-3 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all"
+                  />
+                </div>
+
+                {/* Search dropdown results */}
+                {recipientSearch.trim().length > 0 && (
+                  <div className="bg-white border border-slate-200 rounded-xl overflow-hidden mb-2 max-h-40 overflow-y-auto shadow-sm">
+                    {contacts
+                      .filter(c => {
+                        const q = recipientSearch.toLowerCase();
+                        return (
+                          (c.name || '').toLowerCase().includes(q) ||
+                          (c.email || '').toLowerCase().includes(q) ||
+                          (c.phone || '').includes(q)
+                        );
+                      })
+                      .slice(0, 8)
+                      .map(c => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedIds(prev => {
+                              const next = new Set(prev);
+                              if (next.has(c.id)) next.delete(c.id);
+                              else next.add(c.id);
+                              return next;
+                            });
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2 text-left hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 ${selectedIds.has(c.id) ? 'bg-brand/5' : ''}`}
+                        >
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-[11px] font-black text-slate-800 truncate">{c.name || 'Unnamed'}</span>
+                            <span className="text-[9px] text-slate-400 truncate">{c.email || formatPhoneDisplay(c.phone || '')}</span>
+                          </div>
+                          {selectedIds.has(c.id) && (
+                            <svg className="w-4 h-4 text-brand flex-shrink-0 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                            </svg>
+                          )}
+                        </button>
+                      ))}
+                    {contacts.filter(c => {
+                      const q = recipientSearch.toLowerCase();
+                      return (c.name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q) || (c.phone || '').includes(q);
+                    }).length === 0 && (
+                      <p className="text-[10px] text-slate-400 font-medium text-center py-3">No contacts found</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Selected contact chips */}
+                {selectedIds.size > 0 ? (
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {contacts.filter(c => selectedIds.has(c.id)).slice(0, 6).map(c => (
+                      <span key={c.id} className="flex items-center gap-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600">
+                        {c.name || c.email || c.phone}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedIds(prev => { const n = new Set(prev); n.delete(c.id); return n; })}
+                          className="text-slate-300 hover:text-red-400 transition-colors ml-0.5"
+                        >×</button>
+                      </span>
+                    ))}
+                    {selectedIds.size > 6 && (
+                      <span className="px-2 py-1 bg-brand/5 border border-brand/10 rounded-lg text-[10px] font-black text-brand">
+                        +{selectedIds.size - 6} more
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-slate-400 font-medium text-center py-2">Search above to add recipients, or select contacts from the list first.</p>
+                )}
               </div>
 
               {contactType === 'email' && (
