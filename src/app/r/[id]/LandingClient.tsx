@@ -230,7 +230,9 @@ export default function LandingClient({ id }: { id: string }) {
       }
       const data = await res.json();
       if (rating >= 5 && data.redirect) {
-        window.location.assign(data.redirect as string);
+        // Open Google review page in a new tab
+        window.open(data.redirect as string, '_blank', 'noopener,noreferrer');
+        setSubmitted(true);
         return;
       }
       setSubmitted(true);
@@ -294,46 +296,57 @@ export default function LandingClient({ id }: { id: string }) {
 
           {fiveStar && (
             <div className="mt-6 space-y-4">
-              <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-3 text-sm text-center">
-                Thanks for the love! Tap below to post a quick Google review.
-              </div>
-              <button
-                type="button"
-                onClick={submit}
-                disabled={submitting}
-                className="w-full rounded-2xl px-4 py-3 text-base font-semibold shadow-md transition disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{ backgroundColor: buttonColor, color: buttonTextColor }}
-              >
-                {submitting ? 'Opening Google…' : 'Leave a Google review'}
-              </button>
-              <p className="text-xs text-gray-500 text-center">Opens Google in a new tab.</p>
-              
-              <div className="pt-6 border-t border-gray-100 mt-6">
-                <h3 className="text-center font-bold text-gray-700 text-sm mb-4">Please share your contact info to continue:</h3>
-                <div className="space-y-3">
-                  <input
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
-                    placeholder="Your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                  <input
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
-                    placeholder="Email Address"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                  <input
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
-                    placeholder="Phone Number"
-                    value={phone}
-                    onChange={(e) => setPhone(formatPhone(normalizePhone(e.target.value).slice(0, 10)))}
-                  />
+              {submitted ? (
+                <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-6 text-center text-sm">
+                  <div className="text-2xl mb-2">🎉</div>
+                  <p className="font-semibold">Thank you! Google Reviews has opened in a new tab.</p>
+                  <p className="text-xs mt-1 text-emerald-600">We really appreciate your support!</p>
                 </div>
-                <p className="text-[10px] text-gray-400 text-center mt-3">We'll use this to keep you updated on special offers!</p>
-              </div>
+              ) : (
+                <>
+                  <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-3 text-sm text-center">
+                    Thanks for the love! Fill in your info below, then tap the button to post a Google review.
+                  </div>
+
+                  <div className="pt-2 border-t border-gray-100">
+                    <h3 className="text-center font-bold text-gray-700 text-sm mb-3">Please share your contact info to continue:</h3>
+                    <div className="space-y-3">
+                      <input
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                        placeholder="Your name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                      />
+                      <input
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                        placeholder="Email Address"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                      <input
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                        placeholder="Phone Number"
+                        value={phone}
+                        onChange={(e) => setPhone(formatPhone(normalizePhone(e.target.value).slice(0, 10)))}
+                      />
+                    </div>
+                    <p className="text-[10px] text-gray-400 text-center mt-3">We'll use this to keep you updated on special offers!</p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={submit}
+                    disabled={submitting}
+                    className="w-full rounded-2xl px-4 py-3 text-base font-semibold shadow-md transition disabled:opacity-60 disabled:cursor-not-allowed"
+                    style={{ backgroundColor: buttonColor, color: buttonTextColor }}
+                  >
+                    {submitting ? 'Opening Google…' : 'Leave a Google review'}
+                  </button>
+                  <p className="text-xs text-gray-500 text-center">Opens Google in a new tab.</p>
+                </>
+              )}
             </div>
           )}
 
