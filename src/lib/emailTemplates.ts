@@ -392,6 +392,7 @@ export function accountDeletionNotificationToSupport(userEmail: string, userName
 }
 
 function escapeHtml(s: string) {
+  if (typeof s !== 'string') return '';
   return s
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
