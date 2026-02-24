@@ -1,21 +1,13 @@
 import { Pool } from 'pg';
 import { getSupabaseAdmin } from './supabaseAdmin';
 
-export type ReviewEventName = 
-  | 'page_opened' 
-  | 'rating_selected' 
-  | 'feedback_submitted' 
-  | 'google_opened'
-  | 'flow_completed'
-  | 'sentiment_selected';
+export type ReviewEventName = 'page_opened' | 'rating_selected' | 'feedback_submitted' | 'google_opened';
 
 const REVIEW_EVENT_SET: Set<ReviewEventName> = new Set([
   'page_opened',
   'rating_selected',
   'feedback_submitted',
   'google_opened',
-  'flow_completed',
-  'sentiment_selected',
 ]);
 
 let ensurePromise: Promise<void> | null = null;
@@ -46,14 +38,8 @@ export function isReviewEventName(input: unknown): input is ReviewEventName {
 
 export async function ensureFeedbackTables(): Promise<void> {
   const config = resolveDbConfig();
-  if (!config) {
-    console.warn('[ENSURE TABLES] Missing DB config - skipping creation');
-    return;
-  }
+  if (!config) return;
   if (ensurePromise) return ensurePromise;
-  
-  console.log('[ENSURE TABLES] Starting table check/creation...');
-  
   ensurePromise = (async () => {
     const pool = new Pool({
       host: config.host,
@@ -63,12 +49,8 @@ export async function ensureFeedbackTables(): Promise<void> {
       database: config.database,
       ssl: { rejectUnauthorized: false },
     });
-    
-    let client;
+    const client = await pool.connect();
     try {
-      client = await pool.connect();
-      console.log('[ENSURE TABLES] Connected to database');
-      
       await client.query(`
         create table if not exists feedback (
           id uuid primary key default gen_random_uuid(),
@@ -79,15 +61,24 @@ export async function ensureFeedbackTables(): Promise<void> {
           phone text,
           comment text,
           marketing_consent boolean,
-          archived boolean default false,
           created_at timestamptz default now()
         );
-        alter table feedback add column if not exists source text;
         alter table feedback add column if not exists marketing_consent boolean;
         alter table feedback add column if not exists archived boolean default false;
         create index if not exists ix_feedback_business_created on feedback (business_id, created_at desc);
       `);
-      
+
+      // Add slug column to businesses table for clean URLs
+      await client.query(`
+        alter table businesses add column if not exists slug text;
+        create unique index if not exists ix_businesses_slug on businesses (slug) where slug is not null;
+        
+        -- Auto-generate slugs for existing businesses that don't have one
+        update businesses
+        set slug = lower(regexp_replace(regexp_replace(trim(name), '[^a-zA-Z0-9\\s-]', '', 'g'), '\\s+', '-', 'g'))
+        where slug is null and name is not null and name != '';
+      `);
+
       await client.query(`
         create table if not exists review_events (
           id uuid primary key default gen_random_uuid(),
@@ -100,31 +91,8 @@ export async function ensureFeedbackTables(): Promise<void> {
         create index if not exists ix_review_events_business_created on review_events (business_id, created_at desc);
         create index if not exists ix_review_events_event_created on review_events (event, created_at desc);
       `);
-      
-      await client.query(`
-        create table if not exists review_sources (
-          id uuid primary key default gen_random_uuid(),
-          business_id uuid not null references businesses(id) on delete cascade,
-          name text not null,
-          slug text not null,
-          created_at timestamptz default now(),
-          unique(business_id, slug)
-        );
-      `);
-      
-      console.log('[ENSURE TABLES] Tables ensured successfully');
-      
-      // Force PostgREST to reload schema cache
-      try {
-        await client.query('NOTIFY pgrst, \'reload schema\'');
-      } catch (e) {
-        console.warn('[ENSURE TABLES] Failed to notify PostgREST:', e);
-      }
-    } catch (err: any) {
-      console.error('[ENSURE TABLES] Error in table creation:', err.message);
-      throw err;
     } finally {
-      if (client) client.release();
+      client.release();
       await pool.end();
     }
   })();
