@@ -12,26 +12,34 @@ export async function GET(req: Request) {
   if (!id) return new NextResponse('missing id', { status: 400 });
 
   const supa = getSupabaseAdmin();
-  const columns = 'id,name,google_maps_write_review_uri,review_link,landing_brand_color,landing_button_color,landing_logo_url,landing_headline,landing_subheading';
+  const columns = 'id,name,slug,google_maps_write_review_uri,review_link,landing_brand_color,landing_button_color,landing_logo_url,landing_headline,landing_subheading';
 
   let data: any = null;
-  let error: any = null;
 
   if (uuidRegex.test(id)) {
     // Standard UUID lookup
-    ({ data, error } = await supa.from('businesses').select(columns).eq('id', id).maybeSingle());
+    const res = await supa.from('businesses').select(columns).eq('id', id).maybeSingle();
+    data = res.data;
   } else {
-    // Slug lookup — find business by slug
-    ({ data, error } = await supa.from('businesses').select(columns).eq('slug', id).maybeSingle());
+    // Try slug column first
+    const slugRes = await supa.from('businesses').select(columns).eq('slug', id).maybeSingle();
+    data = slugRes.data;
+
+    // If not found by slug, try matching by name pattern (handles backfill gap)
+    if (!data) {
+      // Convert slug back to a name pattern: "smart-fit" -> "smart fit"
+      const namePattern = id.replace(/-/g, ' ');
+      const nameRes = await supa.from('businesses').select(columns).ilike('name', namePattern).maybeSingle();
+      data = nameRes.data;
+      // Backfill the slug so future lookups are fast
+      if (data && !data.slug) {
+        const generatedSlug = id; // The slug we searched for IS the correct slug
+        try { await supa.from('businesses').update({ slug: generatedSlug }).eq('id', data.id); } catch {}
+        data.slug = generatedSlug;
+      }
+    }
   }
 
-  if (error && /column/.test(error.message || '')) {
-    const fallback = await supa.from('businesses').select('id,name,review_link').eq(uuidRegex.test(id) ? 'id' : 'slug', id).maybeSingle();
-    if (fallback.data) data = { ...fallback.data };
-    error = fallback.error ?? null;
-  }
-
-  if (error) return new NextResponse(error.message, { status: 500 });
   if (!data) return new NextResponse('not found', { status: 404 });
 
   return NextResponse.json({
