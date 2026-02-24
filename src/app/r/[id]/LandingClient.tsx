@@ -169,6 +169,19 @@ export default function LandingClient({ id }: { id: string }) {
   async function submit() {
     if (!biz || rating == null || submitting) return;
 
+    if (rating === 5) {
+      const trimmedName = name.trim();
+      const trimmedEmail = email.trim();
+      if (!trimmedName || (!trimmedEmail && !phone)) {
+        setError('Please share your name and at least one contact method (email or phone) to continue.');
+        return;
+      }
+      if (trimmedEmail && !isValidEmail(trimmedEmail)) {
+        setError('Enter a valid email address.');
+        return;
+      }
+    }
+
     if (rating < 5) {
       const trimmedName = name.trim();
       const trimmedEmail = email.trim();
@@ -296,18 +309,14 @@ export default function LandingClient({ id }: { id: string }) {
               <p className="text-xs text-gray-500 text-center">Opens Google in a new tab.</p>
               
               <div className="pt-6 border-t border-gray-100 mt-6">
-                <div className="flex items-center justify-center gap-4 mb-5">
-                  <div className="h-px bg-gray-200 flex-1"></div>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Optional</span>
-                  <div className="h-px bg-gray-200 flex-1"></div>
-                </div>
-                <h3 className="text-center font-bold text-gray-700 text-sm mb-4">Want special offers or updates?</h3>
+                <h3 className="text-center font-bold text-gray-700 text-sm mb-4">Please share your contact info to continue:</h3>
                 <div className="space-y-3">
                   <input
                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
                     placeholder="Your name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    required
                   />
                   <input
                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
@@ -323,7 +332,7 @@ export default function LandingClient({ id }: { id: string }) {
                     onChange={(e) => setPhone(formatPhone(normalizePhone(e.target.value).slice(0, 10)))}
                   />
                 </div>
-                <p className="text-[10px] text-gray-400 text-center mt-3">Fill this out before clicking the review button above if you'd like us to stay in touch!</p>
+                <p className="text-[10px] text-gray-400 text-center mt-3">We'll use this to keep you updated on special offers!</p>
               </div>
             </div>
           )}
