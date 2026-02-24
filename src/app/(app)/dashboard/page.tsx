@@ -291,6 +291,7 @@ function DashboardContent() {
           qrScans={planUsage.qrScans}
           isUnlimited={planUsage.isUnlimited}
           isPro={isPro}
+          planStatus={planStatus}
         />
       </div>
 
