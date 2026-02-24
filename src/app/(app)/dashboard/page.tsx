@@ -19,6 +19,7 @@ import { onAuthStateChanged } from "firebase/auth";
 type Business = {
   id: string | null;
   name: string;
+  slug?: string | null;
   review_link?: string | null;
   google_maps_write_review_uri?: string | null;
   contact_phone?: string | null;
@@ -121,8 +122,10 @@ function DashboardContent() {
   const landingUrl = useMemo(() => {
     if (!business?.id) return '';
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.reviewsandmarketing.com';
-    return `${origin}/r/${business.id}?source=main-qr`;
-  }, [business?.id]);
+    // Use slug if available, otherwise fallback to id
+    const path = business.slug || business.id;
+    return `${origin}/r/${path}?source=main-qr`;
+  }, [business?.id, business?.slug]);
 
   const isFromEdit = searchParams?.get('from') === 'edit';
 
