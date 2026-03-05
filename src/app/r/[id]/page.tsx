@@ -17,8 +17,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .maybeSingle();
 
   if (!biz) {
+    // Try slug lookup if UUID lookup fails
+    const { data: slugBiz } = await supa
+      .from('businesses')
+      .select('name, landing_headline, landing_subheading')
+      .eq('slug', id)
+      .maybeSingle();
+      
+    if (slugBiz) {
+      const title = `${slugBiz.name} — Review & Feedback`;
+      const description = slugBiz.landing_headline || `Share your experience with ${slugBiz.name}. Your feedback helps us grow!`;
+
+      return {
+        title: {
+          absolute: title,
+        },
+        description,
+        openGraph: {
+          title,
+          description,
+          type: 'website',
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title,
+          description,
+        },
+      };
+    }
+
     return {
-      title: 'Reviews & Marketing',
+      title: 'Review & Feedback',
       description: 'Share your feedback and help us improve.',
     };
   }
