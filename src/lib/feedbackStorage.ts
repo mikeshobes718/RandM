@@ -91,6 +91,21 @@ export async function ensureFeedbackTables(): Promise<void> {
         create index if not exists ix_review_events_business_created on review_events (business_id, created_at desc);
         create index if not exists ix_review_events_event_created on review_events (event, created_at desc);
       `);
+
+      // Add contact_messages table for logging direct outreach
+      await client.query(`
+        create table if not exists contact_messages (
+          id uuid primary key default gen_random_uuid(),
+          business_id uuid not null references businesses(id) on delete cascade,
+          contact text not null,
+          channel text not null check (channel in ('email', 'sms')),
+          content text not null,
+          status text not null default 'sent',
+          error_message text,
+          created_at timestamptz default now()
+        );
+        create index if not exists ix_contact_messages_business_contact on contact_messages (business_id, contact);
+      `);
     } finally {
       client.release();
       await pool.end();
