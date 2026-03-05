@@ -106,6 +106,9 @@ export async function ensureFeedbackTables(): Promise<void> {
         );
         create index if not exists ix_contact_messages_business_contact on contact_messages (business_id, contact);
       `);
+
+      // Tell PostgREST to pick up any new tables/columns
+      await client.query(`NOTIFY pgrst, 'reload schema'`);
     } finally {
       client.release();
       await pool.end();
