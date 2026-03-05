@@ -479,8 +479,9 @@ export default function ContactsPage() {
                   Email
                 </button>
                 <button 
-                  onClick={() => handleBulkContact('sms')}
-                  className="h-9 sm:h-11 px-3 sm:px-6 bg-brand/5 text-brand text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/10 transition-colors flex items-center gap-2 flex-1 sm:flex-none justify-center"
+                  disabled
+                  className="h-9 sm:h-11 px-3 sm:px-6 bg-slate-100 text-slate-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-2 flex-1 sm:flex-none justify-center cursor-not-allowed opacity-60"
+                  title="SMS coming soon"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
                   SMS
@@ -616,9 +617,9 @@ export default function ContactsPage() {
                           )}
                           {contact.phone && (
                             <button 
-                              onClick={() => handleIndividualContact(contact, 'sms')}
-                              className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-brand/5 text-brand flex items-center justify-center hover:bg-brand/10 transition-colors"
-                              title="SMS"
+                              disabled
+                              className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center cursor-not-allowed opacity-60"
+                              title="SMS coming soon"
                             >
                               <svg className="w-3.5 h-3.5 sm:w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
                             </button>
