@@ -7,21 +7,17 @@ const ServerEnvSchema = z.object({
   STRIPE_PUBLISHABLE_KEY: z.string().min(1),
   STRIPE_PRICE_ID: z.string().min(1),
   STRIPE_YEARLY_PRICE_ID: z.string().optional(),
-  STRIPE_MID_PRICE_ID: z.string().optional(),
-  STRIPE_MID_YEARLY_PRICE_ID: z.string().optional(),
-  STRIPE_CONCIERGE_PRICE_ID: z.string().optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().min(1),
   STRIPE_PORTAL_CONFIGURATION_ID: z.string().optional(),
 
-  POSTMARK_SERVER_TOKEN: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
-  RESEND_API_KEY: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
+  POSTMARK_SERVER_TOKEN: z.string().min(1),
+  RESEND_API_KEY: z.string().min(1).optional(),
   EMAIL_FROM: z.string().email(),
 
   GOOGLE_MAPS_API_KEY: z.string().min(1),
 
-  SQUARE_APPLICATION_ID: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
-  SQUARE_APPLICATION_SECRET: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
-  SQUARE_WEBHOOK_SIGNATURE_KEY: z.preprocess((v) => (v === '' ? undefined : v), z.string().min(1).optional()),
+  SQUARE_APPLICATION_ID: z.string().min(1).optional(),
+  SQUARE_APPLICATION_SECRET: z.string().min(1).optional(),
 
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
@@ -50,13 +46,6 @@ const ServerEnvSchema = z.object({
   FIREBASE_CLIENT_X509_CERT_URL: z.string().url().optional(),
   FIREBASE_UNIVERSE_DOMAIN: z.string().min(1).optional(),
 
-  // Twilio SMS configuration
-  TWILIO_ACCOUNT_SID: z.string().min(1).optional(),
-  TWILIO_AUTH_TOKEN: z.string().min(1).optional(),
-  TWILIO_API_KEY_SID: z.string().min(1).optional(),
-  TWILIO_API_KEY_SECRET: z.string().min(1).optional(),
-  TWILIO_PHONE_NUMBER: z.string().min(1).optional(),
-
   // Admin portal configuration
   ADMIN_TOKEN: z.string().min(1).optional(),
 });
@@ -73,7 +62,6 @@ export function getEnv(): ServerEnv {
     const issues = parsed.error.issues
       .map((i) => `${i.path.join('.')}: ${i.message}`)
       .join(', ');
-    console.error(`❌ Missing/invalid server env: ${issues}`);
     throw new Error(`Missing/invalid server env: ${issues}`);
   }
   _env = parsed.data;

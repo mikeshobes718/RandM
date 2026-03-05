@@ -76,25 +76,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Record campaign
-    await supa.from('campaigns').insert({
-      business_id: biz.id,
-      name: `Direct Email Outreach: ${subject} (${sentCount} sent)`,
-      type: 'Email',
-      body: message,
-      status: 'completed',
-      sent_count: sentCount,
-      click_count: 0,
-      metadata: { failed_count: failedCount, last_error: lastError, recipients: recipientDetails },
-    });
-
-    // Log individual messages to contact_messages for per-contact history
+    // Log EVERY attempt (sent + failed) to contact_messages BEFORE campaign insert.
+    // This ensures failed attempts are logged even if campaign insert throws.
     if (recipientDetails.length > 0) {
       try {
-        // Ensure the contact_messages table exists (creates it + notifies PostgREST)
         await ensureFeedbackTables();
       } catch {
-        // Migration may fail if DB credentials aren't configured; continue anyway
+        /* migration may fail; continue */
       }
       try {
         const messageLogs = recipientDetails.map(r => ({
@@ -105,14 +93,30 @@ export async function POST(req: NextRequest) {
           status: r.status,
           error_message: r.error || null,
         }));
+        console.log("INSERTING INTO CONTACT_MESSAGES", JSON.stringify(messageLogs, null, 2));
         const { error: insertErr } = await supa.from('contact_messages').insert(messageLogs);
         if (insertErr) {
           console.error('[send-email] Failed to log messages via REST:', insertErr.message);
+        } else {
+          console.log("[send-email] Successfully logged messages to contact_messages");
         }
       } catch (e) {
         console.error('[send-email] Failed to log messages:', e);
+        /* do not rethrow — logging failure must not break the main send flow */
       }
     }
+
+    // Record campaign (after logging so a campaign insert failure doesn't prevent message logs)
+    await supa.from('campaigns').insert({
+      business_id: biz.id,
+      name: `Direct Email Outreach: ${subject} (${sentCount} sent)`,
+      type: 'Email',
+      body: message,
+      status: 'completed',
+      sent_count: sentCount,
+      click_count: 0,
+      metadata: { failed_count: failedCount, last_error: lastError, recipients: recipientDetails },
+    });
 
     if (sentCount === 0 && failedCount > 0) {
       return NextResponse.json({ error: `Failed to send emails. ${lastError || 'Check email addresses.'}` }, { status: 500 });
