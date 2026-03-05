@@ -38,6 +38,10 @@ type Analytics = {
 };
 
 export default function ProAnalytics({ data }: { data: Analytics }) {
+  const [showSources, setShowSources] = useState(false);
+  const [showReviews, setShowReviews] = useState(true);
+  const [showScans, setShowScans] = useState(true);
+
   const lineData = {
     labels: data.history.map(h => {
         const d = new Date(h.date);
@@ -51,6 +55,7 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
         backgroundColor: 'rgba(79, 70, 229, 0.1)',
         fill: true,
         tension: 0.4,
+        hidden: !showReviews,
       },
       {
         label: 'Scans',
@@ -59,6 +64,7 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         fill: true,
         tension: 0.4,
+        hidden: !showScans,
       }
     ]
   };
@@ -160,8 +166,6 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
         .slice(0, 5)
     : [];
 
-  const [showSources, setShowSources] = useState(false);
-
   return (
     <div className="space-y-6 mt-12">
       {/* Conversion Funnel Row */}
@@ -221,14 +225,20 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
               <p className="text-xs text-muted font-medium mt-1">Daily reviews and scans for the last 30 days.</p>
             </div>
             <div className="flex gap-4">
-              <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setShowReviews(!showReviews)}
+                className={`flex items-center gap-2 transition-opacity ${!showReviews ? 'opacity-40' : 'hover:opacity-80'}`}
+              >
                 <span className="w-3 h-3 rounded-full bg-brand"></span>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted">Reviews</span>
-              </div>
-              <div className="flex items-center gap-2">
+              </button>
+              <button 
+                onClick={() => setShowScans(!showScans)}
+                className={`flex items-center gap-2 transition-opacity ${!showScans ? 'opacity-40' : 'hover:opacity-80'}`}
+              >
                 <span className="w-3 h-3 rounded-full bg-emerald-500"></span>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted">Scans</span>
-              </div>
+              </button>
             </div>
           </div>
           <div className="h-64">
