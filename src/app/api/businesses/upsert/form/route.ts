@@ -165,29 +165,30 @@ export async function POST(req: Request) {
   maybeAssign('contact_phone', 'contact_phone');
 
   let { error }: { error: PostgrestError | null } = await supabase.from('businesses').upsert(payloadRow, { onConflict: 'owner_uid' });
+  
+  // Fallback if upsert fails (e.g., if owner_uid is not a unique constraint but we want to treat it as one)
   if (error && /ON CONFLICT/.test((error as { message?: string }).message || '')) {
     try {
-      const inserted = await supabase
-        .from('businesses')
-        .insert({
-          owner_uid: uid!,
-          name: payload.name,
-          google_place_id: payload.google_place_id,
-          review_link: payload.review_link,
-          google_rating: payload.google_rating,
-          updated_at: new Date().toISOString(),
-        })
-        .select('id')
-        .single();
-      if (!inserted.error && inserted.data?.id) {
-        await supabase
+      // Find existing business
+      const { data: existing } = await supabase.from('businesses').select('id').eq('owner_uid', uid!).maybeSingle();
+      
+      if (existing) {
+        // Update existing to prevent data loss (cascading deletes)
+        const { error: updateError } = await supabase
           .from('businesses')
-          .delete()
-          .eq('owner_uid', uid!)
-          .neq('id', inserted.data.id);
-        error = null;
+          .update(payloadRow)
+          .eq('id', existing.id);
+        error = updateError;
+      } else {
+        // Insert new
+        const { error: insertError } = await supabase
+          .from('businesses')
+          .insert(payloadRow);
+        error = insertError;
       }
-    } catch {}
+    } catch (e: any) {
+      error = e;
+    }
   }
   if (error) return new NextResponse(error.message, { status: 500 });
   
