@@ -56,7 +56,7 @@ export default function ContactsPage() {
   const [contactHistory, setContactHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  const viewHistory = async (contact: Contact) => {
+    const viewHistory = async (contact: Contact) => {
     setHistoryContact(contact);
     setLoadingHistory(true);
     try {
@@ -64,13 +64,16 @@ export default function ContactsPage() {
       if (!authUser) return;
       const token = await authUser.getIdToken();
       
-      const identifier = contact.email || contact.phone;
-      if (!identifier) {
+      if (!contact.email && !contact.phone) {
         setContactHistory([]);
         return;
       }
       
-      const res = await fetch(`/api/contacts/messages?contact=${encodeURIComponent(identifier)}`, {
+      const params = new URLSearchParams();
+      if (contact.email) params.append('email', contact.email);
+      if (contact.phone) params.append('phone', contact.phone);
+
+      const res = await fetch(`/api/contacts/messages?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
