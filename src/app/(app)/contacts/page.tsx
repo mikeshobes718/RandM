@@ -52,19 +52,44 @@ export default function ContactsPage() {
   const [recipientSearch, setRecipientSearch] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [historyContact, setHistoryContact] = useState<Contact | null>(null);
+  const [contactHistory, setContactHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const viewHistory = async (contact: Contact) => {
+    setHistoryContact(contact);
+    setLoadingHistory(true);
+    try {
+      const authUser = user;
+      if (!authUser) return;
+      const token = await authUser.getIdToken();
+      
+      const identifier = contact.email || contact.phone;
+      if (!identifier) {
+        setContactHistory([]);
+        return;
+      }
+      
+      const res = await fetch(`/api/contacts/messages?contact=${encodeURIComponent(identifier)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setContactHistory(data.messages || []);
+      }
+    } catch (e) {
+      console.error('Failed to load history', e);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
   useEffect(() => {
     const auth = getAuth(app);
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
         fetchContacts(firebaseUser);
-        
-        // Auto-open outreach modal if requested via query param
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('outreach') === '1') {
-          setContactType('email');
-          setShowContactModal(true);
-        }
       } else {
         setLoading(false);
       }
@@ -598,6 +623,13 @@ export default function ContactsPage() {
                               <svg className="w-3.5 h-3.5 sm:w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
                             </button>
                           )}
+                          <button 
+                            onClick={() => viewHistory(contact)}
+                            className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition-colors ml-1"
+                            title="View Message History"
+                          >
+                            <svg className="w-3.5 h-3.5 sm:w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                          </button>
                         </div>
                       </td>
                       <td className="px-6 sm:px-10 py-4 sm:py-6 text-right text-slate-400 text-[10px] sm:text-xs font-bold">
@@ -906,6 +938,73 @@ export default function ContactsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* History Modal */}
+      {historyContact && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
+            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+              <div>
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Message History</h3>
+                <p className="text-xs text-slate-400 font-medium mt-1">
+                  {historyContact.name || 'Unnamed'} • {historyContact.email || formatPhoneDisplay(historyContact.phone || '')}
+                </p>
+              </div>
+              <button 
+                onClick={() => setHistoryContact(null)}
+                className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div className="p-8 overflow-y-auto flex-1 bg-slate-50/30">
+              {loadingHistory ? (
+                <div className="flex justify-center py-12">
+                  <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full"></div>
+                </div>
+              ) : contactHistory.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100 text-xl">
+                    💬
+                  </div>
+                  <p className="text-xs font-black text-slate-900 uppercase tracking-widest mb-1">No messages yet</p>
+                  <p className="text-[10px] text-slate-400 font-medium">You haven't sent any direct outreach to this contact.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {contactHistory.map((msg, i) => (
+                    <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${msg.channel === 'sms' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                            {msg.channel}
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-400">
+                            {new Date(msg.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${msg.status === 'sent' ? 'text-emerald-500' : 'text-red-500'}`}>
+                          {msg.status}
+                        </span>
+                      </div>
+                      <div className="text-sm text-slate-700 whitespace-pre-wrap font-medium bg-slate-50 p-4 rounded-xl border border-slate-100/50">
+                        {msg.content}
+                      </div>
+                      {msg.error_message && (
+                        <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-600 font-medium">
+                          <span className="font-bold uppercase tracking-widest text-[9px] block mb-1">Error</span>
+                          {msg.error_message}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
