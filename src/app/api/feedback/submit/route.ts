@@ -108,27 +108,39 @@ export async function POST(req: Request) {
   }
 
   const supa = getSupabaseAdmin();
-  const baseColumns = 'id,name,google_maps_write_review_uri,review_link';
-  let { data: biz, error } = await supa
-    .from('businesses')
-    .select(baseColumns)
-    .eq('id', finalBusinessId)
-    .maybeSingle();
+  const baseColumns = 'id,name,slug,google_maps_write_review_uri,review_link';
+  
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  let biz: any = null;
+  let error: any = null;
+
+  if (uuidRegex.test(finalBusinessId)) {
+    const res = await supa.from('businesses').select(baseColumns).eq('id', finalBusinessId).maybeSingle();
+    biz = res.data;
+    error = res.error;
+  } else {
+    const res = await supa.from('businesses').select(baseColumns).eq('slug', finalBusinessId).maybeSingle();
+    biz = res.data;
+    error = res.error;
+  }
 
   if (error && /column/.test(error.message || '')) {
     const fallback = await supa
       .from('businesses')
       .select('id,name,review_link')
-      .eq('id', finalBusinessId)
+      .eq(uuidRegex.test(finalBusinessId) ? 'id' : 'slug', finalBusinessId)
       .maybeSingle();
     if (fallback.data) {
-      biz = fallback.data as typeof biz;
+      biz = fallback.data;
       error = fallback.error ?? null;
     }
   }
 
   if (error) return new NextResponse(error.message, { status: 500 });
   if (!biz) return new NextResponse('not found', { status: 404 });
+
+  // Use the actual UUID for all database inserts
+  const actualBusinessId = biz.id;
 
   try { await ensureFeedbackTables(); } catch {}
 
@@ -138,7 +150,7 @@ export async function POST(req: Request) {
       const { data, error: insertError } = await supa
         .from('feedback')
         .insert({
-          business_id: finalBusinessId,
+          business_id: actualBusinessId,
           rating: normalizedRating,
           name: sanitizedName || null,
           email: sanitizedEmail || null,
@@ -162,7 +174,7 @@ export async function POST(req: Request) {
   if (sanitizedEmail || sanitizedPhoneDigits) {
     try {
       // Try to find by email OR phone depending on what we have
-      let query = supa.from('contacts').select('id, name, email, phone').eq('business_id', finalBusinessId);
+      let query = supa.from('contacts').select('id, name, email, phone').eq('business_id', actualBusinessId);
       
       if (sanitizedEmail && sanitizedPhoneDigits) {
         query = query.or(`email.eq.${sanitizedEmail},phone.eq.${sanitizedPhoneDigits}`);
@@ -177,7 +189,7 @@ export async function POST(req: Request) {
       if (!existing) {
         // Create new contact
         await supa.from('contacts').insert({
-          business_id: finalBusinessId,
+          business_id: actualBusinessId,
           email: sanitizedEmail || null,
           name: sanitizedName || 'Unknown',
           phone: sanitizedPhoneDigits || null,
