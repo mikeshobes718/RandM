@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
+import { ensureFeedbackTables } from '@/lib/feedbackStorage';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +36,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Contact identifier required' }, { status: 400 });
     }
 
+    // Ensure the table exists before querying
+    try { await ensureFeedbackTables(); } catch {}
+
     const { data, error } = await supa
       .from('contact_messages')
       .select('*')
@@ -42,9 +46,15 @@ export async function GET(req: NextRequest) {
       .eq('contact', contact)
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    // If the table doesn't exist yet, return empty instead of erroring
+    if (error) {
+      if (/relation|does not exist|contact_messages/.test(error.message || '')) {
+        return NextResponse.json({ messages: [] });
+      }
+      throw error;
+    }
 
-    return NextResponse.json({ messages: data });
+    return NextResponse.json({ messages: data || [] });
   } catch (err: any) {
     console.error('[contacts/messages] Error:', err);
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
