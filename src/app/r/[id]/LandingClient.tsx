@@ -421,6 +421,13 @@ export default function LandingClient({ id }: { id: string }) {
             </div>
           )}
         </div>
+
+        {/* Compliance Disclaimer */}
+        <div className="mt-8 text-center px-4">
+          <p className="text-[10px] text-gray-500/80 font-medium leading-relaxed max-w-sm mx-auto">
+            Your feedback is private and handled in accordance with our Privacy Policy. We value honest feedback and do not incentivize or gate reviews.
+          </p>
+        </div>
       </div>
     </main>
   );
