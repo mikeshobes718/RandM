@@ -11,6 +11,7 @@ interface Campaign {
   clicks: number;
   failed?: number;
   lastError?: string;
+  recipients?: { contact: string; status: 'sent' | 'failed'; error?: string }[];
   date: string;
 }
 
@@ -35,6 +36,11 @@ export default function ReviewRequestsModule({
 }: ReviewRequestsModuleProps) {
 
   const [resending, setResending] = useState<string | null>(null);
+  const [expandedRow, setExpandedRow] = useState<number | null>(null);
+
+  const toggleRow = (index: number) => {
+    setExpandedRow(expandedRow === index ? null : index);
+  };
 
   const handleResend = async (campaignId: string) => {
     if (!confirm('Resend this campaign to all contacts?')) return;
@@ -175,61 +181,94 @@ export default function ReviewRequestsModule({
         ) : (
           <div className="space-y-2">
             {recentCampaigns.map((c, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group hover:border-brand/30 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm text-sm border border-slate-100 group-hover:scale-110 transition-transform">
-                    {c.type?.toLowerCase() === 'sms' ? '📱' : '✉️'}
-                  </div>
-                  <div>
-                    <p className="text-xs font-black text-slate-900">{c.name}</p>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase">{new Date(c.date).toLocaleDateString()} • {c.type || 'Email'}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="flex flex-col items-end">
-                      <p className="text-xs font-black text-slate-900">{c.sent} sent</p>
-                      {c.failed > 0 && (
-                        <div className="group/err relative">
-                          <p className="text-[8px] font-bold text-red-500 uppercase tracking-tight cursor-help">{c.failed} failed</p>
-                          {c.lastError && (
-                            <div className="absolute right-0 bottom-full mb-2 w-48 p-2 bg-slate-900 text-white text-[8px] rounded shadow-xl opacity-0 group-hover/err:opacity-100 transition-opacity z-50 pointer-events-none">
-                              {c.lastError}
-                            </div>
-                          )}
-                        </div>
-                      )}
+              <div key={i} className="flex flex-col bg-slate-50 rounded-xl border border-slate-100 group hover:border-brand/30 transition-all overflow-hidden">
+                <div 
+                  className="flex items-center justify-between p-3 cursor-pointer"
+                  onClick={() => toggleRow(i)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm text-sm border border-slate-100 group-hover:scale-110 transition-transform">
+                      {c.type?.toLowerCase() === 'sms' ? '📱' : '✉️'}
                     </div>
-                    <p className="text-[9px] font-bold text-brand uppercase tracking-widest">{c.clicks} clicks</p>
+                    <div>
+                      <p className="text-xs font-black text-slate-900">{c.name}</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase">{new Date(c.date).toLocaleDateString()} • {c.type || 'Email'}</p>
+                    </div>
                   </div>
-                  {c.id && (
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="flex flex-col items-end">
+                        <p className="text-xs font-black text-slate-900">{c.sent} sent</p>
+                        {c.failed && c.failed > 0 ? (
+                          <p className="text-[8px] font-bold text-red-500 uppercase tracking-tight">{c.failed} failed</p>
+                        ) : null}
+                      </div>
+                      <p className="text-[9px] font-bold text-brand uppercase tracking-widest">{c.clicks} clicks</p>
+                    </div>
                     <div className="flex items-center gap-1">
-                      <button 
-                        onClick={() => handleResend(c.id!)}
-                        disabled={resending === c.id}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-brand hover:bg-brand/5 transition-all"
-                        title="Resend this campaign"
-                      >
-                        {resending === c.id ? (
-                          <div className="w-3 h-3 border-2 border-brand border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                        )}
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteCampaign(c.id!)}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all ml-2"
-                      title="Delete campaign record"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      {c.id && (
+                        <>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleResend(c.id!); }}
+                            disabled={resending === c.id}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-brand hover:bg-brand/5 transition-all"
+                            title="Resend this campaign"
+                          >
+                            {resending === c.id ? (
+                              <div className="w-3 h-3 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                            )}
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); handleDeleteCampaign(c.id!); }}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all ml-1"
+                            title="Delete campaign record"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </>
+                      )}
+                      <svg className={`w-4 h-4 text-slate-400 transition-transform ${expandedRow === i ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
-                    </button>
                     </div>
-                  )}
+                  </div>
                 </div>
+                
+                {/* Expanded Details */}
+                {expandedRow === i && (
+                  <div className="px-4 pb-4 pt-2 border-t border-slate-100/50 bg-white/50">
+                    {c.lastError && (
+                      <div className="mb-3 p-2 bg-red-50/50 border border-red-100 rounded-lg">
+                        <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-1">Error Detail</p>
+                        <p className="text-[11px] text-red-500">{c.lastError}</p>
+                      </div>
+                    )}
+                    
+                    {c.recipients && c.recipients.length > 0 ? (
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Recipients</p>
+                        <div className="space-y-1.5 max-h-32 overflow-y-auto pr-2">
+                          {c.recipients.map((r, idx) => (
+                            <div key={idx} className="flex items-center justify-between text-[11px]">
+                              <span className="text-slate-600 font-medium truncate pr-4">{r.contact}</span>
+                              <span className={`flex-shrink-0 font-bold ${r.status === 'sent' ? 'text-emerald-500' : 'text-red-500'}`}>
+                                {r.status === 'sent' ? 'Sent' : 'Failed'}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-[10px] text-slate-400 italic">No recipient details available for this campaign.</p>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
