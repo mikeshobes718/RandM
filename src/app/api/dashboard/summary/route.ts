@@ -458,6 +458,7 @@ export async function GET(req: NextRequest) {
           clicks: c.click_count || 0,
           failed: (c.metadata as any)?.failed_count || 0,
           lastError: (c.metadata as any)?.last_error || null,
+          recipients: (c.metadata as any)?.recipients || [],
           date: c.created_at
         }));
       }
