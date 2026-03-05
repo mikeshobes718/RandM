@@ -30,21 +30,27 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const contact = searchParams.get('contact');
+    const email = searchParams.get('email');
+    const phone = searchParams.get('phone');
 
-    if (!contact) {
+    if (!email && !phone) {
       return NextResponse.json({ error: 'Contact identifier required' }, { status: 400 });
     }
 
     // Ensure the table exists before querying
     try { await ensureFeedbackTables(); } catch {}
 
-    const { data, error } = await supa
-      .from('contact_messages')
-      .select('*')
-      .eq('business_id', biz.id)
-      .eq('contact', contact)
-      .order('created_at', { ascending: false });
+    let query = supa.from('contact_messages').select('*').eq('business_id', biz.id);
+    
+    if (email && phone) {
+      query = query.or(`contact.eq.${email},contact.eq.${phone}`);
+    } else if (email) {
+      query = query.eq('contact', email);
+    } else if (phone) {
+      query = query.eq('contact', phone);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     // If the table doesn't exist yet, return empty instead of erroring
     if (error) {
