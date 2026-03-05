@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
     let sentCount = 0;
     let failedCount = 0;
     let lastError: string | null = null;
+    const recipientDetails: { contact: string; status: 'sent' | 'failed'; error?: string }[] = [];
 
     for (const phone of recipients) {
       try {
@@ -83,10 +84,12 @@ export async function POST(req: NextRequest) {
           to: toFormatted,
         });
         sentCount++;
+        recipientDetails.push({ contact: phone, status: 'sent' });
       } catch (e: any) {
         console.error(`[send-sms] Failed for ${phone}:`, e.message);
         failedCount++;
         lastError = e.message;
+        recipientDetails.push({ contact: phone, status: 'failed', error: lastError });
       }
     }
 
@@ -99,7 +102,7 @@ export async function POST(req: NextRequest) {
       status: 'completed',
       sent_count: sentCount,
       click_count: 0,
-      metadata: { failed_count: failedCount, last_error: lastError },
+      metadata: { failed_count: failedCount, last_error: lastError, recipients: recipientDetails },
     });
 
     if (sentCount === 0 && failedCount > 0) {
