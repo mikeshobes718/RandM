@@ -106,10 +106,24 @@ export async function GET(req: NextRequest) {
     
     // Auto-generate slug if missing (backfill for existing businesses)
     if (biz && !biz.slug && biz.name) {
-      const generatedSlug = biz.name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 50);
+      let finalSlug = biz.name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 50) || 'business';
       try {
-        await supa.from('businesses').update({ slug: generatedSlug }).eq('id', biz.id);
-        biz.slug = generatedSlug;
+        let isUnique = false;
+        let counter = 1;
+        let testSlug = finalSlug;
+        
+        while (!isUnique && counter < 10) {
+          const { data: conflict } = await supa.from('businesses').select('id').eq('slug', testSlug).maybeSingle();
+          if (!conflict || conflict.id === biz.id) {
+            isUnique = true;
+            finalSlug = testSlug;
+          } else {
+            counter++;
+            testSlug = `${finalSlug}-${counter}`;
+          }
+        }
+        await supa.from('businesses').update({ slug: finalSlug }).eq('id', biz.id);
+        biz.slug = finalSlug;
       } catch {}
     }
     
