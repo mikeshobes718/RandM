@@ -93,6 +93,26 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Log EVERY attempt (sent + failed) to contact_messages BEFORE campaign insert
+    if (recipientDetails.length > 0) {
+      try {
+        const messageLogs = recipientDetails.map(r => ({
+          business_id: biz.id,
+          contact: r.contact,
+          channel: 'sms' as const,
+          content: finalMessage,
+          status: r.status,
+          error_message: r.error || null,
+        }));
+        const { error: insertErr } = await supa.from('contact_messages').insert(messageLogs);
+        if (insertErr) {
+          console.error('[send-sms] Failed to log messages via REST:', insertErr.message);
+        }
+      } catch (e) {
+        console.error('[send-sms] Failed to log messages:', e);
+      }
+    }
+
     // Record campaign
     await supa.from('campaigns').insert({
       business_id: biz.id,
@@ -104,23 +124,6 @@ export async function POST(req: NextRequest) {
       click_count: 0,
       metadata: { failed_count: failedCount, last_error: lastError, recipients: recipientDetails },
     });
-
-    // Log individual messages
-    if (recipientDetails.length > 0) {
-      try {
-        const messageLogs = recipientDetails.map(r => ({
-          business_id: biz.id,
-          contact: r.contact,
-          channel: 'sms',
-          content: finalMessage,
-          status: r.status,
-          error_message: r.error || null,
-        }));
-        await supa.from('contact_messages').insert(messageLogs);
-      } catch (e) {
-        console.error('[send-sms] Failed to log messages:', e);
-      }
-    }
 
     if (sentCount === 0 && failedCount > 0) {
       return NextResponse.json({ error: `Failed to send SMS. ${lastError || 'Check phone numbers.'}` }, { status: 500 });
