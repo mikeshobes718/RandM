@@ -243,29 +243,32 @@ export default function ReviewRequestsModule({
                 {/* Expanded Details */}
                 {expandedRow === i && (
                   <div className="px-4 pb-4 pt-2 border-t border-slate-100/50 bg-white/50">
-                    {c.lastError && (
-                      <div className="mb-3 p-2 bg-red-50/50 border border-red-100 rounded-lg">
-                        <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-1">Error Detail</p>
-                        <p className="text-[11px] text-red-500">{c.lastError}</p>
-                      </div>
-                    )}
-                    
                     {c.recipients && c.recipients.length > 0 ? (
                       <div>
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Recipients</p>
-                        <div className="space-y-1.5 max-h-32 overflow-y-auto pr-2">
+                        <div className="space-y-1.5 max-h-40 overflow-y-auto pr-2">
                           {c.recipients.map((r, idx) => (
-                            <div key={idx} className="flex items-center justify-between text-[11px]">
-                              <span className="text-slate-600 font-medium truncate pr-4">{r.contact}</span>
-                              <span className={`flex-shrink-0 font-bold ${r.status === 'sent' ? 'text-emerald-500' : 'text-red-500'}`}>
-                                {r.status === 'sent' ? 'Sent' : 'Failed'}
-                              </span>
+                            <div key={idx} className={`flex flex-col gap-0.5 text-[11px] p-2 rounded-lg ${r.status === 'failed' ? 'bg-red-50/60' : 'bg-slate-50/60'}`}>
+                              <div className="flex items-center justify-between">
+                                <span className="text-slate-600 font-medium truncate pr-4">{r.contact}</span>
+                                <span className={`flex-shrink-0 text-[9px] font-black uppercase tracking-widest ${r.status === 'sent' ? 'text-emerald-500' : 'text-red-500'}`}>
+                                  {r.status === 'sent' ? 'Delivered' : 'Failed'}
+                                </span>
+                              </div>
+                              {r.status === 'failed' && r.error && (
+                                <p className="text-[10px] text-red-400 mt-0.5">{r.error}</p>
+                              )}
                             </div>
                           ))}
                         </div>
                       </div>
+                    ) : c.lastError ? (
+                      <div className="p-3 bg-red-50/50 border border-red-100 rounded-lg">
+                        <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest mb-1">Error Detail</p>
+                        <p className="text-[11px] text-red-500">{c.lastError}</p>
+                      </div>
                     ) : (
-                      <p className="text-[10px] text-slate-400 italic">No recipient details available for this campaign.</p>
+                      <p className="text-[10px] text-slate-400 italic">No detailed data available for this campaign. Campaigns sent after this update will include per-recipient status.</p>
                     )}
                   </div>
                 )}
