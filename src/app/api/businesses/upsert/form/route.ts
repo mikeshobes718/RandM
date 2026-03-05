@@ -106,18 +106,50 @@ export async function POST(req: Request) {
   } catch {}
 
   // Auto-generate a URL-friendly slug from the business name
-  const generateSlug = (name: string) =>
-    name.toLowerCase()
+  const generateSlug = (name: string) => {
+    const base = name.toLowerCase()
       .replace(/[^a-z0-9\s-]/g, '')
       .trim()
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
       .slice(0, 50);
+    return base || 'business';
+  };
+
+  let finalSlug = generateSlug(payload.name);
+  
+  // Check for existing slug and handle collisions
+  try {
+    const { data: existingBiz } = await supabase.from('businesses').select('id, slug').eq('owner_uid', uid!).maybeSingle();
+    
+    // If they already have a slug, keep it unless they changed their name significantly
+    if (existingBiz && existingBiz.slug) {
+      finalSlug = existingBiz.slug;
+    } else {
+      // Need to generate a new unique slug
+      let isUnique = false;
+      let counter = 1;
+      let testSlug = finalSlug;
+      
+      while (!isUnique && counter < 10) {
+        const { data: conflict } = await supabase.from('businesses').select('id').eq('slug', testSlug).maybeSingle();
+        if (!conflict || (existingBiz && conflict.id === existingBiz.id)) {
+          isUnique = true;
+          finalSlug = testSlug;
+        } else {
+          counter++;
+          testSlug = `${finalSlug}-${counter}`;
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error checking slug collision:', e);
+  }
 
   const payloadRow: Record<string, unknown> = {
     owner_uid: uid!,
     name: payload.name,
-    slug: generateSlug(payload.name),
+    slug: finalSlug,
     updated_at: new Date().toISOString(),
   };
   const maybeAssign = <K extends keyof Payload>(key: K, target: string) => {
