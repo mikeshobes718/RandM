@@ -87,6 +87,23 @@ export async function POST(req: NextRequest) {
       metadata: { failed_count: failedCount, last_error: lastError, recipients: recipientDetails },
     });
 
+    // Log individual messages
+    if (recipientDetails.length > 0) {
+      try {
+        const messageLogs = recipientDetails.map(r => ({
+          business_id: biz.id,
+          contact: r.contact,
+          channel: 'email',
+          content: `Subject: ${subject}\n\n${message}`,
+          status: r.status,
+          error_message: r.error || null,
+        }));
+        await supa.from('contact_messages').insert(messageLogs);
+      } catch (e) {
+        console.error('[send-email] Failed to log messages:', e);
+      }
+    }
+
     if (sentCount === 0 && failedCount > 0) {
       return NextResponse.json({ error: `Failed to send emails. ${lastError || 'Check email addresses.'}` }, { status: 500 });
     }
