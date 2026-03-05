@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { sendEmail } from '@/lib/emailService';
 import { directOutreachEmail } from '@/lib/emailTemplates';
+import { ensureFeedbackTables } from '@/lib/feedbackStorage';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,18 +88,27 @@ export async function POST(req: NextRequest) {
       metadata: { failed_count: failedCount, last_error: lastError, recipients: recipientDetails },
     });
 
-    // Log individual messages
+    // Log individual messages to contact_messages for per-contact history
     if (recipientDetails.length > 0) {
+      try {
+        // Ensure the contact_messages table exists (creates it + notifies PostgREST)
+        await ensureFeedbackTables();
+      } catch {
+        // Migration may fail if DB credentials aren't configured; continue anyway
+      }
       try {
         const messageLogs = recipientDetails.map(r => ({
           business_id: biz.id,
           contact: r.contact,
-          channel: 'email',
+          channel: 'email' as const,
           content: `Subject: ${subject}\n\n${message}`,
           status: r.status,
           error_message: r.error || null,
         }));
-        await supa.from('contact_messages').insert(messageLogs);
+        const { error: insertErr } = await supa.from('contact_messages').insert(messageLogs);
+        if (insertErr) {
+          console.error('[send-email] Failed to log messages via REST:', insertErr.message);
+        }
       } catch (e) {
         console.error('[send-email] Failed to log messages:', e);
       }
