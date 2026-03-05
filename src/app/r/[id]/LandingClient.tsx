@@ -164,7 +164,7 @@ export default function LandingClient({ id }: { id: string }) {
 
   const headline = biz?.headline?.trim() || 'How was your experience today?';
   const subheading = biz?.subheading?.trim() || (biz?.name ? `Share your feedback with ${biz.name}.` : 'Your voice helps us improve.');
-  const displayName = biz?.name || (loading ? 'Loading…' : 'Reviews & Marketing');
+  const displayName = biz?.name || (loading ? '' : '');
 
   async function submit() {
     if (!biz || rating == null || submitting) return;
@@ -216,7 +216,6 @@ export default function LandingClient({ id }: { id: string }) {
         payload.comment = comment.trim();
         payload.consent = consent;
       } else {
-        // For 5-star reviews, if they leave contact info, we assume consent for offers
         payload.consent = !!(payload.email || payload.phone);
       }
       const res = await fetch('/api/feedback/submit', {
@@ -229,16 +228,15 @@ export default function LandingClient({ id }: { id: string }) {
         throw new Error(text || 'Unable to submit right now. Please try again.');
       }
       const data = await res.json();
-      if (rating >= 5 && data.redirect) {
-        // Open Google review page in a new tab
-        window.open(data.redirect as string, '_blank', 'noopener,noreferrer');
+      if (rating >= 5) {
+        const redirectUrl = data.redirect || biz.reviewLink;
+        if (redirectUrl) {
+          window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+        }
         setSubmitted(true);
         return;
       }
       setSubmitted(true);
-      if (rating >= 5) {
-        setError(null);
-      }
     } catch (e) {
       const message = e instanceof Error && e.message ? e.message : 'Something went wrong. Please try again.';
       setError(message);
@@ -264,7 +262,9 @@ export default function LandingClient({ id }: { id: string }) {
             </div>
           )}
           <div className="text-center space-y-2">
-            <div className="text-xs uppercase tracking-wide text-gray-500">{displayName}</div>
+            {displayName ? (
+              <h2 className="text-lg font-bold text-gray-800 tracking-tight">{displayName}</h2>
+            ) : null}
             <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">{headline}</h1>
             <p className="text-gray-600 text-sm sm:text-base">{subheading}</p>
           </div>
