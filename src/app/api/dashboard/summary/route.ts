@@ -464,17 +464,26 @@ export async function GET(req: NextRequest) {
         .limit(5);
       
       if (!campaignError && campaignData) {
-        recentCampaigns = campaignData.map(c => ({
-          id: c.id,
-          name: c.name,
-          type: c.type,
-          sent: c.sent_count || 0,
-          clicks: c.click_count || 0,
-          failed: (c.metadata as any)?.failed_count || 0,
-          lastError: (c.metadata as any)?.last_error || null,
-          recipients: (c.metadata as any)?.recipients || [],
-          date: c.created_at
-        }));
+        recentCampaigns = campaignData.map(c => {
+          let meta: any = c.metadata;
+          // Parse metadata if it was stored as a JSON string
+          if (typeof meta === 'string') {
+            try { meta = JSON.parse(meta); } catch { meta = {}; }
+          }
+          if (!meta || typeof meta !== 'object') meta = {};
+
+          return {
+            id: c.id,
+            name: c.name,
+            type: c.type,
+            sent: c.sent_count || 0,
+            clicks: c.click_count || 0,
+            failed: meta.failed_count || 0,
+            lastError: meta.last_error || null,
+            recipients: Array.isArray(meta.recipients) ? meta.recipients : [],
+            date: c.created_at,
+          };
+        });
       }
     } catch (e) {
       console.warn('[DASHBOARD API] Campaigns table might not exist yet');
