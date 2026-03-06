@@ -2,6 +2,8 @@ import LandingClient from './LandingClient';
 import { Metadata } from 'next';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
   params: Promise<{ id: string }>;
 };
@@ -25,6 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .maybeSingle();
       
     if (slugBiz) {
+      console.log(`[generateMetadata] Found business by slug: ${slugBiz.name}`);
       const title = `${slugBiz.name} — Share Your Feedback`;
       const description = slugBiz.landing_headline || `Share your experience with ${slugBiz.name}. Your feedback helps us grow!`;
 
@@ -47,12 +50,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
+    console.log(`[generateMetadata] Business not found for id/slug: ${id}`);
     return {
       title: 'Review & Feedback',
       description: 'Share your feedback and help us improve.',
     };
   }
 
+  console.log(`[generateMetadata] Found business by UUID: ${biz.name}`);
   const title = `${biz.name} — Share Your Feedback`;
   const description = biz.landing_headline || `Share your experience with ${biz.name}. Your feedback helps us grow!`;
 

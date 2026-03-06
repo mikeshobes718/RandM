@@ -46,65 +46,68 @@ export async function GET(req: Request) {
     
     // 1. Fetch private feedback (1-4 stars)
     let feedbackData: any[] = [];
-    try {
-      const { data } = await supa
-        .from('feedback')
-        .select('id,business_id,rating,name,email,phone,comment,marketing_consent,created_at,archived')
-        .in('business_id', ids)
-        .gte('created_at', since.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(limit);
-      if (data) feedbackData = data;
-    } catch (e) {
+    const { data: fData, error: fErr } = await supa
+      .from('feedback')
+      .select('id,business_id,rating,name,email,phone,comment,marketing_consent,created_at,archived')
+      .in('business_id', ids)
+      .gte('created_at', since.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(limit);
+      
+    if (fData) {
+      feedbackData = fData;
+    } else if (fErr) {
       // Fallback if 'archived' column doesn't exist
-      const { data } = await supa
+      const { data: fallbackData } = await supa
         .from('feedback')
         .select('id,business_id,rating,name,email,phone,comment,marketing_consent,created_at')
         .in('business_id', ids)
         .gte('created_at', since.toISOString())
         .order('created_at', { ascending: false })
         .limit(limit);
-      if (data) feedbackData = data;
+      if (fallbackData) feedbackData = fallbackData;
     }
-      
+
     // 2. Fetch 5-star contact captures
     let contactData: any[] = [];
-    try {
-      const { data } = await supa
-        .from('review_contact_captures')
-        .select('id,business_id,name,email,phone,marketing_consent:consent,created_at,archived')
-        .in('business_id', ids)
-        .gte('created_at', since.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(limit);
-      if (data) contactData = data;
-    } catch (e) {
+    const { data: cData, error: cErr } = await supa
+      .from('review_contact_captures')
+      .select('id,business_id,name,email,phone,marketing_consent:consent,created_at,archived')
+      .in('business_id', ids)
+      .gte('created_at', since.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(limit);
+      
+    if (cData) {
+      contactData = cData;
+    } else if (cErr) {
       // Fallback if 'archived' column doesn't exist
-      const { data } = await supa
+      const { data: fallbackData } = await supa
         .from('review_contact_captures')
         .select('id,business_id,name,email,phone,marketing_consent:consent,created_at')
         .in('business_id', ids)
         .gte('created_at', since.toISOString())
         .order('created_at', { ascending: false })
         .limit(limit);
-      if (data) contactData = data;
+      if (fallbackData) contactData = fallbackData;
     }
 
     // 3. Fetch "google_opened" events for anonymous entries
     let googleEvents: any[] = [];
-    try {
-      const { data } = await supa
-        .from('review_events')
-        .select('id,business_id,created_at,archived')
-        .in('business_id', ids)
-        .eq('event', 'google_opened')
-        .gte('created_at', since.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(limit);
-      if (data) googleEvents = data;
-    } catch (e) {
+    const { data: eData, error: eErr } = await supa
+      .from('review_events')
+      .select('id,business_id,created_at,archived')
+      .in('business_id', ids)
+      .eq('event', 'google_opened')
+      .gte('created_at', since.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(limit);
+      
+    if (eData) {
+      googleEvents = eData;
+    } else if (eErr) {
       // Fallback if 'archived' column doesn't exist
-      const { data } = await supa
+      const { data: fallbackData } = await supa
         .from('review_events')
         .select('id,business_id,created_at')
         .in('business_id', ids)
@@ -112,7 +115,7 @@ export async function GET(req: Request) {
         .gte('created_at', since.toISOString())
         .order('created_at', { ascending: false })
         .limit(limit);
-      if (data) googleEvents = data;
+      if (fallbackData) googleEvents = fallbackData;
     }
 
     // 4. Fetch actual Google Reviews
