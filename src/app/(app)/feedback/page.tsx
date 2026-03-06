@@ -42,34 +42,46 @@ function FeedbackContent({ business }: { business: any }) {
   };
 
   useEffect(() => {
-    loadFeedback();
-  }, []);
-
-  const loadFeedback = async () => {
-    setLoading(true);
-    try {
-      const idToken = localStorage.getItem('idToken');
-      const headers: HeadersInit = idToken ? { Authorization: `Bearer ${idToken}` } : {};
+    let unsubscribe: () => void;
+    
+    const initAuth = async () => {
+      const { getAuth, onAuthStateChanged } = await import('firebase/auth');
+      const { app } = await import('@/lib/firebaseClient');
+      const auth = getAuth(app);
       
-      const res = await fetch(`/api/feedback/list?days=9999&limit=5000&t=${Date.now()}`, { 
-        cache: 'no-store', 
-        credentials: 'include', 
-        headers 
+      unsubscribe = onAuthStateChanged(auth, async (user) => {
+        setLoading(true);
+        try {
+          const idToken = user ? await user.getIdToken() : localStorage.getItem('idToken');
+          const headers: HeadersInit = idToken ? { Authorization: `Bearer ${idToken}` } : {};
+          
+          const res = await fetch(`/api/feedback/list?days=9999&limit=5000&t=${Date.now()}`, { 
+            cache: 'no-store', 
+            credentials: 'include', 
+            headers 
+          });
+          
+          if (res.ok) {
+            const j = await res.json();
+            setItems(Array.isArray(j.items) ? j.items : []);
+            setError(null);
+          } else {
+            throw new Error('Failed to load feedback');
+          }
+        } catch (e) {
+          setError('Failed to load feedback. Please try refreshing.');
+        } finally {
+          setLoading(false);
+        }
       });
-      
-      if (res.ok) {
-        const j = await res.json();
-        setItems(Array.isArray(j.items) ? j.items : []);
-        setError(null);
-      } else {
-        throw new Error('Failed to load feedback');
-      }
-    } catch (e) {
-      setError('Failed to load feedback. Please try refreshing.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    
+    initAuth();
+    
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
 
   const filtered = useMemo(() => {
     let x = items.slice();
@@ -529,14 +541,31 @@ export default function FeedbackPage() {
   const [business, setBusiness] = useState<any>(null);
 
   useEffect(() => {
-    const tok = localStorage.getItem('idToken');
-    fetch('/api/businesses/me', { 
-        headers: tok ? { Authorization: `Bearer ${tok}` } : {},
-        cache: 'no-store' 
-    })
-    .then(r => r.json())
-    .then(d => setBusiness(d.business))
-    .catch(() => {});
+    let unsubscribe: () => void;
+    
+    const initAuth = async () => {
+      const { getAuth, onAuthStateChanged } = await import('firebase/auth');
+      const { app } = await import('@/lib/firebaseClient');
+      const auth = getAuth(app);
+      
+      unsubscribe = onAuthStateChanged(auth, async (user) => {
+        try {
+          const tok = user ? await user.getIdToken() : localStorage.getItem('idToken');
+          const res = await fetch('/api/businesses/me', { 
+              headers: tok ? { Authorization: `Bearer ${tok}` } : {},
+              cache: 'no-store' 
+          });
+          const d = await res.json();
+          setBusiness(d.business);
+        } catch (e) {}
+      });
+    };
+    
+    initAuth();
+    
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   return (

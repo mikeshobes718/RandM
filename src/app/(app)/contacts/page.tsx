@@ -469,10 +469,15 @@ export default function ContactsPage() {
           </div>
           
           {selectedIds.size > 0 && (
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4 animate-in slide-in-from-top-2">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest w-full sm:w-auto mb-1 sm:mb-0">
-                {selectedIds.size} Selected
-              </span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in slide-in-from-top-2">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  {selectedIds.size} Selected
+                </span>
+                <span className="text-[9px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 hidden sm:inline-block">
+                  Sending from: no-reply@reviewsandmarketing.com
+                </span>
+              </div>
               <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <button 
                   onClick={() => handleBulkContact('email')}
@@ -909,7 +914,14 @@ export default function ContactsPage() {
                 </div>
               )}
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Message Content</label>
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Message Content</label>
+                  {contactType === 'email' && (
+                    <span className="text-[9px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
+                      Sending from: no-reply@reviewsandmarketing.com
+                    </span>
+                  )}
+                </div>
                 <textarea 
                   placeholder={contactType === 'email' ? "Write your email message here..." : "Write your SMS message here..."}
                   value={contactMessage}

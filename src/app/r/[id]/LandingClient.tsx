@@ -166,38 +166,23 @@ export default function LandingClient({ id }: { id: string }) {
   const subheading = biz?.subheading?.trim() || (biz?.name ? `Share your feedback with ${biz.name}.` : 'Your voice helps us improve.');
   const displayName = biz?.name || (loading ? '' : '');
 
-  async function submit() {
+  async function submitPrivateFeedback() {
     if (!biz || rating == null || submitting) return;
 
-    if (rating === 5) {
-      const trimmedName = name.trim();
-      const trimmedEmail = email.trim();
-      if (!trimmedName || (!trimmedEmail && !phone)) {
-        setError('Please share your name and at least one contact method (email or phone) to continue.');
-        return;
-      }
-      if (trimmedEmail && !isValidEmail(trimmedEmail)) {
-        setError('Enter a valid email address.');
-        return;
-      }
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedComment = comment.trim();
+    if (!trimmedComment || !trimmedName || (!trimmedEmail && !phone)) {
+      setError('Please share your name, feedback, and at least one contact method (email or phone).');
+      return;
     }
-
-    if (rating < 5) {
-      const trimmedName = name.trim();
-      const trimmedEmail = email.trim();
-      const trimmedComment = comment.trim();
-      if (!trimmedComment || !trimmedName || (!trimmedEmail && !phone)) {
-        setError('Please share your name, feedback, and at least one contact method (email or phone).');
-        return;
-      }
-      if (trimmedEmail && !isValidEmail(trimmedEmail)) {
-        setError('Enter a valid email address so we can stay in touch.');
-        return;
-      }
-      if (!consent) {
-        setError('Please agree to be contacted so we can resolve your issue.');
-        return;
-      }
+    if (trimmedEmail && !isValidEmail(trimmedEmail)) {
+      setError('Enter a valid email address so we can stay in touch.');
+      return;
+    }
+    if (!consent) {
+      setError('Please agree to be contacted so we can resolve your issue.');
+      return;
     }
 
     try {
@@ -207,17 +192,13 @@ export default function LandingClient({ id }: { id: string }) {
         businessId: biz.id,
         rating,
         source: entrySource,
-        name: name.trim() || undefined,
-        email: email.trim() || undefined,
+        name: trimmedName || undefined,
+        email: trimmedEmail || undefined,
         phone: normalizePhone(phone).slice(0, 10) || undefined,
+        comment: trimmedComment,
+        consent,
       };
       
-      if (rating < 5) {
-        payload.comment = comment.trim();
-        payload.consent = consent;
-      } else {
-        payload.consent = !!(payload.email || payload.phone);
-      }
       const res = await fetch('/api/feedback/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -227,15 +208,6 @@ export default function LandingClient({ id }: { id: string }) {
         const text = await res.text();
         throw new Error(text || 'Unable to submit right now. Please try again.');
       }
-      const data = await res.json();
-      if (rating >= 5) {
-        const redirectUrl = data.redirect || biz.reviewLink;
-        if (redirectUrl) {
-          window.open(redirectUrl, '_blank', 'noopener,noreferrer');
-        }
-        setSubmitted(true);
-        return;
-      }
       setSubmitted(true);
     } catch (e) {
       const message = e instanceof Error && e.message ? e.message : 'Something went wrong. Please try again.';
@@ -244,6 +216,48 @@ export default function LandingClient({ id }: { id: string }) {
       setSubmitting(false);
     }
   }
+
+  const handleFiveStarClick = () => {
+    if (!biz || rating == null) return;
+
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    if (!trimmedName || (!trimmedEmail && !phone)) {
+      setError('Please share your name and at least one contact method (email or phone) to continue.');
+      return;
+    }
+    if (trimmedEmail && !isValidEmail(trimmedEmail)) {
+      setError('Enter a valid email address.');
+      return;
+    }
+
+    // Open Google immediately to avoid popup blockers
+    const redirectUrl = biz.reviewLink;
+    console.log('[LandingClient] Opening Google review URL:', redirectUrl);
+    if (redirectUrl) {
+      window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+    }
+
+    setSubmitted(true);
+    setError(null);
+
+    // Fire API call in the background
+    const payload: Record<string, unknown> = {
+      businessId: biz.id,
+      rating,
+      source: entrySource,
+      name: trimmedName || undefined,
+      email: trimmedEmail || undefined,
+      phone: normalizePhone(phone).slice(0, 10) || undefined,
+      consent: !!(trimmedEmail || phone),
+    };
+
+    fetch('/api/feedback/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch(console.error);
+  };
 
   const fiveStar = rating === 5;
   const ltFive = rating != null && rating < 5;
@@ -337,12 +351,12 @@ export default function LandingClient({ id }: { id: string }) {
 
                   <button
                     type="button"
-                    onClick={submit}
+                    onClick={handleFiveStarClick}
                     disabled={submitting}
                     className="w-full rounded-2xl px-4 py-3 text-base font-semibold shadow-md transition disabled:opacity-60 disabled:cursor-not-allowed"
                     style={{ backgroundColor: buttonColor, color: buttonTextColor }}
                   >
-                    {submitting ? 'Opening Google…' : 'Leave a Google review'}
+                    Leave a Google review
                   </button>
                   <p className="text-xs text-gray-500 text-center">Opens Google in a new tab.</p>
                 </>
@@ -357,7 +371,7 @@ export default function LandingClient({ id }: { id: string }) {
                 Thanks for sharing. We’ll review your note right away and, if you asked us to reach out, we’ll be in touch.
               </div>
             ) : (
-              <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+              <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); submitPrivateFeedback(); }}>
                 <div className="text-center text-amber-700 text-sm">
                   We’re sorry it wasn’t perfect. This note stays private with our team.
                 </div>
@@ -410,6 +424,18 @@ export default function LandingClient({ id }: { id: string }) {
                 >
                   {submitting ? 'Sending…' : 'Send private feedback'}
                 </button>
+                {biz?.reviewLink && (
+                  <div className="mt-4 text-center">
+                    <a 
+                      href={biz.reviewLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-gray-500 hover:text-gray-700 underline"
+                    >
+                      Or leave a public review on Google
+                    </a>
+                  </div>
+                )}
               </form>
             )}
           </div>

@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       .maybeSingle();
       
     if (slugBiz) {
-      const title = `${slugBiz.name} — Review & Feedback`;
+      const title = `${slugBiz.name} — Share Your Feedback`;
       const description = slugBiz.landing_headline || `Share your experience with ${slugBiz.name}. Your feedback helps us grow!`;
 
       return {
@@ -36,6 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         openGraph: {
           title,
           description,
+          siteName: 'Reviews & Marketing',
           type: 'website',
         },
         twitter: {
@@ -52,7 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = `${biz.name} — Review & Feedback`;
+  const title = `${biz.name} — Share Your Feedback`;
   const description = biz.landing_headline || `Share your experience with ${biz.name}. Your feedback helps us grow!`;
 
   return {
@@ -63,6 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
+      siteName: 'Reviews & Marketing',
       type: 'website',
     },
     twitter: {
