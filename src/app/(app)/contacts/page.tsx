@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from 'next/navigation';
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import { app } from '@/lib/firebaseClient';
 import { AsYouType, CountryCode } from 'libphonenumber-js';
@@ -30,7 +31,8 @@ function formatPhoneDisplay(phone: string): string {
   }
 }
 
-export default function ContactsPage() {
+function ContactsPageContent() {
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -1169,5 +1171,18 @@ export default function ContactsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ContactsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full mb-4"></div>
+        <p className="text-muted text-sm font-medium tracking-widest uppercase">Loading contacts...</p>
+      </div>
+    }>
+      <ContactsPageContent />
+    </Suspense>
   );
 }
