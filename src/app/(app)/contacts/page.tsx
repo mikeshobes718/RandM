@@ -122,6 +122,23 @@ export default function ContactsPage() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const search = searchParams?.get('search');
+    if (search) {
+      setSearchQuery(search);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    // If search query matches exactly one contact's email or phone, open history
+    if (searchQuery && contacts.length > 0) {
+      const match = contacts.find(c => c.email === searchQuery || c.phone === searchQuery);
+      if (match && !historyContact) {
+        viewHistory(match);
+      }
+    }
+  }, [searchQuery, contacts]);
+
   const fetchContacts = async (currentUser?: User | null) => {
     const authUser = currentUser || user;
     if (!authUser) {
