@@ -978,7 +978,7 @@ function ContactsPageContent() {
               <div className="pt-4">
                 <button 
                   type="submit"
-                  disabled={isSending || !contactMessage || (contactType === 'email' && !contactSubject)}
+                  disabled={isSending || selectedIds.size === 0 || !contactMessage || (contactType === 'email' && !contactSubject)}
                   className="primary-button w-full h-14 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand/20 disabled:opacity-50 transition-all flex items-center justify-center gap-3"
                 >
                   {isSending ? (
