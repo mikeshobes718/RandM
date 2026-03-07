@@ -45,6 +45,7 @@ export async function GET(req: NextRequest) {
     let isPro = false;
     let planStatus = 'none';
     let subscriptionData: { status: string; plan_id: string | null } | null = null;
+    let ownerEmail: string | null = null;
     try {
       const { data: subscription } = await supa
         .from('subscriptions')
@@ -58,7 +59,8 @@ export async function GET(req: NextRequest) {
       
       // Co-founder override: always PRO
       const { data: userData } = await supa.from('users').select('email').eq('uid', uid).maybeSingle();
-      if (userData?.email?.toLowerCase() === 'bladespindler@gmail.com') {
+      ownerEmail = userData?.email || null;
+      if (ownerEmail?.toLowerCase() === 'bladespindler@gmail.com') {
         isPro = true;
         planStatus = 'active';
       } else if (subscription) {
@@ -528,6 +530,7 @@ export async function GET(req: NextRequest) {
       recentFeedback,
       isPro,
       planStatus,
+      ownerEmail,
       analytics,
       squareConnection,
       activityFeed,
