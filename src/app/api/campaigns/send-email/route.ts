@@ -23,12 +23,25 @@ export async function POST(req: NextRequest) {
 
     const { data: biz } = await supa
       .from('businesses')
-      .select('id, name, review_link')
+      .select('id, name, review_link, owner_uid')
       .eq('owner_uid', uid)
       .single();
 
     if (!biz) {
       return NextResponse.json({ error: 'No business found' }, { status: 400 });
+    }
+
+    // Fetch owner's email for Reply-To
+    let ownerEmail: string | undefined;
+    try {
+      const { data: userData } = await supa
+        .from('users')
+        .select('email')
+        .eq('uid', biz.owner_uid)
+        .single();
+      ownerEmail = userData?.email;
+    } catch (e) {
+      console.error('[send-email] Failed to fetch owner email:', e);
     }
 
     const body = await req.json();
@@ -58,6 +71,7 @@ export async function POST(req: NextRequest) {
           subject,
           html,
           text,
+          replyTo: ownerEmail,
         });
 
         if (result.success) {
