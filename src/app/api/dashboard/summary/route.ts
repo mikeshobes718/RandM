@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
       } else if (subscription) {
         planStatus = subscription.status.toLowerCase();
         const planId = subscription.plan_id?.toLowerCase() || '';
-        if ((planStatus === 'active' || planStatus === 'trialing') && planId !== 'starter' && planId !== 'free') {
+        if ((planStatus === 'active' || planStatus === 'trialing') && planId !== 'free') {
           isPro = true;
         }
       }
@@ -412,14 +412,17 @@ export async function GET(req: NextRequest) {
     let requestsLimit = 100;
     let planName = 'Small Business';
     
-    if (planStatus === 'starter') {
-      requestsLimit = 3;
-      planName = 'Starter';
-    } else if (planStatus === 'active' || planStatus === 'trialing') {
+    if (planStatus === 'active' || planStatus === 'trialing') {
       const planId = (subscriptionData?.plan_id || '').toLowerCase();
-      if (planId.includes('mid') || planId.includes('growth')) {
+      if (planId === 'starter') {
+        requestsLimit = 3;
+        planName = 'Starter';
+      } else if (planId.includes('mid') || planId.includes('growth')) {
         requestsLimit = 100;
         planName = 'Small Business';
+      } else if (planId === 'free') {
+        requestsLimit = 0;
+        planName = 'Free';
       } else {
         requestsLimit = 999999; // Unlimited
         planName = 'Unlimited';
