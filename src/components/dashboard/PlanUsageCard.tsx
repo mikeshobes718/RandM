@@ -25,7 +25,7 @@ const Tooltip = ({ text, children }: { text: string; children: React.ReactNode }
 
 export default function PlanUsageCard({ planName, requestsUsed, requestsLimit, qrScans, isUnlimited, isPro, planStatus }: PlanUsageCardProps) {
   const progress = isUnlimited ? 0 : Math.min(100, (requestsUsed / requestsLimit) * 100);
-  const isFree = !planStatus || planStatus === 'none' || planStatus === 'free';
+  const isFree = planName === 'Starter' || planName === 'Free' || !planStatus || planStatus === 'none';
 
   return (
     <section className="bg-white rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
@@ -54,7 +54,9 @@ export default function PlanUsageCard({ planName, requestsUsed, requestsLimit, q
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Review Requests</p>
-                  <p className="text-[9px] font-bold text-slate-300 uppercase tracking-tight">Monthly Allowance</p>
+                  <Tooltip text="Resets to 0 on the 1st of every month">
+                    <p className="text-[9px] font-bold text-slate-300 uppercase tracking-tight cursor-help border-b border-dashed border-slate-300 inline-block">Monthly Allowance</p>
+                  </Tooltip>
                 </div>
               </div>
               <div className="text-right">
@@ -79,7 +81,9 @@ export default function PlanUsageCard({ planName, requestsUsed, requestsLimit, q
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">QR Scans</p>
-                  <p className="text-[9px] font-bold text-slate-300 uppercase tracking-tight">Active Traffic</p>
+                  <Tooltip text="Resets to 0 on the 1st of every month">
+                    <p className="text-[9px] font-bold text-slate-300 uppercase tracking-tight cursor-help border-b border-dashed border-slate-300 inline-block">Active Traffic</p>
+                  </Tooltip>
                 </div>
               </div>
               <div className="flex items-center gap-3">
