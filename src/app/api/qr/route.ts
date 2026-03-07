@@ -22,36 +22,28 @@ export async function GET(req: Request) {
     const pro = await hasActivePro(uid);
     if (!pro) {
       const supa = getSupabaseAdmin();
-      const { data: biz } = await supa.from('businesses').select('id, review_link').eq('owner_uid', uid);
+      const { data: biz } = await supa.from('businesses').select('id, review_link, slug').eq('owner_uid', uid);
       const allowed = new Set<string>();
-      (biz || []).forEach((b: { id: string; review_link: string | null }) => {
-        if (b.review_link) {
-          allowed.add(b.review_link);
-          try {
-            const url = new URL(b.review_link);
-            allowed.add(`${url.origin}${url.pathname}`);
-          } catch {}
-        }
+      (biz || []).forEach((b: { id: string; review_link: string | null; slug?: string | null }) => {
+        if (b.review_link) allowed.add(b.review_link);
         try {
           // Allow landing URL on both APP_URL base and current request origin (apex/www)
           const base = new URL(process.env.APP_URL || '');
-          const landingPath = `/r/${b.id}`;
-          allowed.add(new URL(landingPath, base).toString());
+          allowed.add(new URL(`/r/${b.id}`, base).toString());
+          if (b.slug) allowed.add(new URL(`/r/${b.slug}`, base).toString());
           
           const reqUrl = new URL(req.url);
           const currentOrigin = `${reqUrl.protocol}//${reqUrl.host}`;
-          allowed.add(new URL(landingPath, currentOrigin).toString());
+          allowed.add(new URL(`/r/${b.id}`, currentOrigin).toString());
+          if (b.slug) allowed.add(new URL(`/r/${b.slug}`, currentOrigin).toString());
         } catch {}
       });
-
-      // Normalize data for comparison (remove query params for the check)
-      let normalizedData = data;
-      try {
-        const url = new URL(data);
-        normalizedData = `${url.origin}${url.pathname}`;
-      } catch {}
-
-      if (!allowed.has(data) && !allowed.has(normalizedData)) {
+      
+      // Also allow if it has ?source=main-qr or similar query params
+      const baseDataUrl = data.split('?')[0];
+      let isAllowed = allowed.has(data) || allowed.has(baseDataUrl);
+      
+      if (!isAllowed) {
         return new NextResponse('Starter plan allows QR only for your saved review link.', { status: 403 });
       }
     }
