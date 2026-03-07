@@ -222,14 +222,6 @@ export default function LandingClient({ id }: { id: string }) {
 
     const trimmedName = name.trim();
     const trimmedEmail = email.trim();
-    if (!trimmedName || (!trimmedEmail && !phone)) {
-      setError('Please share your name and at least one contact method (email or phone) to continue.');
-      return;
-    }
-    if (trimmedEmail && !isValidEmail(trimmedEmail)) {
-      setError('Enter a valid email address.');
-      return;
-    }
 
     // Open Google immediately to avoid popup blockers
     const redirectUrl = biz.reviewLink;
@@ -241,22 +233,27 @@ export default function LandingClient({ id }: { id: string }) {
     setSubmitted(true);
     setError(null);
 
-    // Fire API call in the background
-    const payload: Record<string, unknown> = {
-      businessId: biz.id,
-      rating,
-      source: entrySource,
-      name: trimmedName || undefined,
-      email: trimmedEmail || undefined,
-      phone: normalizePhone(phone).slice(0, 10) || undefined,
-      consent: !!(trimmedEmail || phone),
-    };
+    // Fire API call in the background if they provided info
+    if (trimmedName || trimmedEmail || phone) {
+      const payload: Record<string, unknown> = {
+        businessId: biz.id,
+        rating,
+        source: entrySource,
+        name: trimmedName || undefined,
+        email: trimmedEmail || undefined,
+        phone: normalizePhone(phone).slice(0, 10) || undefined,
+        consent: !!(trimmedEmail || phone),
+      };
 
-    fetch('/api/feedback/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }).catch(console.error);
+      fetch('/api/feedback/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).catch(console.error);
+    } else {
+      // Still log the event even if no contact info
+      sendEvent('google_opened', { rating: 5 });
+    }
   };
 
   const fiveStar = rating === 5;
@@ -323,14 +320,13 @@ export default function LandingClient({ id }: { id: string }) {
                   </div>
 
                   <div className="pt-2 border-t border-gray-100">
-                    <h3 className="text-center font-bold text-gray-700 text-sm mb-3">Please share your contact info to continue:</h3>
+                    <h3 className="text-center font-bold text-gray-700 text-sm mb-3">Share your contact info for promotions and rebates (optional):</h3>
                     <div className="space-y-3">
                       <input
                         className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
                         placeholder="Your name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        required
                       />
                       <input
                         className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
