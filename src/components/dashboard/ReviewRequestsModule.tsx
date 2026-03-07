@@ -9,6 +9,7 @@ interface Campaign {
   type?: string;
   sent: number;
   clicks: number;
+  body?: string | null;
   failed?: number;
   lastError?: string;
   recipients?: { contact: string; status: 'sent' | 'failed'; error?: string }[];
@@ -243,6 +244,14 @@ export default function ReviewRequestsModule({
                 {/* Expanded Details */}
                 {expandedRow === i && (
                   <div className="px-4 pb-4 pt-2 border-t border-slate-100/50 bg-white/50">
+                    {c.body && (
+                      <div className="mb-4">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Message Content</p>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 text-[11px] text-slate-600 whitespace-pre-wrap font-medium">
+                          {c.body}
+                        </div>
+                      </div>
+                    )}
                     {c.recipients && c.recipients.length > 0 ? (
                       <div>
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Recipients</p>
@@ -250,7 +259,15 @@ export default function ReviewRequestsModule({
                           {c.recipients.map((r, idx) => (
                             <div key={idx} className={`flex flex-col gap-0.5 text-[11px] p-2 rounded-lg ${r.status === 'failed' ? 'bg-red-50/60' : 'bg-slate-50/60'}`}>
                               <div className="flex items-center justify-between">
-                                <span className="text-slate-600 font-medium truncate pr-4">{r.contact}</span>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span className="text-slate-600 font-medium truncate">{r.contact}</span>
+                                  <Link 
+                                    href={`/contacts?search=${encodeURIComponent(r.contact)}`}
+                                    className="flex-shrink-0 text-[9px] font-black text-brand uppercase tracking-widest hover:underline"
+                                  >
+                                    View History →
+                                  </Link>
+                                </div>
                                 <span className={`flex-shrink-0 text-[9px] font-black uppercase tracking-widest ${r.status === 'sent' ? 'text-emerald-500' : 'text-red-500'}`}>
                                   {r.status === 'sent' ? 'Delivered' : 'Failed'}
                                 </span>
