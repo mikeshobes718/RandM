@@ -55,6 +55,28 @@ export default function ContactsPage() {
   const [historyContact, setHistoryContact] = useState<Contact | null>(null);
   const [contactHistory, setContactHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchOwnerEmail = async () => {
+      const auth = getAuth(app);
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
+      try {
+        const token = await currentUser.getIdToken();
+        const res = await fetch('/api/dashboard/summary', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setOwnerEmail(data.ownerEmail);
+        }
+      } catch (e) {
+        console.error('Failed to fetch owner email', e);
+      }
+    };
+    if (user) fetchOwnerEmail();
+  }, [user]);
 
     const viewHistory = async (contact: Contact) => {
     setHistoryContact(contact);
@@ -475,7 +497,7 @@ export default function ContactsPage() {
                   {selectedIds.size} Selected
                 </span>
                 <span className="text-[9px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 hidden sm:inline-block">
-                  Sending from: no-reply@reviewsandmarketing.com
+                  Replies will go to: {ownerEmail || 'your email'}
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
@@ -913,15 +935,15 @@ export default function ContactsPage() {
                   />
                 </div>
               )}
-              <div>
-                <div className="flex items-center justify-between mb-2 px-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Message Content</label>
-                  {contactType === 'email' && (
-                    <span className="text-[9px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
-                      Sending from: no-reply@reviewsandmarketing.com
-                    </span>
-                  )}
-                </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2 px-1">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Message Content</label>
+                      {contactType === 'email' && (
+                        <span className="text-[9px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
+                          Replies will go to: {ownerEmail || 'your email'}
+                        </span>
+                      )}
+                    </div>
                 <textarea 
                   placeholder={contactType === 'email' ? "Write your email message here..." : "Write your SMS message here..."}
                   value={contactMessage}
@@ -969,12 +991,25 @@ export default function ContactsPage() {
                   {historyContact.name || 'Unnamed'} • {historyContact.email || formatPhoneDisplay(historyContact.phone || '')}
                 </p>
               </div>
-              <button 
-                onClick={() => setHistoryContact(null)}
-                className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => {
+                    const type = historyContact.email ? 'email' : 'sms';
+                    handleIndividualContact(historyContact, type);
+                    setHistoryContact(null);
+                  }}
+                  className="h-10 px-4 bg-brand text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand-dark transition-colors shadow-lg shadow-brand/20 flex items-center gap-2"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                  Send Message
+                </button>
+                <button 
+                  onClick={() => setHistoryContact(null)}
+                  className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
             </div>
             
             <div className="p-8 overflow-y-auto flex-1 bg-slate-50/30">
