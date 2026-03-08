@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
+import { MiniHowItWorks } from '@/components/MiniHowItWorks';
+import { QrCode, Smartphone, GitFork, TrendingUp, CheckCircle, Store, MessageSquare, Star } from 'lucide-react';
+
 interface ActivationWidgetProps {
   business: {
     id: string | null;
@@ -135,10 +138,9 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
               <p className={`text-xs font-bold ${step.done ? 'text-slate-400 line-through' : 'text-slate-700'} truncate`}>
                 {step.label}
               </p>
-              {step.key === 'qrDownloaded' && !step.done && (
+              {step.key === 'qrDownloaded' && (
                 <button
                   onClick={() => {
-                    // Trigger download logic here or just mark as done
                     toggleStep('qrDownloaded');
                   }}
                   className="text-[9px] font-black text-brand uppercase tracking-widest mt-1 hover:underline"
@@ -146,7 +148,7 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
                   Get Print Assets →
                 </button>
               )}
-              {step.key === 'scriptInstalled' && !step.done && (
+              {step.key === 'scriptInstalled' && (
                 <Link href="/One_Page_Overview.pdf" target="_blank" className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1 hover:text-brand transition-colors block">
                   Download 1-Pager →
                 </Link>
@@ -163,6 +165,17 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
           </p>
         </div>
       )}
+
+      <MiniHowItWorks 
+        className="mt-8 bg-white border-slate-100 shadow-sm"
+        title="Activation Guide"
+        steps={[
+          { icon: Store, title: "1. Connect", desc: "Link your Google Business Profile to sync your review link." },
+          { icon: QrCode, title: "2. Generate QR", desc: "Download and print your custom review QR code." },
+          { icon: Smartphone, title: "3. First Scans", desc: "Place the QR code where customers can scan it." },
+          { icon: Star, title: "4. Go Live", desc: "Start collecting reviews and private feedback automatically." }
+        ]}
+      />
     </div>
   );
 }

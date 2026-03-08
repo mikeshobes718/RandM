@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { FeatureTabs } from "@/components/FeatureTabs";
 import HomeCtaButtons from "@/components/HomeCtaButtons";
+import { AnimatedFlow } from "@/components/AnimatedFlow";
 
 const PILLARS = [
   {
@@ -117,14 +118,8 @@ export default function FeaturesPage() {
             <h2 className="text-3xl font-black tracking-tight mb-4">How it works</h2>
             <p className="text-muted">Simple, automated reputation management in three steps.</p>
           </div>
-          <div className="max-w-4xl mx-auto">
-            <Image
-              src="/extras/concise.png"
-              alt="How Reviews & Marketing Works - Visual Flow"
-              width={1200}
-              height={600}
-              className="w-full h-auto rounded-3xl shadow-2xl shadow-slate-200/50 border border-slate-100"
-            />
+          <div className="max-w-5xl mx-auto">
+            <AnimatedFlow />
           </div>
         </div>
       </section>
