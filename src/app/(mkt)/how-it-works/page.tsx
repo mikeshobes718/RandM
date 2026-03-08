@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AnimatedFlow } from "@/components/AnimatedFlow";
 
 export default function HowItWorks() {
   return (
@@ -20,6 +21,9 @@ export default function HowItWorks() {
             A simple, compliant system designed to recover unhappy customers privately and amplify your best experiences.
           </p>
         </div>
+
+        {/* Live Animated Simulation */}
+        <AnimatedFlow />
 
         {/* YouTube Explainer Video */}
         <div className="max-w-5xl mx-auto mb-24">
