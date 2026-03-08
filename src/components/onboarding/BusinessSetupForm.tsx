@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import { formatPhone, normalizePhone } from '@/lib/phone';
+import { clientAuth } from '@/lib/firebaseClient';
 
 type PlaceSuggestion = {
   placeId: string;
@@ -169,10 +170,10 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
     setLoading(true);
     setError('');
 
-    // Retry logic for network issues
     const makeRequest = async (attempt = 1): Promise<Response> => {
       try {
-        const idToken = localStorage.getItem('idToken') || '';
+        const fbUser = clientAuth.currentUser;
+        const idToken = fbUser ? await fbUser.getIdToken(true) : localStorage.getItem('idToken') || '';
         
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
@@ -196,9 +197,6 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
           idToken,
         };
 
-        console.log('[BusinessSetupForm] Submitting to /api/businesses/upsert/form, attempt', attempt);
-        console.log('[BusinessSetupForm] Payload:', payload);
-
         const response = await fetch('/api/businesses/upsert/form', {
           method: 'POST',
           headers,
@@ -206,12 +204,9 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
           credentials: 'include',
         });
 
-        console.log('[BusinessSetupForm] Response status:', response.status, response.statusText);
         return response;
       } catch (err) {
-        console.error('[BusinessSetupForm] Fetch error on attempt', attempt, ':', err);
         if (attempt < 3) {
-          console.log('[BusinessSetupForm] Retrying in 1 second...');
           await new Promise(resolve => setTimeout(resolve, 1000));
           return makeRequest(attempt + 1);
         }
@@ -224,7 +219,6 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
 
       if (response.ok) {
         const data = await response.json();
-        console.log('[BusinessSetupForm] Success:', data);
         if (data.business) {
           localStorage.setItem('businessData', JSON.stringify(data.business));
         }
@@ -238,7 +232,6 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
         }
       } else {
         const errorText = await response.text().catch(() => 'Failed to save');
-        console.error('[BusinessSetupForm] Server error:', response.status, errorText);
         if (response.status === 401) {
           setError('Session expired. Please refresh and try again.');
         } else if (response.status === 403) {
@@ -248,7 +241,6 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
         }
       }
     } catch (err: any) {
-      console.error('[BusinessSetupForm] Fatal error:', err);
       const errorMessage = err?.message || 'Unknown error';
       setError(`Network error: ${errorMessage}. Please check your connection and try again.`);
     } finally {
