@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import MobileMenu from "./MobileMenu";
+import { clientAuth } from "@/lib/firebaseClient";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function SiteHeader() {
   const [authed, setAuthed] = useState(false);
@@ -14,29 +16,34 @@ export default function SiteHeader() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const r = await fetch('/api/auth/me');
-        if (r.ok) {
-          const j = await r.json();
-          const user = j?.user || j;
-          setAuthed(true);
-          if (user?.email) setEmail(user.email);
-          if (typeof user?.emailVerified === 'boolean') setEmailVerified(user.emailVerified);
-        } else {
+    const unsub = onAuthStateChanged(clientAuth, (user) => {
+      if (user) {
+        setAuthed(true);
+        setEmail(user.email || null);
+        setEmailVerified(user.emailVerified);
+        setLoading(false);
+        return;
+      }
+      // No Firebase user — fallback to cookie-based auth/me (for SSR or legacy)
+      fetch('/api/auth/me', { credentials: 'include' })
+        .then((r) => {
+          if (r.ok) return r.json();
           setAuthed(false);
           setEmail(null);
-          // If server says not authed, clear local token to stay in sync
-          localStorage.removeItem('idToken');
-        }
-      } catch (err) {
-        setAuthed(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuth();
+          return null;
+        })
+        .then((j) => {
+          if (j) {
+            const u = j?.user || j;
+            setAuthed(true);
+            if (u?.email) setEmail(u.email);
+            if (typeof u?.emailVerified === 'boolean') setEmailVerified(u.emailVerified);
+          }
+        })
+        .catch(() => setAuthed(false))
+        .finally(() => setLoading(false));
+    });
+    return () => unsub();
   }, [pathname]);
 
   const handleLogout = async () => {
