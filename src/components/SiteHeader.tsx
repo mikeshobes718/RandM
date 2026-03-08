@@ -8,10 +8,11 @@ import { clientAuth } from "@/lib/firebaseClient";
 import { onAuthStateChanged } from "firebase/auth";
 
 export default function SiteHeader() {
-  const [authed, setAuthed] = useState(false);
-  const [email, setEmail] = useState<string | null>(null);
+  const hasLocalToken = typeof window !== 'undefined' && !!localStorage.getItem('idToken');
+  const [authed, setAuthed] = useState(hasLocalToken);
+  const [email, setEmail] = useState<string | null>(typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null);
   const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!hasLocalToken);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -24,24 +25,9 @@ export default function SiteHeader() {
         setLoading(false);
         return;
       }
-      // No Firebase user — fallback to cookie-based auth/me (for SSR or legacy)
-      fetch('/api/auth/me', { credentials: 'include' })
-        .then((r) => {
-          if (r.ok) return r.json();
-          setAuthed(false);
-          setEmail(null);
-          return null;
-        })
-        .then((j) => {
-          if (j) {
-            const u = j?.user || j;
-            setAuthed(true);
-            if (u?.email) setEmail(u.email);
-            if (typeof u?.emailVerified === 'boolean') setEmailVerified(u.emailVerified);
-          }
-        })
-        .catch(() => setAuthed(false))
-        .finally(() => setLoading(false));
+      setAuthed(false);
+      setEmail(null);
+      setLoading(false);
     });
     return () => unsub();
   }, [pathname]);

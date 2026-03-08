@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const { idToken, days = 7 } = await request.json();
-    
+
     if (!idToken) {
       return NextResponse.json({ error: 'Missing idToken' }, { status: 400 });
     }
@@ -16,61 +16,51 @@ export async function POST(request: NextRequest) {
     try {
       const auth = getAuthAdmin();
       const supa = getSupabaseAdmin();
-      
-      // Verify the ID token
+
       const decodedToken = await auth.verifyIdToken(idToken);
-      
-      // Update last_sign_in_at in users table
+
       try {
         await supa
           .from('users')
           .update({ last_sign_in_at: new Date().toISOString() })
           .eq('uid', decodedToken.uid);
-      } catch (updateErr) {
-        console.warn('[SESSION] Failed to update last_sign_in_at:', updateErr);
-      }
-      
-      // Create a session cookie
-      const expiresIn = days * 24 * 60 * 60 * 1000; // Convert days to milliseconds
+      } catch {}
+
+      const expiresIn = days * 24 * 60 * 60 * 1000;
       const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
-      
-      // Set the session cookie as HttpOnly
+
       const response = NextResponse.json({ success: true });
-      
-      // Configure cookie domain for production
-      const cookieOptions = {
+
+      const cookieOptions: Record<string, unknown> = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax' as const,
         maxAge: expiresIn,
-        path: '/'
+        path: '/',
       };
-      
-      // Add domain for production to ensure cookie persistence across subdomains
-      if (process.env.NODE_ENV === 'production' && process.env.APP_URL) {
+
+      // Only scope cookie to the canonical domain when the request is actually
+      // on that domain. Vercel preview deployments use *.vercel.app hostnames
+      // which won't receive cookies scoped to .reviewsandmarketing.com.
+      const reqHost = request.headers.get('host') || '';
+      if (process.env.APP_URL) {
         try {
-          const url = new URL(process.env.APP_URL);
-          const hostname = url.hostname;
-          if (hostname.includes('.')) {
-            const domain = `.${hostname.replace(/^www\./, '')}`;
-            (cookieOptions as any).domain = domain;
+          const canonical = new URL(process.env.APP_URL).hostname.replace(/^www\./, '');
+          if (reqHost.endsWith(canonical)) {
+            cookieOptions.domain = `.${canonical}`;
           }
-        } catch (e) {
-          console.warn('Failed to set cookie domain:', e);
-        }
+        } catch {}
       }
-      
-      response.cookies.set('idToken', sessionCookie, cookieOptions);
-      
+
+      response.cookies.set('idToken', sessionCookie, cookieOptions as any);
+
       return response;
     } catch (firebaseError) {
-      console.error('Firebase Admin SDK error:', firebaseError);
-      // If Firebase Admin SDK fails, we can't create session cookies
-      // Return success but without session cookie - the client will use the ID token directly
-      return NextResponse.json({ success: true, warning: 'Session cookie creation failed, using ID token directly' });
+      console.error('[SESSION] Firebase error:', firebaseError);
+      return NextResponse.json({ success: true, warning: 'Session cookie creation failed' });
     }
   } catch (error) {
-    console.error('Session creation error:', error);
+    console.error('[SESSION] Error:', error);
     return NextResponse.json({ error: 'Failed to create session' }, { status: 500 });
   }
 }

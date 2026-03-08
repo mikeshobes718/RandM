@@ -114,9 +114,17 @@ export async function middleware(req: NextRequest) {
     } catch {}
   }
 
+  // Pass edit-mode flag so dashboard layout can skip onboarding redirect
+  if (pathname.startsWith('/dashboard')) {
+    const fromEdit = req.nextUrl.searchParams.get('from') === 'edit';
+    const response = NextResponse.next();
+    if (fromEdit) response.headers.set('x-from-edit', 'true');
+    return response;
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/', '/dashboard', '/onboarding/:path*', '/integrations/:path*'],
+  matcher: ['/', '/dashboard/:path*', '/onboarding/:path*', '/integrations/:path*'],
 };
