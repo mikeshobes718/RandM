@@ -4,23 +4,19 @@ import { signInWithEmailAndPassword, confirmPasswordReset } from 'firebase/auth'
 import { clientAuth } from '@/lib/firebaseClient';
 import Link from 'next/link';
 
-async function getPostLoginRedirect(): Promise<string> {
+async function getPostLoginRedirect(headers?: HeadersInit): Promise<string> {
   try {
-    // 1. Check if they have a business
-    const bizResponse = await fetch('/api/businesses/me', {
-      credentials: 'include',
-    });
+    const opts: RequestInit = { credentials: 'include', headers };
+
+    const bizResponse = await fetch('/api/businesses/me', opts);
     if (bizResponse.ok) {
       const bizData = await bizResponse.json();
-      if (bizData && bizData.business && bizData.business.id) {
+      if (bizData?.business?.id) {
         return '/dashboard';
       }
     }
 
-    // 2. No business, check if they have a plan
-    const planResponse = await fetch('/api/plan/status', {
-      credentials: 'include',
-    });
+    const planResponse = await fetch('/api/plan/status', opts);
     if (planResponse.ok) {
       const planData = await planResponse.json();
       if (planData && planData.status !== 'none') {
@@ -29,7 +25,7 @@ async function getPostLoginRedirect(): Promise<string> {
     }
 
     return '/select-plan';
-  } catch (error) {
+  } catch {
     return '/select-plan';
   }
 }
@@ -117,7 +113,8 @@ export default function LoginPage() {
         credentials: 'include',
       });
 
-      const redirectUrl = await getPostLoginRedirect();
+      const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+      const redirectUrl = await getPostLoginRedirect(headers);
       window.location.href = redirectUrl;
     } catch (err: any) {
       setError('Invalid email or password.');

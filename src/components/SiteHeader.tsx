@@ -48,13 +48,17 @@ export default function SiteHeader() {
 
   const handleLogout = async () => {
     try {
+      await clientAuth.signOut();
       await fetch('/api/auth/logout', { method: 'POST' });
       localStorage.removeItem('idToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('userEmail');
+      localStorage.removeItem('selectedPlan');
+      localStorage.removeItem('businessData');
       setAuthed(false);
       setEmail(null);
-      router.push('/');
+      setEmailVerified(null);
+      router.push('/login?signed_out=1');
     } catch (err) {
       console.error('Logout failed:', err);
     }
