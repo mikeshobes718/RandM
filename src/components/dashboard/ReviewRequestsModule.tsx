@@ -58,12 +58,12 @@ export default function ReviewRequestsModule({
         },
         body: JSON.stringify({ campaignId })
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        alert('Resend complete!');
-        window.location.reload();
+        setResending(null);
       } else {
-        const data = await res.json();
-        alert(data.error || 'Failed to resend campaign');
+        setResending(null);
+        console.error('[ReviewRequests] Resend failed:', data.error);
       }
     } catch (e) {
       console.error('Error resending campaign:', e);
@@ -83,11 +83,9 @@ export default function ReviewRequestsModule({
         method: 'DELETE',
         headers: { Authorization: `Bearer ${tok}` }
       });
-      if (res.ok) {
-        window.location.reload();
-      }
+      // No-op for now; parent should refresh data
     } catch (e) {
-      console.error('Error deleting campaign:', e);
+      console.error('[ReviewRequests] Delete error:', e);
     }
   };
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { ensureFeedbackTables, isReviewEventName, recordReviewEvent } from '@/lib/feedbackStorage';
+import { isReviewEventName, recordReviewEvent } from '@/lib/feedbackStorage';
 import { sendOwnerFeedbackNotification } from '@/lib/notifications';
 
 export const runtime = 'nodejs';
@@ -67,8 +67,6 @@ export async function POST(req: Request) {
   const eventMetadata = sanitizeMetadata(metadata) || {};
   const src = sanitizeSource(source);
   if (src && !eventMetadata.source) eventMetadata.source = src;
-
-  try { await ensureFeedbackTables(); } catch {}
 
   await recordReviewEvent({
     businessId,

@@ -223,9 +223,7 @@ export default function LandingClient({ id }: { id: string }) {
     const trimmedName = name.trim();
     const trimmedEmail = email.trim();
 
-    // Open Google immediately to avoid popup blockers
     const redirectUrl = biz.reviewLink;
-    console.log('[LandingClient] Opening Google review URL:', redirectUrl);
     if (redirectUrl) {
       window.open(redirectUrl, '_blank', 'noopener,noreferrer');
     }

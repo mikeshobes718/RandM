@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireUid } from '@/lib/authServer';
 import { getSupabaseAdmin, getSql } from '@/lib/supabaseAdmin';
-import { ensureFeedbackTables } from '@/lib/feedbackStorage';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,13 +25,6 @@ export async function GET(req: NextRequest) {
   
   if (!biz) return new NextResponse('Forbidden', { status: 403 });
 
-  // Ensure tables exist BEFORE querying
-  try { 
-    await ensureFeedbackTables(); 
-  } catch (e) {
-    console.error('Failed to ensure feedback tables:', e);
-  }
-
   // Fetch sources with scan counts
   let customSources: any[] = [];
   let mainQrScans = 0;
@@ -42,7 +34,6 @@ export async function GET(req: NextRequest) {
   
   if (useSql) {
     try {
-      console.log('[REVIEW SOURCES LIST] Querying custom sources for business:', businessId);
       customSources = await sql`
         SELECT 
           s.*,
@@ -72,9 +63,8 @@ export async function GET(req: NextRequest) {
         )
       `;
       mainQrScans = mainScansResult[0]?.count || 0;
-      console.log('[REVIEW SOURCES LIST] SQL Success:', customSources.length, 'sources');
     } catch (sqlErr) {
-      console.error('[REVIEW SOURCES LIST] SQL Client failed, falling back to Supabase client:', sqlErr);
+      console.error('[review-sources/list] SQL query failed, falling back:', sqlErr);
       customSources = []; // Ensure empty before fallback
     }
   }
@@ -82,7 +72,6 @@ export async function GET(req: NextRequest) {
   // Fallback to Supabase client if SQL failed or was unavailable
   if (customSources.length === 0) {
     try {
-      console.log('[REVIEW SOURCES LIST] Using Supabase client fallback');
       const { data, error: supaError } = await supa
         .from('review_sources')
         .select('*')
@@ -110,7 +99,7 @@ export async function GET(req: NextRequest) {
       
       mainQrScans = mainScansCount || 0;
     } catch (err) {
-      console.error('[REVIEW SOURCES LIST] Supabase fallback also failed:', err);
+      console.error('[review-sources/list] Supabase fallback failed:', err);
     }
   }
 
@@ -125,8 +114,6 @@ export async function GET(req: NextRequest) {
   };
 
   const results = [mainSource, ...customSources];
-
-  console.log(`[REVIEW SOURCES LIST] Returning ${results.length} sources for business ${businessId}:`, results.map(s => ({ id: s.id, name: s.name, slug: s.slug })));
 
   return NextResponse.json({ sources: results });
 }

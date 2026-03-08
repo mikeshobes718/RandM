@@ -36,19 +36,8 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
     setFetching(true);
     
     try {
-      // Wait for user to be available
-      let user = clientAuth.currentUser;
+      const user = clientAuth.currentUser;
       if (!user) {
-        // Poll for a second if not immediately available
-        for (let i = 0; i < 10; i++) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          user = clientAuth.currentUser;
-          if (user) break;
-        }
-      }
-
-      if (!user) {
-        console.warn('[MultipleQrManager] No user found after polling');
         setFetching(false);
         return;
       }
@@ -60,10 +49,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
       
       if (res.ok) {
         const data = await res.json();
-        console.log('[FETCH] Sources from API:', data.sources);
         setSources(data.sources || []);
-      } else {
-        console.error('[MultipleQrManager] List API failed:', res.status);
       }
     } catch (e) {
       console.error('[MultipleQrManager] Fetch error:', e);
@@ -102,22 +88,12 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
       
       if (res.ok && data.source) {
         setNewName('');
-        console.log('[CREATE] Source created successfully:', data.source);
-        
-        // Immediately add to local state for instant feedback
         const newSource = { ...data.source, scans: 0 };
         setSources(prev => {
           const filtered = prev.filter(s => s.id !== newSource.id);
-          const updated = [newSource, ...filtered];
-          console.log('[CREATE] Updated local state. Total sources:', updated.length);
-          return updated;
+          return [newSource, ...filtered];
         });
-        
-        // REMOVED redundant re-fetch that causes "disappearance" due to DB lag
-        // The CREATE API already returns the full source object.
-        console.log('[CREATE] Skipping redundant re-fetch to maintain local state stability.');
       } else {
-        console.error('[CREATE] Failed to create source:', data);
         setError(data.message || data.error || 'Failed to create tracking code. Please try again.');
       }
     } catch (e: any) {
@@ -161,8 +137,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
         headers: { Authorization: `Bearer ${tok}` }
       });
       if (res.ok) {
-        // We need to trigger a refresh of the dashboard data
-        window.location.reload();
+        fetchSources();
       }
     } catch (e) {
       console.error('Error deleting campaign:', e);
@@ -184,22 +159,22 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
     {
       title: "Restaurant Tables",
       description: "Elegant acrylic stands on every table for instant feedback.",
-      image: "/Users/mike/.cursor/projects/Users-mike/assets/qr_example_table.png"
+      image: "/images/qr_example_table.png"
     },
     {
       title: "Checkout Counters",
       description: "Strategic placement next to the payment terminal.",
-      image: "/Users/mike/.cursor/projects/Users-mike/assets/qr_example_counter.png"
+      image: "/images/qr_example_counter.png"
     },
     {
       title: "Business Cards",
       description: "A digital bridge on the back of every card you hand out.",
-      image: "/Users/mike/.cursor/projects/Users-mike/assets/qr_example_card.png"
+      image: "/images/qr_example_card.png"
     },
     {
       title: "Storefront Doors",
       description: "Capture reviews as customers exit your establishment.",
-      image: "/Users/mike/.cursor/projects/Users-mike/assets/qr_example_door.png"
+      image: "/images/qr_example_door.png"
     }
   ];
 

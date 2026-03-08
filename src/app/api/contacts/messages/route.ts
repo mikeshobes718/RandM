@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
-import { ensureFeedbackTables } from '@/lib/feedbackStorage';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,9 +35,6 @@ export async function GET(req: NextRequest) {
     if (!email && !phone) {
       return NextResponse.json({ error: 'Contact identifier required' }, { status: 400 });
     }
-
-    // Ensure the table exists before querying
-    try { await ensureFeedbackTables(); } catch {}
 
     let query = supa.from('contact_messages').select('*').eq('business_id', biz.id);
     

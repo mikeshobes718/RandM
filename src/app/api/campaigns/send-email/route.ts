@@ -3,7 +3,6 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { sendEmail } from '@/lib/emailService';
 import { directOutreachEmail } from '@/lib/emailTemplates';
-import { ensureFeedbackTables } from '@/lib/feedbackStorage';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,11 +93,6 @@ export async function POST(req: NextRequest) {
     // This ensures failed attempts are logged even if campaign insert throws.
     if (recipientDetails.length > 0) {
       try {
-        await ensureFeedbackTables();
-      } catch {
-        /* migration may fail; continue */
-      }
-      try {
         const messageLogs = recipientDetails.map(r => ({
           business_id: biz.id,
           contact: r.contact,
@@ -107,12 +101,9 @@ export async function POST(req: NextRequest) {
           status: r.status,
           error_message: r.error || null,
         }));
-        console.log("INSERTING INTO CONTACT_MESSAGES", JSON.stringify(messageLogs, null, 2));
         const { error: insertErr } = await supa.from('contact_messages').insert(messageLogs);
         if (insertErr) {
-          console.error('[send-email] Failed to log messages via REST:', insertErr.message);
-        } else {
-          console.log("[send-email] Successfully logged messages to contact_messages");
+          console.error('[send-email] Failed to log messages:', insertErr.message);
         }
       } catch (e) {
         console.error('[send-email] Failed to log messages:', e);

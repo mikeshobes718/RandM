@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { ensureFeedbackTables, recordReviewEvent } from '@/lib/feedbackStorage';
+import { recordReviewEvent } from '@/lib/feedbackStorage';
 import { normalizePhone } from '@/lib/phone';
 
 export const runtime = 'nodejs';
@@ -142,8 +142,6 @@ export async function POST(req: Request) {
   // Use the actual UUID for all database inserts
   const actualBusinessId = biz.id;
 
-  try { await ensureFeedbackTables(); } catch {}
-
   let feedbackId: string | null = null;
   if (normalizedRating < 5) {
     try {
@@ -161,8 +159,9 @@ export async function POST(req: Request) {
         .select('id')
         .single();
       if (!insertError && data?.id) feedbackId = data.id;
-    } catch {
-      // ignore insert error; feedback table may not exist yet or REST may be unavailable
+      if (insertError) console.error('[feedback/submit] Insert failed:', insertError.message);
+    } catch (e) {
+      console.error('[feedback/submit] Feedback insert threw:', e);
     }
   }
 

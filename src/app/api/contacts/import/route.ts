@@ -27,44 +27,6 @@ export async function POST(req: NextRequest) {
 
     const supa = getSupabaseAdmin();
 
-    // --- ONE-TIME SETUP LOGIC ---
-    try {
-      await supa.rpc('execute_sql', { sql: `
-        CREATE TABLE IF NOT EXISTS contacts (
-          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-          business_id uuid NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-          name text, email text, phone text, source text DEFAULT 'manual', metadata jsonb DEFAULT '{}'::jsonb,
-          created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now()
-        );
-        CREATE INDEX IF NOT EXISTS ix_contacts_business_id ON contacts (business_id);
-        CREATE INDEX IF NOT EXISTS ix_contacts_email ON contacts (email);
-        CREATE INDEX IF NOT EXISTS ix_contacts_phone ON contacts (phone);
-
-        CREATE TABLE IF NOT EXISTS campaigns (
-          id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-          business_id uuid NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-          name text NOT NULL, type text NOT NULL, body text NOT NULL, status text DEFAULT 'draft',
-          sent_count integer DEFAULT 0, click_count integer DEFAULT 0, metadata jsonb DEFAULT '{}'::jsonb,
-          created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now()
-        );
-        CREATE INDEX IF NOT EXISTS ix_campaigns_business_id ON campaigns (business_id);
-
-        -- Add unique constraints for de-duplication (scoped to business)
-        DO $$ 
-        BEGIN 
-          IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uq_contacts_business_email') THEN
-            ALTER TABLE contacts ADD CONSTRAINT uq_contacts_business_email UNIQUE (business_id, email);
-          END IF;
-          IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'uq_contacts_business_phone') THEN
-            ALTER TABLE contacts ADD CONSTRAINT uq_contacts_business_phone UNIQUE (business_id, phone);
-          END IF;
-        END $$;
-      ` });
-    } catch (e) {
-      console.warn('[CONTACTS IMPORT] RPC execute_sql failed or not available');
-    }
-    // ----------------------------
-
     // Get the user's business
     const { data: biz } = await supa
       .from('businesses')

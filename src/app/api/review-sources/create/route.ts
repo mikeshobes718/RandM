@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireUid } from '@/lib/authServer';
 import { getSupabaseAdmin, getSql } from '@/lib/supabaseAdmin';
-import { ensureFeedbackTables } from '@/lib/feedbackStorage';
 import { getPlanLimits } from '@/lib/entitlements';
 
 export const runtime = 'nodejs';
@@ -38,14 +37,6 @@ export async function POST(req: NextRequest) {
   
   if (!biz) return new NextResponse('Forbidden', { status: 403 });
 
-  // Ensure tables exist BEFORE querying
-  try { 
-    await ensureFeedbackTables(); 
-  } catch (e) {
-    console.error('Failed to ensure feedback tables:', e);
-    // Continue anyway - table might already exist
-  }
-
   // Enforce plan limits
   const limits = await getPlanLimits(uid);
   
@@ -58,8 +49,6 @@ export async function POST(req: NextRequest) {
       .eq('business_id', businessId);
     
     if (countError && countError.message?.includes('schema cache')) {
-      // Table might not be in schema cache, try ensuring again and retry
-      await ensureFeedbackTables();
       const retry = await supa
         .from('review_sources')
         .select('*', { count: 'exact', head: true })
@@ -80,14 +69,11 @@ export async function POST(req: NextRequest) {
 
   const slug = `${slugify(name)}-${Math.random().toString(36).substring(2, 6)}`;
 
-  console.log('[REVIEW SOURCES CREATE] Attempting to create source:', { businessId, name, slug });
-  
   const sql = getSql();
   let source: any = null;
 
   if (sql) {
     try {
-      console.log('[REVIEW SOURCES CREATE] Using direct SQL connection');
       const result = await sql`
         INSERT INTO review_sources (business_id, name, slug)
         VALUES (${businessId}, ${name}, ${slug})
@@ -95,21 +81,13 @@ export async function POST(req: NextRequest) {
       `;
       if (result && result.length > 0) {
         source = result[0];
-        console.log('[REVIEW SOURCES CREATE] SQL insert succeeded:', source.id);
-      } else {
-        console.warn('[REVIEW SOURCES CREATE] SQL returned empty result');
       }
     } catch (sqlErr: any) {
-      console.error('[REVIEW SOURCES CREATE] SQL Insert failed:', sqlErr);
-      console.error('[REVIEW SOURCES CREATE] SQL Error details:', sqlErr.message);
-      // Fallback to Supabase client if SQL fails
+      console.error('[review-sources/create] SQL insert failed:', sqlErr.message);
     }
-  } else {
-    console.log('[REVIEW SOURCES CREATE] No SQL client available, using Supabase');
   }
 
   if (!source) {
-    console.log('[REVIEW SOURCES CREATE] Attempting Supabase insert');
     const { data, error } = await supa
       .from('review_sources')
       .insert({
@@ -121,20 +99,15 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
 
     if (error) {
-      console.error('[REVIEW SOURCES CREATE] Supabase Insert failed:', error);
-      console.error('[REVIEW SOURCES CREATE] Error details:', error.message, error.details, error.hint);
+      console.error('[review-sources/create] Supabase insert failed:', error.message);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     source = data;
-    console.log('[REVIEW SOURCES CREATE] Supabase insert succeeded:', source?.id);
   }
 
   if (!source) {
-    console.error('[REVIEW SOURCES CREATE] No source was created despite no errors');
     return NextResponse.json({ error: 'Failed to create source' }, { status: 500 });
   }
-
-  console.log('[REVIEW SOURCES CREATE] Successfully created source:', { id: source.id, name: source.name, slug: source.slug, business_id: source.business_id });
 
   return NextResponse.json({ source });
 }

@@ -44,10 +44,6 @@ export async function GET(req: Request) {
       const namePattern = id.replace(/-/g, ' ');
       const nameRes = await supa.from('businesses').select(BASE_COLUMNS).ilike('name', namePattern).maybeSingle();
       data = nameRes.data;
-      if (data && !data.slug) {
-        try { await supa.from('businesses').update({ slug: id }).eq('id', data.id); } catch {}
-        data.slug = id;
-      }
     }
   }
 
