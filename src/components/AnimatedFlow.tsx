@@ -24,11 +24,11 @@ export function AnimatedFlow() {
   useEffect(() => {
     setStep(0);
     const timers = [
-      setTimeout(() => setStep(1), 2000),
-      setTimeout(() => setStep(2), 4500),
-      setTimeout(() => setStep(3), 7500),
-      setTimeout(() => setStep(4), 10500),
-      setTimeout(() => setStep(5), 13000),
+      setTimeout(() => setStep(1), 3000),
+      setTimeout(() => setStep(2), 7000),
+      setTimeout(() => setStep(3), 11500),
+      setTimeout(() => setStep(4), 16000),
+      setTimeout(() => setStep(5), 19000),
     ];
     return () => timers.forEach(clearTimeout);
   }, [playCount]);

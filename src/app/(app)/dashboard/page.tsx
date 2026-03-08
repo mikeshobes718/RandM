@@ -77,6 +77,9 @@ type Campaign = {
   date: string;
 };
 
+import { MiniHowItWorks } from '@/components/MiniHowItWorks';
+import { QrCode, Smartphone, GitFork, TrendingUp } from 'lucide-react';
+
 function DashboardContent() {
   const searchParams = useSearchParams();
   const [business, setBusiness] = useState<Business | null>(null);
@@ -431,60 +434,16 @@ function DashboardContent() {
 
                   {/* Right: The Sequence Explanation */}
                   <div className="lg:w-2/3 flex flex-col justify-between">
-                    <div className="mb-6">
-                      <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-lg bg-brand/10 text-brand flex items-center justify-center text-xs">✨</span>
-                        Smart QR Engine
-                      </h3>
-                      <p className="text-sm text-slate-500 font-medium">
-                        Our system automatically filters customers based on their experience to protect and boost your reputation. Here's exactly what happens:
-                      </p>
-                    </div>
-
-                      {/* Sequence Diagram */}
-                      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-100 relative mb-8 shadow-sm">
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-10 sm:gap-6 relative z-10">
-                          {/* Step 1 */}
-                          <div className="flex flex-col items-center text-center w-full sm:w-1/3 relative">
-                            <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl mb-3 shadow-sm border border-slate-100 z-10 relative bg-white">📱</div>
-                            <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1">1. Customer Scans</h4>
-                            <p className="text-[10px] text-slate-500 font-medium px-2">They scan the code with their phone</p>
-                            {/* Mobile Line */}
-                            <div className="sm:hidden absolute top-14 bottom-[-40px] w-px bg-slate-100 z-0"></div>
-                          </div>
-
-                          {/* Step 2 */}
-                          <div className="flex flex-col items-center text-center w-full sm:w-1/3 relative">
-                            <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-2xl mb-3 shadow-sm border border-blue-100 z-10 relative bg-white">⭐</div>
-                            <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest mb-1">2. Star Rating</h4>
-                            <p className="text-[10px] text-slate-500 font-medium px-2">They select 1 to 5 stars privately</p>
-                            {/* Mobile Line */}
-                            <div className="sm:hidden absolute top-14 bottom-[-40px] w-px bg-slate-100 z-0"></div>
-                          </div>
-
-                        {/* Step 3 (Branching) */}
-                        <div className="flex flex-col w-full sm:w-1/3 gap-3">
-                          <div className="w-full bg-emerald-50 border border-emerald-100 rounded-xl p-3 shadow-sm flex items-center gap-3 text-left">
-                            <div className="w-8 h-8 flex-shrink-0 bg-white border border-emerald-100 rounded-full flex items-center justify-center text-[12px] font-black text-emerald-600 shadow-sm">5</div>
-                            <div>
-                              <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-0.5">Public Review</h4>
-                              <p className="text-[9px] text-emerald-600/80 font-medium">Routed to Google Maps</p>
-                            </div>
-                          </div>
-                          
-                          <div className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm flex items-center gap-3 text-left">
-                            <div className="w-8 h-8 flex-shrink-0 bg-white border border-slate-200 rounded-full flex items-center justify-center text-[10px] font-black text-slate-500 shadow-sm">1-4</div>
-                            <div>
-                              <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-widest mb-0.5">Private Feedback</h4>
-                              <p className="text-[9px] text-slate-500 font-medium">Sent directly to your inbox</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Connecting Lines (Desktop only) */}
-                      <div className="hidden sm:block absolute top-[52px] left-[16%] right-[16%] h-[2px] bg-slate-100 z-0"></div>
-                    </div>
+                    <MiniHowItWorks 
+                      className="mt-0 mb-8 flex-1"
+                      title="Smart QR Engine"
+                      steps={[
+                        { icon: QrCode, title: "1. Print QR", desc: "Place your QR code on receipts, tables, or counters." },
+                        { icon: Smartphone, title: "2. Customer Scans", desc: "They scan the code with their phone camera." },
+                        { icon: GitFork, title: "3. Smart Filter", desc: "5-stars go to Google. 1-4 stars go to your inbox." },
+                        { icon: TrendingUp, title: "4. Grow", desc: "Watch your public rating climb automatically." }
+                      ]}
+                    />
 
                     {/* Pro Tips */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-auto">

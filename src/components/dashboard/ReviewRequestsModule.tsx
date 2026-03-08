@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { clientAuth } from '@/lib/firebaseClient';
+import { MiniHowItWorks } from '@/components/MiniHowItWorks';
+import { Users, MessageSquareText, Send, BarChart3 } from 'lucide-react';
 
 interface Campaign {
   id?: string;
@@ -290,9 +293,20 @@ export default function ReviewRequestsModule({
               </div>
             ))}
           </div>
-        )}
+          )}
         </div>
       </div>
+
+      <MiniHowItWorks 
+        className="mt-10"
+        title="How Customer Outreach Works"
+        steps={[
+          { icon: Users, title: "1. Import Contacts", desc: "Upload a CSV or add your customers manually." },
+          { icon: MessageSquareText, title: "2. Craft Message", desc: "Write a custom SMS or Email inviting them back." },
+          { icon: Send, title: "3. Send Campaign", desc: "Blast your message out to your selected audience." },
+          { icon: BarChart3, title: "4. Track Results", desc: "Monitor clicks, deliveries, and new reviews generated." }
+        ]}
+      />
     </div>
   );
 }

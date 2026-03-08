@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState, Suspense } from 'react';
 import { formatPhone } from '@/lib/phone';
 import { inputClass, primaryButtonClass, secondaryButtonClass, premiumCardClass } from '@/lib/styles';
 import Link from 'next/link';
+import { MiniHowItWorks } from '@/components/MiniHowItWorks';
+import { MessageSquare, QrCode, ShieldAlert, Mail } from 'lucide-react';
 
 type Item = {
   id: string;
@@ -533,6 +535,18 @@ function FeedbackContent({ business }: { business: any }) {
           </button>
         </div>
       )}
+
+      {/* How it works visual */}
+      <MiniHowItWorks 
+        className="mt-16"
+        title="How Private Feedback Works"
+        steps={[
+          { icon: MessageSquare, title: "1. Customer Issue", desc: "A customer has a less-than-perfect experience." },
+          { icon: QrCode, title: "2. Scans QR", desc: "They scan your QR code and select 1 to 4 stars." },
+          { icon: ShieldAlert, title: "3. Private Capture", desc: "They are routed to a private form instead of Google." },
+          { icon: Mail, title: "4. You Resolve It", desc: "You get their contact info to make it right privately." }
+        ]}
+      />
     </div>
   );
 }
