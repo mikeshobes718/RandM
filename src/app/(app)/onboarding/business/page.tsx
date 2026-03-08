@@ -3,6 +3,8 @@ import BusinessSetupForm from "@/components/onboarding/BusinessSetupForm";
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { clientAuth } from '@/lib/firebaseClient';
+import { onAuthStateChanged } from 'firebase/auth';
 
 function OnboardingContent() {
   const searchParams = useSearchParams();
@@ -13,25 +15,29 @@ function OnboardingContent() {
   useEffect(() => {
     if (isEditMode) return;
 
-    const checkPlan = async () => {
+    const unsubscribe = onAuthStateChanged(clientAuth, async (user) => {
+      if (!user) {
+        router.replace('/login?redirect=/onboarding/business');
+        return;
+      }
+
       try {
-        const response = await fetch('/api/plan/status');
+        const token = await user.getIdToken();
+        const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+
+        const response = await fetch('/api/plan/status', { headers });
         if (response.ok) {
           const data = await response.json();
-          console.log('[ONBOARDING] Plan status check:', data);
           if (data.status === 'none') {
-            console.log('[ONBOARDING] No plan found, redirecting to /select-plan');
             router.replace('/select-plan');
             return;
           }
         } else if (response.status === 401) {
-          console.log('[ONBOARDING] Unauthorized, redirecting to login');
           router.replace('/login?redirect=/onboarding/business');
           return;
         }
 
-        // Also check if business is already setup
-        const bizRes = await fetch('/api/businesses/me');
+        const bizRes = await fetch('/api/businesses/me', { headers });
         if (bizRes.ok) {
           const bizData = await bizRes.json();
           if (bizData.business?.google_place_id) {
@@ -40,13 +46,13 @@ function OnboardingContent() {
           }
         }
       } catch (err) {
-        console.error('[ONBOARDING] Failed to check status:', err);
+        console.error('[onboarding] Failed to check status:', err);
       } finally {
         setLoading(false);
       }
-    };
+    });
 
-    checkPlan();
+    return () => unsubscribe();
   }, [isEditMode, router]);
 
   if (loading) {

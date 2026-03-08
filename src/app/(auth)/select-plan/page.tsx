@@ -1,16 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { clientAuth } from '@/lib/firebaseClient';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
 export default function SelectPlanPage() {
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<'starter' | 'pro' | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const firebaseUserRef = useRef<User | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(clientAuth, async (user) => {
@@ -25,37 +27,30 @@ export default function SelectPlanPage() {
         return;
       }
 
-      // Check if they already have a plan to skip this step
+      firebaseUserRef.current = user;
+
       try {
-        console.log('[SELECT-PLAN] Checking plan status...');
-        const res = await fetch('/api/plan/status');
+        const token = await user.getIdToken();
+        const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+
+        const res = await fetch('/api/plan/status', { headers });
         if (res.ok) {
           const data = await res.json();
-          console.log('[SELECT-PLAN] Plan status data:', data);
           if (data.status !== 'none') {
-            // Already have a plan, check if they also have a business
-            console.log('[SELECT-PLAN] Active plan found, checking business...');
-            const bizRes = await fetch('/api/businesses/me');
+            const bizRes = await fetch('/api/businesses/me', { headers });
             if (bizRes.ok) {
               const bizData = await bizRes.json();
-              console.log('[SELECT-PLAN] Business data:', bizData);
               if (bizData.business?.google_place_id) {
-                console.log('[SELECT-PLAN] Business complete, redirecting to dashboard');
                 router.replace('/dashboard');
               } else {
-                console.log('[SELECT-PLAN] Business incomplete, redirecting to onboarding');
                 router.replace('/onboarding/business');
               }
               return;
             }
-          } else {
-            console.log('[SELECT-PLAN] No active plan found (status: none)');
           }
-        } else {
-          console.error('[SELECT-PLAN] Plan status fetch failed:', res.status);
         }
       } catch (err) {
-        console.error('[SELECT-PLAN] Plan check error:', err);
+        console.error('[select-plan] Plan check error:', err);
       }
 
       setAuthLoading(false);
@@ -67,17 +62,24 @@ export default function SelectPlanPage() {
   const handlePlanSelect = async (plan: 'starter' | 'pro') => {
     setLoading(true);
     setSelectedPlan(plan);
+    setError(null);
     
     try {
-      // Store selected plan in localStorage for the onboarding flow
+      const fbUser = firebaseUserRef.current;
+      if (!fbUser) {
+        router.replace('/login?redirect=/select-plan');
+        return;
+      }
+
+      const token = await fbUser.getIdToken();
       localStorage.setItem('selectedPlan', plan);
       
-      // If Pro plan selected, redirect to Stripe checkout
       if (plan === 'pro') {
         const response = await fetch('/api/stripe/checkout', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
@@ -91,19 +93,36 @@ export default function SelectPlanPage() {
           window.location.href = url;
           return;
         }
+
+        setError('Failed to start checkout. Please try again.');
+        setLoading(false);
+        setSelectedPlan(null);
+        return;
       }
       
-      // For Starter plan, proceed directly to business setup
-      await fetch('/api/plan/start', {
+      const res = await fetch('/api/plan/start', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ planId: 'starter' }),
         credentials: 'include',
       });
 
+      if (!res.ok) {
+        const msg = await res.text().catch(() => 'Unknown error');
+        console.error('[select-plan] plan/start failed:', res.status, msg);
+        setError('Failed to activate plan. Please try again.');
+        setLoading(false);
+        setSelectedPlan(null);
+        return;
+      }
+
       router.push('/onboarding/business?plan=starter');
-    } catch (error) {
-      console.error('Error selecting plan:', error);
+    } catch (err) {
+      console.error('[select-plan] Error selecting plan:', err);
+      setError('Something went wrong. Please try again.');
       setLoading(false);
       setSelectedPlan(null);
     }
@@ -255,6 +274,12 @@ export default function SelectPlanPage() {
             </button>
           </div>
         </div>
+
+        {error && (
+          <div className="max-w-4xl mx-auto mt-8 p-4 bg-red-50 border border-red-200 rounded-2xl text-center">
+            <p className="text-sm text-red-600 font-bold">{error}</p>
+          </div>
+        )}
 
         <div className="text-center mt-12">
           <p className="text-sm text-slate-400 font-medium">
