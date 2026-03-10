@@ -186,6 +186,7 @@ export function reviewRequestEmail(customerName: string | undefined, bodyContent
 
 export function directOutreachEmail(subject: string, messageBody: string, businessName: string, ctaUrl?: string): { html: string; text: string } {
   // We use a custom minimal layout for direct outreach so it looks like it's from the business
+  // Clean, minimal design to improve deliverability and reduce spam flagging
   const html = `<!doctype html>
   <html>
   <head>
@@ -193,39 +194,34 @@ export function directOutreachEmail(subject: string, messageBody: string, busine
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${escapeHtml(subject)}</title>
   </head>
-  <body style="margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 16px;">
+  <body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#333333;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;padding:20px;">
       <tr>
-        <td align="center">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 4px 12px rgba(0,0,0,0.05);">
-            <!-- Header -->
-            <tr>
-              <td style="padding:24px 32px;border-bottom:1px solid #f1f5f9;background:#ffffff;border-radius:12px 12px 0 0;">
-                <div style="font-weight:700;font-size:20px;color:#0f172a;">${escapeHtml(businessName)}</div>
-              </td>
-            </tr>
+        <td align="left">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;">
             <!-- Body -->
             <tr>
-              <td style="padding:32px;color:#334155;font-size:16px;line-height:1.6;">
-                <div style="white-space:pre-wrap;font-family:inherit;">${escapeHtml(messageBody)}</div>
+              <td style="padding:0;color:#333333;font-size:16px;line-height:1.5;">
+                <div style="white-space:pre-wrap;margin-bottom:24px;">${escapeHtml(messageBody)}</div>
+                
                 ${ctaUrl ? `
-                <div style="margin-top:32px;">
-                  <a href="${escapeHtml(ctaUrl)}" style="display:inline-block;background:#2563eb;color:#ffffff;font-weight:600;font-size:15px;text-decoration:none;padding:12px 24px;border-radius:8px;">Leave a Review</a>
+                <div style="margin:32px 0;">
+                  <a href="${escapeHtml(ctaUrl)}" style="display:inline-block;background:#2563eb;color:#ffffff;font-weight:600;font-size:15px;text-decoration:none;padding:12px 24px;border-radius:6px;">Leave a Review</a>
                 </div>
                 ` : ''}
+
+                <div style="margin-top:40px;padding-top:20px;border-top:1px solid #eeeeee;font-size:14px;color:#666666;">
+                  Best regards,<br/>
+                  <strong>${escapeHtml(businessName)}</strong>
+                </div>
               </td>
             </tr>
             <!-- Footer -->
             <tr>
-              <td style="padding:24px 32px;background:#f8fafc;border-top:1px solid #f1f5f9;border-radius:0 0 12px 12px;text-align:center;">
-                <div style="font-size:12px;color:#64748b;margin-bottom:8px;">
-                  This message was sent to you by ${escapeHtml(businessName)}.
-                </div>
-                <div style="font-size:11px;color:#94a3b8;">
-                  Powered by <a href="https://reviewsandmarketing.com" style="color:#64748b;text-decoration:underline;">Reviews & Marketing</a>
-                </div>
-                <div style="margin-top:12px;font-size:11px;color:#94a3b8;">
-                  <a href="mailto:unsubscribe" style="color:#94a3b8;text-decoration:underline;">Unsubscribe</a>
+              <td style="padding:40px 0 20px 0;text-align:left;">
+                <div style="font-size:11px;color:#999999;line-height:1.6;">
+                  This message was sent by ${escapeHtml(businessName)} via Reviews & Marketing.<br/>
+                  To stop receiving these emails, <a href="mailto:support@reviewsandmarketing.com?subject=Unsubscribe%20from%20${encodeURIComponent(businessName)}" style="color:#999999;text-decoration:underline;">click here to unsubscribe</a>.
                 </div>
               </td>
             </tr>
@@ -236,7 +232,7 @@ export function directOutreachEmail(subject: string, messageBody: string, busine
   </body>
   </html>`;
 
-  const text = `${messageBody}${ctaUrl ? `\n\nLeave a Review: ${ctaUrl}` : ''}\n\n---\nSent by ${businessName}.\nPowered by Reviews & Marketing.\nTo unsubscribe, reply with "unsubscribe" in the subject line.`;
+  const text = `${messageBody}${ctaUrl ? `\n\nLeave a Review: ${ctaUrl}` : ''}\n\nBest regards,\n${businessName}\n\n---\nTo unsubscribe, reply with "unsubscribe" or click here: mailto:support@reviewsandmarketing.com?subject=Unsubscribe%20from%20${encodeURIComponent(businessName)}`;
   return { html, text };
 }
 
