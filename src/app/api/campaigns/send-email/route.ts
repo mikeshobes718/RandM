@@ -65,11 +65,20 @@ export async function POST(req: NextRequest) {
 
     for (const email of recipients) {
       try {
+        // Use the Business Name as the sender display name to improve deliverability
+        // Format: "Business Name <sender@domain.com>"
+        const { EMAIL_FROM } = getEnv();
+        const fromEmailOnly = EMAIL_FROM.includes('<') 
+          ? EMAIL_FROM.split('<')[1].split('>')[0] 
+          : EMAIL_FROM;
+        const fromWithBusinessName = `"${biz.name}" <${fromEmailOnly}>`;
+
         const result = await sendEmail({
           to: email,
           subject,
           html,
           text,
+          from: fromWithBusinessName,
           replyTo: ownerEmail,
         });
 
