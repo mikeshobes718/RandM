@@ -33,20 +33,23 @@ export default function SelectPlanPage() {
         const token = await user.getIdToken();
         const headers: HeadersInit = { Authorization: `Bearer ${token}` };
 
+        // If user already has a business, go straight to dashboard
+        const bizRes = await fetch('/api/businesses/me', { headers });
+        if (bizRes.ok) {
+          const bizData = await bizRes.json();
+          if (bizData.business?.id) {
+            router.replace('/dashboard');
+            return;
+          }
+        }
+
+        // No business — check if they have a plan and send to onboarding
         const res = await fetch('/api/plan/status', { headers });
         if (res.ok) {
           const data = await res.json();
           if (data.status !== 'none') {
-            const bizRes = await fetch('/api/businesses/me', { headers });
-            if (bizRes.ok) {
-              const bizData = await bizRes.json();
-              if (bizData.business?.google_place_id) {
-                router.replace('/dashboard');
-              } else {
-                router.replace('/onboarding/business');
-              }
-              return;
-            }
+            router.replace('/onboarding/business');
+            return;
           }
         }
       } catch (err) {

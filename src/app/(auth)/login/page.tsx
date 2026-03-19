@@ -8,6 +8,7 @@ async function getPostLoginRedirect(headers?: HeadersInit): Promise<string> {
   try {
     const opts: RequestInit = { credentials: 'include', headers };
 
+    // If user has a business, always send to dashboard — regardless of plan state
     const bizResponse = await fetch('/api/businesses/me', opts);
     if (bizResponse.ok) {
       const bizData = await bizResponse.json();
@@ -16,17 +17,24 @@ async function getPostLoginRedirect(headers?: HeadersInit): Promise<string> {
       }
     }
 
+    // No business yet — check if they have a plan so we send them to onboarding
     const planResponse = await fetch('/api/plan/status', opts);
     if (planResponse.ok) {
       const planData = await planResponse.json();
       if (planData && planData.status !== 'none') {
         return '/onboarding/business';
       }
+      // Confirmed no plan — send to select-plan
+      if (planData && planData.status === 'none') {
+        return '/select-plan';
+      }
     }
 
-    return '/select-plan';
+    // If any API fails, default to dashboard — a logged-in user should
+    // never be stuck at select-plan just because of a transient API error
+    return '/dashboard';
   } catch {
-    return '/select-plan';
+    return '/dashboard';
   }
 }
 
