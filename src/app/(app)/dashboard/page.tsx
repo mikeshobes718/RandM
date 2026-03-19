@@ -169,8 +169,12 @@ function DashboardContent() {
         setRecentCampaigns(data.recentCampaigns ?? []);
         setRates(data.rates ?? { delivered: 0, click: 0, optOut: 0 });
 
-        // If the API returned data, the user is authenticated — never kick them
-        // off the dashboard. Show what we have, even if plan status is unusual.
+        // Only redirect to onboarding if there is genuinely no business.
+        // NEVER redirect to /select-plan from the dashboard.
+        if (!data.business) {
+          window.location.replace('/onboarding/business');
+          return;
+        }
 
       } catch (err: any) {
         setError(err.message);

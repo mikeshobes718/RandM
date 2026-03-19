@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { clientAuth } from '@/lib/firebaseClient';
 import { onAuthStateChanged } from 'firebase/auth';
+import { resolveRoute } from '@/lib/resolveRoute';
 
 function OnboardingContent() {
   const searchParams = useSearchParams();
@@ -25,26 +26,10 @@ function OnboardingContent() {
         const token = await user.getIdToken();
         const headers: HeadersInit = { Authorization: `Bearer ${token}` };
 
-        // If user already has a business, send to dashboard
-        const bizRes = await fetch('/api/businesses/me', { headers });
-        if (bizRes.ok) {
-          const bizData = await bizRes.json();
-          if (bizData.business?.id) {
-            router.replace('/dashboard');
-            return;
-          }
-        }
-
-        // Only redirect to select-plan if we positively confirm no plan
-        const response = await fetch('/api/plan/status', { headers });
-        if (response.ok) {
-          const data = await response.json();
-          if (data.status === 'none') {
-            router.replace('/select-plan');
-            return;
-          }
-        } else if (response.status === 401) {
-          router.replace('/login?redirect=/onboarding/business');
+        const dest = await resolveRoute(token);
+        // Only stay on onboarding if resolveRoute says so
+        if (dest !== '/onboarding/business') {
+          router.replace(dest);
           return;
         }
       } catch (err) {

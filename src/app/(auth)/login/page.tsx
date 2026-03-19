@@ -2,41 +2,8 @@
 import { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword, confirmPasswordReset } from 'firebase/auth';
 import { clientAuth } from '@/lib/firebaseClient';
+import { resolveRoute } from '@/lib/resolveRoute';
 import Link from 'next/link';
-
-async function getPostLoginRedirect(headers?: HeadersInit): Promise<string> {
-  try {
-    const opts: RequestInit = { credentials: 'include', headers };
-
-    // If user has a business, always send to dashboard — regardless of plan state
-    const bizResponse = await fetch('/api/businesses/me', opts);
-    if (bizResponse.ok) {
-      const bizData = await bizResponse.json();
-      if (bizData?.business?.id) {
-        return '/dashboard';
-      }
-    }
-
-    // No business yet — check if they have a plan so we send them to onboarding
-    const planResponse = await fetch('/api/plan/status', opts);
-    if (planResponse.ok) {
-      const planData = await planResponse.json();
-      if (planData && planData.status !== 'none') {
-        return '/onboarding/business';
-      }
-      // Confirmed no plan — send to select-plan
-      if (planData && planData.status === 'none') {
-        return '/select-plan';
-      }
-    }
-
-    // If any API fails, default to dashboard — a logged-in user should
-    // never be stuck at select-plan just because of a transient API error
-    return '/dashboard';
-  } catch {
-    return '/dashboard';
-  }
-}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -121,8 +88,7 @@ export default function LoginPage() {
         credentials: 'include',
       });
 
-      const headers: HeadersInit = { Authorization: `Bearer ${token}` };
-      const redirectUrl = await getPostLoginRedirect(headers);
+      const redirectUrl = await resolveRoute(token);
       window.location.href = redirectUrl;
     } catch (err: any) {
       setError('Invalid email or password.');

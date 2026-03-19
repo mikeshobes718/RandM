@@ -2,47 +2,18 @@
 import { useEffect, useState } from 'react';
 import { clientAuth } from '@/lib/firebaseClient';
 import { onAuthStateChanged, applyActionCode } from 'firebase/auth';
+import { resolveRoute } from '@/lib/resolveRoute';
 import Link from 'next/link';
 
 async function getPostVerificationRedirect(): Promise<string> {
   try {
-    // Build auth headers from Firebase if available
-    const headers: HeadersInit = {};
-    try {
-      const { clientAuth: auth } = await import('@/lib/firebaseClient');
-      const user = auth.currentUser;
-      if (user) {
-        const token = await user.getIdToken();
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-    } catch {}
-    const opts: RequestInit = { credentials: 'include', headers };
-
-    // If user has a business, go to dashboard
-    const bizRes = await fetch('/api/businesses/me', opts);
-    if (bizRes.ok) {
-      const bizData = await bizRes.json();
-      if (bizData?.business?.id) {
-        return '/dashboard';
-      }
+    const user = clientAuth.currentUser;
+    if (user) {
+      const token = await user.getIdToken();
+      return await resolveRoute(token);
     }
-
-    // Check plan status
-    const planRes = await fetch('/api/plan/status', opts);
-    if (planRes.ok) {
-      const planData = await planRes.json();
-      if (planData.status === 'none') {
-        return '/select-plan';
-      }
-      return '/onboarding/business';
-    }
-
-    // API errors default to select-plan for genuinely new verified users
-    return '/select-plan';
-  } catch (error) {
-    console.error('[VERIFY] Redirect check failed:', error);
-    return '/select-plan';
-  }
+  } catch {}
+  return '/select-plan';
 }
 
 export default function VerifyEmailPage() {
