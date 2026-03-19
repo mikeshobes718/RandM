@@ -15,7 +15,9 @@ type Payload = {
   google_maps_write_review_uri?: string | null;
   review_link?: string | null;
   google_rating?: number | null;
+  google_photo_url?: string | null;
   address?: string | null;
+  business_type?: string | null;
   contact_phone?: string | null;
   idToken?: string;
   email?: string;
@@ -34,7 +36,9 @@ async function readPayload(req: Request): Promise<Payload> {
       google_maps_write_review_uri: get('google_maps_write_review_uri'),
       review_link: get('review_link'),
       google_rating: num('google_rating'),
+      google_photo_url: get('google_photo_url'),
       address: get('address'),
+      business_type: get('business_type'),
       contact_phone: get('contact_phone'),
       idToken: get('idToken'),
       email: get('email'),
@@ -44,6 +48,7 @@ async function readPayload(req: Request): Promise<Payload> {
 }
 
 export async function POST(req: Request) {
+ try {
   // Auth: prefer session cookie; else idToken from header/body/form
   let uid: string | null = null;
   let email: string | null = null;
@@ -161,7 +166,9 @@ export async function POST(req: Request) {
   maybeAssign('google_maps_write_review_uri', 'google_maps_write_review_uri');
   maybeAssign('review_link', 'review_link');
   maybeAssign('google_rating', 'google_rating');
+  maybeAssign('google_photo_url', 'google_photo_url');
   maybeAssign('address', 'address');
+  maybeAssign('business_type', 'business_type');
   maybeAssign('contact_phone', 'contact_phone');
 
   let { error }: { error: PostgrestError | null } = await supabase.from('businesses').upsert(payloadRow, { onConflict: 'owner_uid' });
@@ -219,4 +226,8 @@ export async function POST(req: Request) {
     res.headers.set('Set-Cookie', `onboarding_complete=1; Path=/; Max-Age=${60*60*24*365}; SameSite=Lax`);                                                      
   }
   return res;
+ } catch (err) {
+  console.error('[upsert/form] Unhandled error:', err);
+  return new NextResponse('Server error — please try again', { status: 500 });
+ }
 }

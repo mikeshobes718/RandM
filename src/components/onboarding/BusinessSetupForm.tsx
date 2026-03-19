@@ -241,8 +241,7 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
         }
       }
     } catch (err: any) {
-      const errorMessage = err?.message || 'Unknown error';
-      setError(`Network error: ${errorMessage}. Please check your connection and try again.`);
+      setError('Could not save your business. Please wait a moment and try again.');
     } finally {
       setLoading(false);
     }
