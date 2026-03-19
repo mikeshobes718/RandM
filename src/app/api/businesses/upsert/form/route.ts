@@ -6,17 +6,6 @@ import { normalizePhone } from '@/lib/phone';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
-  try {
-    const sql = getSql();
-    if (!sql) return NextResponse.json({ ok: false, error: 'getSql() returned null — SUPABASE_DB_PASSWORD missing' });
-    const rows = await sql`SELECT 1 as test`;
-    return NextResponse.json({ ok: true, test: rows[0]?.test, msg: 'DB connection works' });
-  } catch (err) {
-    return NextResponse.json({ ok: false, error: String(err) });
-  }
-}
-
 type Payload = {
   name: string;
   google_place_id?: string | null;

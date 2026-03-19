@@ -21,6 +21,8 @@ const ServerEnvSchema = z.object({
 
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  /** Full Postgres URI from Supabase (Settings → Database). Preferred over discrete DB_* vars. */
+  SUPABASE_DATABASE_URL: z.string().min(1).optional(),
   // Optional direct DB fallback (Supabase Postgres) when HTTP fetch fails
   SUPABASE_DB_PASSWORD: z.string().min(1).optional(),
   SUPABASE_DB_HOST: z.string().min(1).optional(),

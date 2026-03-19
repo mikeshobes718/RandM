@@ -12,26 +12,43 @@ export function getSupabaseAdmin(): SupabaseClient {
   return _supabase;
 }
 
+function stripEnvQuotes(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const t = value.trim();
+  if (t.length >= 2) {
+    if ((t.startsWith('"') && t.endsWith('"')) || (t.startsWith("'") && t.endsWith("'"))) {
+      return t.slice(1, -1);
+    }
+  }
+  return t;
+}
+
 let _sql: any = null;
 export function getSql() {
   if (_sql) return _sql;
   const env = getEnv();
-  const password = env.SUPABASE_DB_PASSWORD;
-  if (!password) return null;
 
-  const host = env.SUPABASE_DB_HOST || 'aws-0-us-east-1.pooler.supabase.com';
-  const port = Number(env.SUPABASE_DB_PORT) || 6543;
-  const user = env.SUPABASE_DB_USER || 'postgres.rhnxzpbhoqbvoqyqmfox';
-  const database = env.SUPABASE_DB_NAME || 'postgres';
+  const pooledUrl = stripEnvQuotes(env.SUPABASE_DATABASE_URL);
+  const password = stripEnvQuotes(env.SUPABASE_DB_PASSWORD);
+  if (!pooledUrl && !password) return null;
 
-  _sql = postgres({
-    host,
-    port,
-    database,
-    username: user,
-    password,
+  const host = stripEnvQuotes(env.SUPABASE_DB_HOST) || 'aws-0-us-east-1.pooler.supabase.com';
+  const port = Number(stripEnvQuotes(env.SUPABASE_DB_PORT)) || 6543;
+  const user = stripEnvQuotes(env.SUPABASE_DB_USER) || 'postgres.rhnxzpbhoqbvoqyqmfox';
+  const database = stripEnvQuotes(env.SUPABASE_DB_NAME) || 'postgres';
+
+  // Supabase + postgres.js: object-style config often triggers SASL_SIGNATURE_MISMATCH on the
+  // pooler; building a URL (with encoded password) matches what Supabase docs recommend.
+  const connectionString =
+    pooledUrl ||
+    `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password!)}@${host}:${port}/${database}`;
+
+  _sql = postgres(connectionString, {
     ssl: 'require',
-    prepare: false, // Required for Supabase transaction pooler
+    prepare: false, // transaction pooler (6543)
+    max: 1, // serverless-friendly
+    connect_timeout: 15,
+    idle_timeout: 20,
   });
 
   return _sql;
