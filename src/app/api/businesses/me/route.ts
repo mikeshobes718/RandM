@@ -30,6 +30,7 @@ export async function GET(req: Request) {
     }
   }
 
+  let supaError = '';
   try {
     const supabaseAdmin = getSupabaseAdmin();
     const { data, error } = await supabaseAdmin
@@ -42,11 +43,12 @@ export async function GET(req: Request) {
       const row = Array.isArray(data) ? (data[0] || null) : (data as unknown as null);
       return NextResponse.json({ business: row });
     }
+    supaError = JSON.stringify(error);
     console.error('[API/BUSINESSES/ME] Supabase error:', error);
   } catch (err) {
+    supaError = err instanceof Error ? err.message : String(err);
     console.error('[API/BUSINESSES/ME] Supabase fetch failed:', err);
   }
-  // Fallback to direct Postgres if REST fetch fails (e.g., egress blocked)
   try {
     const pool = getPgPool();
     if (!pool) throw new Error('pg not configured');
@@ -56,6 +58,6 @@ export async function GET(req: Request) {
     return NextResponse.json({ business: row });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    return new NextResponse(`pg fallback failed: ${msg}`, { status: 500 });
+    return NextResponse.json({ error: 'businesses/me failed', supabase: supaError, pg: msg, uid }, { status: 500 });
   }
 }
