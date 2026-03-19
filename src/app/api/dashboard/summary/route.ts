@@ -25,7 +25,6 @@ export async function GET(req: NextRequest) {
       biz = await getBusinessForOwner(uid);
     } catch (e) {
       console.error('[DASHBOARD] Business lookup error:', e);
-      return new NextResponse('Failed to load business data', { status: 500 });
     }
 
     // Auto-generate slug if missing

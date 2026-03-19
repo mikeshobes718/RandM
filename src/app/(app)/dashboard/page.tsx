@@ -15,6 +15,7 @@ import { useSearchParams } from 'next/navigation';
 import { formatPhone } from '@/lib/phone';
 import { clientAuth } from '@/lib/firebaseClient';
 import { onAuthStateChanged } from "firebase/auth";
+import { resolveRoute } from '@/lib/resolveRoute';
 
 type Business = {
   id: string | null;
@@ -177,6 +178,18 @@ function DashboardContent() {
         }
 
       } catch (err: any) {
+        // If the dashboard API fails, use resolveRoute to send the user
+        // to the correct place instead of showing a dead-end error.
+        if (user) {
+          try {
+            const tok = await user.getIdToken();
+            const dest = await resolveRoute(tok);
+            if (dest !== '/dashboard') {
+              window.location.replace(dest);
+              return;
+            }
+          } catch {}
+        }
         setError(err.message);
       } finally {
         setLoading(false);
