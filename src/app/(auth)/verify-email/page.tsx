@@ -6,30 +6,39 @@ import Link from 'next/link';
 
 async function getPostVerificationRedirect(): Promise<string> {
   try {
-    // 1. Check if user has an active subscription
-    const planRes = await fetch('/api/plan/status', { credentials: 'include' });
-    if (!planRes.ok) {
-      // If we can't check plan (e.g. 401), they MUST go to select-plan to be safe
-      console.warn('[VERIFY] Plan check failed or unauthorized, redirecting to /select-plan');
-      return '/select-plan';
-    }
-    
-    const planData = await planRes.json();
-    if (planData.status === 'none') {
-      return '/select-plan';
-    }
+    // Build auth headers from Firebase if available
+    const headers: HeadersInit = {};
+    try {
+      const { clientAuth: auth } = await import('@/lib/firebaseClient');
+      const user = auth.currentUser;
+      if (user) {
+        const token = await user.getIdToken();
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    } catch {}
+    const opts: RequestInit = { credentials: 'include', headers };
 
-    // 2. Check if they already have a business setup
-    const bizRes = await fetch('/api/businesses/me', { credentials: 'include' });
+    // If user has a business, go to dashboard
+    const bizRes = await fetch('/api/businesses/me', opts);
     if (bizRes.ok) {
       const bizData = await bizRes.json();
-      if (bizData && bizData.business && bizData.business.google_place_id) {
+      if (bizData?.business?.id) {
         return '/dashboard';
       }
     }
-    
-    // If they have a plan but no business, go to onboarding
-    return '/onboarding/business';
+
+    // Check plan status
+    const planRes = await fetch('/api/plan/status', opts);
+    if (planRes.ok) {
+      const planData = await planRes.json();
+      if (planData.status === 'none') {
+        return '/select-plan';
+      }
+      return '/onboarding/business';
+    }
+
+    // API errors default to select-plan for genuinely new verified users
+    return '/select-plan';
   } catch (error) {
     console.error('[VERIFY] Redirect check failed:', error);
     return '/select-plan';

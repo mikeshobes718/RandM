@@ -169,18 +169,8 @@ function DashboardContent() {
         setRecentCampaigns(data.recentCampaigns ?? []);
         setRates(data.rates ?? { delivered: 0, click: 0, optOut: 0 });
 
-        // Onboarding redirect logic
-        // 1. If no active plan, must pick one
-        if (data.planStatus === 'none') {
-          window.location.replace('/select-plan');
-          return;
-        }
-
-        // 2. If no business OR business exists but Google not connected, go to setup
-        if (!data.business || (!data.business.google_place_id && !isFromEdit)) {
-          window.location.replace('/onboarding/business');
-          return;
-        }
+        // If the API returned data, the user is authenticated — never kick them
+        // off the dashboard. Show what we have, even if plan status is unusual.
 
       } catch (err: any) {
         setError(err.message);

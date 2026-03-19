@@ -25,6 +25,17 @@ function OnboardingContent() {
         const token = await user.getIdToken();
         const headers: HeadersInit = { Authorization: `Bearer ${token}` };
 
+        // If user already has a business, send to dashboard
+        const bizRes = await fetch('/api/businesses/me', { headers });
+        if (bizRes.ok) {
+          const bizData = await bizRes.json();
+          if (bizData.business?.id) {
+            router.replace('/dashboard');
+            return;
+          }
+        }
+
+        // Only redirect to select-plan if we positively confirm no plan
         const response = await fetch('/api/plan/status', { headers });
         if (response.ok) {
           const data = await response.json();
@@ -35,15 +46,6 @@ function OnboardingContent() {
         } else if (response.status === 401) {
           router.replace('/login?redirect=/onboarding/business');
           return;
-        }
-
-        const bizRes = await fetch('/api/businesses/me', { headers });
-        if (bizRes.ok) {
-          const bizData = await bizRes.json();
-          if (bizData.business?.google_place_id) {
-            router.replace('/dashboard');
-            return;
-          }
         }
       } catch (err) {
         console.error('[onboarding] Failed to check status:', err);
