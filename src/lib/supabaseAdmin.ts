@@ -33,7 +33,8 @@ export function getSql() {
   if (!pooledUrl && !password) return null;
 
   const host = stripEnvQuotes(env.SUPABASE_DB_HOST) || 'aws-0-us-east-1.pooler.supabase.com';
-  const port = Number(stripEnvQuotes(env.SUPABASE_DB_PORT)) || 6543;
+  // Default 5432 = session pooler (works reliably with postgres.js). Use 6543 + prepare:false only for transaction mode.
+  const port = Number(stripEnvQuotes(env.SUPABASE_DB_PORT)) || 5432;
   const user = stripEnvQuotes(env.SUPABASE_DB_USER) || 'postgres.rhnxzpbhoqbvoqyqmfox';
   const database = stripEnvQuotes(env.SUPABASE_DB_NAME) || 'postgres';
 
@@ -43,9 +44,12 @@ export function getSql() {
     pooledUrl ||
     `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password!)}@${host}:${port}/${database}`;
 
+  const transactionPooler =
+    port === 6543 || (!!pooledUrl && /:6543(\/|\?|#|$)/.test(pooledUrl));
+
   _sql = postgres(connectionString, {
     ssl: 'require',
-    prepare: false, // transaction pooler (6543)
+    prepare: !transactionPooler,
     max: 1, // serverless-friendly
     connect_timeout: 15,
     idle_timeout: 20,
