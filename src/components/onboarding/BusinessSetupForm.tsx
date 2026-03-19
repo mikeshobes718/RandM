@@ -231,13 +231,22 @@ export default function BusinessSetupForm({ onSuccess }: { onSuccess?: () => voi
           window.location.href = '/dashboard?from=onboarding&t=' + Date.now();
         }
       } else {
-        const errorText = await response.text().catch(() => 'Failed to save');
+        const raw = await response.text().catch(() => '');
+        let message = raw;
+        try {
+          const j = JSON.parse(raw) as { error?: string };
+          if (j?.error && typeof j.error === 'string') message = j.error;
+        } catch {
+          /* use raw text */
+        }
         if (response.status === 401) {
           setError('Session expired. Please refresh and try again.');
         } else if (response.status === 403) {
           setError('Permission denied. Please ensure you have selected a plan and try again.');
+        } else if (response.status === 503) {
+          setError(message || 'Service temporarily unavailable. Please try again.');
         } else {
-          setError(errorText || `Server error: ${response.status}`);
+          setError(message || `Server error: ${response.status}`);
         }
       }
     } catch (err: any) {

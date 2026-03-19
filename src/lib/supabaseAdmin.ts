@@ -2,6 +2,22 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { getEnv } from './env';
 import postgres from 'postgres';
 
+/** Decode JWT role without verifying signature (for config diagnostics only). */
+export function peekSupabaseServiceKeyRole(): 'service_role' | 'anon' | 'unknown' {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  if (!key) return 'unknown';
+  try {
+    const payload = key.split('.')[1];
+    if (!payload) return 'unknown';
+    const json = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as { role?: string };
+    if (json.role === 'service_role') return 'service_role';
+    if (json.role === 'anon') return 'anon';
+    return 'unknown';
+  } catch {
+    return 'unknown';
+  }
+}
+
 let _supabase: SupabaseClient | null = null;
 export function getSupabaseAdmin(): SupabaseClient {
   if (_supabase) return _supabase;
