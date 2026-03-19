@@ -1,8 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import type { PostgrestError } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { getAuthAdmin } from '@/lib/firebaseAdmin';
-import { requireUid, verifyIdTokenViaRest } from '@/lib/authServer';
+import { resolveUid } from '@/lib/apiHelpers';
 import { normalizePhone } from '@/lib/phone';
 
 export const runtime = 'nodejs';
@@ -47,43 +46,13 @@ async function readPayload(req: Request): Promise<Payload> {
   try { return (await req.json()) as Payload; } catch { return { name: '' }; }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
  try {
-  // Auth: prefer session cookie; else idToken from header/body/form
-  let uid: string | null = null;
-  let email: string | null = null;
-  let payload: Payload | null = null;
-  try { uid = await requireUid(); } catch {}
-  if (!uid) {
-    const authHeader = req.headers.get('authorization') || '';
-    const bearer = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7) : '';
-    payload = await readPayload(req);
-    const candidate = bearer || payload?.idToken || '';
-    if (!candidate) return new NextResponse('Unauthorized', { status: 401 });
-    let auth: ReturnType<typeof getAuthAdmin> | null = null;
-    try {
-      auth = getAuthAdmin();
-      try {
-        const decoded = await auth.verifyIdToken(candidate);
-        uid = decoded.uid;
-        email = (decoded as unknown as { email?: string }).email || null;
-      } catch {
-        if (!payload?.email) throw new Error('no-auth');
-        const u = await auth.getUserByEmail(payload.email);
-        uid = u.uid;
-        email = u.email || payload.email;
-      }
-    } catch {
-      try {
-        const viaRest = await verifyIdTokenViaRest(candidate);
-        uid = viaRest.uid;
-        email = viaRest.email ?? payload?.email ?? null;
-      } catch {
-        return new NextResponse('Unauthorized', { status: 401 });
-      }
-    }
-  }
-  if (!payload) payload = await readPayload(req);
+  const uid = await resolveUid(req);
+  if (!uid) return new NextResponse('Unauthorized', { status: 401 });
+
+  const payload = await readPayload(req);
+  let email: string | null = payload.email || null;
 
   const cleanedName = (payload.name || '').trim();
   if (!cleanedName) {
@@ -100,14 +69,8 @@ export async function POST(req: Request) {
   }
 
   const supabase = getSupabaseAdmin();
-  // Ensure users row exists
   try {
-    if (uid) {
-      if (!email) {
-        try { const u = await getAuthAdmin().getUser(uid); email = u.email || null; } catch {}
-      }
-      if (email) { await supabase.from('users').upsert({ uid, email }); }
-    }
+    if (uid && email) { await supabase.from('users').upsert({ uid, email }); }
   } catch {}
 
   // Auto-generate a URL-friendly slug from the business name
