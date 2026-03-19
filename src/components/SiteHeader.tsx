@@ -17,14 +17,28 @@ export default function SiteHeader() {
   const pathname = usePathname();
 
   useEffect(() => {
+    // Check localStorage immediately on mount to sync with SSR
+    const token = localStorage.getItem('idToken');
+    if (token) {
+      setAuthed(true);
+      setEmail(localStorage.getItem('userEmail'));
+      setLoading(false);
+    }
+
     const unsub = onAuthStateChanged(clientAuth, (user) => {
       if (user) {
         setAuthed(true);
         setEmail(user.email || null);
         setEmailVerified(user.emailVerified);
         setLoading(false);
+        // Ensure localStorage is in sync
+        user.getIdToken().then(token => {
+          localStorage.setItem('idToken', token);
+          if (user.email) localStorage.setItem('userEmail', user.email);
+        });
         return;
       }
+      // Only clear if we are sure there is no user (onAuthStateChanged is authoritative)
       setAuthed(false);
       setEmail(null);
       setLoading(false);
