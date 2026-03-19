@@ -44,7 +44,7 @@ export async function GET(request: Request) {
   }
 
   // Co-founder override
-  const coFounders = ['bladespindler@gmail.com', 'volurer295@ovbest.com'];
+  const coFounders = ['bladespindler@gmail.com', 'volurer295@ovbest.com', 'mikebobby718@gmail.com'];
   if (email && coFounders.includes(email.toLowerCase())) {
     console.log('[API/PLAN/STATUS] Override triggered for:', email);
     return NextResponse.json({ status: 'active', plan: 'pro' });
