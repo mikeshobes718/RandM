@@ -86,19 +86,31 @@ export async function POST(req: Request) {
   try {
     const placeholderId = `starter-${uid}`;
     const now = new Date().toISOString();
-    const { error: deleteError } = await supa.from('subscriptions').delete().eq('uid', uid).eq('plan_id', 'starter');
-    if (deleteError) throw deleteError;
-    const { error: insertError } = await supa
+
+    // Check if user already has any active subscription — if so, skip creating starter
+    const { data: existingSub } = await supa
       .from('subscriptions')
-      .insert({
+      .select('plan_id, status')
+      .eq('uid', uid)
+      .maybeSingle();
+
+    if (existingSub && existingSub.status === 'active' && existingSub.plan_id !== 'starter') {
+      // Already on a paid plan — just return success so they proceed to onboarding
+      return NextResponse.json({ ok: true });
+    }
+
+    // Upsert the starter subscription (safe even if one already exists)
+    const { error: upsertError } = await supa
+      .from('subscriptions')
+      .upsert({
         uid,
         stripe_subscription_id: placeholderId,
         plan_id: 'starter',
         status: 'active',
         current_period_end: null,
         updated_at: now,
-      });
-    if (insertError) throw insertError;
+      }, { onConflict: 'uid' });
+    if (upsertError) throw upsertError;
 
     if (email) {
       try {

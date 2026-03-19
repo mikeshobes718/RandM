@@ -33,7 +33,7 @@ export default function SelectPlanPage() {
         const token = await user.getIdToken();
         const headers: HeadersInit = { Authorization: `Bearer ${token}` };
 
-        // If user already has a business, go straight to dashboard
+        // If user already has a business, go straight to dashboard — no plan check needed
         const bizRes = await fetch('/api/businesses/me', { headers });
         if (bizRes.ok) {
           const bizData = await bizRes.json();
@@ -43,7 +43,7 @@ export default function SelectPlanPage() {
           }
         }
 
-        // No business — check if they have a plan and send to onboarding
+        // No business yet — check plan status
         const res = await fetch('/api/plan/status', { headers });
         if (res.ok) {
           const data = await res.json();
@@ -51,9 +51,17 @@ export default function SelectPlanPage() {
             router.replace('/onboarding/business');
             return;
           }
+        } else if (!res.ok) {
+          // API error — if user is authenticated, send to dashboard rather than
+          // leaving them stuck on select-plan
+          router.replace('/dashboard');
+          return;
         }
       } catch (err) {
         console.error('[select-plan] Plan check error:', err);
+        // On error, authenticated users go to dashboard, not stuck here
+        router.replace('/dashboard');
+        return;
       }
 
       setAuthLoading(false);
