@@ -333,20 +333,26 @@ function ContactsPageContent() {
         </div>
       )}
 
-      {/* Outreach Modal */}
+      {/* Outreach Modal — single scroll surface on overlay (nested overflow breaks iOS Safari) */}
       {showContactModal && (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-[40px] w-full max-w-xl shadow-2xl flex flex-col max-h-[min(92dvh,100dvh)] min-h-0 animate-in zoom-in-95 duration-200 my-auto">
+        <div
+          className="fixed inset-0 z-[100000] overflow-y-auto overscroll-contain bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 [-webkit-overflow-scrolling:touch]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="outreach-modal-title"
+        >
+          <div className="flex w-full flex-col items-stretch justify-start px-4 pb-10 pt-6 sm:min-h-[100dvh] sm:justify-center sm:px-6 sm:py-10">
+            <div className="mx-auto w-full max-w-xl flex flex-col rounded-[40px] bg-white shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex-shrink-0 p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
               <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Send {contactType === 'email' ? 'Email' : 'SMS'} Outreach</h3>
+                <h3 id="outreach-modal-title" className="text-xl font-black text-slate-900 uppercase tracking-tight">Send {contactType === 'email' ? 'Email' : 'SMS'} Outreach</h3>
                 <p className="text-xs text-slate-400 font-medium mt-1 uppercase tracking-widest">To {selectedIds.size} selected contact{selectedIds.size > 1 ? 's' : ''}</p>
               </div>
               <button onClick={() => { setShowContactModal(false); setRecipientSearch(''); }} className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <form onSubmit={onSendOutreach} className="p-8 space-y-6 overflow-y-auto flex-1 min-h-0 overscroll-contain">
+            <form onSubmit={onSendOutreach} className="p-8 space-y-6 pb-10">
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recipients{selectedIds.size > 0 && <span className="ml-2 px-1.5 py-0.5 bg-brand text-white rounded-md text-[9px]">{selectedIds.size}</span>}</p>
@@ -415,6 +421,7 @@ function ContactsPageContent() {
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
