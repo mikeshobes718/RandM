@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
+import { getEnv } from '@/lib/env';
 import { sendEmail } from '@/lib/emailService';
 import { directOutreachEmail } from '@/lib/emailTemplates';
 
