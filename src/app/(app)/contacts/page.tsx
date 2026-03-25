@@ -71,6 +71,16 @@ function ContactsPageContent() {
     }
   }, [searchQuery, contacts]);
 
+  const modalOpen = showAddModal || showContactModal || historyContact !== null || showGuide;
+  useEffect(() => {
+    if (!modalOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [modalOpen]);
+
   const onManualAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     setAddingManual(true);
@@ -278,10 +288,10 @@ function ContactsPageContent() {
         </div>
       </div>
 
-      {/* Add Contact Modal */}
+      {/* Add Contact Modal — z above MobileMenu (z-[99999]) for reliable taps on iOS */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-[40px] w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[40px] w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-auto max-h-[min(92dvh,100dvh)] flex flex-col min-h-0">
             <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
               <div>
                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Add Contact</h3>
@@ -291,7 +301,7 @@ function ContactsPageContent() {
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <form onSubmit={onManualAdd} className="p-8 space-y-6">
+            <form onSubmit={onManualAdd} className="p-8 space-y-6 overflow-y-auto flex-1 min-h-0">
               <div>
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Full Name</label>
                 <input type="text" placeholder="e.g. John Smith" value={manualContact.name} onChange={(e) => setManualContact({ ...manualContact, name: e.target.value })} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all" />
@@ -325,9 +335,9 @@ function ContactsPageContent() {
 
       {/* Outreach Modal */}
       {showContactModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-[40px] w-full max-w-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[40px] w-full max-w-xl shadow-2xl flex flex-col max-h-[min(92dvh,100dvh)] min-h-0 animate-in zoom-in-95 duration-200 my-auto">
+            <div className="flex-shrink-0 p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
               <div>
                 <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Send {contactType === 'email' ? 'Email' : 'SMS'} Outreach</h3>
                 <p className="text-xs text-slate-400 font-medium mt-1 uppercase tracking-widest">To {selectedIds.size} selected contact{selectedIds.size > 1 ? 's' : ''}</p>
@@ -336,7 +346,7 @@ function ContactsPageContent() {
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            <form onSubmit={onSendOutreach} className="p-8 space-y-6">
+            <form onSubmit={onSendOutreach} className="p-8 space-y-6 overflow-y-auto flex-1 min-h-0 overscroll-contain">
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recipients{selectedIds.size > 0 && <span className="ml-2 px-1.5 py-0.5 bg-brand text-white rounded-md text-[9px]">{selectedIds.size}</span>}</p>
@@ -380,12 +390,23 @@ function ContactsPageContent() {
                   <input type="text" placeholder="e.g. A quick question about your visit" value={contactSubject} onChange={(e) => setContactSubject(e.target.value)} required className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all" />
                 </div>
               )}
-              <div>
-                <div className="flex items-center justify-between mb-2 px-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Message Content</label>
-                  {contactType === 'email' && <span className="text-[9px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">Replies will go to: {ownerEmail || 'your email'}</span>}
+              <div className="relative z-10">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between mb-2 px-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block shrink-0">Message Content</label>
+                  {contactType === 'email' && (
+                    <span className="text-[9px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 sm:max-w-[55%] sm:text-right sm:truncate">
+                      Replies will go to: {ownerEmail || 'your email'}
+                    </span>
+                  )}
                 </div>
-                <textarea placeholder={contactType === 'email' ? "Write your email message here..." : "Write your SMS message here..."} value={contactMessage} onChange={(e) => setContactMessage(e.target.value)} required className="w-full min-h-[160px] bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all resize-none" />
+                <textarea
+                  placeholder={contactType === 'email' ? 'Write your email message here...' : 'Write your SMS message here...'}
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  required
+                  autoComplete="off"
+                  className="relative z-10 w-full min-h-[160px] touch-manipulation bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-base sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all resize-none"
+                />
                 <p className="text-[9px] text-slate-400 font-medium mt-2 ml-1">{contactType === 'sms' ? "Keep it short for best results. Standard SMS rates apply." : "Your brand name will be included in the footer."}</p>
               </div>
               <div className="pt-4">
@@ -400,7 +421,7 @@ function ContactsPageContent() {
 
       {/* History Modal */}
       {historyContact && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[80vh]">
             <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
               <div>
@@ -455,7 +476,7 @@ function ContactsPageContent() {
 
       {/* Import Guide Modal */}
       {showGuide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 overflow-y-auto overscroll-contain bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
               <div>
