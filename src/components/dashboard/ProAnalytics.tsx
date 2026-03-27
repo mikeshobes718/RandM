@@ -165,7 +165,7 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
     : [];
 
   return (
-    <div className="space-y-6 mt-12">
+    <div className="space-y-6 mt-6">
       {/* Conversion Funnel Row */}
       {data.funnel && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

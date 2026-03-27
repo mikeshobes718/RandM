@@ -167,7 +167,7 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
       )}
 
       <MiniHowItWorks 
-        className="mt-8 bg-surface border-outline-variant/20 shadow-sm"
+        className="mt-6 bg-surface border-outline-variant/10 shadow-none"
         title="Activation Guide"
         steps={[
           { icon: Store, title: "1. Connect", desc: "Link your Google Business Profile to sync your review link." },

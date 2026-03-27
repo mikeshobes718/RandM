@@ -298,7 +298,7 @@ export default function ReviewRequestsModule({
       </div>
 
       <MiniHowItWorks 
-        className="mt-10"
+        className="mt-6 bg-surface-container-lowest/50 border-outline-variant/10 shadow-none"
         title="How Customer Outreach Works"
         steps={[
           { icon: Users, title: "1. Import Contacts", desc: "Upload a CSV or add your customers manually." },

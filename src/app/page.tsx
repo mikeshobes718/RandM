@@ -23,8 +23,8 @@ export default function Home() {
                 Modern Reputation Management
               </span>
 
-              <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tight text-white" style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)' }}>
-                Grow{" "}
+              <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tight text-white drop-shadow-md" style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)' }}>
+                <span className="text-white">Grow</span>{" "}
                 <span className="inline-flex">
                   <span style={{ color: "#4285F4" }}>G</span>
                   <span style={{ color: "#EA4335" }}>o</span>
@@ -33,7 +33,7 @@ export default function Home() {
                   <span style={{ color: "#34A853" }}>l</span>
                   <span style={{ color: "#EA4335" }}>e</span>
                 </span>{" "}
-                Reviews.{" "}
+                <span className="text-white">Reviews.</span>{" "}
                 <span className="text-white drop-shadow-md">Recover Private Feedback.</span>{" "}
                 <span className="text-white">Compliantly.</span>
               </h1>
