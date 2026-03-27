@@ -18,15 +18,6 @@ export default function MobileMenu({ authed, onLogout }: MobileMenuProps) {
     setIsOpen(false);
   }, [pathname]);
 
-  // Prevent scrolling when menu is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-  }, [isOpen]);
-
   return (
     <div className="md:hidden">
       <button
@@ -39,15 +30,15 @@ export default function MobileMenu({ authed, onLogout }: MobileMenuProps) {
         </svg>
       </button>
 
-      {/* Fullscreen Menu Overlay */}
+      {/* Fullscreen Menu Overlay — no body overflow lock (breaks iOS); touch-none on shell, pan-y on scroll areas */}
       <div 
-        className={`fixed inset-0 w-full h-screen z-[99999] bg-white transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+        className={`fixed inset-0 z-[99999] h-[100dvh] w-full touch-none overscroll-none bg-white transition-opacity duration-300 ease-out ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="flex flex-col h-full w-full bg-white relative overflow-hidden">
+        <div className="relative flex h-full w-full flex-col overflow-hidden bg-white">
           {/* Menu Header - Solid & Fixed */}
-          <div className="flex items-center justify-between px-8 h-20 border-b border-slate-100 bg-white flex-shrink-0">
+          <div className="flex h-20 flex-shrink-0 touch-auto items-center justify-between border-b border-slate-100 bg-white px-8">
             <div className="flex flex-col">
               <span className="text-2xl font-black tracking-tighter text-brand leading-none">R&M</span>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Navigation Menu</span>
@@ -62,7 +53,7 @@ export default function MobileMenu({ authed, onLogout }: MobileMenuProps) {
             </button>
           </div>
 
-          <div className="flex-1 px-6 py-8 overflow-y-auto bg-white flex flex-col gap-4">
+          <div className="flex min-h-0 flex-1 touch-pan-y flex-col gap-4 overflow-y-auto overscroll-contain bg-white px-6 py-8 [-webkit-overflow-scrolling:touch]">
             {[
               { 
                 href: '/how-it-works', 
