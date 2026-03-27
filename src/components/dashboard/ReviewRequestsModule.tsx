@@ -93,21 +93,21 @@ export default function ReviewRequestsModule({
   };
 
   return (
-    <div className="premium-card p-8 rounded-[32px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden h-full">
+    <div className="surface-card p-8 rounded-[32px] bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20 relative overflow-hidden h-full">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 mb-10">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-2xl bg-brand/10 text-brand flex items-center justify-center text-lg">🚀</div>
-            <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+            <h2 className="text-2xl font-black text-on-surface flex items-center gap-2">
               Customer Outreach
               <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-black rounded uppercase tracking-widest">Active</span>
             </h2>
           </div>
-          <p className="text-sm text-slate-600 font-bold leading-relaxed mb-4">
+          <p className="text-sm text-on-surface-variant font-bold leading-relaxed mb-4">
             Manage your database and send SMS or Email invitations to your customers.
           </p>
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-6">
-            <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
+          <div className="p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 mb-6">
+            <p className="text-xs text-on-surface-variant font-medium leading-relaxed italic">
               "All your contacts are organized here so you can send rebates, coupons, upcoming promotions, review requests, and thank-yous to your customers to get them back into your store!"
             </p>
           </div>
@@ -122,7 +122,7 @@ export default function ReviewRequestsModule({
             </Link>
           </div>
         </div>
-        <div className="lg:w-[300px] p-6 bg-slate-900 rounded-[24px] text-white relative overflow-hidden shadow-2xl">
+        <div className="lg:w-[300px] p-6 bg-inverse-surface rounded-[24px] text-white relative overflow-hidden shadow-2xl">
           <div className="absolute top-0 right-0 p-4 opacity-10">
             <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
           </div>
@@ -146,34 +146,34 @@ export default function ReviewRequestsModule({
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
-        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Monthly Limit</p>
-          <span className="text-lg font-black text-slate-900">{limit === 999999 ? '∞' : limit}</span>
+        <div className="p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 text-center">
+          <p className="text-[9px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-1">Monthly Limit</p>
+          <span className="text-lg font-black text-on-surface">{limit === 999999 ? '∞' : limit}</span>
         </div>
-        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Delivered</p>
+        <div className="p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 text-center">
+          <p className="text-[9px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-1">Delivered</p>
           <span className="text-lg font-black text-emerald-600">{deliveredRate}%</span>
         </div>
-        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Interaction</p>
+        <div className="p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 text-center">
+          <p className="text-[9px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-1">Interaction</p>
           <span className="text-lg font-black text-brand">{clickRate}%</span>
         </div>
-        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
-          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Opt-out</p>
-          <span className="text-lg font-black text-slate-400">{optOutRate}%</span>
+        <div className="p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 text-center">
+          <p className="text-[9px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-1">Opt-out</p>
+          <span className="text-lg font-black text-on-surface-variant/60">{optOutRate}%</span>
         </div>
       </div>
 
       <div className="space-y-4">
-        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Recent Outbound Sends</h4>
+        <h4 className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest border-b border-outline-variant/20 pb-2">Recent Outbound Sends</h4>
         <div className="max-h-[300px] overflow-y-auto pr-2 -mr-2">
         {recentCampaigns.length === 0 ? (
-          <div className="py-12 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 px-6">
-            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100 text-xl">
+          <div className="py-12 text-center bg-surface-container-lowest/50 rounded-2xl border border-dashed border-outline-variant/30 px-6">
+            <div className="w-12 h-12 bg-surface rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border border-outline-variant/20 text-xl">
               ✉️
             </div>
-            <p className="text-xs font-black text-slate-900 uppercase tracking-widest mb-1">No campaigns yet</p>
-            <p className="text-[10px] text-slate-400 font-medium max-w-[200px] mx-auto mb-6">
+            <p className="text-xs font-black text-on-surface uppercase tracking-widest mb-1">No campaigns yet</p>
+            <p className="text-[10px] text-on-surface-variant/60 font-medium max-w-[200px] mx-auto mb-6">
               Start by importing your customers or sending a manual request.
             </p>
             <Link href="/contacts?outreach=1" className="inline-flex items-center gap-2 text-[10px] font-black text-brand uppercase tracking-widest hover:underline">
@@ -183,24 +183,24 @@ export default function ReviewRequestsModule({
         ) : (
           <div className="space-y-2">
             {recentCampaigns.map((c, i) => (
-              <div key={i} className="flex flex-col bg-slate-50 rounded-xl border border-slate-100 group hover:border-brand/30 transition-all overflow-hidden">
+              <div key={i} className="flex flex-col bg-surface-container-lowest rounded-xl border border-outline-variant/20 group hover:border-brand/30 transition-all overflow-hidden">
                 <div 
                   className="flex items-center justify-between p-3 cursor-pointer"
                   onClick={() => toggleRow(i)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm text-sm border border-slate-100 group-hover:scale-110 transition-transform">
+                    <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center shadow-sm text-sm border border-outline-variant/20 group-hover:scale-110 transition-transform">
                       {c.type?.toLowerCase() === 'sms' ? '📱' : '✉️'}
                     </div>
                     <div>
-                      <p className="text-xs font-black text-slate-900">{c.name}</p>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase">{new Date(c.date).toLocaleDateString()} • {c.type || 'Email'}</p>
+                      <p className="text-xs font-black text-on-surface">{c.name}</p>
+                      <p className="text-[9px] font-bold text-on-surface-variant/60 uppercase">{new Date(c.date).toLocaleDateString()} • {c.type || 'Email'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <div className="flex flex-col items-end">
-                        <p className="text-xs font-black text-slate-900">{c.sent} sent</p>
+                        <p className="text-xs font-black text-on-surface">{c.sent} sent</p>
                         {c.failed && c.failed > 0 ? (
                           <p className="text-[8px] font-bold text-red-500 uppercase tracking-tight">{c.failed} failed</p>
                         ) : null}
@@ -213,7 +213,7 @@ export default function ReviewRequestsModule({
                           <button 
                             onClick={(e) => { e.stopPropagation(); handleResend(c.id!); }}
                             disabled={resending === c.id}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-brand hover:bg-brand/5 transition-all"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant/40 hover:text-brand hover:bg-brand/5 transition-all"
                             title="Resend this campaign"
                           >
                             {resending === c.id ? (
@@ -226,7 +226,7 @@ export default function ReviewRequestsModule({
                           </button>
                           <button 
                             onClick={(e) => { e.stopPropagation(); handleDeleteCampaign(c.id!); }}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all ml-1"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant/40 hover:text-red-500 hover:bg-red-50 transition-all ml-1"
                             title="Delete campaign record"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -235,7 +235,7 @@ export default function ReviewRequestsModule({
                           </button>
                         </>
                       )}
-                      <svg className={`w-4 h-4 text-slate-400 transition-transform ${expandedRow === i ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className={`w-4 h-4 text-on-surface-variant/60 transition-transform ${expandedRow === i ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </div>
@@ -244,24 +244,24 @@ export default function ReviewRequestsModule({
                 
                 {/* Expanded Details */}
                 {expandedRow === i && (
-                  <div className="px-4 pb-4 pt-2 border-t border-slate-100/50 bg-white/50">
+                  <div className="px-4 pb-4 pt-2 border-t border-outline-variant/20 bg-white/50">
                     {c.body && (
                       <div className="mb-4">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Message Content</p>
-                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 text-[11px] text-slate-600 whitespace-pre-wrap font-medium">
+                        <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Message Content</p>
+                        <div className="bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/20 text-[11px] text-on-surface-variant whitespace-pre-wrap font-medium">
                           {c.body}
                         </div>
                       </div>
                     )}
                     {c.recipients && c.recipients.length > 0 ? (
                       <div>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Recipients</p>
+                        <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-2">Recipients</p>
                         <div className="space-y-1.5 max-h-40 overflow-y-auto pr-2">
                           {c.recipients.map((r, idx) => (
-                            <div key={idx} className={`flex flex-col gap-0.5 text-[11px] p-2 rounded-lg ${r.status === 'failed' ? 'bg-red-50/60' : 'bg-slate-50/60'}`}>
+                            <div key={idx} className={`flex flex-col gap-0.5 text-[11px] p-2 rounded-lg ${r.status === 'failed' ? 'bg-red-50/60' : 'bg-surface-container-lowest/60'}`}>
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <span className="text-slate-600 font-medium truncate">{r.contact}</span>
+                                  <span className="text-on-surface-variant font-medium truncate">{r.contact}</span>
                                   <Link 
                                     href={`/contacts?search=${encodeURIComponent(r.contact)}`}
                                     className="flex-shrink-0 text-[9px] font-black text-brand uppercase tracking-widest hover:underline"
@@ -286,7 +286,7 @@ export default function ReviewRequestsModule({
                         <p className="text-[11px] text-red-500">{c.lastError}</p>
                       </div>
                     ) : (
-                      <p className="text-[10px] text-slate-400 italic">No detailed data available for this campaign. Campaigns sent after this update will include per-recipient status.</p>
+                      <p className="text-[10px] text-on-surface-variant/60 italic">No detailed data available for this campaign. Campaigns sent after this update will include per-recipient status.</p>
                     )}
                   </div>
                 )}

@@ -166,7 +166,7 @@ export default function VerifyEmailPage() {
   }, [cooldown]);
 
   return (
-    <main className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+    <main className="min-h-[100dvh] bg-surface-container-lowest flex flex-col items-center justify-center p-6">
       <div className="w-full max-w-md">
         {/* Step Indicator */}
         <div className="flex items-center justify-between mb-12 px-2">
@@ -179,15 +179,15 @@ export default function VerifyEmailPage() {
             <div key={step.label} className="flex flex-col items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all ${
                 step.status === 'complete' ? 'bg-emerald-500 border-emerald-500 text-white' :
-                step.status === 'active' ? 'bg-white border-brand text-brand shadow-lg shadow-brand/20' :
-                'bg-white border-slate-200 text-slate-400'
+                step.status === 'active' ? 'bg-surface border-primary text-primary shadow-lg shadow-primary/20' :
+                'bg-surface-container border-outline-variant/30 text-on-surface-variant/60'
               }`}>
                 {step.status === 'complete' ? (
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                 ) : i + 1}
               </div>
               <span className={`text-[9px] font-black uppercase tracking-widest ${
-                step.status === 'active' ? 'text-brand' : 'text-slate-400'
+                step.status === 'active' ? 'text-brand' : 'text-on-surface-variant/60'
               }`}>{step.label}</span>
             </div>
           ))}
@@ -197,15 +197,15 @@ export default function VerifyEmailPage() {
           <Link href="/" className="inline-block text-2xl font-black tracking-tighter text-brand mb-8">
             R&M
           </Link>
-          <h1 className="text-3xl font-black tracking-tight text-slate-900 leading-tight">
+          <h1 className="text-3xl font-black tracking-tight text-on-surface leading-tight">
             {verifying ? 'Just a moment...' : 'Check your inbox'}
           </h1>
-          <p className="text-slate-500 font-medium mt-2">
+          <p className="text-on-surface-variant font-medium mt-2">
             {email ? `We've sent a verification link to ${email}` : 'Verification link sent to your email'}
           </p>
         </div>
 
-        <div className="premium-card p-10 rounded-[40px] shadow-2xl shadow-slate-200/60 relative overflow-hidden bg-white">
+        <div className="surface-card p-10 rounded-[40px] shadow-2xl shadow-outline-variant/20 relative overflow-hidden bg-surface">
           {/* Animated background pulse */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full blur-3xl -mr-16 -mt-16 animate-pulse"></div>
           
@@ -213,7 +213,7 @@ export default function VerifyEmailPage() {
             <div className={`mb-8 p-4 rounded-2xl text-xs font-bold border-2 animate-in fade-in slide-in-from-top-2 ${
               messageType === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
               messageType === 'error' ? 'bg-red-50 border-red-100 text-red-700' :
-              'bg-brand/5 border-brand/10 text-brand'
+              'bg-brand/5 border-primary/10 text-brand'
             }`}>
               <div className="flex items-center gap-3">
                 {messageType === 'success' && <span className="text-lg">🎉</span>}
@@ -276,7 +276,7 @@ export default function VerifyEmailPage() {
                   setLoading(false);
                 }}
                 disabled={loading}
-                className="primary-button w-full h-14 text-sm shadow-xl shadow-brand/20 active:scale-95 transition-transform"
+                className="primary-button w-full h-14 text-sm shadow-xl shadow-primary/20 active:scale-95 transition-transform"
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">
@@ -289,10 +289,10 @@ export default function VerifyEmailPage() {
               <button
                 onClick={handleResend}
                 disabled={loading || cooldown > 0}
-                className="secondary-button w-full h-14 text-xs font-bold border-2 border-slate-100 hover:border-brand/20 transition-all active:scale-95"
+                className="secondary-button w-full h-14 text-xs font-bold border-2 border-outline-variant/20 hover:border-primary/20 transition-all active:scale-95"
               >
                 {cooldown > 0 ? (
-                  <span className="text-slate-400">Resend available in {cooldown}s</span>
+                  <span className="text-on-surface-variant/60">Resend available in {cooldown}s</span>
                 ) : (
                   'Resend verification email'
                 )}
@@ -300,15 +300,15 @@ export default function VerifyEmailPage() {
             </div>
           )}
 
-          <div className="mt-10 pt-8 border-t border-slate-100">
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Quick Troubleshooting</h4>
+          <div className="mt-10 pt-8 border-t border-outline-variant/20">
+            <h4 className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-4">Quick Troubleshooting</h4>
             <div className="grid grid-cols-1 gap-4">
               {[
                 { label: 'Check Spam Folder', icon: '📥' },
                 { label: 'Wait 2-3 minutes', icon: '⏳' },
                 { label: 'Confirm email address', icon: '🔍' }
               ].map(item => (
-                <div key={item.label} className="flex items-center gap-3 text-xs text-slate-600 font-medium">
+                <div key={item.label} className="flex items-center gap-3 text-xs text-on-surface-variant font-medium">
                   <span className="text-sm">{item.icon}</span>
                   {item.label}
                 </div>
@@ -318,7 +318,7 @@ export default function VerifyEmailPage() {
         </div>
 
         <div className="mt-12 text-center">
-          <p className="text-xs text-slate-400 font-medium">
+          <p className="text-xs text-on-surface-variant/60 font-medium">
             Entered the wrong email? <Link href="/register" className="text-brand font-black hover:underline uppercase tracking-widest ml-1">Start Over</Link>
           </p>
         </div>

@@ -36,10 +36,7 @@ export default function NewsletterSignup({ variant = 'inline', onSuccess }: News
         setStatus('success');
         setMessage('Thanks for subscribing!');
         setEmail('');
-        
-        if (onSuccess) {
-          setTimeout(onSuccess, 2000);
-        }
+        if (onSuccess) setTimeout(onSuccess, 2000);
       } else {
         const errorData = await response.json().catch(() => ({}));
         setStatus('error');
@@ -54,8 +51,8 @@ export default function NewsletterSignup({ variant = 'inline', onSuccess }: News
     }
   };
 
-  const inputClass = "h-11 w-full rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all bg-white";
-  const buttonClass = "primary-button h-11 px-6 text-sm whitespace-nowrap disabled:opacity-50";
+  const inputBase = "h-11 w-full rounded-lg border border-outline-variant/30 bg-surface-container-lowest px-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all";
+  const buttonBase = "primary-button h-11 px-6 text-sm whitespace-nowrap disabled:opacity-50";
 
   if (variant === 'inline') {
     return (
@@ -66,16 +63,16 @@ export default function NewsletterSignup({ variant = 'inline', onSuccess }: News
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
-            className={inputClass}
+            className={inputBase}
             disabled={loading}
             aria-label="Email address"
           />
-          <button type="submit" disabled={loading} className={buttonClass}>
+          <button type="submit" disabled={loading} className={buttonBase}>
             {loading ? '...' : 'Subscribe'}
           </button>
         </form>
         {status !== 'idle' && (
-          <p className={`mt-3 text-sm text-center ${status === 'success' ? 'text-emerald-600' : 'text-red-600'}`}>
+          <p className={`mt-3 text-sm text-center ${status === 'success' ? 'text-secondary' : 'text-error'}`}>
             {message}
           </p>
         )}
@@ -92,16 +89,16 @@ export default function NewsletterSignup({ variant = 'inline', onSuccess }: News
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Your email"
-            className={inputClass + " h-9 text-xs px-3"}
+            className={inputBase + " h-9 text-xs px-3"}
             disabled={loading}
             aria-label="Email address"
           />
-          <button type="submit" disabled={loading} className={buttonClass + " h-9 px-3 text-xs"}>
+          <button type="submit" disabled={loading} className={buttonBase + " h-9 px-3 text-xs"}>
             {loading ? '...' : 'Join'}
           </button>
         </div>
         {status !== 'idle' && (
-          <p className={`text-[10px] ${status === 'success' ? 'text-emerald-600' : 'text-red-600'}`}>
+          <p className={`text-[10px] ${status === 'success' ? 'text-secondary' : 'text-error'}`}>
             {message}
           </p>
         )}
@@ -111,31 +108,28 @@ export default function NewsletterSignup({ variant = 'inline', onSuccess }: News
 
   return (
     <div className="space-y-6 text-center">
-      <div className="mx-auto w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center">
-        <svg className="w-6 h-6 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
-        </svg>
+      <div className="mx-auto w-12 h-12 rounded-2xl bg-primary/8 flex items-center justify-center">
+        <span className="material-symbols-outlined text-primary" style={{ fontSize: 24 }}>mail</span>
       </div>
       <div>
         <h3 className="text-xl font-bold mb-2">Get exclusive tips</h3>
-        <p className="text-sm text-muted">Strategies to grow your Google reviews, delivered monthly.</p>
+        <p className="text-sm text-on-surface-variant">Strategies to grow your Google reviews, delivered monthly.</p>
       </div>
-
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter your email"
-          className={inputClass}
+          className={inputBase}
           disabled={loading}
           aria-label="Email address"
         />
-        <button type="submit" disabled={loading} className={buttonClass + " w-full"}>
+        <button type="submit" disabled={loading} className={buttonBase + " w-full"}>
           {loading ? 'Subscribing...' : 'Join 500+ Owners'}
         </button>
         {status !== 'idle' && (
-          <p className={`text-sm ${status === 'success' ? 'text-emerald-600' : 'text-red-600'}`}>
+          <p className={`text-sm ${status === 'success' ? 'text-secondary' : 'text-error'}`}>
             {message}
           </p>
         )}

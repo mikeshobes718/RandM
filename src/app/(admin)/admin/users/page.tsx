@@ -102,12 +102,12 @@ export default function AdminUsersPage() {
     return (
       <div className="p-8">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+          <div className="h-8 bg-outline-variant/30 rounded w-1/4 mb-6"></div>
           <div className="space-y-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="bg-white p-4 rounded-lg shadow-sm">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              <div key={i} className="bg-surface p-4 rounded-lg shadow-sm">
+                <div className="h-4 bg-outline-variant/30 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-outline-variant/30 rounded w-1/2"></div>
               </div>
             ))}
           </div>
@@ -144,8 +144,8 @@ export default function AdminUsersPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-        <p className="text-gray-600 mt-2">Manage user accounts and view account details</p>
+        <h1 className="text-3xl font-bold text-on-surface">User Management</h1>
+        <p className="text-on-surface-variant mt-2">Manage user accounts and view account details</p>
       </div>
 
       {/* Search and Filters */}
@@ -156,12 +156,12 @@ export default function AdminUsersPage() {
             placeholder="Search by email or user ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 pr-10 border border-outline-variant/40 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60 hover:text-on-surface-variant transition"
               title="Clear search"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,23 +170,23 @@ export default function AdminUsersPage() {
             </button>
           )}
         </div>
-        <div className="text-sm text-gray-600 flex items-center">
+        <div className="text-sm text-on-surface-variant flex items-center">
           {totalUsers.toLocaleString()} total users
         </div>
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-surface rounded-lg shadow-sm border border-outline-variant/30 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-outline-variant/20">
+            <thead className="bg-surface-container-lowest">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
                   User ID
                 </th>
                 <th 
                   onClick={() => toggleSort('email')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition select-none"
+                  className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-pointer hover:bg-surface-container-low transition select-none"
                 >
                   <div className="flex items-center gap-2">
                     <span>Email</span>
@@ -199,7 +199,7 @@ export default function AdminUsersPage() {
                 </th>
                 <th 
                   onClick={() => toggleSort('created_at')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition select-none"
+                  className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider cursor-pointer hover:bg-surface-container-low transition select-none"
                 >
                   <div className="flex items-center gap-2">
                     <span>Created</span>
@@ -210,26 +210,26 @@ export default function AdminUsersPage() {
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-on-surface-variant uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-surface divide-y divide-outline-variant/20">
               {filteredUsers.map((user) => (
-                <tr key={user.uid} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                <tr key={user.uid} className="hover:bg-surface-container-lowest">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-on-surface">
                     {user.uid.substring(0, 8)}...
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-on-surface">
                     {user.email}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-on-surface-variant">
                     {new Date(user.created_at).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-on-surface-variant">
                     <span
-                      className="text-gray-400 mr-4 font-medium cursor-not-allowed inline-flex items-center gap-1"
+                      className="text-on-surface-variant/60 mr-4 font-medium cursor-not-allowed inline-flex items-center gap-1"
                       title="User details page under construction"
                     >
                       View Details
@@ -262,26 +262,26 @@ export default function AdminUsersPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+          <div className="bg-surface px-4 py-3 flex items-center justify-between border-t border-outline-variant/30 sm:px-6">
             <div className="flex-1 flex justify-between sm:hidden">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="relative inline-flex items-center px-4 py-2 border border-outline-variant/40 text-sm font-medium rounded-md text-on-surface-variant bg-surface hover:bg-surface-container-lowest disabled:opacity-50"
               >
                 Previous
               </button>
               <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="ml-3 relative inline-flex items-center px-4 py-2 border border-outline-variant/40 text-sm font-medium rounded-md text-on-surface-variant bg-surface hover:bg-surface-container-lowest disabled:opacity-50"
               >
                 Next
               </button>
             </div>
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-on-surface-variant">
                   Showing{' '}
                   <span className="font-medium">{(currentPage - 1) * usersPerPage + 1}</span>
                   {' '}to{' '}
@@ -298,14 +298,14 @@ export default function AdminUsersPage() {
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-outline-variant/40 bg-surface text-sm font-medium text-on-surface-variant hover:bg-surface-container-lowest disabled:opacity-50"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-outline-variant/40 bg-surface text-sm font-medium text-on-surface-variant hover:bg-surface-container-lowest disabled:opacity-50"
                   >
                     Next
                   </button>

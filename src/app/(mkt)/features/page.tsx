@@ -1,122 +1,84 @@
 export const dynamic = 'force-dynamic';
 
 import Link from "next/link";
-import Image from "next/image";
 import { FeatureTabs } from "@/components/FeatureTabs";
 import HomeCtaButtons from "@/components/HomeCtaButtons";
 import { AnimatedFlow } from "@/components/AnimatedFlow";
 
 const PILLARS = [
-  {
-    icon: (
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-      </svg>
-    ),
-    title: 'Compliant QR Flow',
-    copy: 'Protect your relationship with customers. We help happy customers share their experiences on Google while providing a private channel for those who have suggestions.',
-  },
-  {
-    icon: (
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    ),
-    title: 'Automated Requests',
-    copy: 'Send review requests automatically via SMS or Email. Optimized timing ensures the highest response rates possible, all while staying compliant with platform policies.',
-  },
-  {
-    icon: (
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    ),
-    title: 'Actionable Insights',
-    copy: 'Track scans, clicks, and feedback sentiment in real-time. Identify your best locations and top performers based on genuine customer insights.',
-  },
+  { icon: 'qr_code_2', title: 'Compliant QR Flow', copy: 'Protect your relationship with customers. We help happy customers share their experiences on Google while providing a private channel for those who have suggestions.' },
+  { icon: 'bolt', title: 'Automated Requests', copy: 'Send review requests automatically via SMS or Email. Optimized timing ensures the highest response rates possible, all while staying compliant with platform policies.' },
+  { icon: 'monitoring', title: 'Actionable Insights', copy: 'Track scans, clicks, and feedback sentiment in real-time. Identify your best locations and top performers based on genuine customer insights.' },
 ];
 
 const USE_CASES = [
-  {
-    title: 'For Restaurants',
-    text: 'Place QR codes on table tents or check folders. Turn a great meal into a public review or a private thank-you before the guest leaves.',
-  },
-  {
-    title: 'For Retail',
-    text: 'Print review links on receipts or display at checkout. Build a loyal customer base and boost your local search ranking with authentic feedback.',
-  },
-  {
-    title: 'For Services',
-    text: 'Send automated follow-ups after a service appointment. Capture honest feedback and reviews while the experience is fresh.',
-  },
+  { title: 'For Restaurants', text: 'Place QR codes on table tents or check folders. Turn a great meal into a public review or a private thank-you before the guest leaves.' },
+  { title: 'For Retail', text: 'Print review links on receipts or display at checkout. Build a loyal customer base and boost your local search ranking with authentic feedback.' },
+  { title: 'For Services', text: 'Send automated follow-ups after a service appointment. Capture honest feedback and reviews while the experience is fresh.' },
 ];
 
 export default function FeaturesPage() {
   return (
     <main className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 overflow-hidden border-b border-border bg-accent/30">
+      {/* Hero */}
+      <section className="relative pt-28 pb-20 overflow-hidden bg-surface-container-low">
         <div className="container mx-auto px-6 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/5 border border-brand/10 text-brand text-[10px] font-black uppercase tracking-widest mb-8">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-semibold mb-8">
+              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>auto_awesome</span>
               Platform Overview
             </div>
-            <h1 className="text-balance mb-8">
+            <h1 className="text-balance mb-6">
               Everything you need to <br className="hidden md:block" />
-              <span className="text-brand">master your reputation.</span>
-              {/* CANARY_1655 */}
+              <span className="text-primary">master your reputation.</span>
             </h1>
-            <div className="text-xl text-muted max-w-2xl mx-auto mb-6 text-balance leading-relaxed">
+            <div className="text-lg text-on-surface-variant max-w-2xl mx-auto mb-5 text-balance leading-relaxed">
               <p>Get more Google reviews the compliant way + recover unhappy customers privately.</p>
-              <p className="mt-2 font-bold text-brand">More reviews, more insights, fewer surprises.</p>
+              <p className="mt-2 font-bold text-primary">More reviews, more insights, fewer surprises.</p>
             </div>
-            <p className="text-sm text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed italic">
-              "We provide customers a direct path to share their experience. We don’t incentivize or gate reviews—we use smart Review Routing."
+            <p className="text-sm text-on-surface-variant/60 max-w-2xl mx-auto mb-10 leading-relaxed italic">
+              &quot;We provide customers a direct path to share their experience. We don&apos;t incentivize or gate reviews -- we use smart Review Routing.&quot;
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <HomeCtaButtons variant="hero" />
-              <Link 
-                href="/how-it-works" 
-                className="secondary-button !h-12 px-8 flex items-center gap-2 group !bg-white"
+              <Link
+                href="/how-it-works"
+                className="secondary-button h-12 px-8 flex items-center gap-2 group"
               >
                 Watch the Walkthrough
-                <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                </svg>
+                <span className="material-symbols-outlined transition-transform group-hover:translate-x-0.5" style={{ fontSize: 18 }}>play_circle</span>
               </Link>
             </div>
           </div>
         </div>
-        
-        {/* Background Decorative Element */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-full -z-10 pointer-events-none opacity-[0.03]">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,var(--brand),transparent_70%)]"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-full -z-10 pointer-events-none opacity-[0.04]">
+          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,var(--primary),transparent_70%)]" />
         </div>
       </section>
 
       {/* Core Pillars */}
-      <section className="py-24">
+      <section className="py-20">
         <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-3 gap-12">
+          <div className="grid md:grid-cols-3 gap-8">
             {PILLARS.map((pillar) => (
               <div key={pillar.title} className="group">
-                <div className="w-12 h-12 rounded-2xl bg-brand/10 text-brand flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <div className="w-6 h-6">{pillar.icon}</div>
+                <div className="w-12 h-12 rounded-xl bg-primary/8 text-primary flex items-center justify-center mb-5 group-hover:scale-105 transition-transform">
+                  <span className="material-symbols-outlined" style={{ fontSize: 24 }}>{pillar.icon}</span>
                 </div>
-                <h3 className="text-xl font-bold mb-4">{pillar.title}</h3>
-                <p className="text-muted text-sm leading-relaxed">{pillar.copy}</p>
+                <h3 className="text-lg font-bold mb-3">{pillar.title}</h3>
+                <p className="text-on-surface-variant text-sm leading-relaxed">{pillar.copy}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works - Visual Explainer */}
-      <section className="py-24 bg-accent/50 border-y border-border">
+      {/* How It Works inline */}
+      <section className="py-20 bg-surface-container-low">
         <div className="container mx-auto px-6">
-          <div className="max-w-2xl mx-auto text-center mb-12">
-            <h2 className="text-3xl font-black tracking-tight mb-4">How it works</h2>
-            <p className="text-muted">Simple, automated reputation management in three steps.</p>
+          <div className="max-w-2xl mx-auto text-center mb-10">
+            <h2 className="mb-3">How it works</h2>
+            <p className="text-on-surface-variant">Simple, automated reputation management in three steps.</p>
           </div>
           <div className="max-w-5xl mx-auto">
             <AnimatedFlow />
@@ -124,68 +86,60 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* Interactive Tabs */}
-      <section className="py-24">
+      {/* Tabs */}
+      <section className="py-20">
         <div className="container mx-auto px-6">
-          <div className="max-w-2xl mx-auto text-center mb-16">
-            <h2 className="text-3xl font-black tracking-tight mb-4">Deep dive into the toolkit</h2>
-            <p className="text-muted">Explore the powerful features that make Reviews & Marketing the choice for top operators.</p>
+          <div className="max-w-2xl mx-auto text-center mb-14">
+            <h2 className="mb-3">Deep dive into the toolkit</h2>
+            <p className="text-on-surface-variant">Explore the powerful features that make Reviews & Marketing the choice for top operators.</p>
           </div>
           <div className="max-w-5xl mx-auto">
-          <FeatureTabs />
+            <FeatureTabs />
           </div>
         </div>
       </section>
 
       {/* Use Cases */}
-      <section className="py-24">
+      <section className="py-20">
         <div className="container mx-auto px-6">
-          <div className="max-w-2xl mx-auto text-center mb-16">
-            <h2 className="text-3xl font-black tracking-tight mb-4">Built for every industry</h2>
-            <p className="text-muted">Whether you run a single shop or multiple locations, we have you covered.</p>
+          <div className="max-w-2xl mx-auto text-center mb-14">
+            <h2 className="mb-3">Built for every industry</h2>
+            <p className="text-on-surface-variant">Whether you run a single shop or multiple locations, we have you covered.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-6">
             {USE_CASES.map((uc) => (
-              <div key={uc.title} className="premium-card p-8 rounded-3xl">
-                <h3 className="text-lg font-bold mb-4">{uc.title}</h3>
-                <p className="text-muted text-sm leading-relaxed">{uc.text}</p>
+              <div key={uc.title} className="surface-card p-8">
+                <h3 className="text-base font-bold mb-3">{uc.title}</h3>
+                <p className="text-on-surface-variant text-sm leading-relaxed">{uc.text}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing Teaser */}
-      <section className="py-24 border-t border-border">
+      {/* CTA Banner */}
+      <section className="py-20">
         <div className="container mx-auto px-6">
-          <div className="p-10 md:p-16 rounded-[40px] bg-foreground text-white flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden relative shadow-2xl">
-            <div className="absolute top-0 right-0 w-1/2 h-full bg-brand/10 blur-[120px] -z-0"></div>
+          <div className="p-10 md:p-14 rounded-2xl primary-gradient text-on-primary flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden relative">
             <div className="relative z-10 max-w-xl">
-              <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-6 text-white">Ready to scale your reputation?</h2>
-              <p className="text-slate-400 text-lg mb-8 leading-relaxed">
-                Join the growing list of businesses using our toolkit to dominate their local market. Start free and upgrade when you're ready for more.
+              <h2 className="text-2xl md:text-3xl font-bold mb-5 text-on-primary">Ready to scale your reputation?</h2>
+              <p className="text-on-primary/70 text-base mb-8 leading-relaxed">
+                Join the growing list of businesses using our toolkit to dominate their local market. Start free and upgrade when you&apos;re ready for more.
               </p>
-              <div className="flex flex-wrap gap-4">
-                <HomeCtaButtons align="start" />
-              </div>
+              <HomeCtaButtons align="start" />
             </div>
-            <div className="relative z-10 grid grid-cols-2 gap-4 w-full md:w-auto">
-              <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm text-center">
-                <div className="text-2xl font-black mb-1 text-white">Active</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Businesses</div>
-              </div>
-              <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm text-center">
-                <div className="text-2xl font-black mb-1 text-white">15K+</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Feedback Items</div>
-              </div>
-              <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm text-center">
-                <div className="text-2xl font-black mb-1 text-white">4.9★</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Avg Rating</div>
-              </div>
-              <div className="p-6 bg-brand rounded-2xl text-center shadow-lg shadow-brand/20">
-                <div className="text-2xl font-black mb-1 text-white">Direct</div>
-                <div className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Impact</div>
-              </div>
+            <div className="relative z-10 grid grid-cols-2 gap-3 w-full md:w-auto">
+              {[
+                { value: 'Active', label: 'Businesses' },
+                { value: '15K+', label: 'Feedback Items' },
+                { value: '4.9\u2605', label: 'Avg Rating' },
+                { value: 'Direct', label: 'Impact' },
+              ].map((stat) => (
+                <div key={stat.label} className="p-5 bg-white/10 rounded-xl text-center">
+                  <div className="text-xl font-bold text-on-primary mb-0.5">{stat.value}</div>
+                  <div className="text-[10px] font-semibold text-on-primary/60 uppercase tracking-widest">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

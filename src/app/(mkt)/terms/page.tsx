@@ -33,12 +33,12 @@ export default function TermsPage() {
 
         <div className="space-y-6">
           {TERMS.map(({ heading, body }) => (
-            <div key={heading} className="premium-card p-8 rounded-3xl">
+            <div key={heading} className="surface-card p-8 rounded-3xl">
               <h2 className="text-lg font-bold text-foreground mb-3">{heading}</h2>
               <p className="text-sm text-muted leading-relaxed">{body}</p>
             </div>
           ))}
-          <div className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed text-center">
+          <div className="surface-card p-8 rounded-3xl bg-accent/30 border-dashed text-center">
             <p className="text-sm text-muted">
               For enterprise terms or legal questions, please email <a className="font-bold text-brand hover:underline" href="mailto:legal@reviewsandmarketing.com">legal@reviewsandmarketing.com</a>.
             </p>

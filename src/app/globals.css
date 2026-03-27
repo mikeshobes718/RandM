@@ -1,194 +1,285 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* ────────────────────────────────────────────────────────────
+   Azure Meridian Design System — Reviews & Marketing
+   Based on DESIGN.md "The Digital Curator" philosophy.
+   ──────────────────────────────────────────────────────────── */
+
 :root {
-  --background: #ffffff;
-  --foreground: #020617;
-  --brand: #4f46e5;
-  --brand-strong: #3730a3;
-  --muted: #64748b;
-  --accent: #f8fafc;
-  --border: #e2e8f0;
+  --primary: #003ea9;
+  --primary-container: #0154dc;
+  --primary-fixed: #dbe1ff;
+  --primary-fixed-dim: #b4c5ff;
+  --on-primary: #ffffff;
+  --on-primary-container: #cfd9ff;
+  --on-primary-fixed: #00174b;
+  --on-primary-fixed-variant: #003ea8;
+
+  --secondary: #006a61;
+  --secondary-container: #86f2e4;
+  --secondary-fixed: #89f5e7;
+  --secondary-fixed-dim: #6bd8cb;
+  --on-secondary: #ffffff;
+  --on-secondary-container: #006f66;
+
+  --tertiary: #3424cd;
+  --tertiary-container: #4e45e4;
+  --tertiary-fixed: #e2dfff;
+  --on-tertiary: #ffffff;
+
+  --error: #ba1a1a;
+  --error-container: #ffdad6;
+  --on-error: #ffffff;
+  --on-error-container: #93000a;
+
+  --surface: #faf8ff;
+  --surface-dim: #d2d9f4;
+  --surface-bright: #faf8ff;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f2f3ff;
+  --surface-container: #eaedff;
+  --surface-container-high: #e2e7ff;
+  --surface-container-highest: #dae2fd;
+  --surface-variant: #dae2fd;
+  --surface-tint: #0053db;
+
+  --on-surface: #131b2e;
+  --on-surface-variant: #424752;
+  --on-background: #131b2e;
+  --background: #faf8ff;
+
+  --outline: #727783;
+  --outline-variant: #c2c6d4;
+
+  --inverse-surface: #283044;
+  --inverse-on-surface: #eef0ff;
+  --inverse-primary: #b4c5ff;
 }
 
 @theme inline {
+  --color-primary: var(--primary);
+  --color-primary-container: var(--primary-container);
+  --color-primary-fixed: var(--primary-fixed);
+  --color-primary-fixed-dim: var(--primary-fixed-dim);
+  --color-on-primary: var(--on-primary);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-on-primary-fixed: var(--on-primary-fixed);
+  --color-on-primary-fixed-variant: var(--on-primary-fixed-variant);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-container: var(--secondary-container);
+  --color-secondary-fixed: var(--secondary-fixed);
+  --color-secondary-fixed-dim: var(--secondary-fixed-dim);
+  --color-on-secondary: var(--on-secondary);
+  --color-on-secondary-container: var(--on-secondary-container);
+
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-tertiary-fixed: var(--tertiary-fixed);
+  --color-on-tertiary: var(--on-tertiary);
+
+  --color-error: var(--error);
+  --color-error-container: var(--error-container);
+  --color-on-error: var(--on-error);
+  --color-on-error-container: var(--on-error-container);
+
+  --color-surface: var(--surface);
+  --color-surface-dim: var(--surface-dim);
+  --color-surface-bright: var(--surface-bright);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-surface-variant: var(--surface-variant);
+  --color-surface-tint: var(--surface-tint);
+
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+  --color-on-background: var(--on-background);
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-brand: var(--brand);
-  --color-brand-strong: var(--brand-strong);
-  --color-muted: var(--muted);
-  --color-accent: var(--accent);
-  --color-border: var(--border);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+
+  --color-inverse-surface: var(--inverse-surface);
+  --color-inverse-on-surface: var(--inverse-on-surface);
+  --color-inverse-primary: var(--inverse-primary);
+
+  /* Legacy aliases so old Tailwind classes still resolve */
+  --color-brand: var(--primary);
+  --color-brand-strong: var(--primary-container);
+  --color-muted: var(--on-surface-variant);
+  --color-accent: var(--surface-container-low);
+  --color-foreground: var(--on-surface);
+  --color-border: var(--outline-variant);
+
+  --font-sans: var(--font-jakarta);
+  --font-body: var(--font-inter);
+  --font-mono: var(--font-inter);
 }
 
-/* Base styles */
+/* ── Base ──────────────────────────────────────────────────── */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-inter), 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Smooth scrolling on desktop only — iOS Safari can jank with smooth + touch */
 html {
   scroll-behavior: smooth;
 }
 @media (max-width: 767px) {
-  html {
-    scroll-behavior: auto;
-  }
+  html { scroll-behavior: auto; }
 }
 
-/* Container */
+/* ── Typography ────────────────────────────────────────────── */
+h1, h2, h3, .display-font {
+  font-family: var(--font-jakarta), 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--on-background);
+}
+
+h2 {
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--on-background);
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--on-background);
+}
+
+.text-balance { text-wrap: balance; }
+
+/* ── Container ─────────────────────────────────────────────── */
 .container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin-left: auto;
   margin-right: auto;
 }
 
-/* Clean UI Utilities */
-.glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid #e2e8f0;
+/* ── Signature gradient (primary CTA) ──────────────────────── */
+.primary-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
 }
 
+/* ── Glass effect ──────────────────────────────────────────── */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ── Tonal surface card (no borders per design system) ─────── */
+.surface-card {
+  background: var(--surface-container-lowest);
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(19, 27, 46, 0.04);
+  transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.surface-card:hover {
+  box-shadow: 0 12px 32px -4px rgba(19, 27, 46, 0.06);
+}
+
+/* Legacy .premium-card alias */
 .premium-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  background: var(--surface-container-lowest);
+  border: 1px solid rgba(194, 198, 212, 0.15);
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px 0 rgba(19, 27, 46, 0.04);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .premium-card:hover {
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  transform: translateY(-4px);
+  box-shadow: 0 12px 32px -4px rgba(19, 27, 46, 0.06);
+  transform: translateY(-2px);
 }
 
+/* ── Buttons ───────────────────────────────────────────────── */
 .primary-button {
-  background: var(--brand);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+  color: var(--on-primary);
   font-weight: 700;
   padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px -2px rgba(0, 62, 169, 0.25);
 }
-
 .primary-button:hover {
-  background: var(--brand-strong);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -4px rgba(0, 62, 169, 0.35);
 }
-
 .primary-button:active {
   transform: translateY(0);
+  box-shadow: 0 1px 4px -1px rgba(0, 62, 169, 0.2);
 }
 
 .secondary-button {
-  background: #ffffff;
-  color: var(--foreground);
-  border: 1px solid #e2e8f0;
-  font-weight: 700;
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  border: 1px solid rgba(194, 198, 212, 0.2);
+  font-weight: 600;
   padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   transition: all 0.2s;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
-
 .secondary-button:hover {
-  background: var(--accent);
-  border-color: #cbd5e1;
-  transform: translateY(-2px);
+  background: var(--surface-container-low);
+  transform: translateY(-1px);
 }
 
-/* Typography Scale */
-h1 {
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1.1;
+/* ── Material Symbols ──────────────────────────────────────── */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  vertical-align: middle;
 }
 
-h2 {
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
-}
-
-h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.text-balance {
-  text-wrap: balance;
-}
-
-/* Animations */
+/* ── Animations ────────────────────────────────────────────── */
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
 .animate-fade-in {
-  animation: fade-in 0.6s ease-out forwards;
+  animation: fade-in 0.5s ease-out forwards;
 }
 
-@keyframes ping {
-  75%, 100% {
-    transform: scale(2);
-    opacity: 0;
-  }
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.6s ease-out forwards;
 }
 
-.animate-ping {
-  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
+/* ── Custom scrollbar ──────────────────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: var(--surface-container-low); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: var(--outline-variant); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--outline); }
 
-/* Custom scrollbar class for internal containers */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Base scrollbar for the whole page */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--outline-variant); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--outline); }

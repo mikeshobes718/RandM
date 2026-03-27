@@ -77,8 +77,8 @@ export default function AdminCustomers() {
     <div className="space-y-10 animate-fade-in">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Customers</h1>
-          <p className="text-slate-500 font-medium mt-1">View and manage all businesses using Reviews & Marketing.</p>
+          <h1 className="text-3xl font-black text-on-surface tracking-tight">Customers</h1>
+          <p className="text-on-surface-variant font-medium mt-1">View and manage all businesses using Reviews & Marketing.</p>
         </div>
         <button 
           onClick={fetchCustomers}
@@ -88,15 +88,15 @@ export default function AdminCustomers() {
         </button>
       </div>
 
-      <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+      <div className="bg-surface rounded-[40px] border border-outline-variant/20 shadow-xl shadow-outline-variant/20 overflow-hidden">
+        <div className="p-8 border-b border-outline-variant/20 flex items-center justify-between">
           <div className="flex gap-2">
             {["All", "Active", "Trial", "Churned"].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                  filter === f ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:bg-slate-50"
+                  filter === f ? "bg-inverse-surface text-white shadow-lg" : "text-on-surface-variant/60 hover:bg-surface-container-lowest"
                 }`}
               >
                 {f}
@@ -104,7 +104,7 @@ export default function AdminCustomers() {
             ))}
           </div>
           <div className="relative">
-            <svg className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-on-surface-variant/60 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input 
@@ -112,15 +112,15 @@ export default function AdminCustomers() {
               placeholder="Search by business or email..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-10 pl-10 pr-4 bg-slate-50 border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-brand/20 w-64 transition-all"
+              className="h-10 pl-10 pr-4 bg-surface-container-lowest border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-brand/20 w-64 transition-all"
             />
           </div>
         </div>
 
         <div className="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar relative">
           <table className="w-full text-left border-collapse">
-            <thead className="sticky top-0 z-10 bg-white shadow-sm">
-              <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 bg-slate-50/50">
+            <thead className="sticky top-0 z-10 bg-surface shadow-sm">
+              <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/60 bg-surface-container-lowest/50">
                 <th className="px-8 py-4">Business Name</th>
                 <th className="px-4 py-4">Plan</th>
                 <th className="px-4 py-4 text-center">MRR</th>
@@ -131,48 +131,48 @@ export default function AdminCustomers() {
                 <th className="px-8 py-4 text-right">Last Login</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50 text-sm">
+            <tbody className="divide-y divide-outline-variant/20 text-sm">
               {filteredCustomers.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-8 py-20 text-center">
-                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-100">
+                    <div className="w-16 h-16 bg-surface-container-lowest rounded-2xl flex items-center justify-center mx-auto mb-4 border border-outline-variant/20">
                       <span className="text-2xl">👥</span>
                     </div>
-                    <p className="text-sm font-black text-slate-900 uppercase tracking-widest">No customers found</p>
-                    <p className="text-xs text-slate-400 font-medium">Try adjusting your filters or search terms.</p>
+                    <p className="text-sm font-black text-on-surface uppercase tracking-widest">No customers found</p>
+                    <p className="text-xs text-on-surface-variant/60 font-medium">Try adjusting your filters or search terms.</p>
                   </td>
                 </tr>
               ) : (
                 filteredCustomers.map((customer) => (
                   <tr 
                     key={customer.id} 
-                    className="hover:bg-slate-50/50 transition-colors group"
+                    className="hover:bg-surface-container-lowest/50 transition-colors group"
                   >
                     <td className="px-8 py-5">
                       <Link href={`/admin/customers/${customer.id}`} className="block">
                         <div className="flex items-center gap-2">
-                          <p className="font-bold text-slate-900 group-hover:text-brand transition-colors">{customer.name}</p>
+                          <p className="font-bold text-on-surface group-hover:text-brand transition-colors">{customer.name}</p>
                           {customer.role !== 'customer' && (
-                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 uppercase tracking-tighter border border-slate-200">
+                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-surface-container-low text-on-surface-variant/60 uppercase tracking-tighter border border-outline-variant/30">
                               {customer.role}
                             </span>
                           )}
                         </div>
-                        <p className="text-[10px] text-slate-400 font-medium">{customer.email}</p>
+                        <p className="text-[10px] text-on-surface-variant/60 font-medium">{customer.email}</p>
                       </Link>
                     </td>
                     <td className="px-4 py-5">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border ${
                         customer.plan === 'Unlimited' ? 'bg-purple-50 text-purple-600 border-purple-100' :
                         customer.plan === 'Small Business' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                        'bg-slate-50 text-slate-600 border-slate-100'
+                        'bg-surface-container-lowest text-on-surface-variant border-outline-variant/20'
                       }`}>
                         {customer.plan}
                       </span>
                     </td>
-                    <td className="px-4 py-5 text-center font-black text-slate-900">{customer.mrr}</td>
-                    <td className="px-4 py-5 text-slate-500 font-medium">{customer.signedUp}</td>
-                    <td className="px-4 py-5 font-bold text-slate-700">{customer.closedBy}</td>
+                    <td className="px-4 py-5 text-center font-black text-on-surface">{customer.mrr}</td>
+                    <td className="px-4 py-5 text-on-surface-variant font-medium">{customer.signedUp}</td>
+                    <td className="px-4 py-5 font-bold text-on-surface-variant">{customer.closedBy}</td>
                     <td className="px-4 py-5 text-center">
                       <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
                         customer.status === 'Active' ? 'bg-emerald-50 text-emerald-600' :
@@ -182,8 +182,8 @@ export default function AdminCustomers() {
                         {customer.status}
                       </span>
                     </td>
-                    <td className="px-4 py-5 text-center font-bold text-slate-700">{customer.months}</td>
-                    <td className="px-8 py-5 text-right text-slate-400 text-xs font-bold">
+                    <td className="px-4 py-5 text-center font-bold text-on-surface-variant">{customer.months}</td>
+                    <td className="px-8 py-5 text-right text-on-surface-variant/60 text-xs font-bold">
                       {customer.lastLogin !== 'Never' ? (
                         formatDistanceToNow(new Date(customer.lastLogin), { addSuffix: true })
                       ) : 'Never'}

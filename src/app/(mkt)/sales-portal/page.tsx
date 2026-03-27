@@ -8,9 +8,9 @@ import { clientAuth } from '@/lib/firebaseClient';
 const Tooltip = ({ text, children }: { text: string; children: React.ReactNode }) => (
   <div className="group relative inline-block w-full">
     {children}
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-[10px] font-bold rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-normal w-48 text-center shadow-xl border border-white/10 uppercase tracking-widest leading-relaxed">
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-inverse-surface text-white text-[10px] font-bold rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-normal w-48 text-center shadow-xl border border-white/10 uppercase tracking-widest leading-relaxed">
       {text}
-      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-900"></div>
+      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-inverse-surface"></div>
     </div>
   </div>
 );
@@ -362,15 +362,15 @@ export default function SalesPortalPage() {
 
   return (
     <AdminGuard allowReps={true}>
-      <main className="min-h-screen bg-slate-50">
+      <main className="min-h-screen bg-surface-container-lowest">
         {/* Sales Header */}
-        <div className="bg-white border-b border-slate-100 sticky top-0 z-40 shadow-sm">
+        <div className="bg-surface border-b border-outline-variant/20 sticky top-0 z-40 shadow-sm">
           <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
                 <Link href="/" className="text-xl font-black text-brand tracking-tighter">R&M SALES</Link>
                 {userRepId && (
-                  <div className="px-3 py-1 bg-slate-900 rounded-lg shadow-sm border border-slate-800">
+                  <div className="px-3 py-1 bg-inverse-surface rounded-lg shadow-sm border border-outline-variant">
                     <span className="text-[10px] font-black text-white uppercase tracking-widest">ID: {userRepId}</span>
                   </div>
                 )}
@@ -387,7 +387,7 @@ export default function SalesPortalPage() {
                     key={tab.id}
                     onClick={() => scrollToSection(tab.id as any)}
                     className={`text-xs font-black uppercase tracking-widest transition-colors ${
-                      activeTab === tab.id ? 'text-brand' : 'text-slate-400 hover:text-slate-600'
+                      activeTab === tab.id ? 'text-brand' : 'text-on-surface-variant/60 hover:text-on-surface-variant'
                     }`}
                   >
                     {tab.label}
@@ -397,8 +397,8 @@ export default function SalesPortalPage() {
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Logged in as</p>
-                <p className="text-xs font-bold text-slate-900">{userEmail}</p>
+                <p className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">Logged in as</p>
+                <p className="text-xs font-bold text-on-surface">{userEmail}</p>
               </div>
             </div>
           </div>
@@ -408,21 +408,21 @@ export default function SalesPortalPage() {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
             <Tooltip text="Number of calls logged today from your account.">
-              <div className="premium-card p-6 rounded-3xl bg-white h-full">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Calls Today</p>
-                <h3 className="text-3xl font-black text-slate-900">{stats.callsToday}</h3>
+              <div className="surface-card p-6 rounded-3xl bg-surface h-full">
+                <p className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-1">Calls Today</p>
+                <h3 className="text-3xl font-black text-on-surface">{stats.callsToday}</h3>
               </div>
             </Tooltip>
             <Tooltip text="Leads where 'Appointment' outcome was logged.">
-              <div className="premium-card p-6 rounded-3xl bg-white h-full">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Appointments</p>
-                <h3 className="text-3xl font-black text-slate-900">{stats.appointments}</h3>
+              <div className="surface-card p-6 rounded-3xl bg-surface h-full">
+                <p className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-1">Appointments</p>
+                <h3 className="text-3xl font-black text-on-surface">{stats.appointments}</h3>
               </div>
             </Tooltip>
             <Tooltip text="Leads where 'Closed' outcome was logged this month.">
-              <div className="premium-card p-6 rounded-3xl bg-white h-full">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Closes This Month</p>
-                <h3 className="text-3xl font-black text-slate-900">{stats.closes}</h3>
+              <div className="surface-card p-6 rounded-3xl bg-surface h-full">
+                <p className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-1">Closes This Month</p>
+                <h3 className="text-3xl font-black text-on-surface">{stats.closes}</h3>
               </div>
             </Tooltip>
           </div>
@@ -460,7 +460,7 @@ export default function SalesPortalPage() {
                       setCity(newCities[0] || "");
                     }}
                     disabled={!repId}
-                    className="sales-input h-12 bg-white rounded-2xl border-slate-200 disabled:opacity-50"
+                    className="sales-input h-12 bg-surface rounded-2xl border-outline-variant/30 disabled:opacity-50"
                   >
                     <option value="US">United States</option>
                     <option value="CA">Canada</option>
@@ -473,7 +473,7 @@ export default function SalesPortalPage() {
                       setCity(newCities[0] || "");
                     }}
                     disabled={!repId || availableStates.length === 0}
-                    className="sales-input h-12 bg-white rounded-2xl border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="sales-input h-12 bg-surface rounded-2xl border-outline-variant/30 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {availableStates.map(s => (
                       <option key={s} value={s}>{s}</option>
@@ -483,7 +483,7 @@ export default function SalesPortalPage() {
                     value={city} 
                     onChange={(e) => setCity(e.target.value)}
                     disabled={!repId || availableCities.length === 0}
-                    className="sales-input h-12 bg-white rounded-2xl border-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="sales-input h-12 bg-surface rounded-2xl border-outline-variant/30 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {availableCities.map(c => (
                       <option key={c} value={c}>{c}</option>
@@ -492,7 +492,7 @@ export default function SalesPortalPage() {
                   <select 
                     value={type} onChange={(e) => setType(e.target.value)}
                     disabled={!repId}
-                    className="sales-input h-12 bg-white rounded-2xl border-slate-200 disabled:opacity-50"
+                    className="sales-input h-12 bg-surface rounded-2xl border-outline-variant/30 disabled:opacity-50"
                   >
                     <option value="all">All Categories</option>
                     <option value="restaurant">Restaurant</option>
@@ -514,13 +514,13 @@ export default function SalesPortalPage() {
 
                 {searched && (
                   <div className="space-y-6">
-                    <div className="flex flex-wrap items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div className="flex flex-wrap items-center gap-4 p-4 bg-surface rounded-2xl border border-outline-variant/20 shadow-sm">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Filter:</span>
+                        <span className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">Filter:</span>
                         <select 
                           value={filterStatus}
                           onChange={(e) => setFilterStatus(e.target.value)}
-                          className="text-[10px] font-bold border-none bg-slate-100 rounded-lg py-1 px-2 focus:ring-0"
+                          className="text-[10px] font-bold border-none bg-surface-container-low rounded-lg py-1 px-2 focus:ring-0"
                         >
                           <option value="all">Any Status</option>
                           <option value="new">New Only</option>
@@ -534,11 +534,11 @@ export default function SalesPortalPage() {
                         </select>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Called:</span>
+                        <span className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">Called:</span>
                         <select 
                           value={filterTimesCalled}
                           onChange={(e) => setFilterTimesCalled(e.target.value)}
-                          className="text-[10px] font-bold border-none bg-slate-100 rounded-lg py-1 px-2 focus:ring-0"
+                          className="text-[10px] font-bold border-none bg-surface-container-low rounded-lg py-1 px-2 focus:ring-0"
                         >
                           <option value="all">Any</option>
                           <option value="0">Never</option>
@@ -547,11 +547,11 @@ export default function SalesPortalPage() {
                         </select>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rating:</span>
+                        <span className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">Rating:</span>
                         <select 
                           value={filterRating}
                           onChange={(e) => setFilterRating(e.target.value)}
-                          className="text-[10px] font-bold border-none bg-slate-100 rounded-lg py-1 px-2 focus:ring-0"
+                          className="text-[10px] font-bold border-none bg-surface-container-low rounded-lg py-1 px-2 focus:ring-0"
                         >
                           <option value="all">Any Rating</option>
                           <option value="low">Critical (≤ 3.5)</option>
@@ -560,29 +560,29 @@ export default function SalesPortalPage() {
                         </select>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sort:</span>
+                        <span className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">Sort:</span>
                         <button 
                           onClick={() => setSortRating(sortRating === "asc" ? "desc" : "asc")}
-                          className="text-[10px] font-bold bg-slate-100 rounded-lg py-1 px-2 flex items-center gap-1 hover:bg-slate-200 transition-colors"
+                          className="text-[10px] font-bold bg-surface-container-low rounded-lg py-1 px-2 flex items-center gap-1 hover:bg-surface-container transition-colors"
                         >
                           {sortRating === "asc" ? "⬆️ Low → High" : "⬇️ High → Low"}
                         </button>
                       </div>
-                      <div className="ml-auto text-[10px] font-bold text-slate-400">
+                      <div className="ml-auto text-[10px] font-bold text-on-surface-variant/60">
                         {filteredLeads.length} leads found
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
                       {filteredLeads.length === 0 ? (
-                        <div className="text-center py-12 text-slate-400 font-bold">No leads match your filters.</div>
+                        <div className="text-center py-12 text-on-surface-variant/60 font-bold">No leads match your filters.</div>
                       ) : (
                         filteredLeads.map((lead) => (
-                          <div key={lead.id} className="premium-card p-6 rounded-3xl bg-white border border-slate-100 hover:border-brand/30 transition-all group relative overflow-hidden">
+                          <div key={lead.id} className="surface-card p-6 rounded-3xl bg-surface border border-outline-variant/20 hover:border-brand/30 transition-all group relative overflow-hidden">
                             <div className="flex justify-between items-start gap-4">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-3 mb-1">
-                                  <h4 className="font-black text-slate-900 truncate">{lead.name}</h4>
+                                  <h4 className="font-black text-on-surface truncate">{lead.name}</h4>
                                   <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${
                                     lead.rating && lead.rating <= 3.5 ? 'bg-red-100 text-red-600' :
                                     lead.rating && lead.rating <= 4.0 ? 'bg-amber-100 text-amber-600' :
@@ -591,12 +591,12 @@ export default function SalesPortalPage() {
                                     {lead.rating} ★
                                   </span>
                                   {lead.timesCalled > 0 && (
-                                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 uppercase tracking-widest">
+                                    <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-surface-container-low text-on-surface-variant/60 uppercase tracking-widest">
                                       {lead.timesCalled}x Called
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-xs text-slate-500 mb-4">{lead.address}</p>
+                                <p className="text-xs text-on-surface-variant mb-4">{lead.address}</p>
                                 
                                 <div className="flex flex-wrap items-center gap-4 text-[11px]">
                                   {lead.phone ? (
@@ -604,7 +604,7 @@ export default function SalesPortalPage() {
                                       <span>📞</span> {lead.phone}
                                     </a>
                                   ) : lead.noPhoneListed ? (
-                                    <span className="text-slate-400 font-medium flex items-center gap-2">
+                                    <span className="text-on-surface-variant/60 font-medium flex items-center gap-2">
                                       <span>📵</span> No Phone Listed
                                     </span>
                                   ) : (
@@ -625,7 +625,7 @@ export default function SalesPortalPage() {
                                     href={lead.website || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lead.address)}&query_place_id=${lead.id}`} 
                                     target="_blank" 
                                     rel="noopener noreferrer" 
-                                    className="flex items-center gap-2 text-slate-400 font-medium hover:text-slate-600"
+                                    className="flex items-center gap-2 text-on-surface-variant/60 font-medium hover:text-on-surface-variant"
                                   >
                                     <span>🌐</span> Website
                                   </a>
@@ -634,15 +634,15 @@ export default function SalesPortalPage() {
                                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lead.address)}&query_place_id=${lead.id}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-slate-400 font-medium hover:text-brand transition-colors"
+                                    className="flex items-center gap-2 text-on-surface-variant/60 font-medium hover:text-brand transition-colors"
                                   >
                                     <span>📍</span> View on Maps
                                   </a>
 
                                   {lead.lastCalledByEmail && (
-                                    <div className="flex items-center gap-2 text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">
-                                      <span className="text-[9px] uppercase font-black text-slate-300">Last called by:</span>
-                                      <span className="font-bold text-slate-500">{lead.lastCalledByEmail}</span>
+                                    <div className="flex items-center gap-2 text-on-surface-variant/60 bg-surface-container-lowest px-2 py-1 rounded-lg">
+                                      <span className="text-[9px] uppercase font-black text-on-surface-variant/40">Last called by:</span>
+                                      <span className="font-bold text-on-surface-variant">{lead.lastCalledByEmail}</span>
                                     </div>
                                   )}
                                 </div>
@@ -667,12 +667,12 @@ export default function SalesPortalPage() {
                 <h2 className="text-2xl font-black tracking-tight mb-8">Proven Scripts</h2>
                 <div className="grid grid-cols-1 gap-6">
                   {SCRIPTS.map((s) => (
-                    <div key={s.name} className="premium-card p-8 rounded-3xl bg-white border border-slate-100">
+                    <div key={s.name} className="surface-card p-8 rounded-3xl bg-surface border border-outline-variant/20">
                       <h4 className="text-[10px] font-black text-brand uppercase tracking-widest mb-4">{s.name}</h4>
-                      <p className="text-sm text-slate-600 leading-relaxed font-medium italic">"{s.script}"</p>
+                      <p className="text-sm text-on-surface-variant leading-relaxed font-medium italic">"{s.script}"</p>
                       <button 
                         onClick={() => navigator.clipboard.writeText(s.script)}
-                        className="mt-6 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-brand transition-colors"
+                        className="mt-6 text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest hover:text-brand transition-colors"
                       >
                         Copy to Clipboard
                       </button>
@@ -686,10 +686,10 @@ export default function SalesPortalPage() {
                 <h2 className="text-2xl font-black tracking-tight mb-8">Objection Handling</h2>
                 <div className="space-y-4">
                   {OBJECTIONS.map((obj) => (
-                    <div key={obj.title} className="bg-white rounded-3xl border border-slate-100 overflow-hidden">
+                    <div key={obj.title} className="bg-surface rounded-3xl border border-outline-variant/20 overflow-hidden">
                       <div className="p-6">
-                        <h4 className="font-bold text-slate-900 mb-2">" {obj.title} "</h4>
-                        <div className="p-4 bg-slate-50 rounded-2xl text-xs text-slate-600 leading-relaxed">
+                        <h4 className="font-bold text-on-surface mb-2">" {obj.title} "</h4>
+                        <div className="p-4 bg-surface-container-lowest rounded-2xl text-xs text-on-surface-variant leading-relaxed">
                           <span className="font-black text-brand uppercase mr-2 text-[10px]">Response:</span>
                           {obj.response}
                         </div>
@@ -706,39 +706,39 @@ export default function SalesPortalPage() {
               <section ref={sectionRefs['leaderboard']} className="scroll-mt-24">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-black tracking-tight">Today's Leaders</h2>
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  <span className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">
                     {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
                 </div>
-                <div className="premium-card rounded-[32px] bg-white overflow-hidden border border-slate-100 min-h-[450px] shadow-xl shadow-slate-200/40">
+                <div className="surface-card rounded-[32px] bg-surface overflow-hidden border border-outline-variant/20 min-h-[450px] shadow-xl shadow-outline-variant/20">
                   {leaderboard.length === 0 ? (
                     <div className="h-[450px] flex flex-col items-center justify-center p-8 text-center">
-                      <div className="w-16 h-16 rounded-[24px] bg-slate-50 flex items-center justify-center mb-6 border border-slate-100">
+                      <div className="w-16 h-16 rounded-[24px] bg-surface-container-lowest flex items-center justify-center mb-6 border border-outline-variant/20">
                         <span className="text-3xl">🏆</span>
                       </div>
-                      <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-2">No calls logged today</h4>
-                      <p className="text-xs font-medium text-slate-400 max-w-[180px] leading-relaxed">
+                      <h4 className="text-sm font-black text-on-surface uppercase tracking-widest mb-2">No calls logged today</h4>
+                      <p className="text-xs font-medium text-on-surface-variant/60 max-w-[180px] leading-relaxed">
                         Be the first to log a call and claim the top spot!
                       </p>
                     </div>
                   ) : (
-                    <div className="divide-y divide-slate-100">
+                    <div className="divide-y divide-outline-variant/20">
                       {leaderboard.map((item, i) => (
-                        <div key={item.email || item.repId || i} className={`p-5 flex items-center justify-between transition-colors hover:bg-slate-50/50 ${i === 0 ? 'bg-brand/[0.03]' : ''}`}>
+                        <div key={item.email || item.repId || i} className={`p-5 flex items-center justify-between transition-colors hover:bg-surface-container-lowest/50 ${i === 0 ? 'bg-brand/[0.03]' : ''}`}>
                           <div className="flex items-center gap-4">
                             <div className="relative">
                               <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-black shadow-sm ${
                                 i === 0 ? 'bg-brand text-white' : 
-                                i === 1 ? 'bg-slate-200 text-slate-600' :
+                                i === 1 ? 'bg-surface-container text-on-surface-variant' :
                                 i === 2 ? 'bg-amber-100 text-amber-700' :
-                                'bg-slate-100 text-slate-400'
+                                'bg-surface-container-low text-on-surface-variant/60'
                               }`}>
                                 {i + 1}
                               </span>
                               {i === 0 && <span className="absolute -top-1 -right-1 text-[10px]">👑</span>}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-black text-slate-900 truncate max-w-[140px]">{item.name || item.repId || item.email?.split('@')[0] || 'Unknown'}</p>
+                              <p className="text-sm font-black text-on-surface truncate max-w-[140px]">{item.name || item.repId || item.email?.split('@')[0] || 'Unknown'}</p>
                               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                 {item.closes > 0 && (
                                   <span className="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 text-[9px] font-black rounded uppercase tracking-widest">
@@ -754,8 +754,8 @@ export default function SalesPortalPage() {
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm font-black text-slate-900">{item.calls}</p>
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Calls Today</p>
+                            <p className="text-sm font-black text-on-surface">{item.calls}</p>
+                            <p className="text-[9px] font-black text-on-surface-variant/60 uppercase tracking-widest">Calls Today</p>
                           </div>
                         </div>
                       ))}
@@ -767,7 +767,7 @@ export default function SalesPortalPage() {
               {/* Demo Video */}
               <section className="scroll-mt-24">
                 <h2 className="text-xl font-black tracking-tight mb-6">Demo Video</h2>
-                <div className="premium-card rounded-3xl bg-slate-900 aspect-video overflow-hidden shadow-xl shadow-slate-200 relative group">
+                <div className="surface-card rounded-3xl bg-inverse-surface aspect-video overflow-hidden shadow-xl shadow-outline-variant/20 relative group">
                   <iframe
                     className="w-full h-full absolute inset-0"
                     src="https://www.youtube.com/embed/y0Jb0wNecfk?rel=0&modestbranding=1"
@@ -777,7 +777,7 @@ export default function SalesPortalPage() {
                   ></iframe>
                   <div className="absolute inset-0 pointer-events-none border border-brand/5 rounded-[24px]"></div>
                 </div>
-                <p className="text-center text-xs text-slate-500 mt-3 font-medium">12-minute walkthrough of the perfect pitch</p>
+                <p className="text-center text-xs text-on-surface-variant mt-3 font-medium">12-minute walkthrough of the perfect pitch</p>
               </section>
 
               {/* Sales Assets */}
@@ -788,14 +788,14 @@ export default function SalesPortalPage() {
                     <a 
                       key={asset.name} 
                       href={asset.link}
-                      className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 hover:border-brand/30 transition-all group"
+                      className="flex items-center gap-4 p-4 bg-surface rounded-2xl border border-outline-variant/20 hover:border-brand/30 transition-all group"
                     >
-                      <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-xl group-hover:bg-brand/10 transition-colors">
+                      <div className="w-10 h-10 rounded-xl bg-surface-container-lowest flex items-center justify-center text-xl group-hover:bg-brand/10 transition-colors">
                         📄
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-900">{asset.name}</p>
-                        <p className="text-[10px] text-slate-400 font-medium">{asset.description}</p>
+                        <p className="text-xs font-bold text-on-surface">{asset.name}</p>
+                        <p className="text-[10px] text-on-surface-variant/60 font-medium">{asset.description}</p>
                       </div>
                     </a>
                   ))}
@@ -807,21 +807,21 @@ export default function SalesPortalPage() {
 
         {/* Log Call Modal */}
         {isModalOpen && selectedLead && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
-            <div className="bg-white rounded-[40px] w-full max-w-lg shadow-2xl p-8 animate-in fade-in zoom-in duration-200">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-inverse-surface/60 backdrop-blur-sm">
+            <div className="bg-surface rounded-[40px] w-full max-w-lg shadow-2xl p-8 animate-in fade-in zoom-in duration-200">
               <div className="flex justify-between items-start mb-8">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-900">{selectedLead.name}</h3>
-                  <p className="text-xs text-slate-500 font-medium mt-1">Logging call for {selectedLead.id}</p>
+                  <h3 className="text-2xl font-black text-on-surface">{selectedLead.name}</h3>
+                  <p className="text-xs text-on-surface-variant font-medium mt-1">Logging call for {selectedLead.id}</p>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors p-2">
+                <button onClick={() => setIsModalOpen(false)} className="text-on-surface-variant/60 hover:text-on-surface-variant transition-colors p-2">
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
 
               <form onSubmit={handleLogCall} className="space-y-6">
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Outcome</label>
+                  <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-3 block">Outcome</label>
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { id: 'no_answer', label: 'No Answer' },
@@ -837,7 +837,7 @@ export default function SalesPortalPage() {
                         type="button"
                         onClick={() => setCallOutcome(o.id)}
                         className={`h-12 rounded-2xl text-xs font-bold border-2 transition-all ${
-                          callOutcome === o.id ? 'bg-brand/5 border-brand text-brand' : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'
+                          callOutcome === o.id ? 'bg-brand/5 border-brand text-brand' : 'bg-surface border-outline-variant/20 text-on-surface-variant/60 hover:border-outline-variant/30'
                         }`}
                       >
                         {o.label}
@@ -847,21 +847,21 @@ export default function SalesPortalPage() {
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Follow-up Date</label>
+                  <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-3 block">Follow-up Date</label>
                   <input 
                     type="date"
                     value={followupDate}
                     onChange={(e) => setFollowupDate(e.target.value)}
-                    className="sales-input w-full bg-slate-50 border-none rounded-2xl h-12"
+                    className="sales-input w-full bg-surface-container-lowest border-none rounded-2xl h-12"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block">Notes</label>
+                  <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-3 block">Notes</label>
                   <textarea 
                     value={callNotes}
                     onChange={(e) => setCallNotes(e.target.value)}
-                    className="sales-input w-full bg-slate-50 border-none rounded-2xl p-4 min-h-[120px] text-sm"
+                    className="sales-input w-full bg-surface-container-lowest border-none rounded-2xl p-4 min-h-[120px] text-sm"
                     placeholder="What happened on the call? Any pain points?"
                   />
                 </div>

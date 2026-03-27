@@ -72,20 +72,20 @@ export default function AdminReps() {
     <div className="space-y-10 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Access Control</h1>
-          <p className="text-slate-500 font-medium mt-1">Assign roles and static REP IDs to your team.</p>
+          <h1 className="text-3xl font-black text-on-surface tracking-tight">Access Control</h1>
+          <p className="text-on-surface-variant font-medium mt-1">Assign roles and static REP IDs to your team.</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+      <div className="bg-surface rounded-[40px] border border-outline-variant/20 shadow-xl shadow-outline-variant/20 overflow-hidden">
+        <div className="p-8 border-b border-outline-variant/20 flex items-center justify-between">
           <div className="flex gap-2">
             {["All", "Admin", "Sales Rep", "Customer"].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                  filter === f ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:bg-slate-50"
+                  filter === f ? "bg-inverse-surface text-white shadow-lg" : "text-on-surface-variant/60 hover:bg-surface-container-lowest"
                 }`}
               >
                 {f}
@@ -93,7 +93,7 @@ export default function AdminReps() {
             ))}
           </div>
           <div className="relative">
-            <svg className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-on-surface-variant/60 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input 
@@ -101,7 +101,7 @@ export default function AdminReps() {
               placeholder="Search by email..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-10 pl-10 pr-4 bg-slate-50 border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-brand/20 w-64 transition-all"
+              className="h-10 pl-10 pr-4 bg-surface-container-lowest border-none rounded-xl text-xs font-bold focus:ring-2 focus:ring-brand/20 w-64 transition-all"
             />
           </div>
         </div>
@@ -109,26 +109,26 @@ export default function AdminReps() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 bg-slate-50/50">
+              <tr className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/60 bg-surface-container-lowest/50">
                 <th className="px-8 py-4">Registered Email</th>
                 <th className="px-4 py-4">Role</th>
                 <th className="px-4 py-4">Static REP ID</th>
                 <th className="px-8 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50 text-sm">
+            <tbody className="divide-y divide-outline-variant/20 text-sm">
               {filteredUsers.map((user) => (
-                <tr key={user.uid} className="hover:bg-slate-50/50 transition-colors group">
+                <tr key={user.uid} className="hover:bg-surface-container-lowest/50 transition-colors group">
                   <td className="px-8 py-5">
-                    <p className="font-bold text-slate-900">{user.email}</p>
-                    <p className="text-[10px] text-slate-400 font-medium">Joined {new Date(user.created_at).toLocaleDateString()}</p>
+                    <p className="font-bold text-on-surface">{user.email}</p>
+                    <p className="text-[10px] text-on-surface-variant/60 font-medium">Joined {new Date(user.created_at).toLocaleDateString()}</p>
                   </td>
                   <td className="px-4 py-5">
                     <select 
                       value={user.role || 'customer'}
                       onChange={(e) => handleUpdateUser(user.uid, { role: e.target.value })}
                       disabled={updating === user.uid}
-                      className="bg-slate-50 border-none rounded-lg text-[10px] font-black uppercase tracking-widest px-3 py-1.5 focus:ring-2 focus:ring-brand/20 outline-none cursor-pointer disabled:opacity-50"
+                      className="bg-surface-container-lowest border-none rounded-lg text-[10px] font-black uppercase tracking-widest px-3 py-1.5 focus:ring-2 focus:ring-brand/20 outline-none cursor-pointer disabled:opacity-50"
                     >
                       <option value="customer">Customer</option>
                       <option value="sales_rep">Sales Rep</option>
@@ -146,14 +146,14 @@ export default function AdminReps() {
                         }
                       }}
                       disabled={updating === user.uid}
-                      className="bg-slate-50 border-none rounded-lg text-xs font-bold px-4 py-2 focus:ring-2 focus:ring-brand/20 outline-none w-32 disabled:opacity-50 shadow-inner"
+                      className="bg-surface-container-lowest border-none rounded-lg text-xs font-bold px-4 py-2 focus:ring-2 focus:ring-brand/20 outline-none w-32 disabled:opacity-50 shadow-inner"
                     />
                   </td>
                   <td className="px-8 py-5 text-right">
                     {updating === user.uid ? (
                       <span className="text-[10px] font-black text-brand animate-pulse uppercase tracking-widest">Saving...</span>
                     ) : (
-                      <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest group-hover:text-emerald-500 transition-colors">
+                      <span className="text-[10px] font-black text-on-surface-variant/50 uppercase tracking-widest group-hover:text-emerald-500 transition-colors">
                         {user.role === 'sales_rep' ? '✓ Rep Access' : 'No Rep Access'}
                       </span>
                     )}

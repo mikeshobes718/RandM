@@ -50,7 +50,7 @@ export default function AboutPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24">
           {HIGHLIGHTS.map((item) => (
-            <div key={item.label} className="premium-card p-10 rounded-[32px] text-center">
+            <div key={item.label} className="surface-card p-10 rounded-[32px] text-center">
               <div className="text-4xl font-black mb-2">{item.value}</div>
               <p className="text-[10px] font-bold text-muted uppercase tracking-widest">{item.label}</p>
             </div>
@@ -71,7 +71,7 @@ export default function AboutPage() {
             <h2 className="text-[10px] font-black text-muted uppercase tracking-widest mb-2">Our Core Values</h2>
             <div className="space-y-4">
               {VALUES.map((value) => (
-                <div key={value.title} className="premium-card p-6 rounded-2xl bg-accent/30 border-dashed">
+                <div key={value.title} className="surface-card p-6 rounded-2xl bg-accent/30 border-dashed">
                   <div className="text-sm font-bold mb-2">{value.title}</div>
                   <p className="text-xs text-muted leading-relaxed">{value.copy}</p>
                 </div>
@@ -81,7 +81,7 @@ export default function AboutPage() {
         </div>
 
         {/* Milestones */}
-        <div className="premium-card p-10 md:p-16 rounded-[40px] mb-24">
+        <div className="surface-card p-10 md:p-16 rounded-[40px] mb-24">
           <h2 className="text-2xl font-black mb-12 text-center">Platform Milestones</h2>
           <div className="max-w-3xl mx-auto space-y-12">
             {MILESTONES.map((m, i) => (
@@ -107,7 +107,7 @@ export default function AboutPage() {
           <div className="absolute top-0 right-0 w-1/2 h-full bg-brand/10 blur-[120px] -z-0"></div>
           <div className="relative z-10 max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-black mb-6 text-white">Ready to see it in action?</h2>
-            <p className="text-slate-400 text-lg mb-10">
+            <p className="text-on-surface-variant/60 text-lg mb-10">
               Start free and collect your first reviews this week. Our team is ready to help you every step of the way.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

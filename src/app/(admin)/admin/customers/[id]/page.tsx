@@ -40,20 +40,20 @@ export default function AdminCustomerDetail() {
         <div className="flex items-center gap-6">
           <Link 
             href="/admin/customers"
-            className="w-12 h-12 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all hover:scale-105"
+            className="w-12 h-12 rounded-2xl bg-surface border border-outline-variant/20 shadow-sm flex items-center justify-center text-on-surface-variant/60 hover:text-on-surface-variant transition-all hover:scale-105"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight">{MOCK_CUSTOMER.name}</h1>
+              <h1 className="text-3xl font-black text-on-surface tracking-tight">{MOCK_CUSTOMER.name}</h1>
               <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-wider">{MOCK_CUSTOMER.status}</span>
             </div>
-            <p className="text-slate-500 font-medium mt-1">Customer ID: {id} • Active for {MOCK_CUSTOMER.monthsActive} months</p>
+            <p className="text-on-surface-variant font-medium mt-1">Customer ID: {id} • Active for {MOCK_CUSTOMER.monthsActive} months</p>
           </div>
         </div>
         <div className="flex gap-3">
-          <button className="h-14 px-8 bg-slate-100 text-slate-600 font-black rounded-2xl hover:bg-slate-200 transition-all">Cancel Plan</button>
+          <button className="h-14 px-8 bg-surface-container-low text-on-surface-variant font-black rounded-2xl hover:bg-outline-variant/30 transition-all">Cancel Plan</button>
           <button className="h-14 px-8 bg-brand text-white font-black rounded-2xl shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
             Login as Dashboard
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
@@ -68,11 +68,11 @@ export default function AdminCustomerDetail() {
           { label: "Monthly MRR", value: MOCK_CUSTOMER.mrr },
           { label: "Google Rating", value: MOCK_CUSTOMER.googleRating + " ★", color: "text-red-500" },
           { label: "Google Reviews", value: MOCK_CUSTOMER.reviewCount },
-          { label: "Closed By", value: MOCK_CUSTOMER.closedBy, color: "text-slate-900" },
+          { label: "Closed By", value: MOCK_CUSTOMER.closedBy, color: "text-on-surface" },
         ].map(stat => (
-          <div key={stat.label} className="bg-white p-6 rounded-3xl border border-slate-50 shadow-lg shadow-slate-200/40">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{stat.label}</p>
-            <p className={`text-xl font-black ${stat.color || 'text-slate-700'}`}>{stat.value}</p>
+          <div key={stat.label} className="bg-surface p-6 rounded-3xl border border-outline-variant/20 shadow-lg shadow-outline-variant/20">
+            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60 mb-1">{stat.label}</p>
+            <p className={`text-xl font-black ${stat.color || 'text-on-surface-variant'}`}>{stat.value}</p>
           </div>
         ))}
       </div>
@@ -80,29 +80,29 @@ export default function AdminCustomerDetail() {
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Left Col: Customer Details */}
         <div className="space-y-8">
-          <div className="bg-white p-8 rounded-[40px] border border-slate-50 shadow-xl shadow-slate-200/40 space-y-8">
-            <h3 className="text-sm font-black uppercase tracking-widest text-slate-900">Contact & Billing</h3>
+          <div className="bg-surface p-8 rounded-[40px] border border-outline-variant/20 shadow-xl shadow-outline-variant/20 space-y-8">
+            <h3 className="text-sm font-black uppercase tracking-widest text-on-surface">Contact & Billing</h3>
             <div className="space-y-6">
               <div>
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Owner Email</label>
-                <p className="text-sm font-bold text-slate-700">{MOCK_CUSTOMER.email}</p>
+                <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60 block mb-1">Owner Email</label>
+                <p className="text-sm font-bold text-on-surface-variant">{MOCK_CUSTOMER.email}</p>
               </div>
               <div>
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Business Phone</label>
-                <p className="text-sm font-bold text-slate-700">{MOCK_CUSTOMER.phone}</p>
+                <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60 block mb-1">Business Phone</label>
+                <p className="text-sm font-bold text-on-surface-variant">{MOCK_CUSTOMER.phone}</p>
               </div>
               <div>
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Website</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60 block mb-1">Website</label>
                 <a href={MOCK_CUSTOMER.website} target="_blank" className="text-sm font-bold text-brand hover:underline">{MOCK_CUSTOMER.website}</a>
               </div>
-              <div className="pt-4 border-t border-slate-50">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-1">Address</label>
-                <p className="text-xs font-bold text-slate-500 leading-relaxed">{MOCK_CUSTOMER.address}</p>
+              <div className="pt-4 border-t border-outline-variant/20">
+                <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60 block mb-1">Address</label>
+                <p className="text-xs font-bold text-on-surface-variant leading-relaxed">{MOCK_CUSTOMER.address}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-slate-900 p-8 rounded-[40px] shadow-xl text-white">
+          <div className="bg-inverse-surface p-8 rounded-[40px] shadow-xl text-white">
             <h3 className="text-sm font-black uppercase tracking-widest mb-6">Customer Notes</h3>
             <textarea 
               className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium focus:ring-2 focus:ring-brand/50 resize-none outline-none transition-all"
@@ -115,14 +115,14 @@ export default function AdminCustomerDetail() {
         </div>
 
         {/* Right Col: Activity Tabs */}
-        <div className="lg:col-span-2 bg-white rounded-[40px] border border-slate-50 shadow-xl shadow-slate-200/40 overflow-hidden">
-          <div className="p-8 border-b border-slate-50 flex items-center gap-8">
+        <div className="lg:col-span-2 bg-surface rounded-[40px] border border-outline-variant/20 shadow-xl shadow-outline-variant/20 overflow-hidden">
+          <div className="p-8 border-b border-outline-variant/20 flex items-center gap-8">
             {["Activity", "Billing History", "QR Stats", "Feedback"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`pb-4 text-xs font-black uppercase tracking-[0.2em] transition-all relative ${
-                  activeTab === tab ? "text-slate-900" : "text-slate-400 hover:text-slate-600"
+                  activeTab === tab ? "text-on-surface" : "text-on-surface-variant/60 hover:text-on-surface-variant"
                 }`}
               >
                 {tab}
@@ -136,7 +136,7 @@ export default function AdminCustomerDetail() {
           <div className="p-0">
             {activeTab === 'QR Stats' && (
               <table className="w-full text-left">
-                <thead className="bg-slate-50/50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <thead className="bg-surface-container-lowest/50 text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">
                   <tr>
                     <th className="px-8 py-4">Date</th>
                     <th className="px-4 py-4 text-center">Total Scans</th>
@@ -144,12 +144,12 @@ export default function AdminCustomerDetail() {
                     <th className="px-8 py-4 text-right">Conversion</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50">
+                <tbody className="divide-y divide-outline-variant/20">
                   {MOCK_SCANS.map((scan, i) => (
-                    <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-8 py-5 font-bold text-slate-900">{scan.date}</td>
-                      <td className="px-4 py-5 text-center font-bold text-slate-600">{scan.scans}</td>
-                      <td className="px-4 py-5 text-center text-slate-900 font-black">{scan.leads}</td>
+                    <tr key={i} className="hover:bg-surface-container-lowest/50 transition-colors">
+                      <td className="px-8 py-5 font-bold text-on-surface">{scan.date}</td>
+                      <td className="px-4 py-5 text-center font-bold text-on-surface-variant">{scan.scans}</td>
+                      <td className="px-4 py-5 text-center text-on-surface font-black">{scan.leads}</td>
                       <td className="px-8 py-5 text-right font-black text-emerald-500">{scan.conversions}</td>
                     </tr>
                   ))}
@@ -159,11 +159,11 @@ export default function AdminCustomerDetail() {
 
             {activeTab === 'Activity' && (
               <div className="p-12 text-center">
-                <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-300 mx-auto mb-4">
+                <div className="w-16 h-16 rounded-3xl bg-surface-container-lowest flex items-center justify-center text-on-surface-variant/50 mx-auto mb-4">
                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">Customer Activity Feed</h3>
-                <p className="text-sm text-slate-400 font-medium max-w-xs mx-auto mt-2">Historical log of QR scans, review requests, and logins will appear here.</p>
+                <h3 className="text-lg font-bold text-on-surface">Customer Activity Feed</h3>
+                <p className="text-sm text-on-surface-variant/60 font-medium max-w-xs mx-auto mt-2">Historical log of QR scans, review requests, and logins will appear here.</p>
               </div>
             )}
           </div>

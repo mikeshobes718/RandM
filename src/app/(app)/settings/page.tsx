@@ -426,7 +426,7 @@ function SettingsContent() {
         </div>
 
         <div className="lg:col-span-9">
-          <div className="premium-card p-8 md:p-10 rounded-[32px]">
+          <div className="surface-card p-8 md:p-10 rounded-[32px]">
             {error && (
               <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl text-sm text-red-600 font-medium animate-fade-in">
                 {error}
@@ -485,12 +485,12 @@ function SettingsContent() {
                         autoComplete="off"
                       />
                       {searchingPlaces && (
-                        <div className="absolute right-4 top-9 text-slate-400">
+                        <div className="absolute right-4 top-9 text-on-surface-variant/60">
                           <div className="animate-spin h-4 w-4 border-2 border-brand border-t-transparent rounded-full"></div>
                         </div>
                       )}
                       {showPlaceSuggestions && placeSuggestions.length > 0 && (
-                        <div className="absolute z-50 mt-2 w-full rounded-2xl border border-border bg-white shadow-2xl max-h-60 overflow-auto py-2">
+                        <div className="absolute z-50 mt-2 w-full rounded-2xl border border-border bg-surface shadow-2xl max-h-60 overflow-auto py-2">
                           {placeSuggestions.map((s) => (
                             <button
                               key={s.placeId}
@@ -589,7 +589,7 @@ function SettingsContent() {
                           <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4">Active Members</h3>
                           <div className="space-y-3">
                             {members.map((m) => (
-                              <div key={m.uid} className="flex items-center justify-between p-4 bg-white border border-border rounded-xl">
+                              <div key={m.uid} className="flex items-center justify-between p-4 bg-surface border border-border rounded-xl">
                                 <div>
                                   <div className="text-sm font-bold text-foreground">{m.email}</div>
                                   <div className="text-[10px] text-muted uppercase font-black">{m.role}</div>

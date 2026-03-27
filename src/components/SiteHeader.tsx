@@ -8,16 +8,14 @@ import { clientAuth } from "@/lib/firebaseClient";
 import { onAuthStateChanged } from "firebase/auth";
 
 export default function SiteHeader() {
-  const hasLocalToken = typeof window !== 'undefined' && !!localStorage.getItem('idToken');
-  const [authed, setAuthed] = useState(hasLocalToken);
-  const [email, setEmail] = useState<string | null>(typeof window !== 'undefined' ? localStorage.getItem('userEmail') : null);
+  const [authed, setAuthed] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
   const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(!hasLocalToken);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    // Check localStorage immediately on mount to sync with SSR
     const token = localStorage.getItem('idToken');
     if (token) {
       setAuthed(true);
@@ -31,20 +29,18 @@ export default function SiteHeader() {
         setEmail(user.email || null);
         setEmailVerified(user.emailVerified);
         setLoading(false);
-        // Ensure localStorage is in sync
         user.getIdToken().then(token => {
           localStorage.setItem('idToken', token);
           if (user.email) localStorage.setItem('userEmail', user.email);
         });
         return;
       }
-      // Only clear if we are sure there is no user (onAuthStateChanged is authoritative)
       setAuthed(false);
       setEmail(null);
       setLoading(false);
     });
     return () => unsub();
-  }, [pathname]);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -69,61 +65,71 @@ export default function SiteHeader() {
   const isAdminPage = pathname?.startsWith('/admin');
   if (isAuthPage || isLandingPage || isAdminPage) return null;
 
+  const navLinks = [
+    { href: '/how-it-works', label: 'How It Works' },
+    { href: '/features', label: 'Features' },
+    { href: '/pricing', label: 'Pricing' },
+  ];
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[#f1f5f9] bg-background/95 md:bg-background/80 md:backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full glass-effect border-b border-outline-variant/10">
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
-        <div className="flex items-center gap-2 md:gap-8">
-          <Link href="/" className="flex items-center space-x-2 mr-2">
-            <span className="text-xl font-black tracking-tighter text-brand">R&M</span>
-          </Link>
-          
-          <nav className="flex items-center gap-3 md:gap-6">
-            <Link 
-              href="/how-it-works" 
-              className={`text-[11px] md:text-sm font-black transition-all px-3 md:px-4 py-2 rounded-full flex items-center gap-2 shadow-sm ${
-                pathname === '/how-it-works' 
-                ? 'bg-brand text-white shadow-brand/20' 
-                : 'bg-brand/5 text-brand border border-brand/10 hover:bg-brand/10'
-              }`}
-            >
-              <div className="relative flex items-center justify-center">
-                <svg className="w-3.5 h-3.5 md:w-4 md:h-4 relative z-10" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                <span className="absolute inset-0 hidden rounded-full bg-brand/20 opacity-40 md:block md:animate-ping" aria-hidden />
-              </div>
-              <span className="uppercase tracking-tight">How it works</span>
-            </Link>
-            <div className="hidden md:flex items-center gap-6">
-              <Link href="/features" className="text-sm font-medium text-muted hover:text-foreground transition-colors">Features</Link>
-              <Link href="/pricing" className="text-sm font-medium text-muted hover:text-foreground transition-colors">Pricing</Link>
+        <div className="flex items-center gap-8">
+          <Link href="/" prefetch={false} className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg primary-gradient">
+              <span className="text-sm font-extrabold text-on-primary">R</span>
             </div>
+            <span className="text-base font-extrabold tracking-tight text-on-surface display-font">
+              R&M
+            </span>
+          </Link>
+
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  pathname === link.href
+                    ? 'text-primary bg-primary/5'
+                    : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
         </div>
 
         <div className="flex items-center gap-3">
           {loading ? (
-            <div className="h-8 w-20 animate-pulse rounded-md bg-accent" />
+            <div className="h-9 w-20 animate-pulse rounded-lg bg-surface-container" />
           ) : authed ? (
-            <div className="flex items-center gap-3">
-              <Link href="/dashboard" className="hidden sm:block text-sm font-medium text-muted hover:text-foreground transition-colors">
+            <div className="hidden sm:flex items-center gap-2">
+              <Link
+                href="/dashboard"
+                className="px-4 py-2 rounded-lg text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors"
+              >
                 Dashboard
               </Link>
               <button
                 onClick={handleLogout}
-                className="hidden sm:block text-sm font-medium text-muted hover:text-foreground transition-colors"
+                className="px-4 py-2 rounded-lg text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors"
               >
                 Log out
               </button>
             </div>
           ) : (
-            <div className="hidden sm:flex items-center gap-4">
-              <Link href="/login" className="text-sm font-medium text-muted hover:text-foreground transition-colors">
+            <div className="hidden sm:flex items-center gap-2">
+              <Link
+                href="/login"
+                className="px-4 py-2 rounded-lg text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors"
+              >
                 Sign in
               </Link>
               <Link
                 href="/register"
-                className="primary-button !h-9 !px-4 !text-xs"
+                className="primary-button !h-9 !px-5 !text-sm !font-semibold !rounded-lg"
               >
                 Get Started
               </Link>

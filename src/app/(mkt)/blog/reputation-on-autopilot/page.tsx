@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function BlogPost() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-white">
+    <main className="relative min-h-screen overflow-hidden bg-surface">
       {/* Background decoration */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute inset-x-0 top-0 h-[500px] bg-gradient-to-b from-emerald-50/50 to-transparent" />
@@ -11,7 +11,7 @@ export default function BlogPost() {
       <article className="container mx-auto px-6 pt-32 pb-24 max-w-3xl">
         <Link 
           href="/blog" 
-          className="inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-brand transition-colors mb-12 uppercase tracking-widest"
+          className="inline-flex items-center gap-2 text-sm font-bold text-on-surface-variant/60 hover:text-brand transition-colors mb-12 uppercase tracking-widest"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -23,22 +23,22 @@ export default function BlogPost() {
           <div className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.25em] text-emerald-600 mb-6">
             Automation Guide • Feb 2026
           </div>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 leading-tight mb-8">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-on-surface leading-tight mb-8">
             Reputation on Autopilot: Scaling Your Growth Compliantly
           </h1>
-          <p className="text-xl text-slate-600 leading-relaxed mb-8">
+          <p className="text-xl text-on-surface-variant leading-relaxed mb-8">
             Learn how to move beyond manual QR codes and implement a systemic approach to customer feedback that runs 24/7 while staying fully compliant.
           </p>
-          <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+          <div className="flex items-center gap-4 p-6 bg-surface-container-lowest rounded-3xl border border-outline-variant/20">
             <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-600 font-bold">AC</div>
             <div>
-              <p className="text-sm font-bold text-slate-900">Automation Concepts</p>
-              <p className="text-xs text-slate-500 font-medium">Streamlining the feedback loop through POS integration.</p>
+              <p className="text-sm font-bold text-on-surface">Automation Concepts</p>
+              <p className="text-xs text-on-surface-variant font-medium">Streamlining the feedback loop through POS integration.</p>
             </div>
           </div>
         </header>
 
-        <div className="prose prose-slate prose-lg max-w-none prose-headings:font-black prose-headings:tracking-tight prose-p:text-slate-600 prose-p:leading-relaxed prose-strong:text-slate-900">
+        <div className="prose prose-slate prose-lg max-w-none prose-headings:font-black prose-headings:tracking-tight prose-p:text-on-surface-variant prose-p:leading-relaxed prose-strong:text-on-surface">
           <p>
             For many business owners, requesting reviews feels like an extra chore. You have to remember to point out the QR code, or worse, manually ask the customer in person. This "human dependency" is where most reputation strategies fail.
           </p>
@@ -65,14 +65,14 @@ export default function BlogPost() {
 
           <h2 className="text-2xl mt-12 mb-6 text-emerald-600">Download the Automation Deck</h2>
           <div className="p-8 bg-emerald-50 border border-emerald-100 rounded-3xl flex flex-col sm:flex-row items-center gap-6">
-            <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+            <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center shadow-sm">
               <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
             <div className="flex-1 text-center sm:text-left">
-              <h4 className="font-bold text-slate-900 mb-1">Reputation Control: Automated</h4>
-              <p className="text-sm text-slate-500 mb-4">The executive slidedeck on scaling your reputation through compliant POS automation.</p>
+              <h4 className="font-bold text-on-surface mb-1">Reputation Control: Automated</h4>
+              <p className="text-sm text-on-surface-variant mb-4">The executive slidedeck on scaling your reputation through compliant POS automation.</p>
               <a 
                 href="/docs/Reputation_Control_Automated.pdf" 
                 download
@@ -92,8 +92,8 @@ export default function BlogPost() {
           </p>
         </div>
 
-        <footer className="mt-24 pt-12 border-t border-slate-100 text-center">
-          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Ready to put your growth on autopilot?</p>
+        <footer className="mt-24 pt-12 border-t border-outline-variant/20 text-center">
+          <p className="text-sm font-bold text-on-surface-variant/60 uppercase tracking-widest mb-6">Ready to put your growth on autopilot?</p>
           <Link href="/pricing" className="primary-button inline-flex !bg-emerald-600 hover:!bg-emerald-700 shadow-emerald-200">
             View Pro Automation Plans
           </Link>

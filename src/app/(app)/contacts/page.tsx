@@ -119,8 +119,8 @@ function ContactsPageContent() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full mb-4"></div>
-        <p className="text-muted text-sm font-medium tracking-widest uppercase">Loading contacts...</p>
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
+        <p className="text-on-surface-variant text-sm font-medium">Loading contacts...</p>
       </div>
     );
   }
@@ -131,8 +131,8 @@ function ContactsPageContent() {
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Contacts</h1>
-          <p className="text-slate-500 text-sm font-medium mt-2">Manage your customer list and import data for campaigns.</p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-on-surface tracking-tight display-font">Contacts</h1>
+          <p className="text-on-surface-variant text-sm mt-2">Manage your customer list and import data for campaigns.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button onClick={() => setShowAddModal(true)} className="secondary-button !h-10 sm:!h-12 px-4 sm:px-6 text-[10px] font-black uppercase tracking-[0.1em] shadow-sm flex-1 sm:flex-none">+ Add</button>
@@ -142,23 +142,23 @@ function ContactsPageContent() {
       </div>
 
       {contacts.length > 0 && (
-        <div className="flex flex-col gap-4 bg-white p-4 sm:p-6 rounded-[24px] sm:rounded-[32px] border border-slate-100 shadow-sm">
+        <div className="flex flex-col gap-4 bg-surface p-4 sm:p-6 rounded-[24px] sm:rounded-[32px] border border-outline-variant/20 shadow-sm">
           <div className="relative w-full">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">🔍</span>
-            <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all" />
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40">🔍</span>
+            <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-12 pr-4 py-3 bg-surface-container-lowest border border-outline-variant/20 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all" />
           </div>
           {selectedIds.size > 0 && (
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in slide-in-from-top-2">
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{selectedIds.size} Selected</span>
-                <span className="text-[9px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 hidden sm:inline-block">Replies will go to: {ownerEmail || 'your email'}</span>
+                <span className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">{selectedIds.size} Selected</span>
+                <span className="text-[9px] font-medium text-on-surface-variant/60 bg-surface-container-lowest px-2 py-0.5 rounded-md border border-outline-variant/20 hidden sm:inline-block">Replies will go to: {ownerEmail || 'your email'}</span>
               </div>
               <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <button onClick={() => handleBulkContact('email')} className="h-9 sm:h-11 px-3 sm:px-6 bg-brand/5 text-brand text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/10 transition-colors flex items-center gap-2 flex-1 sm:flex-none justify-center">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                   Email
                 </button>
-                <button disabled className="h-9 sm:h-11 px-3 sm:px-6 bg-slate-100 text-slate-400 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-2 flex-1 sm:flex-none justify-center cursor-not-allowed opacity-60" title="SMS coming soon">
+                <button disabled className="h-9 sm:h-11 px-3 sm:px-6 bg-surface-container-low text-on-surface-variant/60 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-2 flex-1 sm:flex-none justify-center cursor-not-allowed opacity-60" title="SMS coming soon">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
                   SMS
                 </button>
@@ -190,32 +190,32 @@ function ContactsPageContent() {
         )}
       </div>
 
-      <div className="bg-white rounded-[32px] sm:rounded-[48px] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden min-h-[500px] flex flex-col">
+      <div className="bg-surface rounded-[32px] sm:rounded-[48px] border border-outline-variant/20 shadow-2xl shadow-outline-variant/20 overflow-hidden min-h-[500px] flex flex-col">
         {contacts.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center p-10 sm:p-20 text-center">
-            <div className="w-20 h-20 sm:w-24 h-24 bg-slate-50 rounded-[32px] sm:rounded-[40px] flex items-center justify-center text-4xl sm:text-5xl mx-auto mb-6 sm:mb-8 border border-slate-100 shadow-inner">👥</div>
-            <h3 className="text-xl sm:text-2xl font-black text-slate-900 uppercase tracking-tight">No contacts yet</h3>
-            <p className="text-sm sm:text-base text-slate-400 font-medium max-w-md mx-auto mt-3 leading-relaxed">Build your audience. Import your customer list from a CSV file or connect your Square account to start sending smart review requests.</p>
+            <div className="w-20 h-20 sm:w-24 h-24 bg-surface-container-lowest rounded-[32px] sm:rounded-[40px] flex items-center justify-center text-4xl sm:text-5xl mx-auto mb-6 sm:mb-8 border border-outline-variant/20 shadow-inner">👥</div>
+            <h3 className="text-xl sm:text-2xl font-black text-on-surface uppercase tracking-tight">No contacts yet</h3>
+            <p className="text-sm sm:text-base text-on-surface-variant/60 font-medium max-w-md mx-auto mt-3 leading-relaxed">Build your audience. Import your customer list from a CSV file or connect your Square account to start sending smart review requests.</p>
             <div className="mt-8 sm:mt-10 flex flex-wrap justify-center gap-3 sm:gap-4">
-              <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="h-12 sm:h-14 px-8 sm:px-10 bg-slate-900 text-white text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-[16px] sm:rounded-[20px] hover:scale-[1.05] active:scale-[0.95] transition-all shadow-2xl shadow-slate-300 disabled:opacity-50">{uploading ? '...' : 'Upload CSV'}</button>
-              <Link href="/integrations/square" className="h-12 sm:h-14 px-8 sm:px-10 border-2 border-slate-100 text-slate-400 text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-[16px] sm:rounded-[20px] hover:bg-slate-50 hover:text-slate-600 transition-all flex items-center">Connect Square</Link>
+              <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="h-12 sm:h-14 px-8 sm:px-10 bg-inverse-surface text-white text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-[16px] sm:rounded-[20px] hover:scale-[1.05] active:scale-[0.95] transition-all shadow-2xl shadow-outline-variant/20 disabled:opacity-50">{uploading ? '...' : 'Upload CSV'}</button>
+              <Link href="/integrations/square" className="h-12 sm:h-14 px-8 sm:px-10 border-2 border-outline-variant/20 text-on-surface-variant/60 text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-[16px] sm:rounded-[20px] hover:bg-surface-container-lowest hover:text-on-surface-variant transition-all flex items-center">Connect Square</Link>
             </div>
           </div>
         ) : (
           <>
-            <div className="px-6 sm:px-10 py-6 sm:py-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+            <div className="px-6 sm:px-10 py-6 sm:py-8 border-b border-outline-variant/20 flex items-center justify-between bg-surface-container-lowest/30">
               <div className="flex items-center gap-3 sm:gap-4">
                 <span className="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
-                <p className="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-widest">{filteredContacts.length} Contacts</p>
-                {searchQuery && <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden sm:inline">(Filtered)</span>}
+                <p className="text-xs sm:text-sm font-black text-on-surface uppercase tracking-widest">{filteredContacts.length} Contacts</p>
+                {searchQuery && <span className="text-[9px] sm:text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest hidden sm:inline">(Filtered)</span>}
               </div>
               <button onClick={() => fetchContacts(user)} className="text-[9px] sm:text-[10px] font-black text-brand hover:text-brand-dark uppercase tracking-widest bg-brand/5 px-3 sm:px-4 py-2 rounded-xl transition-colors">Refresh</button>
             </div>
             <div className="overflow-x-auto overflow-y-auto max-h-[600px] custom-scrollbar">
               <table className="w-full text-left border-collapse min-w-[600px] sm:min-w-[800px]">
-                <thead className="sticky top-0 z-10 bg-slate-50 shadow-sm">
-                  <tr className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-400">
-                    <th className="px-4 sm:px-6 py-4 sm:py-6 w-10"><input type="checkbox" checked={filteredContacts.length > 0 && selectedIds.size === filteredContacts.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-slate-200 text-brand focus:ring-brand" /></th>
+                <thead className="sticky top-0 z-10 bg-surface-container-lowest shadow-sm">
+                  <tr className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-on-surface-variant/60">
+                    <th className="px-4 sm:px-6 py-4 sm:py-6 w-10"><input type="checkbox" checked={filteredContacts.length > 0 && selectedIds.size === filteredContacts.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-outline-variant/30 text-brand focus:ring-brand" /></th>
                     <th className="px-2 sm:px-4 py-4 sm:py-6">Name</th>
                     <th className="px-4 sm:px-6 py-4 sm:py-6">Contact Info</th>
                     <th className="px-4 sm:px-6 py-4 sm:py-6 hidden sm:table-cell">Source</th>
@@ -223,19 +223,19 @@ function ContactsPageContent() {
                     <th className="px-6 sm:px-10 py-4 sm:py-6 text-right">Added</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-50 bg-white">
+                <tbody className="divide-y divide-outline-variant/20 bg-surface">
                   {filteredContacts.map((contact) => (
-                    <tr key={contact.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-4 sm:px-6 py-4 sm:py-6"><input type="checkbox" checked={selectedIds.has(contact.id)} onChange={() => toggleSelect(contact.id)} className="w-4 h-4 rounded border-slate-200 text-brand focus:ring-brand" /></td>
-                      <td className="px-2 sm:px-4 py-4 sm:py-6"><p className="font-black text-slate-900 group-hover:text-brand transition-colors text-sm sm:text-base">{contact.name || 'Unnamed'}</p></td>
+                    <tr key={contact.id} className="hover:bg-surface-container-lowest/50 transition-colors group">
+                      <td className="px-4 sm:px-6 py-4 sm:py-6"><input type="checkbox" checked={selectedIds.has(contact.id)} onChange={() => toggleSelect(contact.id)} className="w-4 h-4 rounded border-outline-variant/30 text-brand focus:ring-brand" /></td>
+                      <td className="px-2 sm:px-4 py-4 sm:py-6"><p className="font-black text-on-surface group-hover:text-brand transition-colors text-sm sm:text-base">{contact.name || 'Unnamed'}</p></td>
                       <td className="px-4 sm:px-6 py-4 sm:py-6">
                         <div className="flex flex-col gap-0.5 sm:gap-1">
-                          {contact.email && <p className="text-[11px] sm:text-xs font-bold text-slate-600 truncate max-w-[120px] sm:max-w-none">{contact.email}</p>}
-                          {contact.phone && <p className="text-[9px] sm:text-[10px] font-medium text-slate-400">{formatPhoneDisplay(contact.phone)}</p>}
-                          {!contact.email && !contact.phone && <span className="text-slate-300 italic text-[10px] sm:text-xs">No info</span>}
+                          {contact.email && <p className="text-[11px] sm:text-xs font-bold text-on-surface-variant truncate max-w-[120px] sm:max-w-none">{contact.email}</p>}
+                          {contact.phone && <p className="text-[9px] sm:text-[10px] font-medium text-on-surface-variant/60">{formatPhoneDisplay(contact.phone)}</p>}
+                          {!contact.email && !contact.phone && <span className="text-on-surface-variant/40 italic text-[10px] sm:text-xs">No info</span>}
                         </div>
                       </td>
-                      <td className="px-4 sm:px-6 py-4 sm:py-6 hidden sm:table-cell"><span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-black uppercase tracking-widest rounded-md border border-slate-200">{contact.source || 'manual'}</span></td>
+                      <td className="px-4 sm:px-6 py-4 sm:py-6 hidden sm:table-cell"><span className="px-2 py-0.5 bg-surface-container-low text-on-surface-variant text-[8px] font-black uppercase tracking-widest rounded-md border border-outline-variant/30">{contact.source || 'manual'}</span></td>
                       <td className="px-4 sm:px-6 py-4 sm:py-6">
                         <div className="flex items-center gap-1.5 sm:gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                           {contact.email && (
@@ -244,16 +244,16 @@ function ContactsPageContent() {
                             </button>
                           )}
                           {contact.phone && (
-                            <button disabled className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center cursor-not-allowed opacity-60" title="SMS coming soon">
+                            <button disabled className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-surface-container-low text-on-surface-variant/60 flex items-center justify-center cursor-not-allowed opacity-60" title="SMS coming soon">
                               <svg className="w-3.5 h-3.5 sm:w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
                             </button>
                           )}
-                          <button onClick={() => openHistory(contact)} className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition-colors ml-1" title="View Message History">
+                          <button onClick={() => openHistory(contact)} className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-surface-container-low text-on-surface-variant flex items-center justify-center hover:bg-surface-container transition-colors ml-1" title="View Message History">
                             <svg className="w-3.5 h-3.5 sm:w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                           </button>
                         </div>
                       </td>
-                      <td className="px-6 sm:px-10 py-4 sm:py-6 text-right text-slate-400 text-[10px] sm:text-xs font-bold">{contact.created_at ? new Date(contact.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-'}</td>
+                      <td className="px-6 sm:px-10 py-4 sm:py-6 text-right text-on-surface-variant/60 text-[10px] sm:text-xs font-bold">{contact.created_at ? new Date(contact.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -262,17 +262,17 @@ function ContactsPageContent() {
           </>
         )}
 
-        <div className="mt-auto p-6 sm:p-10 border-t border-slate-50 bg-slate-50/30">
+        <div className="mt-auto p-6 sm:p-10 border-t border-outline-variant/20 bg-surface-container-lowest/30">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-              <div className="flex items-center gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-slate-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-200 hidden sm:inline"></span>
+              <div className="flex items-center gap-3 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-on-surface-variant/60">
+                <span className="w-1.5 h-1.5 rounded-full bg-surface-container hidden sm:inline"></span>
                 <span>Formats:</span>
-                <span className="bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm text-slate-600">.CSV</span>
-                <span className="bg-white px-2 py-1 rounded-md border border-slate-200 shadow-sm text-slate-600">.XLSX</span>
+                <span className="bg-surface px-2 py-1 rounded-md border border-outline-variant/30 shadow-sm text-on-surface-variant">.CSV</span>
+                <span className="bg-surface px-2 py-1 rounded-md border border-outline-variant/30 shadow-sm text-on-surface-variant">.XLSX</span>
               </div>
-              <div className="hidden sm:block h-4 w-px bg-slate-200"></div>
-              <p className="text-[9px] sm:text-[10px] font-medium text-slate-400 uppercase tracking-widest text-center sm:text-left">Need help? <button onClick={() => setShowGuide(true)} className="text-brand font-black hover:underline">Read Guide</button></p>
+              <div className="hidden sm:block h-4 w-px bg-surface-container"></div>
+              <p className="text-[9px] sm:text-[10px] font-medium text-on-surface-variant/60 uppercase tracking-widest text-center sm:text-left">Need help? <button onClick={() => setShowGuide(true)} className="text-brand font-black hover:underline">Read Guide</button></p>
             </div>
             {contacts.length > 0 && (
               <button onClick={() => handleDeleteContacts(true)} className="text-[9px] sm:text-[10px] font-black text-rose-400 hover:text-rose-600 uppercase tracking-[0.2em] transition-colors flex items-center gap-2">
@@ -289,36 +289,36 @@ function ContactsPageContent() {
         createPortal(
           <>
             {showAddModal && (
-              <div className="fixed inset-0 z-[100000] flex flex-col bg-white md:animate-in md:fade-in md:duration-200 md:items-center md:justify-center md:bg-transparent md:p-6">
+              <div className="fixed inset-0 z-[100000] flex flex-col bg-surface md:animate-in md:fade-in md:duration-200 md:items-center md:justify-center md:bg-transparent md:p-6">
                 <div
-                  className="absolute inset-0 hidden bg-slate-900/60 backdrop-blur-sm md:block"
+                  className="absolute inset-0 hidden bg-inverse-surface/60 backdrop-blur-sm md:block"
                   aria-hidden
                   onClick={() => setShowAddModal(false)}
                 />
-                <div className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full min-h-0 flex-col overflow-hidden bg-white md:h-auto md:max-h-[90dvh] md:max-w-md md:flex-none md:animate-in md:zoom-in-95 md:rounded-[40px] md:duration-200 md:shadow-2xl">
-                  <header className="flex shrink-0 items-center justify-between border-b border-slate-50 bg-slate-50/50 px-4 pb-4 pt-[max(12px,env(safe-area-inset-top))] md:p-8">
+                <div className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full min-h-0 flex-col overflow-hidden bg-surface md:h-auto md:max-h-[90dvh] md:max-w-md md:flex-none md:animate-in md:zoom-in-95 md:rounded-[40px] md:duration-200 md:shadow-2xl">
+                  <header className="flex shrink-0 items-center justify-between border-b border-outline-variant/20 bg-surface-container-lowest/50 px-4 pb-4 pt-[max(12px,env(safe-area-inset-top))] md:p-8">
                     <div>
-                      <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 md:text-xl">Add contact</h3>
-                      <p className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-slate-400 md:text-xs">Manual entry</p>
+                      <h3 className="text-lg font-black uppercase tracking-tight text-on-surface md:text-xl">Add contact</h3>
+                      <p className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-on-surface-variant/60 md:text-xs">Manual entry</p>
                     </div>
-                    <button type="button" onClick={() => setShowAddModal(false)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:text-slate-600 min-h-[44px] min-w-[44px] md:h-10 md:w-10 md:min-h-0 md:min-w-0">
+                    <button type="button" onClick={() => setShowAddModal(false)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant/20 bg-surface text-on-surface-variant/60 shadow-sm transition-all hover:text-on-surface-variant min-h-[44px] min-w-[44px] md:h-10 md:w-10 md:min-h-0 md:min-w-0">
                       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   </header>
                   <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto px-4 pb-[max(20px,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch] md:px-8 md:pb-10">
                     <form onSubmit={onManualAdd} className="space-y-5 py-5 md:space-y-6 md:py-0">
                       <div>
-                        <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Full name</label>
-                        <input type="text" placeholder="e.g. John Smith" value={manualContact.name} onChange={(e) => setManualContact({ ...manualContact, name: e.target.value })} className="h-12 w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
+                        <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">Full name</label>
+                        <input type="text" placeholder="e.g. John Smith" value={manualContact.name} onChange={(e) => setManualContact({ ...manualContact, name: e.target.value })} className="h-12 w-full rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
                       </div>
                       <div>
-                        <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Email</label>
-                        <input type="email" placeholder="john@example.com" inputMode="email" autoComplete="email" value={manualContact.email} onChange={(e) => setManualContact({ ...manualContact, email: e.target.value })} className="h-12 w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
+                        <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">Email</label>
+                        <input type="email" placeholder="john@example.com" inputMode="email" autoComplete="email" value={manualContact.email} onChange={(e) => setManualContact({ ...manualContact, email: e.target.value })} className="h-12 w-full rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
                       </div>
                       <div>
-                        <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Phone</label>
+                        <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">Phone</label>
                         <div className="flex gap-2">
-                          <select value={manualContact.country} onChange={(e) => { const c = e.target.value; const f = new AsYouType(c as CountryCode); setManualContact({ ...manualContact, country: c, phone: f.input(manualContact.phone) }); }} className="h-12 w-24 shrink-0 rounded-2xl border border-slate-100 bg-slate-50 px-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20">
+                          <select value={manualContact.country} onChange={(e) => { const c = e.target.value; const f = new AsYouType(c as CountryCode); setManualContact({ ...manualContact, country: c, phone: f.input(manualContact.phone) }); }} className="h-12 w-24 shrink-0 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20">
                             <option value="US">🇺🇸 +1</option>
                             <option value="CA">🇨🇦 +1</option>
                             <option value="GB">🇬🇧 +44</option>
@@ -326,9 +326,9 @@ function ContactsPageContent() {
                             <option value="IE">🇮🇪 +353</option>
                             <option value="NZ">🇳🇿 +64</option>
                           </select>
-                          <input type="tel" placeholder="(555) 000-0000" inputMode="tel" autoComplete="tel" value={manualContact.phone} onChange={(e) => { const v = e.target.value; if (v.length < manualContact.phone.length) { setManualContact({ ...manualContact, phone: v }); } else { const f = new AsYouType(manualContact.country as CountryCode); setManualContact({ ...manualContact, phone: f.input(v) }); } }} className="h-12 min-w-0 flex-1 rounded-2xl border border-slate-100 bg-slate-50 px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
+                          <input type="tel" placeholder="(555) 000-0000" inputMode="tel" autoComplete="tel" value={manualContact.phone} onChange={(e) => { const v = e.target.value; if (v.length < manualContact.phone.length) { setManualContact({ ...manualContact, phone: v }); } else { const f = new AsYouType(manualContact.country as CountryCode); setManualContact({ ...manualContact, phone: f.input(v) }); } }} className="h-12 min-w-0 flex-1 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
                         </div>
-                        <p className="ml-1 mt-2 text-[9px] font-medium text-slate-400">We format this for SMS automatically.</p>
+                        <p className="ml-1 mt-2 text-[9px] font-medium text-on-surface-variant/60">We format this for SMS automatically.</p>
                       </div>
                       <div className="pt-2">
                         <button type="submit" disabled={addingManual || (!manualContact.email && !manualContact.phone)} className="primary-button h-14 w-full rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand/20 transition-all disabled:opacity-50 min-h-[48px]">{addingManual ? 'Saving...' : 'Save contact'}</button>
@@ -341,50 +341,50 @@ function ContactsPageContent() {
 
             {showContactModal && (
               <div
-                className="fixed inset-0 z-[100000] flex flex-col bg-white md:animate-in md:fade-in md:duration-200 md:items-center md:justify-center md:bg-transparent md:p-6"
+                className="fixed inset-0 z-[100000] flex flex-col bg-surface md:animate-in md:fade-in md:duration-200 md:items-center md:justify-center md:bg-transparent md:p-6"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="outreach-modal-title"
               >
                 <div
-                  className="absolute inset-0 hidden bg-slate-900/60 backdrop-blur-sm md:block"
+                  className="absolute inset-0 hidden bg-inverse-surface/60 backdrop-blur-sm md:block"
                   aria-hidden
                   onClick={() => { setShowContactModal(false); setRecipientSearch(''); }}
                 />
-                <div className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full min-h-0 flex-col overflow-hidden bg-white md:h-auto md:max-h-[90dvh] md:max-w-xl md:flex-none md:animate-in md:zoom-in-95 md:rounded-[40px] md:duration-200 md:shadow-2xl">
-                  <header className="flex shrink-0 items-center justify-between border-b border-slate-50 bg-slate-50/50 px-4 pb-4 pt-[max(12px,env(safe-area-inset-top))] md:p-8">
+                <div className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full min-h-0 flex-col overflow-hidden bg-surface md:h-auto md:max-h-[90dvh] md:max-w-xl md:flex-none md:animate-in md:zoom-in-95 md:rounded-[40px] md:duration-200 md:shadow-2xl">
+                  <header className="flex shrink-0 items-center justify-between border-b border-outline-variant/20 bg-surface-container-lowest/50 px-4 pb-4 pt-[max(12px,env(safe-area-inset-top))] md:p-8">
                     <div className="min-w-0 pr-2">
-                      <h3 id="outreach-modal-title" className="text-lg font-black uppercase tracking-tight text-slate-900 md:text-xl">
+                      <h3 id="outreach-modal-title" className="text-lg font-black uppercase tracking-tight text-on-surface md:text-xl">
                         Send {contactType === 'email' ? 'email' : 'SMS'} outreach
                       </h3>
-                      <p className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-slate-400 md:text-xs">{selectedIds.size} selected</p>
+                      <p className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-on-surface-variant/60 md:text-xs">{selectedIds.size} selected</p>
                     </div>
                     <button
                       type="button"
                       onClick={() => { setShowContactModal(false); setRecipientSearch(''); }}
-                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:text-slate-600 min-h-[44px] min-w-[44px] md:h-10 md:w-10 md:min-h-0 md:min-w-0"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant/20 bg-surface text-on-surface-variant/60 shadow-sm transition-all hover:text-on-surface-variant min-h-[44px] min-w-[44px] md:h-10 md:w-10 md:min-h-0 md:min-w-0"
                     >
                       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   </header>
                   <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto px-4 pb-[max(20px,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch] md:px-8 md:pb-10">
                     <form onSubmit={onSendOutreach} className="space-y-5 py-5 md:space-y-6 md:py-0">
-                      <section className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                      <section className="rounded-2xl border border-outline-variant/20 bg-surface-container-lowest p-4">
                         <div className="mb-2 flex items-center justify-between gap-2">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">
                             Recipients
                             {selectedIds.size > 0 && (
                               <span className="ml-2 inline rounded-md bg-brand px-1.5 py-0.5 text-[9px] text-white">{selectedIds.size}</span>
                             )}
                           </p>
                           {selectedIds.size > 0 && (
-                            <button type="button" onClick={() => setSelectedIds(new Set())} className="shrink-0 text-[9px] font-black uppercase tracking-widest text-slate-400 transition-colors hover:text-red-400 min-h-[44px] px-1 md:min-h-0">
+                            <button type="button" onClick={() => setSelectedIds(new Set())} className="shrink-0 text-[9px] font-black uppercase tracking-widest text-on-surface-variant/60 transition-colors hover:text-red-400 min-h-[44px] px-1 md:min-h-0">
                               Clear all
                             </button>
                           )}
                         </div>
                         <div className="relative mb-2">
-                          <svg className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                          <svg className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-on-surface-variant/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                           <input
                             type="text"
                             enterKeyHint="search"
@@ -394,48 +394,48 @@ function ContactsPageContent() {
                             autoCapitalize="off"
                             autoCorrect="off"
                             spellCheck={false}
-                            className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 md:h-9 md:text-xs"
+                            className="h-11 w-full rounded-xl border border-outline-variant/30 bg-surface pl-9 pr-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 md:h-9 md:text-xs"
                           />
                         </div>
                         {recipientSearch.trim().length > 0 && (
-                          <div className="mb-2 overflow-visible rounded-xl border border-slate-200 bg-white shadow-sm max-md:max-h-none md:max-h-40 md:overflow-y-auto">
+                          <div className="mb-2 overflow-visible rounded-xl border border-outline-variant/30 bg-surface shadow-sm max-md:max-h-none md:max-h-40 md:overflow-y-auto">
                             {contacts.filter(c => { const q = recipientSearch.toLowerCase(); return (c.name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q) || (c.phone || '').includes(q); }).slice(0, 8).map(c => (
-                              <button key={c.id} type="button" onClick={() => { setSelectedIds(prev => { const n = new Set(prev); if (n.has(c.id)) n.delete(c.id); else n.add(c.id); return n; }); setRecipientSearch(''); }} className={`flex w-full items-center justify-between border-b border-slate-50 px-3 py-3 text-left transition-colors last:border-0 hover:bg-slate-50 min-h-[48px] md:py-2 md:min-h-0 ${selectedIds.has(c.id) ? 'bg-brand/5' : ''}`}>
+                              <button key={c.id} type="button" onClick={() => { setSelectedIds(prev => { const n = new Set(prev); if (n.has(c.id)) n.delete(c.id); else n.add(c.id); return n; }); setRecipientSearch(''); }} className={`flex w-full items-center justify-between border-b border-outline-variant/20 px-3 py-3 text-left transition-colors last:border-0 hover:bg-surface-container-lowest min-h-[48px] md:py-2 md:min-h-0 ${selectedIds.has(c.id) ? 'bg-brand/5' : ''}`}>
                                 <div className="min-w-0 flex flex-col">
-                                  <span className="truncate text-sm font-black text-slate-800 md:text-[11px]">{c.name || 'Unnamed'}</span>
-                                  <span className="truncate text-xs text-slate-400 md:text-[9px]">{c.email || formatPhoneDisplay(c.phone || '')}</span>
+                                  <span className="truncate text-sm font-black text-on-surface md:text-[11px]">{c.name || 'Unnamed'}</span>
+                                  <span className="truncate text-xs text-on-surface-variant/60 md:text-[9px]">{c.email || formatPhoneDisplay(c.phone || '')}</span>
                                 </div>
                                 {selectedIds.has(c.id) && <svg className="ml-2 h-4 w-4 shrink-0 text-brand" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>}
                               </button>
                             ))}
-                            {contacts.filter(c => { const q = recipientSearch.toLowerCase(); return (c.name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q) || (c.phone || '').includes(q); }).length === 0 && <p className="py-4 text-center text-sm text-slate-400 md:text-[10px]">No contacts found</p>}
+                            {contacts.filter(c => { const q = recipientSearch.toLowerCase(); return (c.name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q) || (c.phone || '').includes(q); }).length === 0 && <p className="py-4 text-center text-sm text-on-surface-variant/60 md:text-[10px]">No contacts found</p>}
                           </div>
                         )}
                         {selectedIds.size > 0 ? (
                           <div className="mt-1 flex flex-wrap gap-1.5">
                             {contacts.filter(c => selectedIds.has(c.id)).slice(0, 8).map(c => (
-                              <span key={c.id} className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-600 md:text-[10px]">
+                              <span key={c.id} className="flex items-center gap-1 rounded-lg border border-outline-variant/30 bg-surface px-2 py-1.5 text-xs font-bold text-on-surface-variant md:text-[10px]">
                                 <span className="max-w-[140px] truncate md:max-w-none">{c.name || c.email || c.phone}</span>
-                                <button type="button" onClick={() => setSelectedIds(prev => { const n = new Set(prev); n.delete(c.id); return n; })} className="ml-0.5 text-slate-300 transition-colors hover:text-red-400 min-h-[32px] min-w-[32px] md:min-h-0 md:min-w-0">×</button>
+                                <button type="button" onClick={() => setSelectedIds(prev => { const n = new Set(prev); n.delete(c.id); return n; })} className="ml-0.5 text-on-surface-variant/40 transition-colors hover:text-red-400 min-h-[32px] min-w-[32px] md:min-h-0 md:min-w-0">×</button>
                               </span>
                             ))}
                             {selectedIds.size > 8 && <span className="rounded-lg border border-brand/10 bg-brand/5 px-2 py-1.5 text-xs font-black text-brand">+{selectedIds.size - 8} more</span>}
                           </div>
                         ) : (
-                          <p className="py-2 text-center text-xs text-slate-400 md:text-[10px]">Search to add recipients or select from the list below.</p>
+                          <p className="py-2 text-center text-xs text-on-surface-variant/60 md:text-[10px]">Search to add recipients or select from the list below.</p>
                         )}
                       </section>
                       {contactType === 'email' && (
                         <div>
-                          <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Subject</label>
-                          <input type="text" placeholder="e.g. A quick question about your visit" value={contactSubject} onChange={(e) => setContactSubject(e.target.value)} required className="h-12 w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
+                          <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">Subject</label>
+                          <input type="text" placeholder="e.g. A quick question about your visit" value={contactSubject} onChange={(e) => setContactSubject(e.target.value)} required className="h-12 w-full rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
                         </div>
                       )}
                       <div>
                         <div className="mb-2 flex flex-col gap-1 px-1 sm:flex-row sm:items-center sm:justify-between">
-                          <label className="shrink-0 text-[10px] font-black uppercase tracking-widest text-slate-400">Message</label>
+                          <label className="shrink-0 text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">Message</label>
                           {contactType === 'email' && (
-                            <span className="text-xs font-medium text-slate-400 md:max-w-[55%] md:truncate md:text-right md:text-[9px]">
+                            <span className="text-xs font-medium text-on-surface-variant/60 md:max-w-[55%] md:truncate md:text-right md:text-[9px]">
                               Replies: {ownerEmail || 'your email'}
                             </span>
                           )}
@@ -448,9 +448,9 @@ function ContactsPageContent() {
                           autoComplete="off"
                           autoCapitalize="sentences"
                           rows={6}
-                          className="min-h-[180px] w-full resize-none rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 md:min-h-[160px] md:text-sm"
+                          className="min-h-[180px] w-full resize-none rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 md:min-h-[160px] md:text-sm"
                         />
-                        <p className="ml-1 mt-2 text-[9px] font-medium text-slate-400">{contactType === 'sms' ? 'Keep it short. SMS rates apply.' : 'Your brand name goes in the footer.'}</p>
+                        <p className="ml-1 mt-2 text-[9px] font-medium text-on-surface-variant/60">{contactType === 'sms' ? 'Keep it short. SMS rates apply.' : 'Your brand name goes in the footer.'}</p>
                       </div>
                       <div className="pt-2">
                         <button type="submit" disabled={isSending || selectedIds.size === 0 || !contactMessage || (contactType === 'email' && !contactSubject)} className="primary-button flex min-h-[48px] h-14 w-full items-center justify-center gap-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand/20 transition-all disabled:opacity-50">
@@ -464,17 +464,17 @@ function ContactsPageContent() {
             )}
 
             {historyContact && (
-              <div className="fixed inset-0 z-[100000] flex flex-col bg-white md:animate-in md:fade-in md:duration-200 md:items-center md:justify-center md:bg-transparent md:p-6">
+              <div className="fixed inset-0 z-[100000] flex flex-col bg-surface md:animate-in md:fade-in md:duration-200 md:items-center md:justify-center md:bg-transparent md:p-6">
                 <div
-                  className="absolute inset-0 hidden bg-slate-900/60 backdrop-blur-sm md:block"
+                  className="absolute inset-0 hidden bg-inverse-surface/60 backdrop-blur-sm md:block"
                   aria-hidden
                   onClick={() => setHistoryContact(null)}
                 />
-                <div className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full min-h-0 flex-col overflow-hidden bg-white md:h-auto md:max-h-[90dvh] md:max-w-2xl md:flex-none md:animate-in md:zoom-in-95 md:rounded-[40px] md:duration-200 md:shadow-2xl">
-                  <header className="flex shrink-0 items-center justify-between border-b border-slate-50 bg-slate-50/50 px-4 pb-4 pt-[max(12px,env(safe-area-inset-top))] md:p-8">
+                <div className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full min-h-0 flex-col overflow-hidden bg-surface md:h-auto md:max-h-[90dvh] md:max-w-2xl md:flex-none md:animate-in md:zoom-in-95 md:rounded-[40px] md:duration-200 md:shadow-2xl">
+                  <header className="flex shrink-0 items-center justify-between border-b border-outline-variant/20 bg-surface-container-lowest/50 px-4 pb-4 pt-[max(12px,env(safe-area-inset-top))] md:p-8">
                     <div className="min-w-0 pr-2">
-                      <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 md:text-xl">Message history</h3>
-                      <p className="mt-0.5 truncate text-[10px] font-medium text-slate-400 md:text-xs">
+                      <h3 className="text-lg font-black uppercase tracking-tight text-on-surface md:text-xl">Message history</h3>
+                      <p className="mt-0.5 truncate text-[10px] font-medium text-on-surface-variant/60 md:text-xs">
                         {historyContact.name || 'Unnamed'} • {historyContact.email || formatPhoneDisplay(historyContact.phone || '')}
                       </p>
                     </div>
@@ -488,33 +488,33 @@ function ContactsPageContent() {
                       </button>
                       <button
                         onClick={() => setHistoryContact(null)}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:text-slate-600 md:h-10 md:w-10"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant/20 bg-surface text-on-surface-variant/60 shadow-sm transition-all hover:text-on-surface-variant md:h-10 md:w-10"
                       >
                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                       </button>
                     </div>
                   </header>
-                  <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto bg-slate-50/30 p-4 pb-[max(20px,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch] md:p-8">
+                  <div className="min-h-0 flex-1 touch-pan-y overflow-y-auto bg-surface-container-lowest/30 p-4 pb-[max(20px,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch] md:p-8">
                     {loadingHistory ? (
                       <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent"></div></div>
                     ) : contactHistory.length === 0 ? (
                       <div className="py-12 text-center">
-                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white text-xl shadow-sm">💬</div>
-                        <p className="mb-1 text-xs font-black uppercase tracking-widest text-slate-900">No messages yet</p>
-                        <p className="text-[10px] font-medium text-slate-400">You haven't sent any direct outreach to this contact.</p>
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-outline-variant/20 bg-surface text-xl shadow-sm">💬</div>
+                        <p className="mb-1 text-xs font-black uppercase tracking-widest text-on-surface">No messages yet</p>
+                        <p className="text-[10px] font-medium text-on-surface-variant/60">You haven't sent any direct outreach to this contact.</p>
                       </div>
                     ) : (
                       <div className="space-y-4">
                         {contactHistory.map((msg: any, i: number) => (
-                          <div key={i} className="relative rounded-2xl border border-slate-100 bg-white p-4 shadow-sm md:p-5">
+                          <div key={i} className="relative rounded-2xl border border-outline-variant/20 bg-surface p-4 shadow-sm md:p-5">
                             <div className="mb-3 flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <span className={`rounded px-2 py-1 text-[9px] font-black uppercase tracking-widest ${msg.channel === 'sms' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>{msg.channel}</span>
-                                <span className="text-[10px] font-bold text-slate-400">{new Date(msg.created_at).toLocaleString()}</span>
+                                <span className="text-[10px] font-bold text-on-surface-variant/60">{new Date(msg.created_at).toLocaleString()}</span>
                               </div>
                               <span className={`text-[10px] font-black uppercase tracking-widest ${msg.status === 'sent' ? 'text-emerald-500' : 'text-red-500'}`}>{msg.status}</span>
                             </div>
-                            <div className="whitespace-pre-wrap rounded-xl border border-slate-100/50 bg-slate-50 p-3 text-sm font-medium text-slate-700 md:p-4">{msg.content}</div>
+                            <div className="whitespace-pre-wrap rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-3 text-sm font-medium text-on-surface-variant md:p-4">{msg.content}</div>
                             {msg.error_message && (
                               <div className="mt-3 rounded-xl border border-red-100 bg-red-50 p-3 text-xs font-medium text-red-600">
                                 <span className="mb-1 block text-[9px] font-bold uppercase tracking-widest">Error</span>
@@ -531,19 +531,19 @@ function ContactsPageContent() {
             )}
 
             {showGuide && (
-              <div className="fixed inset-0 z-[100000] flex flex-col bg-white md:animate-in md:fade-in md:duration-200 md:items-center md:justify-center md:bg-transparent md:p-6">
+              <div className="fixed inset-0 z-[100000] flex flex-col bg-surface md:animate-in md:fade-in md:duration-200 md:items-center md:justify-center md:bg-transparent md:p-6">
                 <div
-                  className="absolute inset-0 hidden bg-slate-900/60 backdrop-blur-sm md:block"
+                  className="absolute inset-0 hidden bg-inverse-surface/60 backdrop-blur-sm md:block"
                   aria-hidden
                   onClick={() => setShowGuide(false)}
                 />
-                <div className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full min-h-0 flex-col overflow-hidden bg-white md:h-auto md:max-h-[90dvh] md:max-w-2xl md:flex-none md:animate-in md:zoom-in-95 md:rounded-[40px] md:duration-200 md:shadow-2xl">
-                  <header className="flex shrink-0 items-center justify-between border-b border-slate-50 bg-slate-50/50 px-4 pb-4 pt-[max(12px,env(safe-area-inset-top))] md:p-8">
+                <div className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full min-h-0 flex-col overflow-hidden bg-surface md:h-auto md:max-h-[90dvh] md:max-w-2xl md:flex-none md:animate-in md:zoom-in-95 md:rounded-[40px] md:duration-200 md:shadow-2xl">
+                  <header className="flex shrink-0 items-center justify-between border-b border-outline-variant/20 bg-surface-container-lowest/50 px-4 pb-4 pt-[max(12px,env(safe-area-inset-top))] md:p-8">
                     <div>
-                      <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 md:text-xl">Import guide</h3>
-                      <p className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-slate-400 md:text-xs">Master your contact data</p>
+                      <h3 className="text-lg font-black uppercase tracking-tight text-on-surface md:text-xl">Import guide</h3>
+                      <p className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-on-surface-variant/60 md:text-xs">Master your contact data</p>
                     </div>
-                    <button onClick={() => setShowGuide(false)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:text-slate-600 md:h-10 md:w-10">
+                    <button onClick={() => setShowGuide(false)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-outline-variant/20 bg-surface text-on-surface-variant/60 shadow-sm transition-all hover:text-on-surface-variant md:h-10 md:w-10">
                       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   </header>
@@ -551,31 +551,31 @@ function ContactsPageContent() {
                     <div className="flex gap-4 md:gap-6">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand/10 font-black text-brand">1</div>
                       <div>
-                        <h4 className="mb-2 text-sm font-black uppercase tracking-wide text-slate-900">Prepare your CSV</h4>
-                        <p className="text-sm font-medium leading-relaxed text-slate-500">Your file must be a <span className="font-bold text-slate-900">.CSV</span> or <span className="font-bold text-slate-900">.XLSX</span>. The first row must contain column headers.</p>
+                        <h4 className="mb-2 text-sm font-black uppercase tracking-wide text-on-surface">Prepare your CSV</h4>
+                        <p className="text-sm font-medium leading-relaxed text-on-surface-variant">Your file must be a <span className="font-bold text-on-surface">.CSV</span> or <span className="font-bold text-on-surface">.XLSX</span>. The first row must contain column headers.</p>
                       </div>
                     </div>
                     <div className="flex gap-4 md:gap-6">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand/10 font-black text-brand">2</div>
                       <div className="flex-1">
-                        <h4 className="mb-2 text-sm font-black uppercase tracking-wide text-slate-900">Required Columns</h4>
-                        <p className="mb-4 text-sm font-medium leading-relaxed text-slate-500">We automatically scan for these column names (case-insensitive):</p>
+                        <h4 className="mb-2 text-sm font-black uppercase tracking-wide text-on-surface">Required Columns</h4>
+                        <p className="mb-4 text-sm font-medium leading-relaxed text-on-surface-variant">We automatically scan for these column names (case-insensitive):</p>
                         <div className="grid grid-cols-3 gap-2 md:gap-3">
                           {['Name', 'Email', 'Phone'].map(header => (
-                            <div key={header} className="rounded-xl border border-slate-100 bg-slate-50 p-2 text-center md:p-3">
-                              <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Header</p>
-                              <p className="text-xs font-bold text-slate-900">{header}</p>
+                            <div key={header} className="rounded-xl border border-outline-variant/20 bg-surface-container-lowest p-2 text-center md:p-3">
+                              <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">Header</p>
+                              <p className="text-xs font-bold text-on-surface">{header}</p>
                             </div>
                           ))}
                         </div>
-                        <p className="mt-4 text-[10px] font-bold italic text-slate-400">* You must have at least "Name" or "Email" for the row to be valid.</p>
+                        <p className="mt-4 text-[10px] font-bold italic text-on-surface-variant/60">* You must have at least "Name" or "Email" for the row to be valid.</p>
                       </div>
                     </div>
                     <div className="flex gap-4 md:gap-6">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand/10 font-black text-brand">3</div>
                       <div className="min-w-0">
-                        <h4 className="mb-2 text-sm font-black uppercase tracking-wide text-slate-900">Sample Format</h4>
-                        <div className="overflow-x-auto rounded-2xl bg-slate-900 p-4 font-mono text-[11px] leading-relaxed text-slate-300">name, email, phone<br/>John Doe, john@example.com, 555-0123<br/>Jane Smith, jane@example.com, 555-0124</div>
+                        <h4 className="mb-2 text-sm font-black uppercase tracking-wide text-on-surface">Sample Format</h4>
+                        <div className="overflow-x-auto rounded-2xl bg-inverse-surface p-4 font-mono text-[11px] leading-relaxed text-on-surface-variant/40">name, email, phone<br/>John Doe, john@example.com, 555-0123<br/>Jane Smith, jane@example.com, 555-0124</div>
                         <button onClick={() => downloadCSV(true)} className="mt-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand hover:underline"><span>⬇</span> Download Template</button>
                       </div>
                     </div>
@@ -584,8 +584,8 @@ function ContactsPageContent() {
                       <p className="text-xs font-medium leading-relaxed text-brand/80">Export your customers from <Link href="/integrations/square" className="cursor-pointer font-bold underline">Square</Link>, <span className="font-bold underline">Shopify</span>, or <span className="font-bold underline">Clover</span> as a CSV. Our system is designed to intelligently pick up those standard headers automatically.</p>
                     </div>
                   </div>
-                  <footer className="shrink-0 border-t border-slate-100 bg-slate-50 p-4 pb-[max(16px,env(safe-area-inset-bottom))] md:p-8 md:pb-8">
-                    <button onClick={() => setShowGuide(false)} className="flex h-12 w-full items-center justify-center rounded-2xl bg-slate-900 px-8 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-slate-200 transition-all hover:scale-[1.02] active:scale-[0.98] md:w-auto md:float-right">Got it, let's go</button>
+                  <footer className="shrink-0 border-t border-outline-variant/20 bg-surface-container-lowest p-4 pb-[max(16px,env(safe-area-inset-bottom))] md:p-8 md:pb-8">
+                    <button onClick={() => setShowGuide(false)} className="flex h-12 w-full items-center justify-center rounded-2xl bg-inverse-surface px-8 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-outline-variant/20 transition-all hover:scale-[1.02] active:scale-[0.98] md:w-auto md:float-right">Got it, let's go</button>
                   </footer>
                 </div>
               </div>

@@ -67,7 +67,7 @@ export default function ContactPage() {
 
         <div className="grid lg:grid-cols-12 gap-12 items-start">
           <div className="lg:col-span-7">
-            <div className="premium-card p-8 md:p-10 rounded-[32px]">
+            <div className="surface-card p-8 md:p-10 rounded-[32px]">
               <form onSubmit={submit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -131,7 +131,7 @@ export default function ContactPage() {
           </div>
 
           <div className="lg:col-span-5 space-y-8">
-            <div className="premium-card p-8 rounded-[32px] bg-accent/30 border-dashed">
+            <div className="surface-card p-8 rounded-[32px] bg-accent/30 border-dashed">
               <h2 className="text-lg font-bold mb-6">Direct Channels</h2>
               <div className="space-y-6">
                 <div className="flex gap-4">

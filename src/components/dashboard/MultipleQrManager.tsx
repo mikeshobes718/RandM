@@ -144,7 +144,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
     }
   };
 
-  if (fetching) return <div className="animate-pulse h-20 bg-slate-50 rounded-xl" />;
+  if (fetching) return <div className="animate-pulse h-20 bg-surface-container-lowest rounded-xl" />;
 
   const suggestions = ['Table 1', 'Front Desk', 'Lobby', 'Flyer', 'Menu'];
 
@@ -179,11 +179,11 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
   ];
 
   return (
-    <section className="premium-card p-8 rounded-3xl bg-accent/30 border-dashed group relative min-h-[400px]">
+    <section className="surface-card p-8 rounded-3xl bg-accent/30 border-dashed group relative min-h-[400px]">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Campaign Tracking</h2>
-          <p className="text-sm text-slate-500 font-medium leading-relaxed">
+          <h2 className="text-xl font-bold text-on-surface">Campaign Tracking</h2>
+          <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
             Monitor all your inbound and outbound review traffic.
           </p>
         </div>
@@ -191,7 +191,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
           <button
             onClick={() => setActiveTab('qr')}
             className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-              activeTab === 'qr' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'
+              activeTab === 'qr' ? 'bg-inverse-surface text-white shadow-lg' : 'text-on-surface-variant/60 hover:text-on-surface-variant'
             }`}
           >
             QR Sources
@@ -199,7 +199,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
           <button
             onClick={() => setActiveTab('campaigns')}
             className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-              activeTab === 'campaigns' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'
+              activeTab === 'campaigns' ? 'bg-inverse-surface text-white shadow-lg' : 'text-on-surface-variant/60 hover:text-on-surface-variant'
             }`}
           >
             Outbound
@@ -209,7 +209,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
 
       {/* Tooltip */}
       <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-        <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+        <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
           {activeTab === 'qr' 
             ? "Segment your data. Create unique codes for every table, staff member, or promotional flyer."
             : "Track the performance of your SMS and Email campaigns in real-time."}
@@ -227,7 +227,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
               Add to checkout counters, receipts, dining tables, business cards, mailers, and front doors to increase scans. You need to nicely design it and put it around your store. You can do it yourself or have us design it. Be creative!
             </p>
             
-            <div className="p-5 bg-slate-900 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+            <div className="p-5 bg-inverse-surface rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
               <div className="flex items-center gap-4">
                 <span className="text-2xl">🎨</span>
                 <div>
@@ -235,7 +235,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
                   <p className="text-[9px] text-white/50 font-medium">We design custom printed QR assets for your store.</p>
                 </div>
               </div>
-              <button className="w-full sm:w-auto px-6 py-2.5 bg-white text-slate-900 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-all shadow-lg active:scale-95">
+              <button className="w-full sm:w-auto px-6 py-2.5 bg-surface text-on-surface text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-surface-container-low transition-all shadow-lg active:scale-95">
                 Request Design
               </button>
             </div>
@@ -254,7 +254,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
               {showExamplesDropdown && (
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
                   {placementExamples.map((ex, i) => (
-                    <div key={i} className="bg-white rounded-2xl overflow-hidden border border-amber-100 shadow-sm group/ex">
+                    <div key={i} className="bg-surface rounded-2xl overflow-hidden border border-amber-100 shadow-sm group/ex">
                       <div className="aspect-video relative overflow-hidden">
                         <img src={ex.image} alt={ex.title} className="object-cover w-full h-full group-hover/ex:scale-110 transition-transform duration-500" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover/ex:opacity-100 transition-opacity flex items-end p-3">
@@ -262,7 +262,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
                         </div>
                       </div>
                       <div className="p-3">
-                        <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{ex.title}</p>
+                        <p className="text-[10px] font-black text-on-surface uppercase tracking-widest">{ex.title}</p>
                       </div>
                     </div>
                   ))}
@@ -274,11 +274,11 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
           <form onSubmit={createSource} className="space-y-4 bg-white/50 p-6 rounded-2xl border border-white shadow-sm">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Create New Tracking Source</label>
+                <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest block">Create New Tracking Source</label>
                 <div className="group/tip relative">
-                  <span className="text-[10px] text-slate-300 cursor-help">ⓘ</span>
+                  <span className="text-[10px] text-on-surface-variant/40 cursor-help">ⓘ</span>
                   <div className="absolute left-1/2 -translate-x-1/2 -top-10 opacity-0 group-hover/tip:opacity-100 transition-opacity pointer-events-none z-20 px-2 w-48">
-                    <div className="bg-slate-900 text-white text-[8px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+                    <div className="bg-inverse-surface text-white text-[8px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
                       Create a unique code for a specific table or staff member to track exactly where scans come from.
                     </div>
                   </div>
@@ -290,7 +290,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="e.g. Table 1, Front Desk..."
-                  className="flex-1 h-11 px-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all shadow-inner"
+                  className="flex-1 h-11 px-4 rounded-xl border border-outline-variant/30 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all shadow-inner"
                   required
                 />
                 <button
@@ -303,13 +303,13 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
               </div>
             </div>
             <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mr-1">Suggestions:</span>
+              <span className="text-[9px] font-black text-on-surface-variant/60 uppercase tracking-widest mr-1">Suggestions:</span>
               {suggestions.map(s => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => quickAdd(s)}
-                  className="text-[9px] font-bold text-slate-500 bg-white border border-slate-200 px-2 py-1 rounded-lg hover:border-brand/50 hover:text-brand transition-all shadow-sm active:bg-slate-50"
+                  className="text-[9px] font-bold text-on-surface-variant bg-surface border border-outline-variant/30 px-2 py-1 rounded-lg hover:border-brand/50 hover:text-brand transition-all shadow-sm active:bg-surface-container-lowest"
                 >
                   + {s}
                 </button>
@@ -324,19 +324,19 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
           )}
 
           <div className="space-y-3">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block px-1">Active Tracking Codes ({sources.length})</label>
+            <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest block px-1">Active Tracking Codes ({sources.length})</label>
             <div className="max-h-[400px] overflow-y-auto pr-2 -mr-2 space-y-3">
             {sources.length === 0 ? (
-              <div className="text-center py-12 bg-white/30 border-2 border-dashed border-slate-200 rounded-3xl">
-                <p className="text-xs text-slate-400 font-medium">No custom codes created yet.</p>
+              <div className="text-center py-12 bg-white/30 border-2 border-dashed border-outline-variant/30 rounded-3xl">
+                <p className="text-xs text-on-surface-variant/60 font-medium">No custom codes created yet.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-3">
                 {sources.map((source) => {
                   const sourceUrl = `${landingUrl}?source=${source.slug}`;
                   return (
-                    <div key={source.id} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm transition-all hover:border-brand/30 hover:shadow-md group/item">
-                      <div className="p-1.5 bg-slate-50 border border-slate-100 rounded-xl shrink-0 group-hover/item:bg-brand/5 group-hover/item:border-brand/10 transition-colors">
+                    <div key={source.id} className="flex items-center gap-4 p-4 bg-surface rounded-2xl border border-outline-variant/20 shadow-sm transition-all hover:border-brand/30 hover:shadow-md group/item">
+                      <div className="p-1.5 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shrink-0 group-hover/item:bg-brand/5 group-hover/item:border-brand/10 transition-colors">
                         <img
                           src={`/api/qr?data=${encodeURIComponent(sourceUrl)}&format=png&scale=4`}
                           alt="QR"
@@ -344,10 +344,10 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-black text-slate-700 truncate">{source.name}</div>
+                        <div className="text-sm font-black text-on-surface-variant truncate">{source.name}</div>
                         <div className="flex items-center gap-2">
-                          <div className="text-[9px] text-slate-400 font-mono truncate">{source.slug}</div>
-                          <div className="w-1 h-1 rounded-full bg-slate-200"></div>
+                          <div className="text-[9px] text-on-surface-variant/60 font-mono truncate">{source.slug}</div>
+                          <div className="w-1 h-1 rounded-full bg-surface-container"></div>
                           <div className="text-[9px] font-black text-brand uppercase tracking-widest">{source.scans || 0} Scans</div>
                         </div>
                       </div>
@@ -355,14 +355,14 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
                         <a
                           href={`/api/qr?data=${encodeURIComponent(sourceUrl)}&format=png&scale=12`}
                           download={`${source.slug}-qr.png`}
-                          className="secondary-button !h-8 !px-4 !text-[10px] font-black uppercase tracking-widest bg-slate-50 hover:bg-white"
+                          className="secondary-button !h-8 !px-4 !text-[10px] font-black uppercase tracking-widest bg-surface-container-lowest hover:bg-surface"
                         >
                           PNG
                         </a>
                         {source.slug !== 'main-qr' && (
                           <button
                             onClick={() => deleteSource(source.id)}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant/40 hover:text-red-500 hover:bg-red-50 transition-all"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -380,7 +380,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="p-6 bg-slate-900 rounded-3xl shadow-xl text-white relative overflow-hidden group">
+          <div className="p-6 bg-inverse-surface rounded-3xl shadow-xl text-white relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
               <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
             </div>
@@ -402,7 +402,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
                   </p>
                   <p className="text-[10px] text-brand font-bold mt-1">Direct Outreach</p>
                   <div className="absolute inset-x-0 -bottom-10 opacity-0 group-hover/tip:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                    <div className="bg-slate-800 text-white text-[8px] py-1 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+                    <div className="bg-inverse-surface text-white text-[8px] py-1 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
                       Total SMS and Email requests sent across all campaigns.
                     </div>
                   </div>
@@ -415,7 +415,7 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
                   <p className="text-2xl font-black">{rates?.click || 0}%</p>
                   <p className="text-[10px] text-emerald-400 font-bold mt-1">Live Factual Data</p>
                   <div className="absolute inset-x-0 -bottom-10 opacity-0 group-hover/tip:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                    <div className="bg-slate-800 text-white text-[8px] py-1 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+                    <div className="bg-inverse-surface text-white text-[8px] py-1 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
                       The percentage of recipients who clicked your review link.
                     </div>
                   </div>
@@ -425,34 +425,34 @@ export default function MultipleQrManager({ businessId, landingUrl, rates, recen
           </div>
 
           <div className="space-y-3">
-             <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block px-1">Top Performing Sources</label>
+             <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest block px-1">Top Performing Sources</label>
              {recentCampaigns.length === 0 ? (
-               <div className="text-center py-8 bg-white/30 border-2 border-dashed border-slate-200 rounded-3xl">
-                 <p className="text-xs text-slate-400 font-medium">No outbound campaigns sent yet.</p>
+               <div className="text-center py-8 bg-white/30 border-2 border-dashed border-outline-variant/30 rounded-3xl">
+                 <p className="text-xs text-on-surface-variant/60 font-medium">No outbound campaigns sent yet.</p>
                </div>
              ) : (
                recentCampaigns.map((c, i) => {
                  const clickRate = c.sent > 0 ? Math.round((c.clicks / c.sent) * 100) : 0;
                  return (
-                   <div key={i} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm group/campaign">
+                   <div key={i} className="flex items-center justify-between p-4 bg-surface rounded-2xl border border-outline-variant/20 shadow-sm group/campaign">
                      <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white text-lg shadow-inner`}>
                           {c.name.toLowerCase().includes('sms') ? '📱' : '✉️'}
                         </div>
                         <div>
-                          <p className="text-xs font-black text-slate-900">{c.name}</p>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase">{c.sent} Sent</p>
+                          <p className="text-xs font-black text-on-surface">{c.name}</p>
+                          <p className="text-[9px] font-bold text-on-surface-variant/60 uppercase">{c.sent} Sent</p>
                         </div>
                      </div>
                      <div className="flex items-center gap-4">
                         <div className="text-right">
-                           <p className="text-sm font-black text-slate-900">{clickRate}%</p>
-                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Click Rate</p>
+                           <p className="text-sm font-black text-on-surface">{clickRate}%</p>
+                           <p className="text-[9px] font-black text-on-surface-variant/60 uppercase tracking-widest">Click Rate</p>
                         </div>
                         {(c as any).id && (
                           <button 
                             onClick={() => deleteCampaign((c as any).id)}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all ml-2"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant/40 hover:text-red-500 hover:bg-red-50 transition-all ml-2"
                             title="Delete campaign record"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -94,14 +94,14 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
 
 
   return (
-    <div className="premium-card p-6 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/40">
+    <div className="surface-card p-6 rounded-3xl bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+          <h3 className="text-lg font-black text-on-surface flex items-center gap-2">
             Setup Progress
             {isActivated && <span className="text-emerald-500">✅</span>}
           </h3>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+          <p className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mt-1">
             {isActivated ? 'Business Activated' : 'Complete setup to go live'}
           </p>
         </div>
@@ -110,7 +110,7 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
         </div>
       </div>
 
-      <div className="w-full bg-slate-100 h-2 rounded-full mb-8 overflow-hidden">
+      <div className="w-full bg-surface-container-low h-2 rounded-full mb-8 overflow-hidden">
         <div
           className="bg-brand h-full transition-all duration-1000 ease-out"
           style={{ width: `${progress}%` }}
@@ -125,7 +125,7 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
               disabled={!step.toggleable}
               className={`mt-0.5 w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0 ${step.done
                 ? 'bg-emerald-500 border-emerald-500 text-white'
-                : 'border-slate-200 group-hover:border-brand/30'
+                : 'border-outline-variant/30 group-hover:border-brand/30'
                 } ${!step.toggleable && !step.done ? 'opacity-50' : ''}`}
             >
               {step.done && (
@@ -135,7 +135,7 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
               )}
             </button>
             <div className="flex-1 min-w-0">
-              <p className={`text-xs font-bold ${step.done ? 'text-slate-400 line-through' : 'text-slate-700'} truncate`}>
+              <p className={`text-xs font-bold ${step.done ? 'text-on-surface-variant/60 line-through' : 'text-on-surface-variant'} truncate`}>
                 {step.label}
               </p>
               {step.key === 'qrDownloaded' && (
@@ -149,7 +149,7 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
                 </button>
               )}
               {step.key === 'scriptInstalled' && (
-                <Link href="/One_Page_Overview.pdf" target="_blank" className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1 hover:text-brand transition-colors block">
+                <Link href="/One_Page_Overview.pdf" target="_blank" className="text-[9px] font-black text-on-surface-variant/60 uppercase tracking-widest mt-1 hover:text-brand transition-colors block">
                   Download 1-Pager →
                 </Link>
               )}
@@ -167,7 +167,7 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
       )}
 
       <MiniHowItWorks 
-        className="mt-8 bg-white border-slate-100 shadow-sm"
+        className="mt-8 bg-surface border-outline-variant/20 shadow-sm"
         title="Activation Guide"
         steps={[
           { icon: Store, title: "1. Connect", desc: "Link your Google Business Profile to sync your review link." },

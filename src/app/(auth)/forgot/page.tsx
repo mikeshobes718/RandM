@@ -57,10 +57,10 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  const inputClass = "h-11 w-full rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all bg-white";
+  const inputClass = "h-11 w-full rounded-lg border border-border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-primary transition-all bg-surface";
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
+    <main className="min-h-[100dvh] flex items-center justify-center p-6">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
           <Link href="/" className="inline-block text-2xl font-black tracking-tighter text-brand mb-8">
@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
           <p className="text-xs text-muted mt-2">We'll send you a secure link to reset your access.</p>
         </div>
 
-        <div className="premium-card p-8 rounded-3xl">
+        <div className="surface-card p-8 rounded-3xl">
           {error && !success && (
             <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg text-xs text-red-600 font-medium">
               {error}

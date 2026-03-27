@@ -3,115 +3,87 @@ import { AnimatedFlow } from "@/components/AnimatedFlow";
 
 export default function HowItWorks() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-white">
-      {/* Background decoration */}
+    <main className="relative min-h-screen overflow-hidden bg-surface">
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-x-0 top-0 h-[500px] bg-gradient-to-b from-brand/5 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-[500px] bg-gradient-to-b from-primary/3 to-transparent" />
       </div>
 
-      <section className="container mx-auto px-6 pt-32 pb-24 max-w-5xl">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/5 border border-brand/10 text-brand text-[10px] font-black uppercase tracking-widest mb-6">
+      <section className="container mx-auto px-6 pt-28 pb-20 max-w-5xl">
+        <div className="text-center mb-14">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-semibold mb-6">
+            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>play_circle</span>
             Process Overview
           </div>
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-slate-900 leading-tight mb-6">
+          <h1 className="tracking-tight mb-5">
             How Reviews & Marketing Works
           </h1>
-          <p className="text-xl text-slate-500 max-w-2xl mx-auto font-medium">
+          <p className="text-lg text-on-surface-variant max-w-2xl mx-auto">
             A simple, compliant system designed to recover unhappy customers privately and amplify your best experiences.
           </p>
         </div>
 
-        {/* Live Animated Simulation */}
         <AnimatedFlow />
 
-        {/* YouTube Explainer Video */}
-        <div className="max-w-5xl mx-auto mb-24">
-          <div className="relative aspect-video rounded-[40px] overflow-hidden shadow-2xl shadow-brand/20 border-8 border-white bg-slate-100 group">
-            <iframe 
+        {/* Video */}
+        <div className="max-w-5xl mx-auto mb-20">
+          <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl bg-surface-container-low">
+            <iframe
               className="w-full h-full"
               src="https://www.youtube.com/embed/y0Jb0wNecfk?autoplay=0&rel=0"
               title="Reviews & Marketing Explainer Video"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
-            ></iframe>
-            <div className="absolute inset-0 pointer-events-none border border-brand/5 rounded-[32px]"></div>
+            />
           </div>
-          <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-6 px-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+          <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 px-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/8 flex items-center justify-center text-primary">
+                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>play_circle</span>
               </div>
               <div>
-                <h4 className="font-bold text-slate-900">Watch the Walkthrough</h4>
-                <p className="text-xs text-muted font-medium">See how we build authentic reputations.</p>
+                <h4 className="font-bold text-on-surface text-sm">Watch the Walkthrough</h4>
+                <p className="text-xs text-on-surface-variant">See how we build authentic reputations.</p>
               </div>
             </div>
-            <div className="flex -space-x-3">
-              {[1,2,3,4,5].map(i => (
-                <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400">
-                  {String.fromCharCode(64 + i)}
-                </div>
-              ))}
-            </div>
           </div>
         </div>
 
-        {/* Visual Explainer Image */}
-        <div className="relative mb-24 rounded-[40px] overflow-hidden border-8 border-white shadow-2xl shadow-brand/10 bg-slate-50 group">
-          <img 
-            src="/assets/detailed.png" 
-            alt="Visual Explainer of how R&M works" 
-            className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+        {/* Explainer image */}
+        <div className="relative mb-20 rounded-2xl overflow-hidden shadow-xl bg-surface-container-low">
+          <img
+            src="/assets/detailed.png"
+            alt="Visual Explainer of how R&M works"
+            className="w-full h-auto object-cover"
           />
-          <div className="absolute inset-0 pointer-events-none border border-brand/5 rounded-[32px]"></div>
         </div>
 
-        {/* Breakdown Sections */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-24">
-          <div className="space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand font-black text-xl">1</div>
-            <h3 className="text-xl font-bold text-slate-900">Connect</h3>
-            <p className="text-slate-500 text-sm leading-relaxed font-medium">
-              Link your Google Profile and POS system in seconds. We generate custom QR codes and enable automatic follow-up texts or emails for every visit.
-            </p>
-          </div>
-          <div className="space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand font-black text-xl">2</div>
-            <h3 className="text-xl font-bold text-slate-900">Capture</h3>
-            <p className="text-slate-500 text-sm leading-relaxed font-medium">
-              Customers scan in-store or receive an automatic text via POS integration. We capture contact info and route them to the perfect feedback experience.
-            </p>
-          </div>
-          <div className="space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand font-black text-xl">3</div>
-            <h3 className="text-xl font-bold text-slate-900">Route</h3>
-            <p className="text-slate-500 text-sm leading-relaxed font-medium">
-              Happy customers are guided to Google to share their experience. Those with concerns are routed to a private channel so you can resolve issues before they become public.
-            </p>
-          </div>
-          <div className="space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-brand/10 flex items-center justify-center text-brand font-black text-xl">4</div>
-            <h3 className="text-xl font-bold text-slate-900">Grow</h3>
-            <p className="text-slate-500 text-sm leading-relaxed font-medium">
-              Watch your public rating climb while building a powerful customer database. Use these insights to improve operations and drive repeat business.
-            </p>
-          </div>
+        {/* Steps breakdown */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+          {[
+            { num: 1, title: 'Connect', icon: 'link', text: 'Link your Google Profile and POS system in seconds. We generate custom QR codes and enable automatic follow-up texts or emails for every visit.' },
+            { num: 2, title: 'Capture', icon: 'smartphone', text: 'Customers scan in-store or receive an automatic text via POS integration. We capture contact info and route them to the perfect feedback experience.' },
+            { num: 3, title: 'Route', icon: 'call_split', text: 'Happy customers are guided to Google to share their experience. Those with concerns are routed to a private channel so you can resolve issues before they become public.' },
+            { num: 4, title: 'Grow', icon: 'trending_up', text: 'Watch your public rating climb while building a powerful customer database. Use these insights to improve operations and drive repeat business.' },
+          ].map((step) => (
+            <div key={step.num} className="surface-card p-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/8 text-primary mb-4">
+                <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{step.icon}</span>
+              </div>
+              <h3 className="text-lg font-bold text-on-surface mb-2">{step.title}</h3>
+              <p className="text-on-surface-variant text-sm leading-relaxed">{step.text}</p>
+            </div>
+          ))}
         </div>
 
         {/* CTA */}
-        <div className="p-12 bg-slate-900 rounded-[48px] text-center text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand/10 blur-3xl rounded-full -mr-32 -mt-32 pointer-events-none"></div>
-          <h2 className="text-3xl font-black mb-6 relative z-10">Ready to start building your reputation?</h2>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
-            <Link href="/register" className="primary-button h-14 px-10 text-lg shadow-xl shadow-brand/20">
+        <div className="p-10 primary-gradient rounded-2xl text-center text-on-primary relative overflow-hidden">
+          <h2 className="text-2xl font-bold text-on-primary mb-5">Ready to start building your reputation?</h2>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link href="/register" className="h-12 px-8 bg-white text-primary rounded-lg font-semibold text-sm inline-flex items-center justify-center hover:bg-white/90 transition-colors">
               Get Started For Free
             </Link>
-            <Link href="/pricing" className="text-sm font-bold text-slate-400 hover:text-white transition-colors">
-              View Plans & Pricing →
+            <Link href="/pricing" className="text-sm font-medium text-on-primary/80 hover:text-on-primary transition-colors">
+              View Plans & Pricing &rarr;
             </Link>
           </div>
         </div>

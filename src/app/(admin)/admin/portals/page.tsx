@@ -25,7 +25,7 @@ const PORTALS = [
     link: "/dashboard",
     icon: "🏢",
     badge: "Public",
-    badgeColor: "bg-slate-100 text-slate-600"
+    badgeColor: "bg-surface-container-low text-on-surface-variant"
   },
   {
     name: "Review Landing",
@@ -50,8 +50,8 @@ export default function AdminPortals() {
     <div className="space-y-10 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">System Portals</h1>
-          <p className="text-slate-500 font-medium mt-1">Quick access to all operational interfaces and links.</p>
+          <h1 className="text-3xl font-black text-on-surface tracking-tight">System Portals</h1>
+          <p className="text-on-surface-variant font-medium mt-1">Quick access to all operational interfaces and links.</p>
         </div>
       </div>
 
@@ -60,18 +60,18 @@ export default function AdminPortals() {
           <Link 
             key={portal.name}
             href={portal.link}
-            className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 hover:scale-[1.02] hover:border-brand/20 transition-all group"
+            className="bg-surface p-8 rounded-[40px] border border-outline-variant/20 shadow-xl shadow-outline-variant/20 hover:scale-[1.02] hover:border-brand/20 transition-all group"
           >
             <div className="flex items-start justify-between mb-6">
-              <div className="w-14 h-14 rounded-3xl bg-slate-50 flex items-center justify-center text-2xl group-hover:bg-brand/5 group-hover:scale-110 transition-all duration-500">
+              <div className="w-14 h-14 rounded-3xl bg-surface-container-lowest flex items-center justify-center text-2xl group-hover:bg-brand/5 group-hover:scale-110 transition-all duration-500">
                 {portal.icon}
               </div>
               <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-black/5 ${portal.badgeColor}`}>
                 {portal.badge}
               </span>
             </div>
-            <h3 className="text-xl font-black text-slate-900 mb-2">{portal.name}</h3>
-            <p className="text-sm text-slate-500 font-medium leading-relaxed mb-8">
+            <h3 className="text-xl font-black text-on-surface mb-2">{portal.name}</h3>
+            <p className="text-sm text-on-surface-variant font-medium leading-relaxed mb-8">
               {portal.description}
             </p>
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand group-hover:gap-3 transition-all">

@@ -95,21 +95,21 @@ const caseStudies = [
 
 export default function CaseStudiesPage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <main className="relative min-h-screen overflow-hidden bg-surface">
       {/* Hero */}
       <section className="relative px-4 pt-24 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-indigo-700">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary-container px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] text-on-primary-container">
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
               <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
             </svg>
             Success Stories
           </span>
-          <h1 className="mt-6 text-4xl font-bold text-slate-900 sm:text-5xl lg:text-6xl">
+          <h1 className="mt-6 text-4xl font-bold text-on-surface sm:text-5xl lg:text-6xl">
             Real businesses, real results
           </h1>
-          <p className="mt-6 text-xl text-slate-600 max-w-3xl mx-auto">
+          <p className="mt-6 text-xl text-on-surface-variant max-w-3xl mx-auto">
             See how companies across industries are collecting more 5-star reviews and growing with Reviews & Marketing.
           </p>
         </div>
@@ -121,17 +121,17 @@ export default function CaseStudiesPage() {
           {caseStudies.map((study, index) => (
             <article
               key={study.business}
-              className="overflow-hidden rounded-3xl border-2 border-slate-200 bg-white shadow-2xl hover:shadow-3xl transition"
+              className="overflow-hidden rounded-3xl border-2 border-outline-variant/30 bg-surface shadow-2xl hover:shadow-3xl transition"
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 px-8 py-12 text-white">
+              <div className="primary-gradient px-8 py-12 text-white">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-3 mb-3">
                       <span className="text-5xl">{study.logo}</span>
                       <div>
                         <h2 className="text-3xl font-bold">{study.business}</h2>
-                        <p className="text-indigo-100">{study.industry} • {study.location}</p>
+                        <p className="text-on-primary/70">{study.industry} • {study.location}</p>
                       </div>
                     </div>
                     <p className="text-2xl font-semibold text-white mt-4">{study.tagline}</p>
@@ -150,47 +150,47 @@ export default function CaseStudiesPage() {
               <div className="p-8 space-y-8">
                 {/* Challenge */}
                 <div>
-                  <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-3">
+                  <h3 className="flex items-center gap-2 text-lg font-bold text-on-surface mb-3">
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 text-sm font-bold">!</span>
                     The Challenge
                   </h3>
-                  <p className="text-slate-700 leading-relaxed">{study.challenge}</p>
+                  <p className="text-on-surface-variant leading-relaxed">{study.challenge}</p>
                 </div>
 
                 {/* Solution */}
                 <div>
-                  <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-3">
+                  <h3 className="flex items-center gap-2 text-lg font-bold text-on-surface mb-3">
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 text-sm font-bold">✓</span>
                     The Solution
                   </h3>
-                  <p className="text-slate-700 leading-relaxed">{study.solution}</p>
+                  <p className="text-on-surface-variant leading-relaxed">{study.solution}</p>
                 </div>
 
                 {/* Results */}
                 <div>
-                  <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900 mb-6">
+                  <h3 className="flex items-center gap-2 text-lg font-bold text-on-surface mb-6">
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 text-sm font-bold">📊</span>
                     The Results
                   </h3>
                   <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     {study.results.map((result) => (
-                      <div key={result.label} className="rounded-2xl border-2 border-slate-200 bg-gradient-to-br from-slate-50 to-white p-6 text-center">
+                      <div key={result.label} className="rounded-2xl border-2 border-outline-variant/30 bg-gradient-to-br from-surface-container-lowest to-surface p-6 text-center">
                         <div className="text-3xl mb-2">{result.icon}</div>
-                        <div className="text-3xl font-bold text-slate-900 mb-1">{result.metric}</div>
-                        <div className="text-sm text-slate-600">{result.label}</div>
+                        <div className="text-3xl font-bold text-on-surface mb-1">{result.metric}</div>
+                        <div className="text-sm text-on-surface-variant">{result.label}</div>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Quote */}
-                <div className="rounded-2xl border-l-4 border-indigo-600 bg-indigo-50 p-6">
-                  <blockquote className="text-lg text-slate-900 leading-relaxed mb-4">
+                <div className="rounded-2xl border-l-4 border-primary bg-primary-container/30 p-6">
+                  <blockquote className="text-lg text-on-surface leading-relaxed mb-4">
                     "{study.quote}"
                   </blockquote>
                   <cite className="not-italic">
-                    <div className="font-bold text-slate-900">{study.author}</div>
-                    <div className="text-sm text-slate-600">{study.role}, {study.business}</div>
+                    <div className="font-bold text-on-surface">{study.author}</div>
+                    <div className="text-sm text-on-surface-variant">{study.role}, {study.business}</div>
                   </cite>
                 </div>
               </div>
@@ -200,16 +200,16 @@ export default function CaseStudiesPage() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-24 px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden primary-gradient py-24 px-4 sm:px-6 lg:px-8">
         <div className="relative mx-auto max-w-4xl text-center text-white">
           <h2 className="text-4xl font-bold sm:text-5xl">Ready to write your own success story?</h2>
-          <p className="mt-6 text-xl text-indigo-100">
+          <p className="mt-6 text-xl text-on-primary/70">
             Join 500+ businesses collecting more 5-star reviews. Start free, no credit card required.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/register"
-              className="inline-flex items-center justify-center px-8 py-4 bg-white text-indigo-600 font-semibold rounded-xl hover:bg-indigo-50 transition-all duration-200 transform hover:scale-105 shadow-lg"
+              className="inline-flex items-center justify-center px-8 py-4 bg-white text-indigo-600 font-semibold rounded-xl hover:bg-primary-container/30 transition-all duration-200 transform hover:scale-105 shadow-lg"
             >
               Start Free Trial
               <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

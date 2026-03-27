@@ -5,6 +5,8 @@ import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import { app } from '@/lib/firebaseClient';
 import { AsYouType, CountryCode } from 'libphonenumber-js';
 
+const LIST_FETCH_MS = 30000;
+
 export type Contact = {
   id: string;
   name: string;
@@ -39,14 +41,18 @@ export function useContacts() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fetchContactsRef = useRef<(u?: User | null) => Promise<void>>(async () => {});
+  const fetchGenRef = useRef(0);
 
   useEffect(() => {
     const auth = getAuth(app);
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
-        fetchContacts(firebaseUser);
+        void fetchContactsRef.current(firebaseUser);
       } else {
+        fetchGenRef.current += 1;
+        setContacts([]);
         setLoading(false);
       }
     });
@@ -75,32 +81,50 @@ export function useContacts() {
   const fetchContacts = useCallback(async (currentUser?: User | null) => {
     const authUser = currentUser || user;
     if (!authUser) {
+      fetchGenRef.current += 1;
       setLoading(false);
       return;
     }
 
+    const gen = ++fetchGenRef.current;
     setLoading(true);
     setError(null);
     try {
       const token = await authUser.getIdToken();
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), LIST_FETCH_MS);
       const res = await fetch('/api/contacts/list', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
       });
+      clearTimeout(t);
+      if (gen !== fetchGenRef.current) return;
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.error || 'Failed to fetch contacts');
       }
       const data = await res.json();
+      if (gen !== fetchGenRef.current) return;
       setContacts(data.contacts || []);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
+      if (gen !== fetchGenRef.current) return;
+      const aborted = err instanceof Error && err.name === 'AbortError';
+      const message = aborted
+        ? 'Contacts request timed out. Check your connection and tap Refresh.'
+        : err instanceof Error
+          ? err.message
+          : 'Unknown error';
       if (!message.includes('no contacts') && !message.includes('does not exist')) {
         setError(message);
       }
     } finally {
-      setLoading(false);
+      if (gen === fetchGenRef.current) {
+        setLoading(false);
+      }
     }
   }, [user]);
+
+  fetchContactsRef.current = fetchContacts;
 
   const filteredContacts = contacts.filter(c => {
     const query = searchQuery.toLowerCase();

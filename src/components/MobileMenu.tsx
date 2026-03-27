@@ -13,124 +13,78 @@ export default function MobileMenu({ authed, onLogout }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
-  // Close menu when route changes
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
+
+  const navLinks = [
+    { href: '/how-it-works', label: 'How It Works', icon: 'play_circle' },
+    { href: '/features', label: 'Features', icon: 'auto_awesome' },
+    { href: '/pricing', label: 'Pricing', icon: 'payments' },
+    { href: '/blog', label: 'Blog', icon: 'article' },
+  ];
 
   return (
     <div className="md:hidden">
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2.5 text-slate-600 hover:text-brand transition-all focus:outline-none bg-slate-50 rounded-2xl border border-slate-200 active:scale-95"
+        className="flex h-10 w-10 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors"
         aria-label="Open menu"
       >
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
+        <span className="material-symbols-outlined" style={{ fontSize: 24 }}>menu</span>
       </button>
 
-      {/* Fullscreen Menu Overlay — no body overflow lock (breaks iOS); touch-none on shell, pan-y on scroll areas */}
-      <div 
-        className={`fixed inset-0 z-[99999] h-[100dvh] w-full touch-none overscroll-none bg-white transition-opacity duration-300 ease-out ${
+      <div
+        className={`fixed inset-0 z-[99999] h-[100dvh] w-full touch-none overscroll-none transition-opacity duration-300 ease-out ${
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="relative flex h-full w-full flex-col overflow-hidden bg-white">
-          {/* Menu Header - Solid & Fixed */}
-          <div className="flex h-20 flex-shrink-0 touch-auto items-center justify-between border-b border-slate-100 bg-white px-8">
-            <div className="flex flex-col">
-              <span className="text-2xl font-black tracking-tighter text-brand leading-none">R&M</span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Navigation Menu</span>
+        <div className="relative flex h-full w-full flex-col overflow-hidden bg-surface">
+          <div className="flex h-16 flex-shrink-0 touch-auto items-center justify-between border-b border-outline-variant/10 px-6">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg primary-gradient">
+                <span className="text-sm font-extrabold text-on-primary">R</span>
+              </div>
+              <span className="text-base font-extrabold tracking-tight text-on-surface display-font">R&M</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-2.5 text-slate-400 hover:text-brand transition-all rounded-xl bg-slate-50 border border-slate-100 active:scale-90"
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors"
+              aria-label="Close menu"
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <span className="material-symbols-outlined" style={{ fontSize: 24 }}>close</span>
             </button>
           </div>
 
-          <div className="flex min-h-0 flex-1 touch-pan-y flex-col gap-4 overflow-y-auto overscroll-contain bg-white px-6 py-8 [-webkit-overflow-scrolling:touch]">
-            {[
-              { 
-                href: '/how-it-works', 
-                label: 'How it works', 
-                icon: (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.989-2.39l-.548-.547z" />
-                ),
-                color: 'text-amber-600',
-                bg: 'bg-amber-50'
-              },
-              { 
-                href: '/features', 
-                label: 'Features', 
-                icon: (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
-                ),
-                color: 'text-brand',
-                bg: 'bg-brand/5'
-              },
-              { 
-                href: '/pricing', 
-                label: 'Pricing', 
-                icon: (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                ),
-                color: 'text-emerald-600',
-                bg: 'bg-emerald-50'
-              },
-              { 
-                href: '/blog', 
-                label: 'Blog', 
-                icon: (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                ),
-                color: 'text-purple-600',
-                bg: 'bg-purple-50'
-              },
-            ].map((link) => (
-              <Link 
+          <div className="flex min-h-0 flex-1 touch-pan-y flex-col gap-1.5 overflow-y-auto overscroll-contain px-4 py-6 [-webkit-overflow-scrolling:touch]">
+            {navLinks.map((link) => (
+              <Link
                 key={link.href}
-                href={link.href} 
-                className={`flex items-center gap-5 px-6 py-5 rounded-[24px] transition-all group ${
-                  pathname === link.href 
-                  ? 'bg-slate-900 text-white shadow-xl shadow-slate-900/20 scale-[1.02]' 
-                  : 'text-slate-900 bg-slate-50 border border-slate-100 hover:bg-white hover:border-brand/20 active:scale-95'
+                href={link.href}
+                className={`flex items-center gap-4 px-4 py-4 rounded-xl transition-all ${
+                  pathname === link.href
+                    ? 'bg-primary/8 text-primary'
+                    : 'text-on-surface hover:bg-surface-container-low'
                 }`}
               >
-                <div className={`w-12 h-12 flex items-center justify-center rounded-2xl transition-all ${
-                  pathname === link.href 
-                  ? 'bg-white/10 text-white' 
-                  : `${link.bg} ${link.color} group-hover:scale-110`
-                }`}>
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    {link.icon}
-                  </svg>
-                </div>
-                <span className="text-xl font-black">{link.label}</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{link.icon}</span>
+                <span className="text-base font-semibold">{link.label}</span>
               </Link>
             ))}
           </div>
 
-          {/* Footer Actions - Solid Background */}
-          <div className="p-8 border-t border-slate-100 bg-slate-50 space-y-4 pb-12 flex-shrink-0">
+          <div className="flex-shrink-0 border-t border-outline-variant/10 p-4 pb-8 space-y-3">
             {authed ? (
               <>
                 <Link
                   href="/dashboard"
-                  className="primary-button w-full h-16 flex items-center justify-center text-lg font-black uppercase tracking-widest shadow-xl shadow-brand/30 active:scale-[0.98] transition-all"
+                  className="primary-button w-full h-14 flex items-center justify-center text-base font-bold"
                 >
                   Go to Dashboard
                 </Link>
                 <button
-                  onClick={() => {
-                    onLogout();
-                    setIsOpen(false);
-                  }}
-                  className="secondary-button w-full h-16 flex items-center justify-center text-lg font-black border-2 border-slate-200 bg-white hover:border-red-500/10 hover:text-red-600 hover:border-red-200 active:scale-[0.98] transition-all"
+                  onClick={() => { onLogout(); setIsOpen(false); }}
+                  className="secondary-button w-full h-14 flex items-center justify-center text-base font-semibold"
                 >
                   Log Out
                 </button>
@@ -139,24 +93,18 @@ export default function MobileMenu({ authed, onLogout }: MobileMenuProps) {
               <>
                 <Link
                   href="/register"
-                  className="primary-button w-full h-16 flex items-center justify-center text-lg font-black uppercase tracking-widest shadow-xl shadow-brand/30 active:scale-[0.98] transition-all"
+                  className="primary-button w-full h-14 flex items-center justify-center text-base font-bold"
                 >
                   Get Started Free
                 </Link>
                 <Link
                   href="/login"
-                  className="secondary-button w-full h-16 flex items-center justify-center text-lg font-black border-2 border-slate-200 bg-white hover:border-brand/20 active:scale-[0.98] transition-all"
+                  className="secondary-button w-full h-14 flex items-center justify-center text-base font-semibold"
                 >
                   Sign In
                 </Link>
               </>
             )}
-            <div className="flex items-center justify-center gap-2 pt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              Secure SSL Platform
-            </div>
           </div>
         </div>
       </div>

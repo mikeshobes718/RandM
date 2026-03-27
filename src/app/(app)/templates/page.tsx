@@ -94,16 +94,16 @@ export default function TemplatesPage() {
     <div className="max-w-6xl mx-auto px-6 py-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900">Message Templates</h1>
-          <p className="text-slate-500 font-medium mt-2">Choose a high-converting template or create your own.</p>
+          <h1 className="text-4xl font-black tracking-tight text-on-surface">Message Templates</h1>
+          <p className="text-on-surface-variant font-medium mt-2">Choose a high-converting template or create your own.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="h-12 px-6 border-2 border-slate-100 text-slate-400 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-slate-50 transition-all flex items-center">
+          <Link href="/dashboard" className="h-12 px-6 border-2 border-outline-variant/20 text-on-surface-variant/60 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-surface-container-lowest transition-all flex items-center">
             Back to Dashboard
           </Link>
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="h-12 px-8 bg-slate-900 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl shadow-slate-200"
+            className="h-12 px-8 bg-inverse-surface text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl shadow-outline-variant/20"
           >
             ➕ New Template
           </button>
@@ -113,15 +113,15 @@ export default function TemplatesPage() {
       {/* Filter Tabs & Helper */}
       <div className="flex flex-col lg:flex-row gap-8 mb-12">
         <div className="flex-1">
-          <div className="flex p-1.5 bg-slate-100 rounded-2xl w-fit">
+          <div className="flex p-1.5 bg-surface-container-low rounded-2xl w-fit">
             {(['All', 'SMS', 'Email'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setFilter(tab)}
                 className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                   filter === tab 
-                    ? 'bg-white text-slate-900 shadow-sm' 
-                    : 'text-slate-400 hover:text-slate-600'
+                    ? 'bg-surface text-on-surface shadow-sm' 
+                    : 'text-on-surface-variant/60 hover:text-on-surface-variant'
                 }`}
               >
                 {tab}
@@ -137,12 +137,12 @@ export default function TemplatesPage() {
           </div>
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center gap-2">
-              <code className="text-[10px] bg-white border border-brand/20 px-2 py-1 rounded-lg text-brand font-bold">{"{{business_name}}"}</code>
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Business Name</span>
+              <code className="text-[10px] bg-surface border border-brand/20 px-2 py-1 rounded-lg text-brand font-bold">{"{{business_name}}"}</code>
+              <span className="text-[10px] text-on-surface-variant/60 font-bold uppercase">Business Name</span>
             </div>
             <div className="flex items-center gap-2">
-              <code className="text-[10px] bg-white border border-brand/20 px-2 py-1 rounded-lg text-brand font-bold">{"{{link}}"}</code>
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Review Link</span>
+              <code className="text-[10px] bg-surface border border-brand/20 px-2 py-1 rounded-lg text-brand font-bold">{"{{link}}"}</code>
+              <span className="text-[10px] text-on-surface-variant/60 font-bold uppercase">Review Link</span>
             </div>
           </div>
         </div>
@@ -150,7 +150,7 @@ export default function TemplatesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {filteredTemplates.map((t: any) => (
-          <div key={t.id} className="group premium-card p-8 rounded-[48px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col hover:border-brand/20 transition-all">
+          <div key={t.id} className="group surface-card p-8 rounded-[48px] bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20 flex flex-col hover:border-brand/20 transition-all">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <div className="flex items-center gap-3 mb-2">
@@ -170,19 +170,19 @@ export default function TemplatesPage() {
                     </span>
                   )}
                 </div>
-                <h3 className="text-xl font-black text-slate-900 tracking-tight">{t.name}</h3>
-                <p className="text-xs text-slate-400 font-medium mt-1">{t.description}</p>
+                <h3 className="text-xl font-black text-on-surface tracking-tight">{t.name}</h3>
+                <p className="text-xs text-on-surface-variant/60 font-medium mt-1">{t.description}</p>
               </div>
-              <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest mt-1">{t.compliance}</span>
+              <span className="text-[9px] font-black text-on-surface-variant/50 uppercase tracking-widest mt-1">{t.compliance}</span>
             </div>
 
             <div className="flex-1">
               <div className="mb-6">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex justify-between">
+                <p className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-3 flex justify-between">
                   <span>Template Source</span>
-                  {t.type === 'SMS' && <span className="text-slate-300">{t.body.length} chars</span>}
+                  {t.type === 'SMS' && <span className="text-on-surface-variant/50">{t.body.length} chars</span>}
                 </p>
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 font-mono text-[11px] text-slate-500 whitespace-pre-wrap leading-relaxed">
+                <div className="p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/20 font-mono text-[11px] text-on-surface-variant whitespace-pre-wrap leading-relaxed">
                   {t.body}
                 </div>
               </div>
@@ -191,17 +191,17 @@ export default function TemplatesPage() {
                 <p className="text-[10px] font-black text-brand uppercase tracking-widest mb-3">Live Preview</p>
                 {t.type === 'SMS' ? (
                   <div className="relative mx-auto max-w-[280px]">
-                    <div className="bg-slate-100 p-4 rounded-[32px] border-4 border-slate-200 shadow-inner">
+                    <div className="bg-surface-container-low p-4 rounded-[32px] border-4 border-outline-variant/30 shadow-inner">
                       <div className="bg-brand text-white p-3 rounded-2xl rounded-bl-none text-xs font-medium leading-relaxed shadow-sm">
                         {previewTemplate(t.body)}
                       </div>
-                      <p className="text-[8px] text-slate-400 text-center mt-3 font-bold uppercase tracking-tighter">Text Message • Today</p>
+                      <p className="text-[8px] text-on-surface-variant/60 text-center mt-3 font-bold uppercase tracking-tighter">Text Message • Today</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="p-6 bg-white border-2 border-brand/10 rounded-3xl text-sm text-slate-900 shadow-inner min-h-[150px]">
+                  <div className="p-6 bg-surface border-2 border-brand/10 rounded-3xl text-sm text-on-surface shadow-inner min-h-[150px]">
                     {previewTemplate(t.body).split('\n').map((line, i) => (
-                      <p key={i} className={`${i === 0 ? 'font-black text-base mb-4' : 'leading-relaxed text-slate-600 text-xs'}`}>{line}</p>
+                      <p key={i} className={`${i === 0 ? 'font-black text-base mb-4' : 'leading-relaxed text-on-surface-variant text-xs'}`}>{line}</p>
                     ))}
                   </div>
                 )}
@@ -219,39 +219,39 @@ export default function TemplatesPage() {
 
         <div 
           onClick={() => setIsModalOpen(true)}
-          className="group p-8 rounded-[48px] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center hover:border-brand/30 hover:bg-brand/5 transition-all cursor-pointer min-h-[400px]"
+          className="group p-8 rounded-[48px] border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center text-center hover:border-brand/30 hover:bg-brand/5 transition-all cursor-pointer min-h-[400px]"
         >
-          <div className="w-20 h-20 rounded-[32px] bg-slate-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-inner">
+          <div className="w-20 h-20 rounded-[32px] bg-surface-container-lowest flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-inner">
             <span className="text-4xl">➕</span>
           </div>
-          <h3 className="text-xl font-black text-slate-900 mb-2 uppercase tracking-tight">Custom Template</h3>
-          <p className="text-xs text-slate-400 font-medium max-w-[220px] leading-relaxed">Design your own message with smart variables and custom formatting.</p>
+          <h3 className="text-xl font-black text-on-surface mb-2 uppercase tracking-tight">Custom Template</h3>
+          <p className="text-xs text-on-surface-variant/60 font-medium max-w-[220px] leading-relaxed">Design your own message with smart variables and custom formatting.</p>
         </div>
       </div>
 
       {/* Custom Template Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-[40px] p-10 max-w-lg w-full shadow-2xl relative">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-inverse-surface/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-surface rounded-[40px] p-10 max-w-lg w-full shadow-2xl relative">
             <button 
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-900 transition-colors"
+              className="absolute top-6 right-6 p-2 text-on-surface-variant/60 hover:text-on-surface transition-colors"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
 
-            <h2 className="text-2xl font-black text-slate-900 mb-8 tracking-tight">Create Custom Template</h2>
+            <h2 className="text-2xl font-black text-on-surface mb-8 tracking-tight">Create Custom Template</h2>
             
             <div className="space-y-6">
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Template Type</label>
+                <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest block mb-2">Template Type</label>
                 <div className="grid grid-cols-2 gap-4">
                   <button 
                     onClick={() => setCustomType('SMS')}
                     className={`h-12 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
-                      customType === 'SMS' ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                      customType === 'SMS' ? 'bg-inverse-surface text-white shadow-lg' : 'bg-surface-container-lowest text-on-surface-variant/60 hover:bg-surface-container-low'
                     }`}
                   >
                     SMS
@@ -259,7 +259,7 @@ export default function TemplatesPage() {
                   <button 
                     onClick={() => setCustomType('Email')}
                     className={`h-12 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${
-                      customType === 'Email' ? 'bg-slate-900 text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
+                      customType === 'Email' ? 'bg-inverse-surface text-white shadow-lg' : 'bg-surface-container-lowest text-on-surface-variant/60 hover:bg-surface-container-low'
                     }`}
                   >
                     Email
@@ -268,27 +268,27 @@ export default function TemplatesPage() {
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Template Name</label>
+                <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest block mb-2">Template Name</label>
                 <input 
                   type="text"
                   placeholder="e.g. Weekend Special"
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
-                  className="w-full h-12 bg-slate-50 border-none rounded-2xl px-4 text-xs font-bold"
+                  className="w-full h-12 bg-surface-container-lowest border-none rounded-2xl px-4 text-xs font-bold"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Message Content</label>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Use {"{{business_name}}"} and {"{{link}}"}</span>
+                  <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">Message Content</label>
+                  <span className="text-[9px] text-on-surface-variant/60 font-bold uppercase tracking-tighter">Use {"{{business_name}}"} and {"{{link}}"}</span>
                 </div>
                 <textarea 
                   rows={5}
                   placeholder="Write your message here..."
                   value={customBody}
                   onChange={(e) => setCustomBody(e.target.value)}
-                  className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold resize-none"
+                  className="w-full bg-surface-container-lowest border-none rounded-2xl p-4 text-xs font-bold resize-none"
                 />
               </div>
 

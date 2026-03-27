@@ -8,7 +8,6 @@ import Link from "next/link";
 export default function Pricing() {
   const [midLoading, setMidLoading] = useState(false);
   const [proLoading, setProLoading] = useState(false);
-  const [hasPlan, setHasPlan] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const [authed, setAuthed] = useState(false);
@@ -21,16 +20,13 @@ export default function Pricing() {
       try {
         const token = localStorage.getItem("idToken");
         setAuthed(Boolean(token));
-        
         const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
         const res = await fetch("/api/plan/status", { cache: "no-store", headers });
         if (res.ok) {
           const data = await res.json();
           const status = (data.status || "none").toLowerCase();
           const planId = data.plan_id;
-          
           setPlanStatus(status);
-          
           if (status === "active" || status === "trialing") {
             const pid = (planId || "").toLowerCase();
             if (pid.includes("mid") || pid.includes("small-business") || pid.includes("small") || pid.includes("growth")) {
@@ -43,8 +39,6 @@ export default function Pricing() {
           } else {
             setCurrentTier("none");
           }
-          
-          setHasPlan(status !== "none");
         } else {
           setPlanStatus("none");
           setCurrentTier("none");
@@ -58,14 +52,8 @@ export default function Pricing() {
   }, []);
 
   const handleCheckout = async (tier: "mid" | "pro") => {
-    if (currentTier === tier) {
-      window.location.href = "/settings";
-      return;
-    }
-    
-    if (tier === "mid") setMidLoading(true);
-    else setProLoading(true);
-
+    if (currentTier === tier) { window.location.href = "/settings"; return; }
+    if (tier === "mid") setMidLoading(true); else setProLoading(true);
     try {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -74,7 +62,7 @@ export default function Pricing() {
       });
       const data = await res.json();
       if (data.url) window.location.href = data.url;
-    } catch (err) {
+    } catch {
       setError("Failed to start checkout.");
     } finally {
       setMidLoading(false);
@@ -83,15 +71,9 @@ export default function Pricing() {
   };
 
   const handleStarterCta = async () => {
-    if (!authed) {
-      window.location.href = "/register";
-      return;
-    }
-    if (currentTier === "starter" || currentTier === "mid" || currentTier === "pro") {
-      window.location.href = "/dashboard";
-      return;
-    }
-    setMidLoading(true); // Reuse midLoading for starter activation
+    if (!authed) { window.location.href = "/register"; return; }
+    if (currentTier !== "none") { window.location.href = "/dashboard"; return; }
+    setMidLoading(true);
     try {
       const res = await fetch("/api/plan/start", { method: "POST" });
       if (res.ok) window.location.href = "/onboarding/business";
@@ -102,134 +84,122 @@ export default function Pricing() {
     }
   };
 
+  const Check = ({ accent }: { accent?: boolean }) => (
+    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${accent ? 'bg-primary text-on-primary' : 'bg-primary/8'}`}>
+      <span className="material-symbols-outlined" style={{ fontSize: 14, color: accent ? 'white' : 'var(--primary)' }}>check</span>
+    </div>
+  );
+
   return (
-    <main className="min-h-screen py-24 px-6 bg-slate-50/50">
+    <main className="min-h-screen py-20 px-6 bg-surface">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-black tracking-tight mb-4 text-slate-900">Simple Pricing</h1>
-          <p className="text-slate-500 text-lg max-w-xl mx-auto font-medium">
+        <div className="text-center mb-14">
+          <h1 className="mb-4">Simple Pricing</h1>
+          <p className="text-on-surface-variant text-lg max-w-xl mx-auto">
             Choose the plan that fits your business. Start free, upgrade anytime.
           </p>
-          
-          <div className="mt-10 inline-flex items-center p-1 bg-slate-100 rounded-2xl border border-slate-200 shadow-inner">
-            <button 
+
+          <div className="mt-8 inline-flex items-center p-1 bg-surface-container rounded-xl">
+            <button
               onClick={() => setBilling("monthly")}
-              className={`px-8 py-2.5 text-sm font-black rounded-xl transition-all ${billing === "monthly" ? "bg-white shadow-md text-slate-900" : "text-slate-400 hover:text-slate-600"}`}
+              className={`px-6 py-2.5 text-sm font-semibold rounded-lg transition-all ${billing === "monthly" ? "bg-surface-container-lowest shadow-sm text-on-surface" : "text-on-surface-variant hover:text-on-surface"}`}
             >
               Monthly
             </button>
-            <button 
+            <button
               onClick={() => setBilling("yearly")}
-              className={`px-8 py-2.5 text-sm font-black rounded-xl transition-all ${billing === "yearly" ? "bg-white shadow-md text-slate-900" : "text-slate-400 hover:text-slate-600"}`}
+              className={`px-6 py-2.5 text-sm font-semibold rounded-lg transition-all ${billing === "yearly" ? "bg-surface-container-lowest shadow-sm text-on-surface" : "text-on-surface-variant hover:text-on-surface"}`}
             >
-              Yearly <span className="text-[10px] text-emerald-600 ml-1 font-black uppercase tracking-widest">— Save 17% (2 months free)</span>
+              Yearly <span className="text-[10px] text-secondary ml-1 font-bold">Save 17%</span>
             </button>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
-          {/* Starter Card */}
-          <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col group hover:scale-[1.02] transition-transform">
-            <div className="mb-8">
-              <h3 className="text-xl font-black mb-2 text-slate-900">Starter</h3>
-              <p className="text-sm text-slate-500 font-medium">Perfect for trying it out.</p>
+        <div className="grid md:grid-cols-3 gap-6 mb-10">
+          {/* Starter */}
+          <div className="surface-card p-8 flex flex-col">
+            <div className="mb-6">
+              <h3 className="text-lg font-bold mb-1">Starter</h3>
+              <p className="text-sm text-on-surface-variant">Perfect for trying it out.</p>
             </div>
-            <div className="mb-8">
-              <span className="text-4xl font-black text-slate-900">$0</span>
-              <span className="text-slate-400 text-sm font-bold ml-2">/ free forever</span>
+            <div className="mb-6">
+              <span className="text-3xl font-extrabold">$0</span>
+              <span className="text-on-surface-variant text-sm ml-2">/ free forever</span>
             </div>
-            <ul className="space-y-4 mb-10 flex-1">
+            <ul className="space-y-3 mb-8 flex-1">
               {["3 Review Requests / month", "1 Smart QR Code", "Basic Analytics", "Email Support"].map(f => (
-                <li key={f} className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                  <div className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-3 h-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
+                <li key={f} className="flex items-center gap-3 text-sm text-on-surface-variant">
+                  <Check />
                   {f}
                 </li>
               ))}
             </ul>
-            <button 
+            <button
               onClick={handleStarterCta}
               disabled={midLoading || currentTier !== "none"}
-              className="h-14 rounded-2xl font-black uppercase tracking-widest text-xs border-2 border-slate-100 text-slate-400 disabled:opacity-50 hover:bg-slate-50 transition-all"
+              className="secondary-button w-full h-12 text-sm font-semibold disabled:opacity-50"
             >
               {currentTier === "starter" ? "Current Plan" : (currentTier !== "none" ? "Included" : "Get Started Free")}
             </button>
           </div>
 
-          {/* Small Business Card */}
-          <div className="bg-white p-8 rounded-[40px] border-2 border-slate-100 shadow-2xl shadow-brand/5 flex flex-col relative overflow-hidden group hover:scale-[1.02] transition-transform">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
-            <div className="mb-8 relative z-10">
+          {/* Small Business */}
+          <div className="surface-card p-8 flex flex-col ring-1 ring-outline-variant/20 relative">
+            <div className="mb-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-black mb-2 text-slate-900">Small Business</h3>
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-brand bg-brand/5 px-2.5 py-1 rounded-lg border border-brand/10">Growth</span>
+                <h3 className="text-lg font-bold">Small Business</h3>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/8 px-2.5 py-1 rounded-md">Growth</span>
               </div>
-              <p className="text-sm text-slate-500 font-medium leading-relaxed">For growing teams and repeat customers.</p>
+              <p className="text-sm text-on-surface-variant mt-1">For growing teams and repeat customers.</p>
             </div>
-            <div className="mb-8 relative z-10">
-              <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-slate-900">{billing === "monthly" ? "$39" : "$390"}</span>
-                <span className="text-slate-400 text-sm font-bold">{billing === "monthly" ? "/ mo" : "/ yr"}</span>
-              </div>
-              {billing === "yearly" && <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">Save 17% — 2 months free</p>}
+            <div className="mb-6">
+              <span className="text-3xl font-extrabold">{billing === "monthly" ? "$39" : "$390"}</span>
+              <span className="text-on-surface-variant text-sm ml-2">{billing === "monthly" ? "/ mo" : "/ yr"}</span>
+              {billing === "yearly" && <p className="text-[10px] font-bold text-secondary mt-1">Save 17% -- 2 months free</p>}
             </div>
-            <ul className="space-y-4 mb-10 flex-1 relative z-10">
+            <ul className="space-y-3 mb-8 flex-1">
               {["100 Review Requests / month", "5 Smart QR Codes", "Square Integration", "Standard Email Support"].map(f => (
-                <li key={f} className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                  <div className="w-5 h-5 rounded-full bg-brand/5 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-3 h-3 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
+                <li key={f} className="flex items-center gap-3 text-sm text-on-surface-variant">
+                  <Check />
                   {f}
                 </li>
               ))}
             </ul>
-            <button 
+            <button
               onClick={() => handleCheckout("mid")}
               disabled={midLoading || currentTier === "mid" || currentTier === "pro"}
-              className="primary-button w-full h-14 rounded-2xl shadow-xl shadow-brand/20 disabled:opacity-50 relative z-10"
+              className="primary-button w-full h-12 text-sm font-semibold disabled:opacity-50"
             >
               {currentTier === "mid" ? "Current Plan" : (currentTier === "pro" ? "Included" : (midLoading ? "Processing..." : "Start Small Business"))}
             </button>
           </div>
 
-          {/* Unlimited Card */}
-          <div className="bg-white p-8 rounded-[40px] border-4 border-brand shadow-2xl shadow-brand/20 flex flex-col relative scale-[1.05] z-10 group transition-all">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-brand/10 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-brand/20 transition-all duration-700"></div>
-            <div className="mb-8 relative z-10">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-black mb-2 text-brand">Unlimited</h3>
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white bg-brand px-2.5 py-1.5 rounded-lg shadow-lg shadow-brand/30">Recommended</span>
-              </div>
-              <p className="text-sm text-slate-500 font-medium leading-relaxed">Total control & scale.</p>
+          {/* Unlimited */}
+          <div className="surface-card p-8 flex flex-col ring-2 ring-primary relative">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-on-primary bg-primary px-3 py-1.5 rounded-md shadow-md">Recommended</span>
             </div>
-            <div className="mb-8 relative z-10">
-              <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-slate-900">{billing === "monthly" ? "$79" : "$790"}</span>
-                <span className="text-slate-400 text-sm font-bold">{billing === "monthly" ? "/ mo" : "/ yr"}</span>
-              </div>
-              {billing === "yearly" && <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-1">Save 17% — 2 months free</p>}
+            <div className="mb-6 pt-2">
+              <h3 className="text-lg font-bold text-primary">Unlimited</h3>
+              <p className="text-sm text-on-surface-variant mt-1">Total control & scale.</p>
             </div>
-            <ul className="space-y-4 mb-10 flex-1 relative z-10">
+            <div className="mb-6">
+              <span className="text-3xl font-extrabold">{billing === "monthly" ? "$79" : "$790"}</span>
+              <span className="text-on-surface-variant text-sm ml-2">{billing === "monthly" ? "/ mo" : "/ yr"}</span>
+              {billing === "yearly" && <p className="text-[10px] font-bold text-secondary mt-1">Save 17% -- 2 months free</p>}
+            </div>
+            <ul className="space-y-3 mb-8 flex-1">
               {["Unlimited Review Requests", "Unlimited QR Codes", "All Integrations", "Priority Support", "Advanced Reporting"].map(f => (
-                <li key={f} className="flex items-center gap-3 text-sm font-bold text-slate-900">
-                  <div className="w-5 h-5 rounded-full bg-brand flex items-center justify-center flex-shrink-0 shadow-lg shadow-brand/20">
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
+                <li key={f} className="flex items-center gap-3 text-sm font-semibold text-on-surface">
+                  <Check accent />
                   {f}
                 </li>
               ))}
             </ul>
-            <button 
+            <button
               onClick={() => handleCheckout("pro")}
               disabled={proLoading || currentTier === "pro"}
-              className={`w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs transition-all relative z-10 ${currentTier === "pro" ? "bg-slate-100 text-slate-400 cursor-default" : "bg-slate-900 hover:bg-black text-white shadow-2xl shadow-slate-900/30"}`}
+              className={`w-full h-12 rounded-lg text-sm font-semibold transition-all ${currentTier === "pro" ? "bg-surface-container text-on-surface-variant cursor-default" : "bg-inverse-surface text-inverse-on-surface hover:opacity-90"}`}
             >
               {currentTier === "pro" ? "Current Plan" : (proLoading ? "Processing..." : "Start Unlimited")}
             </button>
@@ -237,88 +207,84 @@ export default function Pricing() {
         </div>
 
         {/* Footnote */}
-        <div className="max-w-3xl mx-auto p-6 bg-slate-100/50 rounded-3xl border border-slate-200 mb-16 text-center">
-          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">What counts as a “Review Request”?</h4>
-          <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
-            A review request is an SMS or email invitation sent from Reviews & Marketing to a customer. QR scans don’t count as requests.
+        <div className="max-w-3xl mx-auto p-5 bg-surface-container-low rounded-xl text-center mb-14">
+          <h4 className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">What counts as a &ldquo;Review Request&rdquo;?</h4>
+          <p className="text-xs text-on-surface-variant leading-relaxed">
+            A review request is an SMS or email invitation sent from Reviews & Marketing to a customer. QR scans don&apos;t count as requests.
           </p>
         </div>
 
-        {/* Concierge Section */}
-        <div className="max-w-4xl mx-auto mb-24">
-          <div className="bg-white p-10 rounded-[48px] border border-slate-100 shadow-2xl shadow-slate-200/40 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full -mr-32 -mt-32 transition-transform duration-700 group-hover:scale-110"></div>
-            <div className="relative z-10">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-3xl">🚀</span>
-                    <h2 className="text-2xl font-black text-slate-900">Concierge Launch (Optional)</h2>
-                    <span className="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-black rounded-lg uppercase tracking-widest">One-time</span>
-                  </div>
-                  <p className="text-slate-500 font-bold mb-6">For businesses that want us to set everything up with them.</p>
-                  
-                  <div className="grid sm:grid-cols-2 gap-4 mb-8">
-                    {[
-                      "QR codes generated + ready to print",
-                      "Place QR guidance (counter, receipt, signage)",
-                      "Activation setup (see definition below)",
-                      "Message template setup (SMS/email)"
-                    ].map(f => (
-                      <div key={f} className="flex items-center gap-2 text-xs font-bold text-slate-600">
-                        <span className="text-amber-500 font-black">✓</span>
-                        {f}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">What is Activation?</p>
-                    <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
-                      Activation is when your QR is live (placed where customers can scan it) and you’ve launched your review flow (either your first campaign is created, or you’ve recorded initial real usage).
-                    </p>
-                  </div>
+        {/* Concierge */}
+        <div className="max-w-4xl mx-auto mb-20">
+          <div className="surface-card p-8 md:p-10 relative overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="material-symbols-outlined text-primary" style={{ fontSize: 28 }}>rocket_launch</span>
+                  <h2 className="text-xl font-bold">Concierge Launch</h2>
+                  <span className="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded-md uppercase tracking-widest">Optional</span>
                 </div>
-
-                <div className="flex flex-col items-center gap-4 p-8 bg-slate-50 rounded-[32px] border border-slate-100 min-w-[240px]">
-                  <p className="text-4xl font-black text-slate-900">$29</p>
-                  <label className="flex flex-col items-center gap-3 cursor-pointer group/label">
-                    <div className="flex items-center gap-3">
-                      <input 
-                        type="checkbox" 
-                        checked={concierge}
-                        onChange={(e) => setConcierge(e.target.checked)}
-                        className="w-6 h-6 rounded-lg border-2 border-slate-300 text-brand focus:ring-brand cursor-pointer transition-all checked:border-brand"
-                      />
-                      <span className="text-xs font-black uppercase tracking-widest text-slate-600 group-hover/label:text-slate-900">Add to checkout</span>
+                <p className="text-on-surface-variant text-sm mb-5">For businesses that want us to set everything up with them.</p>
+                <div className="grid sm:grid-cols-2 gap-3 mb-6">
+                  {[
+                    "QR codes generated + ready to print",
+                    "Place QR guidance (counter, receipt, signage)",
+                    "Activation setup (see definition below)",
+                    "Message template setup (SMS/email)",
+                  ].map(f => (
+                    <div key={f} className="flex items-start gap-2 text-xs text-on-surface-variant">
+                      <span className="material-symbols-outlined text-secondary mt-0.5" style={{ fontSize: 14 }}>check</span>
+                      {f}
                     </div>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">+ $29 one-time fee</p>
-                  </label>
+                  ))}
                 </div>
+                <div className="p-3 bg-surface-container-low rounded-lg">
+                  <p className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">What is Activation?</p>
+                  <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                    Activation is when your QR is live (placed where customers can scan it) and you&apos;ve launched your review flow (either your first campaign is created, or you&apos;ve recorded initial real usage).
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center gap-4 p-6 bg-surface-container-low rounded-xl min-w-[200px]">
+                <p className="text-3xl font-extrabold">$29</p>
+                <label className="flex flex-col items-center gap-3 cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={concierge}
+                      onChange={(e) => setConcierge(e.target.checked)}
+                      className="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer transition-all"
+                    />
+                    <span className="text-xs font-semibold text-on-surface">Add to checkout</span>
+                  </div>
+                  <p className="text-[10px] text-on-surface-variant">+ $29 one-time fee</p>
+                </label>
               </div>
             </div>
           </div>
         </div>
 
-        {error && <div className="mt-6 p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-600 text-sm font-bold text-center animate-shake">{error}</div>}
+        {error && (
+          <div className="mt-6 p-4 bg-error-container rounded-xl text-on-error-container text-sm font-semibold text-center">
+            {error}
+          </div>
+        )}
 
-        {/* FAQ Teaser */}
-        <div className="grid md:grid-cols-3 gap-12 pt-24 border-t border-slate-200">
+        {/* FAQ */}
+        <div className="grid md:grid-cols-3 gap-10 pt-16 border-t border-outline-variant/15">
           <div>
-            <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">Cancel anytime?</h4>
-            <p className="text-sm text-slate-500 font-medium leading-relaxed italic">Yes, no long-term contracts. You can cancel your subscription with a single click in settings.</p>
+            <h4 className="text-sm font-bold mb-3">Cancel anytime?</h4>
+            <p className="text-sm text-on-surface-variant leading-relaxed">Yes, no long-term contracts. You can cancel your subscription with a single click in settings.</p>
           </div>
           <div>
-            <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">Is it really free?</h4>
-            <p className="text-sm text-slate-500 font-medium leading-relaxed italic">The Starter plan is 100% free forever. No credit card required to get started.</p>
+            <h4 className="text-sm font-bold mb-3">Is it really free?</h4>
+            <p className="text-sm text-on-surface-variant leading-relaxed">The Starter plan is 100% free forever. No credit card required to get started.</p>
           </div>
           <div>
-            <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">Custom needs?</h4>
-            <p className="text-sm text-slate-500 font-medium leading-relaxed italic text-balance">For enterprise features or multi-location setups (&gt;10), please <Link href="/contact" className="text-brand font-black hover:underline underline-offset-4">contact our sales team</Link>.</p>
+            <h4 className="text-sm font-bold mb-3">Custom needs?</h4>
+            <p className="text-sm text-on-surface-variant leading-relaxed">For enterprise features or multi-location setups (&gt;10), please <Link href="/contact" className="text-primary font-semibold hover:underline underline-offset-4">contact our sales team</Link>.</p>
           </div>
-        </div>
-        <div className="mt-8 text-center">
-          <p className="text-[10px] text-slate-300">v1.0.8-live</p>
         </div>
       </div>
     </main>

@@ -110,8 +110,8 @@ function NewRequestContent() {
   return (
     <div className="max-w-6xl mx-auto px-6 pt-6 pb-24 sm:pt-10 sm:pb-32 space-y-8 animate-fade-in">
       <div className="space-y-2">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight">Send New Requests</h1>
-        <p className="text-slate-500 text-sm font-medium">Send SMS or Email invitations to your customers.</p>
+        <h1 className="text-3xl font-black text-on-surface tracking-tight">Send New Requests</h1>
+        <p className="text-on-surface-variant text-sm font-medium">Send SMS or Email invitations to your customers.</p>
       </div>
 
       {(error || success) && (
@@ -133,57 +133,57 @@ function NewRequestContent() {
       )}
 
       <div className="grid lg:grid-cols-2 gap-8">
-        <div className="premium-card p-8 rounded-[40px] bg-white border border-slate-100 shadow-xl shadow-slate-200/40">
-          <h2 className="text-xl font-black text-slate-900 mb-6">Campaign Setup</h2>
+        <div className="surface-card p-8 rounded-[40px] bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20">
+          <h2 className="text-xl font-black text-on-surface mb-6">Campaign Setup</h2>
 
           <div className="space-y-8">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Choose Channel</label>
+              <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest block mb-4">Choose Channel</label>
               <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={() => setType('SMS')}
                   className={`p-6 rounded-3xl border-2 transition-all duration-300 group text-center relative overflow-hidden ${type === 'SMS'
                       ? 'border-brand bg-brand/5 shadow-xl shadow-brand/10 scale-[1.02]'
-                      : 'border-slate-50 hover:border-slate-200 bg-slate-50/50 hover:scale-[1.01]'
+                      : 'border-outline-variant/15 hover:border-outline-variant/30 bg-surface-container-lowest/50 hover:scale-[1.01]'
                     }`}
                 >
                   {type === 'SMS' && <div className="absolute top-0 right-0 p-2 text-brand text-xs">✓</div>}
                   <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform duration-300">📱</span>
-                  <p className="font-black text-slate-900 uppercase tracking-widest text-xs">SMS Blast</p>
-                  <p className="text-[10px] text-slate-400 mt-1 font-bold">Highest open rate</p>
+                  <p className="font-black text-on-surface uppercase tracking-widest text-xs">SMS Blast</p>
+                  <p className="text-[10px] text-on-surface-variant/60 mt-1 font-bold">Highest open rate</p>
                 </button>
                 <button
                   onClick={() => setType('Email')}
                   className={`p-6 rounded-3xl border-2 transition-all duration-300 group text-center relative overflow-hidden ${type === 'Email'
                       ? 'border-brand bg-brand/5 shadow-xl shadow-brand/10 scale-[1.02]'
-                      : 'border-slate-50 hover:border-slate-200 bg-slate-50/50 hover:scale-[1.01]'
+                      : 'border-outline-variant/15 hover:border-outline-variant/30 bg-surface-container-lowest/50 hover:scale-[1.01]'
                     }`}
                 >
                   {type === 'Email' && <div className="absolute top-0 right-0 p-2 text-brand text-xs">✓</div>}
                   <span className="text-3xl mb-3 block group-hover:scale-110 transition-transform duration-300">✉️</span>
-                  <p className="font-black text-slate-900 uppercase tracking-widest text-xs">Email Campaign</p>
-                  <p className="text-[10px] text-slate-400 mt-1 font-bold">Best for newsletters</p>
+                  <p className="font-black text-on-surface uppercase tracking-widest text-xs">Email Campaign</p>
+                  <p className="text-[10px] text-on-surface-variant/60 mt-1 font-bold">Best for newsletters</p>
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Campaign Name</label>
+              <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest block mb-2">Campaign Name</label>
               <input
                 type="text"
                 placeholder="e.g. Weekly Follow-up"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full h-12 bg-slate-50 border-none rounded-2xl px-4 text-xs font-bold"
+                className="w-full h-12 bg-surface-container-lowest border-none rounded-2xl px-4 text-xs font-bold"
               />
             </div>
 
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Target Contact List</label>
+              <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest block mb-2">Target Contact List</label>
               <select 
                 value={targetList}
                 onChange={(e) => setTargetList(e.target.value)}
-                className="w-full h-12 bg-slate-50 border-none rounded-2xl px-4 text-xs font-bold appearance-none cursor-pointer"
+                className="w-full h-12 bg-surface-container-lowest border-none rounded-2xl px-4 text-xs font-bold appearance-none cursor-pointer"
               >
                 <option value="All Contacts">All Contacts</option>
                 <option value="Recent Customers (Last 7 Days)">Recent Customers (Last 7 Days)</option>
@@ -195,10 +195,10 @@ function NewRequestContent() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Message Content</label>
+                <label className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">Message Content</label>
                 <div className="flex items-center gap-4">
                   {type === 'SMS' && (
-                    <span className={`text-[9px] font-black uppercase tracking-widest ${body.length > 160 ? 'text-rose-500' : 'text-slate-400'}`}>
+                    <span className={`text-[9px] font-black uppercase tracking-widest ${body.length > 160 ? 'text-rose-500' : 'text-on-surface-variant/60'}`}>
                       {body.length} / 160 Characters
                     </span>
                   )}
@@ -209,7 +209,7 @@ function NewRequestContent() {
                 rows={5}
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
-                className="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold resize-none"
+                className="w-full bg-surface-container-lowest border-none rounded-2xl p-4 text-xs font-bold resize-none"
               />
             </div>
 
@@ -224,7 +224,7 @@ function NewRequestContent() {
         </div>
 
         <div className="space-y-6">
-          <div className="bg-slate-900 p-10 rounded-[40px] shadow-2xl text-white relative overflow-hidden">
+          <div className="bg-inverse-surface p-10 rounded-[40px] shadow-2xl text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <span className="text-6xl">{type === 'SMS' ? '📱' : '✉️'}</span>
             </div>
@@ -239,9 +239,9 @@ function NewRequestContent() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-white text-slate-900 rounded-3xl p-6 min-h-[400px] shadow-2xl">
-                  <div className="border-b border-slate-100 pb-4 mb-4">
-                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1">Subject</p>
+                <div className="bg-surface text-on-surface rounded-3xl p-6 min-h-[400px] shadow-2xl">
+                  <div className="border-b border-outline-variant/20 pb-4 mb-4">
+                    <p className="text-[10px] text-on-surface-variant/60 uppercase font-black tracking-widest mb-1">Subject</p>
                     <p className="text-xs font-bold">{finalPreviewText.split('\n')[0].replace('Subject: ', '') || "No Subject"}</p>
                   </div>
                   <div className="text-[11px] leading-relaxed whitespace-pre-wrap">

@@ -317,8 +317,8 @@ function SquareIntegrationInner() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">Square Integration</h1>
-            <p className="text-slate-500 text-sm font-medium mt-1">Automate review requests for every Square transaction.</p>
+            <h1 className="text-3xl font-black tracking-tight text-on-surface">Square Integration</h1>
+            <p className="text-on-surface-variant text-sm font-medium mt-1">Automate review requests for every Square transaction.</p>
           </div>
           <Link href="/dashboard" className="secondary-button !h-10 text-xs font-bold">
             Back to Dashboard
@@ -355,9 +355,9 @@ function SquareIntegrationInner() {
               )}
 
               {/* Connection Card */}
-              <section className="premium-card p-8 rounded-3xl relative overflow-hidden group">
+              <section className="surface-card p-8 rounded-3xl relative overflow-hidden group">
                 <div className="flex items-center justify-between mb-8">
-                  <div className="h-12 w-12 bg-slate-900 rounded-xl flex items-center justify-center text-white">
+                  <div className="h-12 w-12 bg-inverse-surface rounded-xl flex items-center justify-center text-white">
                     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 7h10v2H7V7zm0 4h10v2H7v-2zm0 4h7v2H7v-2z" />
                     </svg>
@@ -367,7 +367,7 @@ function SquareIntegrationInner() {
                       Connected
                     </span>
                   ) : (
-                    <span className="px-3 py-1 bg-slate-50 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-full border border-slate-200">
+                    <span className="px-3 py-1 bg-surface-container-lowest text-on-surface-variant text-[10px] font-black uppercase tracking-widest rounded-full border border-outline-variant/30">
                       Disconnected
                     </span>
                   )}
@@ -377,20 +377,20 @@ function SquareIntegrationInner() {
                   <form onSubmit={startOAuth} className="space-y-6">
                     <div>
                       <h2 className="text-xl font-bold mb-2">Connect Square Account</h2>
-                      <p className="text-sm text-slate-500 leading-relaxed mb-6">
+                      <p className="text-sm text-on-surface-variant leading-relaxed mb-6">
                         Link your Square account to automatically import customers and send review requests after every sale.
                       </p>
                     </div>
 
                     <div className="space-y-4">
                       <div>
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Business ID</label>
+                        <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-2">Business ID</label>
                         <input
                           value={businessId}
                           onChange={(e) => setBusinessId(e.target.value)}
                           placeholder="Your Business ID"
                           required
-                          className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition"
+                          className="w-full h-11 bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition"
                         />
                       </div>
 
@@ -402,10 +402,10 @@ function SquareIntegrationInner() {
                             onChange={(e) => setSandbox(e.target.checked)}
                             className="sr-only"
                           />
-                          <div className={`w-10 h-6 rounded-full transition ${sandbox ? 'bg-brand' : 'bg-slate-200'}`}></div>
-                          <div className={`absolute left-1 w-4 h-4 bg-white rounded-full shadow-sm transition transform ${sandbox ? 'translate-x-4' : ''}`}></div>
+                          <div className={`w-10 h-6 rounded-full transition ${sandbox ? 'bg-brand' : 'bg-outline-variant/30'}`}></div>
+                          <div className={`absolute left-1 w-4 h-4 bg-surface rounded-full shadow-sm transition transform ${sandbox ? 'translate-x-4' : ''}`}></div>
                         </div>
-                        <span className="text-sm font-medium text-slate-600 group-hover/toggle:text-slate-900 transition">
+                        <span className="text-sm font-medium text-on-surface-variant group-hover/toggle:text-on-surface transition">
                           Use Sandbox Mode (Developer)
                         </span>
                       </label>
@@ -423,48 +423,48 @@ function SquareIntegrationInner() {
                   <div className="space-y-8">
                     <div className="grid grid-cols-2 gap-8">
                       <div className="group/item relative">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Merchant ID</div>
-                        <div className="text-sm font-mono text-slate-700">{status?.merchantId || '—'}</div>
+                        <div className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">Merchant ID</div>
+                        <div className="text-sm font-mono text-on-surface-variant">{status?.merchantId || '—'}</div>
                         <div className="absolute inset-x-0 -top-10 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-20">
-                          <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                          <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
                             Your unique Square Merchant identifier.
                           </div>
                         </div>
                       </div>
                       <div className="group/item relative">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Location</div>
-                        <div className="text-sm font-bold text-slate-700">
+                        <div className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">Location</div>
+                        <div className="text-sm font-bold text-on-surface-variant">
                           {status?.locationName || status?.businessName || status?.defaultLocationId || '—'}
                         </div>
                         <div className="absolute inset-x-0 -top-10 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-20">
-                          <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                          <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
                             The business location receiving review requests.
                           </div>
                         </div>
                       </div>
                       <div className="group/item relative">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Environment</div>
-                        <div className="text-sm font-bold text-slate-700 capitalize">{status?.sandbox ? 'Sandbox' : 'Production'}</div>
+                        <div className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">Environment</div>
+                        <div className="text-sm font-bold text-on-surface-variant capitalize">{status?.sandbox ? 'Sandbox' : 'Production'}</div>
                         <div className="absolute inset-x-0 -top-10 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-20">
-                          <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                          <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
                             Current operational mode (Live or Test).
                           </div>
                         </div>
                       </div>
                       <div className="group/item relative">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Last Backfill</div>
-                        <div className="text-sm font-bold text-slate-700">
+                        <div className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">Last Backfill</div>
+                        <div className="text-sm font-bold text-on-surface-variant">
                           {status?.lastBackfillAt ? new Date(status.lastBackfillAt).toLocaleDateString() : 'Never'}
                         </div>
                         <div className="absolute inset-x-0 -top-10 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none z-20">
-                          <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                          <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
                             Last time customers were imported manually.
                           </div>
                         </div>
                       </div>
                     </div>
 
-                  <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
+                  <div className="pt-6 border-t border-outline-variant/20 flex items-center justify-between">
                     <button
                       onClick={disconnectSquare}
                       disabled={disconnecting}
@@ -478,7 +478,7 @@ function SquareIntegrationInner() {
               {/* Tooltip for entire card if disconnected */}
               {!status?.connected && (
                 <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                  <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                  <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
                     Link your Square POS to automate review requests.
                   </div>
                 </div>
@@ -487,29 +487,29 @@ function SquareIntegrationInner() {
 
             {/* Webhook Configuration Instructions */}
             {status?.connected && (
-              <section className="premium-card p-8 rounded-3xl bg-slate-50 border-slate-200 group relative">
-                <h3 className="text-sm font-bold text-slate-900 mb-4">Webhook Configuration</h3>
-                <p className="text-xs text-slate-500 leading-relaxed mb-4">
+              <section className="surface-card p-8 rounded-3xl bg-surface-container-lowest border-outline-variant/30 group relative">
+                <h3 className="text-sm font-bold text-on-surface mb-4">Webhook Configuration</h3>
+                <p className="text-xs text-on-surface-variant leading-relaxed mb-4">
                   To enable live automation, you must configure a webhook in your Square Developer Dashboard. This allows us to receive notifications whenever a payment is completed.
                 </p>
                 <div className="space-y-3">
                   <div>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Target URL</div>
-                    <div className="text-xs font-mono bg-white p-2 border border-slate-200 rounded-lg truncate select-all">
+                    <div className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">Target URL</div>
+                    <div className="text-xs font-mono bg-surface p-2 border border-outline-variant/30 rounded-lg truncate select-all">
                       {typeof window !== 'undefined' ? `${window.location.origin}/api/webhooks/square` : 'https://www.reviewsandmarketing.com/api/webhooks/square'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Events to Subscribe</div>
-                    <div className="text-xs font-bold text-slate-700">payment.created, payment.updated</div>
+                    <div className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">Events to Subscribe</div>
+                    <div className="text-xs font-bold text-on-surface-variant">payment.created, payment.updated</div>
                   </div>
-                  <p className="text-[10px] text-slate-400">
-                    Once configured, copy the "Signature Key" from Square and add it to your environment variables as <code className="bg-slate-100 px-1 rounded">SQUARE_WEBHOOK_SIGNATURE_KEY</code>.
+                  <p className="text-[10px] text-on-surface-variant/60">
+                    Once configured, copy the "Signature Key" from Square and add it to your environment variables as <code className="bg-surface-container-low px-1 rounded">SQUARE_WEBHOOK_SIGNATURE_KEY</code>.
                   </p>
                 </div>
                 {/* Tooltip */}
                 <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                  <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                  <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
                     Technical settings required for real-time sale detection.
                   </div>
                 </div>
@@ -518,19 +518,19 @@ function SquareIntegrationInner() {
 
             {/* Backfill Actions */}
               {status?.connected && (
-                <section className="premium-card p-8 rounded-3xl group relative">
+                <section className="surface-card p-8 rounded-3xl group relative">
                   <h2 className="text-xl font-bold mb-2">Backfill Customers</h2>
-                  <p className="text-sm text-slate-500 leading-relaxed mb-8">
+                  <p className="text-sm text-on-surface-variant leading-relaxed mb-8">
                     Import your existing Square customers and send them a review request. We'll automatically skip anyone who has received a request recently.
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-end gap-4">
                     <div className="flex-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Import Limit</label>
+                      <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-2">Import Limit</label>
                       <select 
                         value={maxCustomers}
                         onChange={(e) => setMaxCustomers(Number(e.target.value))}
-                        className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition"
+                        className="w-full h-11 bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20 transition"
                       >
                         <option value={50}>Latest 50 Customers</option>
                         <option value={100}>Latest 100 Customers</option>
@@ -548,7 +548,7 @@ function SquareIntegrationInner() {
                   </div>
                   {/* Tooltip */}
                   <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                    <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                    <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
                       Send requests to previous customers from your Square database.
                     </div>
                   </div>
@@ -560,7 +560,7 @@ function SquareIntegrationInner() {
             <div className="lg:col-span-5 space-y-6">
               {/* Customer Database Summary */}
               {status?.connected && (
-                <section className="premium-card p-6 rounded-3xl bg-emerald-50/50 border-emerald-100 group relative">
+                <section className="surface-card p-6 rounded-3xl bg-emerald-50/50 border-emerald-100 group relative">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-sm font-bold text-emerald-900">Customer Database</h2>
                     <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -576,7 +576,7 @@ function SquareIntegrationInner() {
                   </p>
                   {/* Tooltip */}
                   <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                    <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                    <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
                       Total unique customer records synced with your account.
                     </div>
                   </div>
@@ -584,19 +584,19 @@ function SquareIntegrationInner() {
               )}
 
               {/* Automation Status */}
-              <section className="premium-card p-6 rounded-3xl bg-brand/5 border-dashed relative overflow-hidden group">
+              <section className="surface-card p-6 rounded-3xl bg-brand/5 border-dashed relative overflow-hidden group">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-bold text-slate-900">Live Automation</h2>
+                  <h2 className="text-sm font-bold text-on-surface">Live Automation</h2>
                   <div className="flex items-center gap-2">
-                    <span className={`h-2 w-2 rounded-full ${status?.connected && status?.isEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`}></span>
+                    <span className={`h-2 w-2 rounded-full ${status?.connected && status?.isEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-outline-variant/40'}`}></span>
                     {status?.connected && (
-                      <span className={`text-[10px] font-black uppercase tracking-widest ${status?.isEnabled ? 'text-emerald-600' : 'text-slate-400'}`}>
+                      <span className={`text-[10px] font-black uppercase tracking-widest ${status?.isEnabled ? 'text-emerald-600' : 'text-on-surface-variant/60'}`}>
                         {status?.isEnabled ? 'Active' : 'Paused'}
                       </span>
                     )}
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed mb-6">
+                <p className="text-xs text-on-surface-variant leading-relaxed mb-6">
                   {status?.connected 
                     ? status?.isEnabled 
                       ? "Automatic review requests are ACTIVE. We'll send a request to every new customer who completes a transaction."
@@ -612,7 +612,7 @@ function SquareIntegrationInner() {
                       disabled={toggling}
                       className={`w-full h-10 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
                         status.isEnabled 
-                          ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' 
+                          ? 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container' 
                           : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-200'
                       }`}
                     >
@@ -622,23 +622,23 @@ function SquareIntegrationInner() {
                 )}
                 {/* Tooltip */}
                 <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                  <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                  <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
                     Toggle real-time monitoring of Square transactions.
                   </div>
                 </div>
               </section>
 
               {/* Job History */}
-              <section className="premium-card p-6 rounded-3xl group relative">
-                <h2 className="text-sm font-bold text-slate-900 mb-6">Recent Activity</h2>
+              <section className="surface-card p-6 rounded-3xl group relative">
+                <h2 className="text-sm font-bold text-on-surface mb-6">Recent Activity</h2>
                 {jobs.length === 0 ? (
-                  <div className="text-center py-8 border-2 border-dashed border-slate-100 rounded-2xl">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">No recent jobs</p>
+                  <div className="text-center py-8 border-2 border-dashed border-outline-variant/20 rounded-2xl">
+                    <p className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest">No recent jobs</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {jobs.map((job) => (
-                      <div key={job.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                      <div key={job.id} className="p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/20">
                         <div className="flex justify-between items-start mb-2">
                           <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${
                             job.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 
@@ -646,11 +646,11 @@ function SquareIntegrationInner() {
                           }`}>
                             {job.status}
                           </span>
-                          <span className="text-[10px] font-bold text-slate-400">
+                          <span className="text-[10px] font-bold text-on-surface-variant/60">
                             {new Date(job.created_at).toLocaleDateString()}
                           </span>
                         </div>
-                        <div className="text-xs font-bold text-slate-700">
+                        <div className="text-xs font-bold text-on-surface-variant">
                           {job.status === 'completed' ? `Sent ${job.sent_count} / ${job.total_customers} requests` : 
                            job.status === 'failed' ? job.error_message : 'In progress...'}
                         </div>
@@ -660,32 +660,32 @@ function SquareIntegrationInner() {
                 )}
                 {/* Tooltip */}
                 <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                  <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                  <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
                     A history of your manual backfill and import tasks.
                   </div>
                 </div>
               </section>
 
               {/* Help Card */}
-              <div className="p-6 bg-slate-900 rounded-3xl text-white group relative">
+              <div className="p-6 bg-inverse-surface rounded-3xl text-white group relative">
                 <h4 className="text-xs font-bold uppercase tracking-widest mb-4">How it works</h4>
                 <div className="space-y-4">
                   <div className="flex gap-3">
                     <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold shrink-0">1</div>
-                    <p className="text-[10px] leading-relaxed text-slate-400">Authorize connection between Square and Reviews & Marketing.</p>
+                    <p className="text-[10px] leading-relaxed text-inverse-on-surface/60">Authorize connection between Square and Reviews & Marketing.</p>
                   </div>
                   <div className="flex gap-3">
                     <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold shrink-0">2</div>
-                    <p className="text-[10px] leading-relaxed text-slate-400">Optionally run a backfill to capture your most recent customers.</p>
+                    <p className="text-[10px] leading-relaxed text-inverse-on-surface/60">Optionally run a backfill to capture your most recent customers.</p>
                   </div>
                   <div className="flex gap-3">
                     <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-bold shrink-0">3</div>
-                    <p className="text-[10px] leading-relaxed text-slate-400">Relax. Every future transaction automatically triggers a review request.</p>
+                    <p className="text-[10px] leading-relaxed text-inverse-on-surface/60">Relax. Every future transaction automatically triggers a review request.</p>
                   </div>
                 </div>
                 {/* Tooltip */}
                 <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                  <div className="bg-white text-slate-900 text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
+                  <div className="bg-surface text-on-surface text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
                     A quick guide to setting up your Square automation.
                   </div>
                 </div>
@@ -701,19 +701,19 @@ function SquareIntegrationInner() {
               <h4 className="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Integration Glossary</h4>
               <ul className="space-y-3">
                 <li className="text-xs text-muted flex flex-col gap-1">
-                  <strong className="text-slate-900">Merchant ID</strong>
+                  <strong className="text-on-surface">Merchant ID</strong>
                   The global unique identifier for your Square seller account.
                 </li>
                 <li className="text-xs text-muted flex flex-col gap-1">
-                  <strong className="text-slate-900">Location ID</strong>
+                  <strong className="text-on-surface">Location ID</strong>
                   The specific physical or digital storefront where sales occur.
                 </li>
                 <li className="text-xs text-muted flex flex-col gap-1">
-                  <strong className="text-slate-900">Backfill</strong>
+                  <strong className="text-on-surface">Backfill</strong>
                   The process of importing previous customers to send requests retroactively.
                 </li>
                 <li className="text-xs text-muted flex flex-col gap-1">
-                  <strong className="text-slate-900">Webhook</strong>
+                  <strong className="text-on-surface">Webhook</strong>
                   The technical "bridge" that tells us when a sale happens in real-time.
                 </li>
               </ul>
@@ -723,15 +723,15 @@ function SquareIntegrationInner() {
               <ul className="space-y-3">
                 <li className="text-xs text-muted flex items-center gap-3">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span><strong className="text-slate-900">Active:</strong> Monitoring sales and sending requests.</span>
+                  <span><strong className="text-on-surface">Active:</strong> Monitoring sales and sending requests.</span>
                 </li>
                 <li className="text-xs text-muted flex items-center gap-3">
-                  <span className="w-2 h-2 rounded-full bg-slate-300"></span>
-                  <span><strong className="text-slate-900">Paused:</strong> Monitoring is off; no requests being sent.</span>
+                  <span className="w-2 h-2 rounded-full bg-outline-variant/40"></span>
+                  <span><strong className="text-on-surface">Paused:</strong> Monitoring is off; no requests being sent.</span>
                 </li>
                 <li className="text-xs text-muted flex items-center gap-3">
                   <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                  <span><strong className="text-slate-900">Running:</strong> A manual backfill job is in progress.</span>
+                  <span><strong className="text-on-surface">Running:</strong> A manual backfill job is in progress.</span>
                 </li>
               </ul>
             </div>
@@ -742,8 +742,8 @@ function SquareIntegrationInner() {
                   <strong className="text-blue-700">90-Day Cooling Period</strong>
                   We never email the same customer more than once every 90 days to prevent spam.
                 </li>
-                <li className="text-xs text-muted flex flex-col gap-1 p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <strong className="text-slate-900">Smart Deduplication</strong>
+                <li className="text-xs text-muted flex flex-col gap-1 p-3 bg-surface-container-lowest rounded-xl border border-outline-variant/30">
+                  <strong className="text-on-surface">Smart Deduplication</strong>
                   Duplicate emails across different Square transactions are automatically merged.
                 </li>
               </ul>

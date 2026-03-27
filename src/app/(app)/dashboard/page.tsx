@@ -259,7 +259,7 @@ function DashboardContent() {
             <div className="flex items-center gap-3 mb-1">
               <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
                 Dashboard
-                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-md border border-slate-100">Live v2.1</span>
+                <span className="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-widest bg-surface-container-lowest px-2 py-1 rounded-md border border-outline-variant/20">Live v2.1</span>
               </h1>
               <div className="flex items-center gap-2 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -269,7 +269,7 @@ function DashboardContent() {
             <p className="text-muted text-sm font-medium flex items-center gap-2">
               Connected to {business.name}
               {business.address && (
-                <span className="text-slate-400 font-normal border-l border-[#e2e8f0] pl-2 ml-1">
+                <span className="text-on-surface-variant/60 font-normal border-l border-outline-variant/30 pl-2 ml-1">
                   {business.address.split(',')[0]}
                 </span>
               )}
@@ -281,12 +281,12 @@ function DashboardContent() {
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             Contacts
           </Link>
-          <Link href="/onboarding/business?edit=1" className="inline-flex items-center gap-2 px-4 h-10 bg-white text-slate-700 border border-slate-200 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all hover:bg-slate-50 hover:border-slate-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm">
-            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H5a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          <Link href="/onboarding/business?edit=1" className="inline-flex items-center gap-2 px-4 h-10 bg-surface text-on-surface-variant border border-outline-variant/30 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all hover:bg-surface-container-lowest hover:border-outline-variant/40 hover:scale-[1.02] active:scale-[0.98] shadow-sm">
+            <svg className="w-3.5 h-3.5 text-on-surface-variant/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H5a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
             Business
           </Link>
-          <Link href="/settings" className="inline-flex items-center gap-2 px-4 h-10 bg-white text-slate-700 border border-slate-200 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all hover:bg-slate-50 hover:border-slate-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm">
-            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <Link href="/settings" className="inline-flex items-center gap-2 px-4 h-10 bg-surface text-on-surface-variant border border-outline-variant/30 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all hover:bg-surface-container-lowest hover:border-outline-variant/40 hover:scale-[1.02] active:scale-[0.98] shadow-sm">
+            <svg className="w-3.5 h-3.5 text-on-surface-variant/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             Settings
           </Link>
         </div>
@@ -311,17 +311,17 @@ function DashboardContent() {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex items-center gap-1 mb-8 p-1 bg-slate-100 rounded-2xl w-fit">
+      <div className="flex items-center gap-1 mb-8 p-1 bg-surface-container-low rounded-2xl w-fit">
         <button
           onClick={() => setActiveTab('review-toolkit')}
-          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'review-toolkit' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'
+          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'review-toolkit' ? 'bg-surface text-on-surface shadow-sm' : 'text-on-surface-variant/60 hover:text-on-surface-variant'
             }`}
         >
           Review Toolkit
         </button>
         <button
           onClick={() => setActiveTab('sequences')}
-          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'sequences' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'
+          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'sequences' ? 'bg-surface text-on-surface shadow-sm' : 'text-on-surface-variant/60 hover:text-on-surface-variant'
             }`}
         >
           Sequences
@@ -331,15 +331,15 @@ function DashboardContent() {
       {activeTab === 'review-toolkit' && (
         <div className="animate-fade-in">
           <div className="mb-12">
-            <section className="premium-card p-8 rounded-3xl overflow-hidden relative group bg-white border border-slate-100 shadow-xl shadow-slate-200/40">
+            <section className="surface-card p-8 rounded-3xl overflow-hidden relative group bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20">
               <h2 className="text-xl font-bold mb-2">Review Toolkit</h2>
               <p className="text-sm text-muted mb-8 font-medium">Your core tools for collecting customer reviews.</p>
 
               <div className="space-y-8">
                 <div className="relative group/copy">
                   <label className="text-[10px] font-black text-muted uppercase tracking-widest block mb-2">Main QR Tracking Link</label>
-                  <div className="flex gap-2 p-1 bg-slate-50 border border-[#e2e8f0] rounded-2xl">
-                    <div className="flex-1 h-11 bg-white rounded-xl px-4 flex items-center text-sm font-mono truncate text-slate-600 border border-[#f1f5f9] shadow-sm">
+                  <div className="flex gap-2 p-1 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl">
+                    <div className="flex-1 h-11 bg-surface rounded-xl px-4 flex items-center text-sm font-mono truncate text-on-surface-variant border border-outline-variant/20 shadow-sm">
                       {landingUrl}
                     </div>
                     <button onClick={handleCopyLink} className={`primary-button !h-11 px-8 text-xs font-black uppercase tracking-widest transition-all ${copyState === 'copied' ? '!bg-emerald-500 !shadow-emerald-100' : ''}`}>
@@ -352,16 +352,16 @@ function DashboardContent() {
                     </button>
                   </div>
                   <div className="absolute inset-x-0 -top-10 opacity-0 group-hover/copy:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                    <div className="bg-slate-900 text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
+                    <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
                       The smart link that routes reviews to the right place.
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-8 items-stretch pt-8 border-t border-[#e2e8f0]/50">
+                <div className="flex flex-col lg:flex-row gap-8 items-stretch pt-8 border-t border-outline-variant/20">
                   {/* Left: The QR Code itself */}
-                  <div className="lg:w-1/3 flex flex-col items-center justify-between gap-4 bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                    <div className="bg-white p-4 border-4 border-slate-50 rounded-[32px] shadow-2xl shadow-slate-200/50 group-hover:scale-[1.02] transition-transform w-full max-w-[220px] mx-auto">
+                  <div className="lg:w-1/3 flex flex-col items-center justify-between gap-4 bg-surface-container-lowest p-6 rounded-3xl border border-outline-variant/20">
+                    <div className="bg-surface p-4 border-4 border-outline-variant/20 rounded-[32px] shadow-2xl shadow-outline-variant/20 group-hover:scale-[1.02] transition-transform w-full max-w-[220px] mx-auto">
                       <img
                         src={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=8`}
                         alt="QR Code"
@@ -424,7 +424,7 @@ function DashboardContent() {
                             window.print();
                           }
                         }}
-                        className="secondary-button !h-11 w-full text-xs font-black text-slate-500 uppercase tracking-widest bg-white border border-slate-200 transition-colors"
+                        className="secondary-button !h-11 w-full text-xs font-black text-on-surface-variant uppercase tracking-widest bg-surface border border-outline-variant/30 transition-colors"
                       >
                         Print QR Code
                       </button>
@@ -458,10 +458,10 @@ function DashboardContent() {
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1 flex items-center gap-1.5"><span className="text-sm">💡</span> Best Placement</h4>
                         <p className="text-xs text-amber-800/80 font-medium">Add to checkout counters, receipts, dining tables, business cards, mailers, and front doors to increase scans. You need to nicely design it and put it around your store. You can do it yourself or have us design it. Be creative!</p>
                       </div>
-                      <div className="p-4 bg-slate-900 rounded-2xl border border-slate-800">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-1.5"><span className="text-sm">🎨</span> Need a Design?</h4>
-                        <p className="text-xs text-slate-300 font-medium mb-3">We design custom printed QR assets for your store.</p>
-                        <a href="mailto:hello@reviewsandmarketing.com?subject=Custom Design Request" className="inline-flex items-center justify-center h-8 text-[9px] font-black text-slate-900 bg-white hover:bg-slate-100 px-4 rounded-lg transition-colors uppercase tracking-widest shadow-sm">Request Design</a>
+                      <div className="p-4 bg-inverse-surface rounded-2xl border border-outline-variant/30">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-inverse-on-surface/70 mb-1 flex items-center gap-1.5"><span className="text-sm">🎨</span> Need a Design?</h4>
+                        <p className="text-xs text-inverse-on-surface/80 font-medium mb-3">We design custom printed QR assets for your store.</p>
+                        <a href="mailto:hello@reviewsandmarketing.com?subject=Custom Design Request" className="inline-flex items-center justify-center h-8 text-[9px] font-black text-on-surface bg-surface hover:bg-surface-container-low px-4 rounded-lg transition-colors uppercase tracking-widest shadow-sm">Request Design</a>
                       </div>
                     </div>
 
@@ -509,8 +509,8 @@ function DashboardContent() {
 
       {/* Moved Checklist (if finished) */}
       {isActivated && (
-        <div className="mt-24 pt-12 border-t border-slate-100">
-          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 text-center mb-8">Onboarding Completed</h4>
+        <div className="mt-24 pt-12 border-t border-outline-variant/20">
+          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/50 text-center mb-8">Onboarding Completed</h4>
           <div className="max-w-4xl mx-auto opacity-60 hover:opacity-100 transition-opacity">
             <ActivationWidget
               business={business}
@@ -524,7 +524,7 @@ function DashboardContent() {
       )}
 
       {/* Legend Section */}
-      <section className="mt-24 pt-12 border-t border-[#e2e8f0]">
+      <section className="mt-24 pt-12 border-t border-outline-variant/30">
         {/* Advanced Analytics & Insights Section (always visible at bottom for perceived value) */}
         <div className="mt-12 relative mb-12">
           {!isPro && (
@@ -534,8 +534,8 @@ function DashboardContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <h2 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">Unlock Your Business Intelligence</h2>
-              <p className="text-slate-600 max-w-md mb-8 font-medium leading-relaxed">
+              <h2 className="text-3xl font-black text-on-surface mb-3 tracking-tight">Unlock Your Business Intelligence</h2>
+              <p className="text-on-surface-variant max-w-md mb-8 font-medium leading-relaxed">
                 You're currently seeing <strong>less than 20%</strong> of your available data. Upgrade to Unlimited to track daily trends, see where every lead comes from, and analyze customer sentiment.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 items-center">
@@ -582,19 +582,19 @@ function DashboardContent() {
             <h4 className="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Metric Definitions</h4>
             <ul className="space-y-3">
               <li className="text-xs text-muted flex flex-col gap-1">
-                <strong className="text-slate-900">Google Rating</strong>
+                <strong className="text-on-surface">Google Rating</strong>
                 The current average star rating of your business on Google Maps.
               </li>
               <li className="text-xs text-muted flex flex-col gap-1">
-                <strong className="text-slate-900">Total Scans</strong>
+                <strong className="text-on-surface">Total Scans</strong>
                 Every time your unique QR code is scanned or the link is clicked.
               </li>
               <li className="text-xs text-muted flex flex-col gap-1">
-                <strong className="text-slate-900">Interactions</strong>
+                <strong className="text-on-surface">Interactions</strong>
                 Customers who took action by clicking a star rating on your landing page.
               </li>
               <li className="text-xs text-muted flex flex-col gap-1">
-                <strong className="text-slate-900">Total Leads</strong>
+                <strong className="text-on-surface">Total Leads</strong>
                 The number of successful outcomes (Google redirects + private messages).
               </li>
             </ul>
@@ -627,8 +627,8 @@ function DashboardContent() {
                 <strong className="text-emerald-700">5-Star Workflow</strong>
                 Happy customers are instantly routed to Google to leave a public review.
               </li>
-              <li className="text-xs text-muted flex flex-col gap-1 text-slate-600 bg-slate-50 p-3 rounded-xl border border-[#e2e8f0]">
-                <strong className="text-slate-900">1-4 Star Workflow</strong>
+              <li className="text-xs text-muted flex flex-col gap-1 text-on-surface-variant bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/30">
+                <strong className="text-on-surface">1-4 Star Workflow</strong>
                 Critical feedback is captured privately, giving you a chance to fix the issue before it goes public.
               </li>
             </ul>
@@ -649,7 +649,7 @@ function DashboardContent() {
       {/* Photo Modal */}
       {isPhotoModalOpen && business.google_photo_url && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 bg-slate-900/90 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 bg-inverse-surface/90 backdrop-blur-sm animate-fade-in"
           onClick={() => setIsPhotoModalOpen(false)}
         >
           <div className="relative max-w-4xl w-full aspect-square sm:aspect-video rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10">

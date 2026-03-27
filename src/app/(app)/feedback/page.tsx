@@ -214,7 +214,7 @@ function FeedbackContent({ business }: { business: any }) {
             <p className="text-muted text-sm font-medium flex items-center gap-2">
               Connected to {business?.name}
               {business?.address && (
-                <span className="text-slate-400 font-normal border-l border-slate-200 pl-2 ml-1">
+                <span className="text-on-surface-variant/60 font-normal border-l border-outline-variant/30 pl-2 ml-1">
                   {business.address.split(',')[0]}
                 </span>
               )}
@@ -224,7 +224,7 @@ function FeedbackContent({ business }: { business: any }) {
         <div className="flex gap-3">
           <button 
             onClick={() => setShowArchived(!showArchived)}
-            className={`secondary-button !h-10 px-4 text-xs ${showArchived ? 'bg-slate-100 border-slate-300' : ''}`}
+            className={`secondary-button !h-10 px-4 text-xs ${showArchived ? 'bg-surface-container-low border-outline-variant/40' : ''}`}
           >
             {showArchived ? 'View Active' : 'View Archived'}
           </button>
@@ -240,7 +240,7 @@ function FeedbackContent({ business }: { business: any }) {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="premium-card p-6 rounded-2xl">
+        <div className="surface-card p-6 rounded-2xl">
           <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Average Feedback</div>
           <div className="flex items-end gap-3">
             <div className="text-4xl font-black">{avgRating}</div>
@@ -251,18 +251,18 @@ function FeedbackContent({ business }: { business: any }) {
             </div>
           </div>
         </div>
-        <div className="premium-card p-6 rounded-2xl">
+        <div className="surface-card p-6 rounded-2xl">
           <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Total Responses</div>
           <div className="text-4xl font-black">{items.length}</div>
         </div>
-        <div className="premium-card p-6 rounded-2xl">
+        <div className="surface-card p-6 rounded-2xl">
           <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Filtered Count</div>
           <div className="text-4xl font-black">{filtered.length}</div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="premium-card p-6 rounded-3xl mb-12">
+      <div className="surface-card p-6 rounded-3xl mb-12">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div>
             <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1 mb-2 block">Search</label>
@@ -339,9 +339,9 @@ function FeedbackContent({ business }: { business: any }) {
         )}
 
         {paginatedItems.length === 0 ? (
-          <div className="premium-card p-20 rounded-[40px] text-center bg-accent/20 border-dashed">
-            <div className="w-16 h-16 bg-white border border-border rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="surface-card p-20 rounded-[40px] text-center bg-accent/20 border-dashed">
+            <div className="w-16 h-16 bg-surface border border-border rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <svg className="w-8 h-8 text-on-surface-variant/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                 </svg>
             </div>
@@ -354,7 +354,7 @@ function FeedbackContent({ business }: { business: any }) {
               const isEvent = f.type === 'event';
               
               return (
-                <div key={f.id} className={premiumCardClass + ` p-6 rounded-3xl ${isEvent ? 'bg-slate-50/50 border-slate-100' : 'p-8'}`}>
+                <div key={f.id} className={premiumCardClass + ` p-6 rounded-3xl ${isEvent ? 'bg-surface-container-lowest/50 border-outline-variant/20' : 'p-8'}`}>
                   <div className="flex flex-col md:flex-row gap-6">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-4">
@@ -372,7 +372,7 @@ function FeedbackContent({ business }: { business: any }) {
                             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
                               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-2.21 5.39-7.84 5.39-4.84 0-8.79-4.01-8.79-8.92s3.95-8.92 8.79-8.92c2.75 0 4.59 1.17 5.64 2.21l2.59-2.5c-1.66-1.55-3.82-2.5-8.23-2.5-6.62 0-12 5.38-12 12s5.38 12 12 12c6.92 0 11.52-4.87 11.52-11.72 0-.78-.08-1.38-.24-1.97h-11.28z"/></svg>
                             </div>
-                            <h3 className="font-bold text-slate-500 italic">Verified Google Redirect</h3>
+                            <h3 className="font-bold text-on-surface-variant italic">Verified Google Redirect</h3>
                           </div>
                         ) : (
                           <h3 className="font-bold text-lg">{f.name || (f.type === 'google' ? 'Google Reviewer' : 'Anonymous Customer')}</h3>
@@ -395,7 +395,7 @@ function FeedbackContent({ business }: { business: any }) {
                             </span>
                           )}
                           {isEvent && (
-                            <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-full border border-slate-200">
+                            <span className="px-2 py-0.5 bg-surface-container-low text-on-surface-variant text-[9px] font-black uppercase tracking-widest rounded-full border border-outline-variant/30">
                               System Log
                             </span>
                           )}
@@ -408,11 +408,11 @@ function FeedbackContent({ business }: { business: any }) {
 
                       <div className="space-y-4">
                           {isEvent ? (
-                            <p className="text-xs text-slate-400 font-medium">
+                            <p className="text-xs text-on-surface-variant/60 font-medium">
                               A customer scanned your QR code and was successfully routed to your Google Business Profile to leave a review.
                             </p>
                           ) : (
-                            <p className="text-sm text-slate-600 leading-relaxed italic">
+                            <p className="text-sm text-on-surface-variant leading-relaxed italic">
                                 "{f.comment || 'No specific comment provided.'}"
                             </p>
                           )}
@@ -444,7 +444,7 @@ function FeedbackContent({ business }: { business: any }) {
                                             Follow-up Permitted
                                         </span>
                                     ) : f.type !== 'google' && (
-                                        <span className="text-slate-400">No Follow-up</span>
+                                        <span className="text-on-surface-variant/60">No Follow-up</span>
                                     )}
                                 </div>
                               )}
@@ -465,7 +465,7 @@ function FeedbackContent({ business }: { business: any }) {
                         </a>
                       ) : isEvent ? (
                         <div className="flex flex-col items-center justify-center h-full">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status</span>
+                          <span className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">Status</span>
                           <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-2 py-1 bg-blue-50 rounded">Verified</span>
                         </div>
                       ) : (
@@ -473,7 +473,7 @@ function FeedbackContent({ business }: { business: any }) {
                           {f.email && (
                             <a 
                               href={`mailto:${f.email}?subject=Follow-up from ${business?.name || 'our business'}`}
-                              className="px-4 h-10 bg-slate-900 hover:bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all w-full flex items-center justify-center gap-2 shadow-sm"
+                              className="px-4 h-10 bg-inverse-surface hover:bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all w-full flex items-center justify-center gap-2 shadow-sm"
                             >
                               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                               Email

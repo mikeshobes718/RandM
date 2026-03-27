@@ -32,7 +32,7 @@ export default function SupportPage() {
 
         <div className="grid lg:grid-cols-12 gap-12 items-start">
           <div className="lg:col-span-7">
-            <div className="premium-card p-8 md:p-10 rounded-[32px]">
+            <div className="surface-card p-8 md:p-10 rounded-[32px]">
               <h2 className="text-2xl font-black mb-6">Frequently asked</h2>
               <div className="divide-y divide-border/50">
                 {FAQS.map((faq) => (
@@ -53,7 +53,7 @@ export default function SupportPage() {
           </div>
 
           <div className="lg:col-span-5 space-y-8">
-            <div className="premium-card p-8 rounded-[32px] bg-accent/30 border-dashed">
+            <div className="surface-card p-8 rounded-[32px] bg-accent/30 border-dashed">
               <h2 className="text-lg font-bold mb-6">Get in touch</h2>
               <div className="space-y-6">
                 <div className="flex gap-4">

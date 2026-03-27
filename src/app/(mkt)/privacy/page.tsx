@@ -40,7 +40,7 @@ export default function PrivacyPage() {
         </div>
 
         <div className="space-y-8">
-          <div className="premium-card p-8 md:p-10 rounded-[32px]">
+          <div className="surface-card p-8 md:p-10 rounded-[32px]">
             <p className="text-sm text-muted leading-relaxed">
               We take privacy seriously. Reviews & Marketing collects only the data necessary to provide and improve the platform, and we never sell customer information. Below is a summary of how we handle data; for questions, contact <a href="mailto:privacy@reviewsandmarketing.com" className="font-bold text-brand hover:underline">privacy@reviewsandmarketing.com</a>.
             </p>
@@ -48,7 +48,7 @@ export default function PrivacyPage() {
 
           <div className="grid gap-8 md:grid-cols-3">
             {POLICY_SECTIONS.map((section) => (
-              <div key={section.title} className="premium-card p-8 rounded-3xl flex flex-col h-full">
+              <div key={section.title} className="surface-card p-8 rounded-3xl flex flex-col h-full">
                 <h2 className="text-lg font-bold text-foreground mb-4">{section.title}</h2>
                 <ul className="space-y-3 flex-1">
                   {section.items.map((item) => (
@@ -62,7 +62,7 @@ export default function PrivacyPage() {
             ))}
           </div>
 
-          <div className="premium-card p-8 md:p-10 rounded-[32px] bg-accent/30 border-dashed">
+          <div className="surface-card p-8 md:p-10 rounded-[32px] bg-accent/30 border-dashed">
             <h2 className="text-lg font-bold text-foreground mb-4">Questions or requests</h2>
             <p className="text-sm text-muted leading-relaxed">
               You can reach our data protection team at <a className="font-bold text-brand hover:underline" href="mailto:privacy@reviewsandmarketing.com">privacy@reviewsandmarketing.com</a>. We honor verified requests to access, correct, or delete personal data within applicable regulations.
