@@ -20,22 +20,22 @@ export default function AppTopBar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 w-full h-16 bg-white/80 backdrop-blur-xl border-b border-slate-200/20 shadow-sm flex items-center justify-between px-8">
-      <div className="flex items-center gap-4">
-        <Link href="/" className="text-xl font-bold tracking-tight text-slate-900 display-font">
+    <header className="sticky top-0 z-30 w-full h-14 bg-surface-container-lowest/90 backdrop-blur-xl border-b border-outline-variant/10 flex items-center justify-between px-4 md:px-8">
+      <div className="flex items-center gap-3">
+        <Link href="/" className="text-lg font-bold tracking-tight text-on-surface">
           R&M
         </Link>
       </div>
 
-      <div className="flex items-center gap-2">
-        <button className="p-2 hover:bg-slate-200/50 rounded-full transition-colors" aria-label="Notifications">
-          <span className="material-symbols-outlined text-on-surface-variant">notifications</span>
+      <div className="flex items-center gap-1">
+        <button className="p-2 hover:bg-surface-container-low rounded-full transition-colors" aria-label="Notifications">
+          <span className="material-symbols-outlined text-on-surface-variant text-xl">notifications</span>
         </button>
-        <button className="p-2 hover:bg-slate-200/50 rounded-full transition-colors" aria-label="Help">
-          <span className="material-symbols-outlined text-on-surface-variant">help_outline</span>
+        <button className="p-2 hover:bg-surface-container-low rounded-full transition-colors" aria-label="Help">
+          <span className="material-symbols-outlined text-on-surface-variant text-xl">help_outline</span>
         </button>
         <div
-          className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold ml-2"
+          className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold ml-1"
           title={email}
         >
           {initials}
