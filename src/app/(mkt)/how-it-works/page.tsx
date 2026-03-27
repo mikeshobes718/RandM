@@ -1,7 +1,78 @@
+"use client";
+
 import Link from "next/link";
 import ClientCTA from "@/components/ClientCTA";
+import { useEffect, useState } from "react";
 
 export default function HowItWorks() {
+  const [activeStep, setActiveStep] = useState(0);
+  const [logs, setLogs] = useState([
+    { time: "[14:20:01]", type: "SUCCESS:", text: "Smart QR Code generated for business_id_492", color: "text-secondary-fixed-dim" },
+    { time: "[14:21:45]", type: "EVENT:", text: "Scanned QR code at Table 4 (Session: XP-292)", color: "text-primary-fixed-dim" },
+    { time: "[14:22:12]", type: "SIGNAL:", text: "5-star rating detected - Routing to Google Reviews", color: "text-tertiary-fixed" },
+    { time: "[14:23:05]", type: "PUSH:", text: "New 5-star review published! Total reach +2.4k", color: "text-secondary font-bold" }
+  ]);
+
+  const [currentTime, setCurrentTime] = useState("");
+
+  useEffect(() => {
+    setCurrentTime(`[${new Date().getHours().toString().padStart(2, '0')}:${new Date().getMinutes().toString().padStart(2, '0')}:${new Date().getSeconds().toString().padStart(2, '0')}]`);
+    const timer = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(`[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}]`);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    const getTime = () => {
+      const now = new Date();
+      return `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}]`;
+    };
+    
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+    
+    const runSimulation = async () => {
+      // Initial wait before starting live simulation
+      await sleep(3000);
+      
+      while (isMounted) {
+        // Step 1: Connect
+        setActiveStep(0);
+        setLogs(prev => [...prev.slice(-4), { time: getTime(), type: "SUCCESS:", text: "Smart QR Code generated and active", color: "text-secondary-fixed-dim" }]);
+        await sleep(3000);
+        if (!isMounted) break;
+        
+        // Step 2: Capture
+        setActiveStep(1);
+        setLogs(prev => [...prev.slice(-4), { time: getTime(), type: "EVENT:", text: "Customer scanned QR code (Session: XP-292)", color: "text-primary-fixed-dim" }]);
+        await sleep(2500);
+        if (!isMounted) break;
+        
+        // Step 3: Route
+        setActiveStep(2);
+        setLogs(prev => [...prev.slice(-4), { time: getTime(), type: "SIGNAL:", text: "5-star rating detected - Routing to Google", color: "text-tertiary-fixed" }]);
+        await sleep(2500);
+        if (!isMounted) break;
+        
+        // Step 4: Grow
+        setActiveStep(3);
+        setLogs(prev => [...prev.slice(-4), { time: getTime(), type: "PUSH:", text: "New 5-star review published! Total reach +2.4k", color: "text-secondary font-bold" }]);
+        await sleep(4000);
+        if (!isMounted) break;
+        
+        // Reset
+        setLogs(prev => [...prev.slice(-4), { time: getTime(), type: "INFO:", text: "Session closed. Waiting for next interaction...", color: "text-white/40 italic" }]);
+        await sleep(2000);
+      }
+    };
+    
+    runSimulation();
+    return () => { isMounted = false; };
+  }, []);
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-surface pt-28 pb-20 px-6">
       <div className="max-w-7xl mx-auto">
@@ -24,14 +95,17 @@ export default function HowItWorks() {
         </header>
 
         {/* Process Flow Container */}
-        <div className="relative bg-surface-container-low p-8 md:p-16 rounded-[2rem] overflow-hidden mb-20">
+        <div id="simulation" className="relative bg-surface-container-low p-8 md:p-16 rounded-[2rem] overflow-hidden mb-20">
           <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-primary-fixed/30 rounded-full blur-3xl" />
 
           {/* 4-Step Horizontal Process */}
           <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-8 md:gap-4">
             {/* Background Line */}
             <div className="hidden md:block absolute top-8 left-[12.5%] right-[12.5%] h-[2px] bg-outline-variant/30 -z-10">
-               <div className="h-full bg-primary w-1/3 rounded-full animate-pulse" />
+               <div 
+                 className="h-full bg-primary rounded-full transition-all duration-1000 ease-in-out" 
+                 style={{ width: `${(activeStep / 3) * 100}%` }}
+               />
             </div>
 
             {[
@@ -39,12 +113,15 @@ export default function HowItWorks() {
               { icon: "star", color: "text-secondary", bg: "bg-surface-container-lowest", title: "2. Capture", desc: "5-Star Rating Captured instantly at point of sale.", fill: true },
               { icon: "account_tree", color: "text-tertiary", bg: "bg-surface-container-lowest", title: "3. Route", desc: "Analyzing sentiment and directing feedback." },
               { icon: "trending_up", color: "text-on-primary", bg: "bg-primary", title: "4. Grow", desc: "Waiting for review to publish and boost SEO." },
-            ].map((step, i) => (
-              <div key={step.title} className="flex flex-col items-center text-center group flex-1">
+            ].map((step, i) => {
+              const isActive = activeStep === i;
+              const isPast = activeStep > i;
+              return (
+              <div key={step.title} className={`flex flex-col items-center text-center group flex-1 transition-opacity duration-500 ${isActive || isPast ? 'opacity-100' : 'opacity-40'}`}>
                 <div className="relative mb-6">
-                  <div className={`w-16 h-16 rounded-2xl ${step.bg} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500`}>
+                  <div className={`w-16 h-16 rounded-2xl ${isActive ? 'bg-primary text-white shadow-xl scale-110' : (isPast ? 'bg-primary-container text-on-primary-container' : step.bg + ' ' + step.color)} flex items-center justify-center shadow-lg transition-all duration-500`}>
                     <span
-                      className={`material-symbols-outlined ${step.color} text-3xl`}
+                      className={`material-symbols-outlined text-3xl`}
                       style={step.fill ? { fontVariationSettings: "'FILL' 1" } : undefined}
                     >
                       {step.icon}
@@ -54,7 +131,7 @@ export default function HowItWorks() {
                 <h3 className="display-font text-lg font-bold mb-2">{step.title}</h3>
                 <p className="text-on-surface-variant text-sm px-4">{step.desc}</p>
               </div>
-            ))}
+            )})}
           </div>
 
           {/* System Event Log */}
@@ -64,7 +141,11 @@ export default function HowItWorks() {
                 <span className="material-symbols-outlined text-primary">terminal</span>
                 System Event Log
               </h2>
-              <span className="text-[10px] font-mono text-on-surface-variant/60 uppercase tracking-widest">
+              <span className="text-[10px] font-mono text-on-surface-variant/60 uppercase tracking-widest flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-error opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-error" />
+                </span>
                 Live Feed &bull; Node_082
               </span>
             </div>
@@ -74,29 +155,16 @@ export default function HowItWorks() {
                 <div className="w-2.5 h-2.5 rounded-full bg-secondary-fixed" />
                 <div className="w-2.5 h-2.5 rounded-full bg-primary-fixed" />
               </div>
-              <div className="p-6 font-mono text-sm space-y-3">
-                <div className="flex gap-4">
-                  <span className="text-white/30">[14:20:01]</span>
-                  <span className="text-secondary-fixed-dim">SUCCESS:</span>
-                  <span className="text-white/80">Smart QR Code generated for business_id_492</span>
-                </div>
-                <div className="flex gap-4">
-                  <span className="text-white/30">[14:21:45]</span>
-                  <span className="text-primary-fixed-dim">EVENT:</span>
-                  <span className="text-white/80">Scanned QR code at Table 4 (Session: XP-292)</span>
-                </div>
-                <div className="flex gap-4">
-                  <span className="text-white/30">[14:22:12]</span>
-                  <span className="text-tertiary-fixed">SIGNAL:</span>
-                  <span className="text-white/80">5-star rating detected - Routing to Google Reviews</span>
-                </div>
-                <div className="flex gap-4 animate-pulse">
-                  <span className="text-white/30">[14:23:05]</span>
-                  <span className="text-secondary">PUSH:</span>
-                  <span className="text-white font-bold">New 5-star review published! Total reach +2.4k</span>
-                </div>
+              <div className="p-6 font-mono text-sm space-y-3 min-h-[200px]">
+                {logs.map((log, i) => (
+                  <div key={i} className="flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <span className="text-white/30">{log.time}</span>
+                    <span className={log.color}>{log.type}</span>
+                    <span className={log.type === "PUSH:" ? "text-white font-bold" : "text-white/80"}>{log.text}</span>
+                  </div>
+                ))}
                 <div className="flex gap-4 pt-2">
-                  <span className="text-white/30">[14:23:06]</span>
+                  <span className="text-white/30">{currentTime}</span>
                   <span className="text-white/40 italic">Waiting for next interaction...</span>
                   <span className="w-2 h-4 bg-white/40 animate-blink" />
                 </div>
@@ -156,14 +224,22 @@ export default function HowItWorks() {
             </ul>
           </div>
           <div className="flex-1 w-full flex justify-center">
-            <div className="w-full max-w-md aspect-square rounded-[3rem] overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700 bg-surface-container-high flex items-center justify-center">
+            <Link href="#simulation" className="w-full max-w-md aspect-square rounded-[3rem] overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700 bg-surface-container-high flex items-center justify-center group">
               <div className="text-center p-8 flex flex-col items-center">
-                <svg viewBox="0 0 100 100" className="w-48 h-48 mb-6 text-primary" fill="currentColor">
-                  <path d="M0 0h30v30H0zM10 10h10v10H10zM70 0h30v30H70zM80 10h10v10H80zM0 70h30v30H0zM10 80h10v10H10zM40 0h20v10H40zM40 20h10v10H40zM50 10h10v10H50zM40 40h20v20H40zM70 40h10v10H70zM80 50h10v10H80zM90 40h10v10H90zM70 70h10v10H70zM80 80h10v10H80zM90 70h10v10H90zM70 90h10v10H70zM90 90h10v10H90zM40 70h20v10H40zM40 90h10v10H40zM50 80h10v10H50zM10 40h10v10H10zM20 50h10v10H20zM0 50h10v10H0z" />
-                </svg>
-                <p className="text-sm text-on-surface-variant font-medium uppercase tracking-widest">Scan to experience the flow</p>
+                <div className="w-48 h-48 mb-6 bg-white rounded-2xl p-2 shadow-sm group-hover:scale-105 transition-transform duration-500">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src="/api/qr?data=https://reviewsandmarketing.com/how-it-works%23simulation&format=png&scale=8" 
+                    alt="Scan to experience the flow" 
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <p className="text-sm text-on-surface-variant font-medium uppercase tracking-widest flex items-center gap-2">
+                  Scan to experience the flow
+                  <span className="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </p>
               </div>
-            </div>
+            </Link>
           </div>
         </section>
 
