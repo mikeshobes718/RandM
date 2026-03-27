@@ -414,7 +414,7 @@ function ContactsPageContent() {
                         {recipientSearch.trim().length > 0 && (
                           <div className="mb-2 overflow-visible rounded-xl border border-slate-200 bg-white shadow-sm max-md:max-h-none md:max-h-40 md:overflow-y-auto">
                             {contacts.filter(c => { const q = recipientSearch.toLowerCase(); return (c.name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q) || (c.phone || '').includes(q); }).slice(0, 8).map(c => (
-                              <button key={c.id} type="button" onClick={() => setSelectedIds(prev => { const n = new Set(prev); if (n.has(c.id)) n.delete(c.id); else n.add(c.id); return n; })} className={`flex w-full items-center justify-between border-b border-slate-50 px-3 py-3 text-left transition-colors last:border-0 hover:bg-slate-50 min-h-[48px] md:py-2 md:min-h-0 ${selectedIds.has(c.id) ? 'bg-brand/5' : ''}`}>
+                              <button key={c.id} type="button" onClick={() => { setSelectedIds(prev => { const n = new Set(prev); if (n.has(c.id)) n.delete(c.id); else n.add(c.id); return n; }); setRecipientSearch(''); }} className={`flex w-full items-center justify-between border-b border-slate-50 px-3 py-3 text-left transition-colors last:border-0 hover:bg-slate-50 min-h-[48px] md:py-2 md:min-h-0 ${selectedIds.has(c.id) ? 'bg-brand/5' : ''}`}>
                                 <div className="min-w-0 flex flex-col">
                                   <span className="truncate text-sm font-black text-slate-800 md:text-[11px]">{c.name || 'Unnamed'}</span>
                                   <span className="truncate text-xs text-slate-400 md:text-[9px]">{c.email || formatPhoneDisplay(c.phone || '')}</span>
