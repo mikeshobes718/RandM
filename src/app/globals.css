@@ -270,15 +270,18 @@ h3 {
 }
 
 /* ── Animated Hero Background ──────────────────────────────── */
-@keyframes meshGradient {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+@keyframes aurora {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
 }
 .hero-animated-bg {
-  background: linear-gradient(-45deg, #f0f4ff, #e0e7ff, #005EB8, #2e1065, #0f172a);
-  background-size: 400% 400%;
-  animation: meshGradient 15s ease infinite;
+  background: radial-gradient(circle at 50% 0%, rgba(0, 94, 184, 0.4) 0%, transparent 60%),
+              radial-gradient(circle at 80% 100%, rgba(46, 16, 101, 0.4) 0%, transparent 60%),
+              radial-gradient(circle at 20% 100%, rgba(1, 84, 220, 0.4) 0%, transparent 60%);
+  background-color: #0f172a;
+  background-size: 200% 200%;
+  animation: aurora 20s ease infinite;
 }
 
 /* ── Float animation ───────────────────────────────────────── */

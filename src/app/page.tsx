@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import Link from "next/link";
-import NewsletterSignup from "../components/NewsletterSignup";
+import PricingSection from "@/components/PricingSection";
+import ClientCTA from "@/components/ClientCTA";
 
 export default function Home() {
   return (
@@ -41,9 +41,7 @@ export default function Home() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Link href="/register" className="primary-gradient text-on-primary px-8 py-4 rounded-lg font-bold text-lg shadow-xl hover:scale-105 transition-transform text-center">
-                  Start Free Trial
-                </Link>
+                <ClientCTA className="primary-gradient text-on-primary px-8 py-4 rounded-lg font-bold text-lg shadow-xl hover:scale-105 transition-transform text-center" />
                 <Link href="/how-it-works" className="bg-white/40 backdrop-blur-md border border-white/40 px-8 py-4 rounded-lg font-bold text-lg text-on-background hover:bg-white/60 transition-colors text-center">
                   Watch Demo
                 </Link>
@@ -212,88 +210,21 @@ export default function Home() {
 
       {/* ── Pricing ── */}
       <section className="py-24 bg-surface-container-low">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-extrabold mb-4">Investment in Your Image</h2>
-            <p className="text-on-surface-variant">Choose the plan that fits your business scale.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Free", price: "$0", desc: "Perfect for new solo ventures just getting started with reviews.",
-                features: ["10 Reviews / month", "Basic QR Generator"],
-                disabled: ["Advanced Sentiment Routing"],
-                cta: "Get Started", ctaStyle: "w-full py-3 rounded-lg border-2 border-outline-variant/30 font-bold hover:bg-surface-container-low transition-colors",
-                highlight: false,
-              },
-              {
-                name: "Starter", price: "$49", desc: "For growing businesses focused on rapid reputation building.",
-                features: ["100 Reviews / month", "Sentiment Routing Logic", "Private Feedback Capture", "CRM-lite Integration"],
-                disabled: [],
-                cta: "Start 14-Day Trial", ctaStyle: "w-full py-3 rounded-lg primary-gradient text-white font-bold shadow-lg hover:scale-105 transition-transform",
-                highlight: true,
-              },
-              {
-                name: "Pro", price: "$149", desc: "For multi-location businesses and large service fleets.",
-                features: ["Unlimited Reviews", "Multi-location Support", "API Access & Webhooks", "Dedicated Account Manager"],
-                disabled: [],
-                cta: "Contact Sales", ctaStyle: "w-full py-3 rounded-lg border-2 border-outline-variant/30 font-bold hover:bg-surface-container-low transition-colors",
-                highlight: false,
-              },
-            ].map((plan) => (
-              <div
-                key={plan.name}
-                className={`bg-surface-container-lowest p-10 rounded-2xl flex flex-col items-start relative ${
-                  plan.highlight ? "border-2 border-primary shadow-2xl" : "border border-outline-variant/10"
-                }`}
-              >
-                {plan.highlight && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest">
-                    Most Popular
-                  </div>
-                )}
-                <h3 className="text-lg font-bold mb-1">{plan.name}</h3>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className={`text-4xl font-extrabold ${plan.highlight ? "text-primary" : ""}`}>{plan.price}</span>
-                  <span className="text-on-surface-variant text-sm">/month</span>
-                </div>
-                <p className="text-on-surface-variant text-sm mb-8">{plan.desc}</p>
-                <ul className="space-y-4 mb-10 w-full">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-3 text-sm font-medium">
-                      <span className="material-symbols-outlined text-secondary text-lg">check_circle</span> {f}
-                    </li>
-                  ))}
-                  {plan.disabled.map((f) => (
-                    <li key={f} className="flex items-center gap-3 text-sm font-medium opacity-40">
-                      <span className="material-symbols-outlined text-lg">cancel</span> {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href={plan.name === "Pro" ? "/contact" : "/register"} className={`${plan.ctaStyle} mt-auto text-center block`}>
-                  {plan.cta}
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
+        <PricingSection />
       </section>
 
       {/* ── Dark CTA ── */}
-      <section className="py-24 relative overflow-hidden bg-on-background">
+      <section className="py-24 relative overflow-hidden bg-slate-900">
         <div className="absolute inset-0 primary-gradient opacity-10" />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-8">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-8 drop-shadow-md">
             Your reputation is your most valuable asset.
           </h2>
-          <p className="text-primary-fixed-dim text-xl mb-12">
+          <p className="text-slate-300 text-xl mb-12">
             Start curating your public perception today. Join thousands of businesses that trust Reviews & Marketing.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <Link href="/register" className="primary-gradient text-white px-10 py-4 rounded-lg font-bold text-lg hover:scale-105 transition-transform text-center">
-              Get Started Free
-            </Link>
+            <ClientCTA text="Get Started Free" className="primary-gradient text-white px-10 py-4 rounded-lg font-bold text-lg hover:scale-105 transition-transform text-center" />
             <Link href="/contact" className="bg-white/10 text-white border border-white/20 px-10 py-4 rounded-lg font-bold text-lg hover:bg-white/20 transition-colors text-center">
               Book a Personal Demo
             </Link>

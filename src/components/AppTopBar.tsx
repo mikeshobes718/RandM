@@ -28,18 +28,27 @@ export default function AppTopBar() {
       </div>
 
       <div className="flex items-center gap-1">
-        <button className="p-2 hover:bg-surface-container-low rounded-full transition-colors" aria-label="Notifications">
+        <button 
+          onClick={() => alert("No new notifications")}
+          className="p-2 hover:bg-surface-container-low rounded-full transition-colors" 
+          aria-label="Notifications"
+        >
           <span className="material-symbols-outlined text-on-surface-variant text-xl">notifications</span>
         </button>
-        <button className="p-2 hover:bg-surface-container-low rounded-full transition-colors" aria-label="Help">
+        <Link 
+          href="/support"
+          className="p-2 hover:bg-surface-container-low rounded-full transition-colors" 
+          aria-label="Help"
+        >
           <span className="material-symbols-outlined text-on-surface-variant text-xl">help_outline</span>
-        </button>
-        <div
-          className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold ml-1"
-          title={email}
+        </Link>
+        <Link
+          href="/settings"
+          className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold ml-1 hover:ring-2 hover:ring-primary/50 transition-all"
+          title={email ? `Settings for ${email}` : "Settings"}
         >
           {initials}
-        </div>
+        </Link>
       </div>
     </header>
   );

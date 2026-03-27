@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { clientAuth } from "@/lib/firebaseClient";
+import { onAuthStateChanged } from "firebase/auth";
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/dashboard", icon: "dashboard" },
@@ -29,6 +30,30 @@ export default function AppSidebar() {
     }
     const plan = localStorage.getItem("selectedPlan");
     if (plan) setPlanLabel(plan.charAt(0).toUpperCase() + plan.slice(1) + " Plan");
+
+    const unsub = onAuthStateChanged(clientAuth, async (user) => {
+      if (user) {
+        try {
+          const token = await user.getIdToken();
+          const res = await fetch("/api/dashboard/summary", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.business?.name) {
+              setBusinessName(data.business.name);
+              localStorage.setItem("businessData", JSON.stringify(data.business));
+            }
+            if (data.plan) {
+              setPlanLabel(data.plan.charAt(0).toUpperCase() + data.plan.slice(1) + " Plan");
+              localStorage.setItem("selectedPlan", data.plan);
+            }
+          }
+        } catch (e) {}
+      }
+    });
+
+    return () => unsub();
   }, []);
 
   const handleLogout = async () => {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ClientCTA from "@/components/ClientCTA";
 
 export default function HowItWorks() {
   return (
@@ -27,14 +28,19 @@ export default function HowItWorks() {
           <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-primary-fixed/30 rounded-full blur-3xl" />
 
           {/* 4-Step Horizontal Process */}
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-4 items-start">
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-8 md:gap-4">
+            {/* Background Line */}
+            <div className="hidden md:block absolute top-8 left-[12.5%] right-[12.5%] h-[2px] bg-outline-variant/30 -z-10">
+               <div className="h-full bg-primary w-1/3 rounded-full animate-pulse" />
+            </div>
+
             {[
               { icon: "qr_code", color: "text-primary", bg: "bg-surface-container-lowest", title: "1. Connect", desc: "Profile Linked and ready for customer scans." },
               { icon: "star", color: "text-secondary", bg: "bg-surface-container-lowest", title: "2. Capture", desc: "5-Star Rating Captured instantly at point of sale.", fill: true },
               { icon: "account_tree", color: "text-tertiary", bg: "bg-surface-container-lowest", title: "3. Route", desc: "Analyzing sentiment and directing feedback." },
               { icon: "trending_up", color: "text-on-primary", bg: "bg-primary", title: "4. Grow", desc: "Waiting for review to publish and boost SEO." },
             ].map((step, i) => (
-              <div key={step.title} className="flex flex-col items-center text-center group">
+              <div key={step.title} className="flex flex-col items-center text-center group flex-1">
                 <div className="relative mb-6">
                   <div className={`w-16 h-16 rounded-2xl ${step.bg} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500`}>
                     <span
@@ -44,11 +50,6 @@ export default function HowItWorks() {
                       {step.icon}
                     </span>
                   </div>
-                  {i < 3 && (
-                    <div className="hidden md:block absolute top-1/2 left-full w-full h-[2px] bg-outline-variant/30 -translate-y-1/2 z-0">
-                      {i === 0 && <div className="h-full bg-primary w-1/2 rounded-full" />}
-                    </div>
-                  )}
                 </div>
                 <h3 className="display-font text-lg font-bold mb-2">{step.title}</h3>
                 <p className="text-on-surface-variant text-sm px-4">{step.desc}</p>
@@ -156,9 +157,11 @@ export default function HowItWorks() {
           </div>
           <div className="flex-1 w-full flex justify-center">
             <div className="w-full max-w-md aspect-square rounded-[3rem] overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700 bg-surface-container-high flex items-center justify-center">
-              <div className="text-center p-8">
-                <span className="material-symbols-outlined text-primary text-[100px]">qr_code_2</span>
-                <p className="mt-4 text-sm text-on-surface-variant font-medium">Scan to experience the flow</p>
+              <div className="text-center p-8 flex flex-col items-center">
+                <svg viewBox="0 0 100 100" className="w-48 h-48 mb-6 text-primary" fill="currentColor">
+                  <path d="M0 0h30v30H0zM10 10h10v10H10zM70 0h30v30H70zM80 10h10v10H80zM0 70h30v30H0zM10 80h10v10H10zM40 0h20v10H40zM40 20h10v10H40zM50 10h10v10H50zM40 40h20v20H40zM70 40h10v10H70zM80 50h10v10H80zM90 40h10v10H90zM70 70h10v10H70zM80 80h10v10H80zM90 70h10v10H90zM70 90h10v10H70zM90 90h10v10H90zM40 70h20v10H40zM40 90h10v10H40zM50 80h10v10H50zM10 40h10v10H10zM20 50h10v10H20zM0 50h10v10H0z" />
+                </svg>
+                <p className="text-sm text-on-surface-variant font-medium uppercase tracking-widest">Scan to experience the flow</p>
               </div>
             </div>
           </div>
@@ -178,16 +181,14 @@ export default function HowItWorks() {
         </div>
 
         {/* CTA */}
-        <div className="p-12 primary-gradient rounded-2xl text-center text-on-primary relative overflow-hidden">
-          <h2 className="text-3xl font-extrabold text-on-primary mb-5">Ready to start building your reputation?</h2>
-          <p className="text-on-primary/70 mb-8 max-w-xl mx-auto">
+        <div className="p-12 primary-gradient rounded-2xl text-center text-white relative overflow-hidden shadow-xl">
+          <h2 className="text-3xl font-extrabold text-white mb-5 drop-shadow-md">Ready to start building your reputation?</h2>
+          <p className="text-white/90 mb-8 max-w-xl mx-auto font-medium">
             Join thousands of businesses using Reviews &amp; Marketing to grow their online presence the compliant way.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/register" className="h-12 px-8 bg-white text-primary rounded-lg font-semibold text-sm inline-flex items-center justify-center hover:bg-white/90 transition-colors">
-              Get Started For Free
-            </Link>
-            <Link href="/pricing" className="text-sm font-medium text-on-primary/80 hover:text-on-primary transition-colors">
+            <ClientCTA text="Get Started For Free" className="h-12 px-8 bg-white text-primary rounded-lg font-bold text-sm inline-flex items-center justify-center hover:bg-slate-50 transition-colors shadow-sm" />
+            <Link href="/pricing" className="text-sm font-bold text-white/90 hover:text-white transition-colors">
               View Plans &amp; Pricing &rarr;
             </Link>
           </div>
