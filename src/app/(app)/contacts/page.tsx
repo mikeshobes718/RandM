@@ -126,18 +126,38 @@ function ContactsPageContent() {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="space-y-6 animate-fade-in max-w-full">
       <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".csv" className="hidden" />
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-on-surface tracking-tight display-font">Contacts</h1>
-          <p className="text-on-surface-variant text-sm mt-2">Manage your customer list and import data for campaigns.</p>
+          <h1 className="text-3xl font-extrabold text-on-surface tracking-tight display-font">Contacts Hub</h1>
+          <p className="text-on-surface-variant text-sm mt-1">Manage your customer list and import data for campaigns.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <button onClick={() => setShowAddModal(true)} className="secondary-button !h-10 sm:!h-12 px-4 sm:px-6 text-[10px] font-black uppercase tracking-[0.1em] shadow-sm flex-1 sm:flex-none">+ Add</button>
-          <button onClick={() => downloadCSV(false)} disabled={contacts.length === 0} className="secondary-button !h-10 sm:!h-12 px-4 sm:px-6 text-[10px] font-black uppercase tracking-[0.1em] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex-1 sm:flex-none">CSV</button>
-          <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="primary-button !h-10 sm:!h-12 px-4 sm:px-8 text-[10px] font-black uppercase tracking-[0.1em] shadow-xl shadow-brand/20 disabled:opacity-50 transition-all hover:scale-[1.02] flex-1 sm:flex-none whitespace-nowrap">{uploading ? '...' : 'Import'}</button>
+          <button onClick={() => setShowAddModal(true)} className="secondary-button !h-10 px-4 text-[10px] font-bold uppercase tracking-widest flex-1 sm:flex-none">+ Add</button>
+          <button onClick={() => downloadCSV(false)} disabled={contacts.length === 0} className="secondary-button !h-10 px-4 text-[10px] font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none">Export</button>
+          <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="primary-button !h-10 px-6 text-[10px] font-bold uppercase tracking-widest shadow-lg disabled:opacity-50 transition-all hover:scale-[1.02] flex-1 sm:flex-none whitespace-nowrap">{uploading ? '...' : 'Import CSV'}</button>
+        </div>
+      </div>
+
+      {/* Analytics Bar */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 shadow-sm">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Total</p>
+          <p className="text-2xl font-extrabold text-primary">{contacts.length}</p>
+        </div>
+        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 shadow-sm">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">With Email</p>
+          <p className="text-2xl font-extrabold text-primary">{contacts.filter(c => c.email).length}</p>
+        </div>
+        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 shadow-sm">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">With Phone</p>
+          <p className="text-2xl font-extrabold text-primary">{contacts.filter(c => c.phone).length}</p>
+        </div>
+        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 shadow-sm">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Selected</p>
+          <p className="text-2xl font-extrabold text-primary">{selectedIds.size}</p>
         </div>
       </div>
 
@@ -190,7 +210,7 @@ function ContactsPageContent() {
         )}
       </div>
 
-      <div className="bg-surface rounded-[32px] sm:rounded-[48px] border border-outline-variant/20 shadow-2xl shadow-outline-variant/20 overflow-hidden min-h-[500px] flex flex-col">
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/15 shadow-sm overflow-hidden min-h-[500px] flex flex-col">
         {contacts.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center p-10 sm:p-20 text-center">
             <div className="w-20 h-20 sm:w-24 h-24 bg-surface-container-lowest rounded-[32px] sm:rounded-[40px] flex items-center justify-center text-4xl sm:text-5xl mx-auto mb-6 sm:mb-8 border border-outline-variant/20 shadow-inner">👥</div>
@@ -601,8 +621,8 @@ export default function ContactsPage() {
   return (
     <Suspense fallback={
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full mb-4"></div>
-        <p className="text-muted text-sm font-medium tracking-widest uppercase">Loading contacts...</p>
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
+        <p className="text-on-surface-variant text-sm font-medium tracking-widest uppercase">Loading contacts...</p>
       </div>
     }>
       <ContactsPageContent />
