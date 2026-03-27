@@ -57,7 +57,7 @@
   --inverse-primary: #b4c5ff;
 }
 
-@theme inline {
+@theme {
   --color-primary: var(--primary);
   --color-primary-container: var(--primary-container);
   --color-primary-fixed: var(--primary-fixed);
@@ -107,6 +107,10 @@
   --color-inverse-on-surface: var(--inverse-on-surface);
   --color-inverse-primary: var(--inverse-primary);
 
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-transparent: transparent;
+
   /* Legacy aliases so old Tailwind classes still resolve */
   --color-brand: var(--primary);
   --color-brand-strong: var(--primary-container);
@@ -147,7 +151,6 @@ h1 {
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  color: var(--on-background);
 }
 
 h2 {
@@ -155,14 +158,12 @@ h2 {
   font-weight: 800;
   letter-spacing: -0.025em;
   line-height: 1.2;
-  color: var(--on-background);
 }
 
 h3 {
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.015em;
-  color: var(--on-background);
 }
 
 .text-balance { text-wrap: balance; }

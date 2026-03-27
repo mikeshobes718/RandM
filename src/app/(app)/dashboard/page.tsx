@@ -338,36 +338,6 @@ function DashboardContent() {
                 clickRate={rates.click}
                 optOutRate={rates.optOut}
               />
-
-              {/* Pro Analytics */}
-              <div className="relative mt-2">
-                {!isPro && (
-                  <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-white/40 backdrop-blur-[6px] rounded-2xl border-2 border-dashed border-primary/20">
-                    <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center mb-4 shadow-xl">
-                      <span className="material-symbols-outlined text-3xl">lock</span>
-                    </div>
-                    <h2 className="text-2xl font-extrabold mb-2">Unlock Business Intelligence</h2>
-                    <p className="text-on-surface-variant max-w-md mb-6 text-sm">
-                      Upgrade to see daily trends, lead sources, and customer sentiment analytics.
-                    </p>
-                    <Link href="/pricing" className="primary-button h-12 px-8 shadow-lg">Upgrade Now</Link>
-                  </div>
-                )}
-                <div className={!isPro ? "opacity-40 grayscale pointer-events-none select-none" : ""}>
-                  <ProAnalytics data={analytics || {
-                    history: Array.from({ length: 30 }, (_, i) => ({
-                      date: new Date(Date.now() - (30 - i) * 86400000).toISOString(),
-                      reviews: Math.floor(Math.random() * 10) + 2,
-                      scans: Math.floor(Math.random() * 30) + 10
-                    })),
-                    sentiment: { positive: 85, neutral: 10, negative: 5 },
-                    ratingDistribution: { 1: 2, 2: 3, 3: 5, 4: 15, 5: 75 },
-                    funnel: { scans: 450, selections: 320, completions: 180 },
-                    sources: { "Main QR": 120, "Receipt": 45, "Instagram": 15 },
-                    growth: 24
-                  }} />
-                </div>
-              </div>
             </div>
 
             {/* Right Column (4) */}
@@ -435,6 +405,38 @@ function DashboardContent() {
                       <span className="text-[10px] font-bold uppercase tracking-tight">{item.label}</span>
                     </Link>
                   ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Pro Analytics (Full Width) */}
+            <div className="lg:col-span-12">
+              <div className="relative">
+                {!isPro && (
+                  <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-white/40 backdrop-blur-[6px] rounded-2xl border-2 border-dashed border-primary/20">
+                    <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center mb-4 shadow-xl">
+                      <span className="material-symbols-outlined text-3xl">lock</span>
+                    </div>
+                    <h2 className="text-2xl font-extrabold mb-2">Unlock Business Intelligence</h2>
+                    <p className="text-on-surface-variant max-w-md mb-6 text-sm">
+                      Upgrade to see daily trends, lead sources, and customer sentiment analytics.
+                    </p>
+                    <Link href="/pricing" className="primary-button h-12 px-8 shadow-lg">Upgrade Now</Link>
+                  </div>
+                )}
+                <div className={!isPro ? "opacity-40 grayscale pointer-events-none select-none" : ""}>
+                  <ProAnalytics data={analytics || {
+                    history: Array.from({ length: 30 }, (_, i) => ({
+                      date: new Date(Date.now() - (30 - i) * 86400000).toISOString(),
+                      reviews: Math.floor(Math.random() * 10) + 2,
+                      scans: Math.floor(Math.random() * 30) + 10
+                    })),
+                    sentiment: { positive: 85, neutral: 10, negative: 5 },
+                    ratingDistribution: { 1: 2, 2: 3, 3: 5, 4: 15, 5: 75 },
+                    funnel: { scans: 450, selections: 320, completions: 180 },
+                    sources: { "Main QR": 120, "Receipt": 45, "Instagram": 15 },
+                    growth: 24
+                  }} />
                 </div>
               </div>
             </div>

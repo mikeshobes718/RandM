@@ -595,7 +595,7 @@ function ContactsPageContent() {
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand/10 font-black text-brand">3</div>
                       <div className="min-w-0">
                         <h4 className="mb-2 text-sm font-black uppercase tracking-wide text-on-surface">Sample Format</h4>
-                        <div className="overflow-x-auto rounded-2xl bg-inverse-surface p-4 font-mono text-[11px] leading-relaxed text-on-surface-variant/40">name, email, phone<br/>John Doe, john@example.com, 555-0123<br/>Jane Smith, jane@example.com, 555-0124</div>
+                        <div className="overflow-x-auto rounded-2xl bg-inverse-surface p-4 font-mono text-[11px] leading-relaxed text-white/40">name, email, phone<br/>John Doe, john@example.com, 555-0123<br/>Jane Smith, jane@example.com, 555-0124</div>
                         <button onClick={() => downloadCSV(true)} className="mt-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand hover:underline"><span>⬇</span> Download Template</button>
                       </div>
                     </div>

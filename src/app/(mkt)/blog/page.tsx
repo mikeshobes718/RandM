@@ -73,12 +73,12 @@ export default function BlogPage() {
                 <div className="flex-1 relative z-10 flex flex-col justify-center">
                   <div className="flex items-center gap-3 mb-6">
                     <span className="px-3 py-1 bg-brand/20 text-brand text-[10px] font-black uppercase tracking-widest rounded-lg border border-brand/30">Featured Guide</span>
-                    <span className="text-on-surface-variant text-[10px] font-black uppercase tracking-widest">{featuredPost.date}</span>
+                    <span className="text-white/60 text-[10px] font-black uppercase tracking-widest">{featuredPost.date}</span>
                   </div>
                   <h2 className="text-3xl lg:text-5xl font-black text-white mb-6 group-hover:text-brand transition-colors leading-tight">
                     {featuredPost.title}
                   </h2>
-                  <p className="text-lg text-on-surface-variant/60 font-medium leading-relaxed mb-8 max-w-xl">
+                  <p className="text-lg text-white/60 font-medium leading-relaxed mb-8 max-w-xl">
                     {featuredPost.excerpt}
                   </p>
                   <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white group-hover:gap-5 transition-all">

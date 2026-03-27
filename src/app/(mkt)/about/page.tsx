@@ -107,7 +107,7 @@ export default function AboutPage() {
           <div className="absolute top-0 right-0 w-1/2 h-full bg-brand/10 blur-[120px] -z-0"></div>
           <div className="relative z-10 max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-black mb-6 text-white">Ready to see it in action?</h2>
-            <p className="text-on-surface-variant/60 text-lg mb-10">
+            <p className="text-white/60 text-lg mb-10">
               Start free and collect your first reviews this week. Our team is ready to help you every step of the way.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
