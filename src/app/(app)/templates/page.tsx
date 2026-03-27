@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import InfoTip from "@/components/InfoTip";
 import { useRouter } from "next/navigation";
 
 const DEFAULT_TEMPLATES = [
@@ -94,7 +95,10 @@ export default function TemplatesPage() {
     <div className="max-w-6xl mx-auto px-6 py-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-on-surface">Message Templates</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-on-surface">Message Templates</h1>
+            <InfoTip text="Starter templates for SMS and email. Merge fields like {{business_name}} and {{link}} fill in when you send a campaign." />
+          </div>
           <p className="text-on-surface-variant font-medium mt-1 text-sm">Choose a high-converting template or create your own.</p>
         </div>
         <div className="flex items-center gap-3">

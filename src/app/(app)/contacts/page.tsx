@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from 'next/navigation';
 import { AsYouType, CountryCode } from 'libphonenumber-js';
 import { useContacts, formatPhoneDisplay, type Contact } from '@/hooks/useContacts';
+import InfoTip from '@/components/InfoTip';
 
 function ContactsPageContent() {
   const searchParams = useSearchParams();
@@ -131,7 +132,10 @@ function ContactsPageContent() {
 
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-on-surface tracking-tight display-font">Contacts Hub</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-3xl font-extrabold text-on-surface tracking-tight display-font">Contacts Hub</h1>
+            <InfoTip text="Your customer list for review requests and SMS/email outreach. Import CSV, add manually, or sync from campaigns." />
+          </div>
           <p className="text-on-surface-variant text-sm mt-1">Manage your customer list and import data for campaigns.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">

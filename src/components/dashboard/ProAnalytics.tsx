@@ -14,6 +14,7 @@ import {
 } from 'chart.js';
 import { Line, Doughnut, Bar } from 'react-chartjs-2';
 import { useState } from 'react';
+import InfoTip from '@/components/InfoTip';
 
 ChartJS.register(
   CategoryScale,
@@ -165,52 +166,44 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
     : [];
 
   return (
-    <div className="space-y-6 mt-6">
+    <div className="isolate space-y-6 mt-6">
       {/* Conversion Funnel Row */}
       {data.funnel && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="surface-card p-6 rounded-2xl group relative">
-            <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Total Scans</div>
-            <div className="text-2xl font-black">{data.funnel.scans}</div>
-            <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-              <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
-                All-time QR code and link opens.
-              </div>
+        <div className="grid grid-cols-1 min-[520px]:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+          <div className="surface-card min-w-0 rounded-2xl border border-outline-variant/15 p-4 sm:p-5">
+            <div className="mb-1 flex items-start justify-between gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Total Scans</span>
+              <InfoTip compact text="All-time QR code and link opens from your review landing page." align="end" />
             </div>
+            <div className="text-2xl font-black tabular-nums">{data.funnel.scans}</div>
           </div>
-          <div className="surface-card p-6 rounded-2xl group relative">
-            <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Interactions</div>
-            <div className="text-2xl font-black">{data.funnel.selections}</div>
-            <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-              <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
-                Customers who clicked a star rating.
-              </div>
+          <div className="surface-card min-w-0 rounded-2xl border border-outline-variant/15 p-4 sm:p-5">
+            <div className="mb-1 flex items-start justify-between gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Interactions</span>
+              <InfoTip compact text="Customers who selected a star rating on your landing page." align="end" />
             </div>
+            <div className="text-2xl font-black tabular-nums">{data.funnel.selections}</div>
           </div>
-          <div className="surface-card p-6 rounded-2xl group relative">
-            <div className="flex justify-between items-start mb-1">
-              <div className="text-[10px] font-bold text-muted uppercase tracking-widest">Total Leads</div>
+          <div className="surface-card min-w-0 rounded-2xl border border-outline-variant/15 p-4 sm:p-5">
+            <div className="mb-1 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+              <div className="flex min-w-0 items-center gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Total Leads</span>
+                <InfoTip compact text="Successful outcomes: Google review flow opened or private feedback submitted." align="end" />
+              </div>
               {data.growth !== undefined && (
-                <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${data.growth >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                <span className={`shrink-0 text-[10px] font-bold rounded-full px-1.5 py-0.5 ${data.growth >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
                   {data.growth >= 0 ? '↑' : '↓'} {Math.abs(data.growth)}%
-                </div>
+                </span>
               )}
             </div>
-            <div className="text-2xl font-black">{data.funnel.completions}</div>
-            <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-              <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
-                Successful conversions (Google opened or private message sent).
-              </div>
-            </div>
+            <div className="text-2xl font-black tabular-nums">{data.funnel.completions}</div>
           </div>
-          <div className="surface-card p-6 rounded-2xl bg-brand/5 border-outline-variant/30 group relative">
-            <div className="text-[10px] font-bold text-brand uppercase tracking-widest mb-1">Conversion</div>
-            <div className="text-2xl font-black text-brand">{conversionRate}%</div>
-            <div className="absolute inset-x-0 -top-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-              <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest">
-                Percentage of scans that result in a lead.
-              </div>
+          <div className="surface-card min-w-0 rounded-2xl border border-primary/20 bg-primary/[0.04] p-4 sm:p-5">
+            <div className="mb-1 flex items-start justify-between gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-brand">Conversion</span>
+              <InfoTip compact text="Share of scans that became a lead (completed flow)." align="end" />
             </div>
+            <div className="text-2xl font-black tabular-nums text-brand">{conversionRate}%</div>
           </div>
         </div>
       )}
@@ -219,7 +212,10 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
         <div className="lg:col-span-8 surface-card p-4 sm:p-8 rounded-3xl">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
             <div>
-              <h2 className="text-xl font-bold">Performance Overview</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-xl font-bold">Performance Overview</h2>
+                <InfoTip text="Tracks review submissions and QR or link scans per day for the last 30 days. Toggle the legend to hide a series." />
+              </div>
               <p className="text-xs text-muted font-medium mt-1">Daily reviews and scans for the last 30 days.</p>
             </div>
             <div className="flex gap-4">
@@ -245,7 +241,10 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
         </div>
 
         <div className="lg:col-span-4 surface-card p-8 rounded-3xl flex flex-col">
-          <h2 className="text-xl font-bold mb-2">Feedback Sentiment</h2>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <h2 className="text-xl font-bold">Feedback Sentiment</h2>
+            <InfoTip text="Breakdown of private feedback ratings (not public Google stars). Helps you spot unhappy customers early." />
+          </div>
           <p className="text-xs text-muted font-medium mb-8">Overall mood from your private customer feedback.</p>
           <div className="flex-1 flex items-center justify-center relative">
             <div className="w-48 h-48">
@@ -292,8 +291,11 @@ export default function ProAnalytics({ data }: { data: Analytics }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {distData && (
           <div className="lg:col-span-12 surface-card p-8 rounded-3xl">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-bold">Rating Distribution</h2>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-lg font-bold">Rating Distribution</h2>
+                <InfoTip text="Count of each star rating from your private feedback and captured reviews." />
+              </div>
               <button 
                 onClick={() => { /* Data syncs automatically from the dashboard */ }}
                 className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/5 px-3 py-1.5 rounded-lg hover:bg-brand/10 transition-colors flex items-center gap-2"

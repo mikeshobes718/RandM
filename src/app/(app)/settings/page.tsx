@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { formatPhone, normalizePhone } from '@/lib/phone';
 import { inputClass, primaryButtonClass, secondaryButtonClass } from '@/lib/styles';
+import InfoTip from '@/components/InfoTip';
 
 type Member = { uid: string; email: string; role: string; added_at: string };
 type Invite = { email: string; role: string; invited_at: string; token: string };
@@ -397,7 +398,10 @@ function SettingsContent() {
     <div className="max-w-5xl mx-auto px-6 py-12">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-3xl font-black tracking-tight mb-2">Settings</h1>
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <h1 className="text-3xl font-black tracking-tight">Settings</h1>
+            <InfoTip text="Account email, business profile, Google review link, team members, and billing. Changes here apply across the app." />
+          </div>
           <p className="text-muted text-sm font-medium">Manage your workspace and personal preferences.</p>
         </div>
         <Link href="/dashboard" className="secondary-button text-sm !h-10">

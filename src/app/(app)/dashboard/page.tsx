@@ -78,6 +78,7 @@ type Campaign = {
 
 import { MiniHowItWorks } from '@/components/MiniHowItWorks';
 import { QrCode, Smartphone, GitFork, TrendingUp } from 'lucide-react';
+import InfoTip from '@/components/InfoTip';
 
 function DashboardContent() {
   const searchParams = useSearchParams();
@@ -220,10 +221,10 @@ function DashboardContent() {
   if (!business || !business.id) return null;
 
   const kpis = [
-    { icon: "mail", label: "Total Requests", value: stats.reviewsThisMonth, change: analytics?.growth ? `+${analytics.growth}%` : null, color: "primary" },
-    { icon: "qr_code_2", label: "QR Scans", value: stats.shareLinkScans, change: null, color: "secondary" },
-    { icon: "ads_click", label: "Click Rate", value: rates.click > 0 ? `${rates.click}%` : "—", change: null, color: "tertiary" },
-    { icon: "star", label: "Avg Rating", value: stats.averageRating ?? "—", change: null, color: "error" },
+    { icon: "mail", label: "Total Requests", value: stats.reviewsThisMonth, change: analytics?.growth ? `+${analytics.growth}%` : null, color: "primary", tip: "Review requests or outreach sends counted this billing period." },
+    { icon: "qr_code_2", label: "QR Scans", value: stats.shareLinkScans, change: null, color: "secondary", tip: "Times customers opened your main review link or scanned your QR code." },
+    { icon: "ads_click", label: "Click Rate", value: rates.click > 0 ? `${rates.click}%` : "—", change: null, color: "tertiary", tip: "Percentage of delivered messages where the customer tapped your review link." },
+    { icon: "star", label: "Avg Rating", value: stats.averageRating ?? "—", change: null, color: "error", tip: "Average Google rating we last synced for your business profile." },
   ];
 
   return (
@@ -240,7 +241,10 @@ function DashboardContent() {
             </div>
           )}
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-on-surface">Business Overview</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-3xl font-extrabold tracking-tight text-on-surface">Business Overview</h1>
+              <InfoTip text="Your home base for review activity, customer messages, outreach, and (on Pro) full analytics." />
+            </div>
             <p className="text-on-surface-variant">
               Welcome back — here&apos;s what&apos;s happening with {business.name}.
             </p>
@@ -271,7 +275,10 @@ function DashboardContent() {
                 <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">{kpi.change}</span>
               )}
             </div>
-            <p className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">{kpi.label}</p>
+            <div className="flex items-center gap-1">
+              <p className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">{kpi.label}</p>
+              <InfoTip compact text={kpi.tip} />
+            </div>
             <h3 className="text-3xl font-bold text-primary mt-1">{kpi.value}</h3>
           </div>
         ))}
@@ -310,7 +317,7 @@ function DashboardContent() {
             </div>
 
             {/* Right Column (4) */}
-            <div className="lg:col-span-4 space-y-6">
+            <div className="lg:col-span-4 space-y-6 lg:self-start">
               {/* Setup Progress */}
               {!isActivated && (
                 <ActivationWidget
@@ -380,7 +387,7 @@ function DashboardContent() {
             
             {/* Pro Analytics (Full Width) */}
             <div className="lg:col-span-12">
-              <div className="relative">
+              <div className="relative min-h-[360px]">
                 {!isPro && (
                   <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-white/40 backdrop-blur-[6px] rounded-2xl border-2 border-dashed border-primary/20">
                     <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center mb-4 shadow-xl">

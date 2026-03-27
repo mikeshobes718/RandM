@@ -7,11 +7,11 @@ import { clientAuth } from "@/lib/firebaseClient";
 import { onAuthStateChanged } from "firebase/auth";
 
 const NAV_ITEMS = [
-  { name: "Dashboard", href: "/dashboard", icon: "dashboard" },
-  { name: "Feedback", href: "/feedback", icon: "reviews" },
-  { name: "Campaigns", href: "/templates", icon: "campaign" },
-  { name: "Contacts", href: "/contacts", icon: "group" },
-  { name: "Settings", href: "/settings", icon: "settings" },
+  { name: "Dashboard", href: "/dashboard", icon: "dashboard", description: "KPIs, inbox, outreach, and analytics for your business." },
+  { name: "Feedback", href: "/feedback", icon: "reviews", description: "Private feedback, Google events, and follow-up tools." },
+  { name: "Campaigns", href: "/templates", icon: "campaign", description: "SMS and email templates for review requests and promos." },
+  { name: "Contacts", href: "/contacts", icon: "group", description: "Import, segment, and message your customer list." },
+  { name: "Settings", href: "/settings", icon: "settings", description: "Account, business profile, team, and integrations." },
 ];
 
 export default function AppSidebar() {
@@ -99,7 +99,7 @@ export default function AppSidebar() {
             <Link
               key={item.name}
               href={item.href}
-              title={item.name}
+              title={`${item.name} — ${item.description}`}
               className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all ${
                 isActive
                   ? "bg-primary-fixed/40 text-primary font-semibold"

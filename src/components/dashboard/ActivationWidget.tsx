@@ -94,8 +94,8 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
 
 
   return (
-    <div className="surface-card p-6 rounded-3xl bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20 h-full">
-      <div className="flex items-center justify-between mb-6">
+    <div className="surface-card p-6 rounded-3xl bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-black text-on-surface flex items-center gap-2">
             Setup Progress
@@ -110,14 +110,14 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
         </div>
       </div>
 
-      <div className="w-full bg-surface-container-low h-2 rounded-full mb-8 overflow-hidden">
+      <div className="w-full bg-surface-container-low h-2 rounded-full mb-5 overflow-hidden">
         <div
           className="bg-brand h-full transition-all duration-1000 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-3">
         {steps.map((step) => (
           <div key={step.key} className="flex items-start gap-3 group">
             <button
@@ -166,16 +166,21 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
         </div>
       )}
 
-      <MiniHowItWorks 
-        className="mt-6 bg-surface border-outline-variant/10 shadow-none"
-        title="Activation Guide"
-        steps={[
-          { icon: Store, title: "1. Connect", desc: "Link your Google Business Profile to sync your review link." },
-          { icon: QrCode, title: "2. Generate QR", desc: "Download and print your custom review QR code." },
-          { icon: Smartphone, title: "3. First Scans", desc: "Place the QR code where customers can scan it." },
-          { icon: Star, title: "4. Go Live", desc: "Start collecting reviews and private feedback automatically." }
-        ]}
-      />
+      <details className="mt-4 border-t border-outline-variant/15 pt-4">
+        <summary className="cursor-pointer text-[11px] font-black uppercase tracking-widest text-primary hover:underline">
+          Show activation guide
+        </summary>
+        <MiniHowItWorks
+          className="mt-4 bg-surface border-outline-variant/10 shadow-none"
+          title="Activation Guide"
+          steps={[
+            { icon: Store, title: "1. Connect", desc: "Link your Google Business Profile to sync your review link." },
+            { icon: QrCode, title: "2. Generate QR", desc: "Download and print your custom review QR code." },
+            { icon: Smartphone, title: "3. First Scans", desc: "Place the QR code where customers can scan it." },
+            { icon: Star, title: "4. Go Live", desc: "Start collecting reviews and private feedback automatically." },
+          ]}
+        />
+      </details>
     </div>
   );
 }

@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS = [
-  { name: "Home", href: "/dashboard", icon: "dashboard" },
-  { name: "Campaigns", href: "/templates", icon: "campaign" },
-  { name: "Feedback", href: "/feedback", icon: "rate_review" },
-  { name: "Contacts", href: "/contacts", icon: "group" },
-  { name: "Settings", href: "/settings", icon: "settings" },
+  { name: "Home", href: "/dashboard", icon: "dashboard", description: "Business overview and KPIs." },
+  { name: "Campaigns", href: "/templates", icon: "campaign", description: "SMS and email templates." },
+  { name: "Feedback", href: "/feedback", icon: "rate_review", description: "Customer feedback inbox." },
+  { name: "Contacts", href: "/contacts", icon: "group", description: "Your customer list." },
+  { name: "Settings", href: "/settings", icon: "settings", description: "Account and business settings." },
 ];
 
 export default function BottomTabBar() {
@@ -23,7 +23,7 @@ export default function BottomTabBar() {
             <Link
               key={tab.name}
               href={tab.href}
-              title={tab.name}
+              title={`${tab.name} — ${tab.description}`}
               className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
                 isActive ? "text-primary" : "text-on-surface-variant/50"
               }`}
