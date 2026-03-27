@@ -74,13 +74,14 @@ function ContactsPageContent() {
   const modalOpen = showAddModal || showContactModal || historyContact !== null || showGuide;
   useEffect(() => {
     if (!modalOpen) return;
-    const prev = document.body.style.overflow;
     
-    // Prevent body scroll while modal is open
-    document.body.style.overflow = 'hidden';
+    // On iOS, body scroll locking often breaks internal modal scrolling.
+    // Instead of locking the body, we let the fixed overlay capture touches.
+    // We only add a class to the body if we need to style it, but we avoid overflow: hidden.
+    document.body.classList.add('modal-open');
     
     return () => {
-      document.body.style.overflow = prev;
+      document.body.classList.remove('modal-open');
     };
   }, [modalOpen]);
 
@@ -468,53 +469,62 @@ function ContactsPageContent() {
         </div>
       )}
 
-      {/* History Modal — standard flex-col with internal scroll for iOS stability */}
+      {/* History: full-screen sheet on mobile, centered modal on md+ */}
       {historyContact && (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div 
-            className="absolute inset-0" 
+        <div className="fixed inset-0 z-[100000] flex flex-col bg-white animate-in fade-in duration-200 md:items-center md:justify-center md:bg-transparent md:p-6">
+          <div
+            className="absolute inset-0 hidden bg-slate-900/60 backdrop-blur-sm md:block"
+            aria-hidden
             onClick={() => setHistoryContact(null)}
           />
-          <div className="relative bg-white rounded-[40px] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90dvh]">
-            <div className="flex-shrink-0 p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-              <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Message History</h3>
-                <p className="text-xs text-slate-400 font-medium mt-1">{historyContact.name || 'Unnamed'} • {historyContact.email || formatPhoneDisplay(historyContact.phone || '')}</p>
+          <div className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full min-h-0 flex-col overflow-hidden bg-white md:h-auto md:max-h-[90dvh] md:max-w-2xl md:flex-none md:rounded-[40px] md:shadow-2xl animate-in zoom-in-95 duration-200">
+            <header className="flex shrink-0 items-center justify-between border-b border-slate-50 bg-slate-50/50 px-4 pb-4 pt-[max(12px,env(safe-area-inset-top))] md:p-8">
+              <div className="min-w-0 pr-2">
+                <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 md:text-xl">Message history</h3>
+                <p className="mt-0.5 truncate text-[10px] font-medium text-slate-400 md:text-xs">
+                  {historyContact.name || 'Unnamed'} • {historyContact.email || formatPhoneDisplay(historyContact.phone || '')}
+                </p>
               </div>
-              <div className="flex items-center gap-3">
-                <button onClick={() => { const type = historyContact.email ? 'email' : 'sms'; handleIndividualContact(historyContact, type); setHistoryContact(null); }} className="h-10 px-4 bg-brand text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand-dark transition-colors shadow-lg shadow-brand/20 flex items-center gap-2">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                  Send Message
+              <div className="flex shrink-0 items-center gap-2 md:gap-3">
+                <button
+                  onClick={() => { const type = historyContact.email ? 'email' : 'sms'; handleIndividualContact(historyContact, type); setHistoryContact(null); }}
+                  className="flex h-11 items-center gap-2 rounded-xl bg-brand px-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-brand/20 transition-colors hover:bg-brand-dark md:h-10 md:px-4"
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                  <span className="hidden sm:inline">Send</span>
                 </button>
-                <button onClick={() => setHistoryContact(null)} className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                <button
+                  onClick={() => setHistoryContact(null)}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:text-slate-600 md:h-10 md:w-10"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
-            </div>
-            <div className="p-8 overflow-y-auto flex-1 bg-slate-50/30 custom-scrollbar">
+            </header>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain bg-slate-50/30 p-4 pb-[max(20px,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch] md:p-8">
               {loadingHistory ? (
-                <div className="flex justify-center py-12"><div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full"></div></div>
+                <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-4 border-brand border-t-transparent"></div></div>
               ) : contactHistory.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100 text-xl">💬</div>
-                  <p className="text-xs font-black text-slate-900 uppercase tracking-widest mb-1">No messages yet</p>
-                  <p className="text-[10px] text-slate-400 font-medium">You haven't sent any direct outreach to this contact.</p>
+                <div className="py-12 text-center">
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white text-xl shadow-sm">💬</div>
+                  <p className="mb-1 text-xs font-black uppercase tracking-widest text-slate-900">No messages yet</p>
+                  <p className="text-[10px] font-medium text-slate-400">You haven't sent any direct outreach to this contact.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {contactHistory.map((msg: any, i: number) => (
-                    <div key={i} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative">
-                      <div className="flex items-center justify-between mb-3">
+                    <div key={i} className="relative rounded-2xl border border-slate-100 bg-white p-4 shadow-sm md:p-5">
+                      <div className="mb-3 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${msg.channel === 'sms' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>{msg.channel}</span>
+                          <span className={`rounded px-2 py-1 text-[9px] font-black uppercase tracking-widest ${msg.channel === 'sms' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>{msg.channel}</span>
                           <span className="text-[10px] font-bold text-slate-400">{new Date(msg.created_at).toLocaleString()}</span>
                         </div>
                         <span className={`text-[10px] font-black uppercase tracking-widest ${msg.status === 'sent' ? 'text-emerald-500' : 'text-red-500'}`}>{msg.status}</span>
                       </div>
-                      <div className="text-sm text-slate-700 whitespace-pre-wrap font-medium bg-slate-50 p-4 rounded-xl border border-slate-100/50">{msg.content}</div>
+                      <div className="whitespace-pre-wrap rounded-xl border border-slate-100/50 bg-slate-50 p-3 text-sm font-medium text-slate-700 md:p-4">{msg.content}</div>
                       {msg.error_message && (
-                        <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-600 font-medium">
-                          <span className="font-bold uppercase tracking-widest text-[9px] block mb-1">Error</span>
+                        <div className="mt-3 rounded-xl border border-red-100 bg-red-50 p-3 text-xs font-medium text-red-600">
+                          <span className="mb-1 block text-[9px] font-bold uppercase tracking-widest">Error</span>
                           {msg.error_message}
                         </div>
                       )}
@@ -527,63 +537,64 @@ function ContactsPageContent() {
         </div>
       )}
 
-      {/* Import Guide Modal — standard flex-col with internal scroll for iOS stability */}
+      {/* Import Guide: full-screen sheet on mobile, centered modal on md+ */}
       {showGuide && (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div 
-            className="absolute inset-0" 
+        <div className="fixed inset-0 z-[100000] flex flex-col bg-white animate-in fade-in duration-200 md:items-center md:justify-center md:bg-transparent md:p-6">
+          <div
+            className="absolute inset-0 hidden bg-slate-900/60 backdrop-blur-sm md:block"
+            aria-hidden
             onClick={() => setShowGuide(false)}
           />
-          <div className="relative bg-white rounded-[40px] w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90dvh]">
-            <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+          <div className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full min-h-0 flex-col overflow-hidden bg-white md:h-auto md:max-h-[90dvh] md:max-w-2xl md:flex-none md:rounded-[40px] md:shadow-2xl animate-in zoom-in-95 duration-200">
+            <header className="flex shrink-0 items-center justify-between border-b border-slate-50 bg-slate-50/50 px-4 pb-4 pt-[max(12px,env(safe-area-inset-top))] md:p-8">
               <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Import Guide</h3>
-                <p className="text-xs text-slate-400 font-medium mt-1 uppercase tracking-widest">Master your contact data</p>
+                <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 md:text-xl">Import guide</h3>
+                <p className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-slate-400 md:text-xs">Master your contact data</p>
               </div>
-              <button onClick={() => setShowGuide(false)} className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              <button onClick={() => setShowGuide(false)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:text-slate-600 md:h-10 md:w-10">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
-            </div>
-            <div className="p-8 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
-              <div className="flex gap-6">
-                <div className="w-10 h-10 rounded-2xl bg-brand/10 text-brand flex-shrink-0 flex items-center justify-center font-black">1</div>
+            </header>
+            <div className="min-h-0 flex-1 space-y-8 overflow-y-auto overscroll-y-contain px-4 py-6 pb-[max(20px,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch] md:p-8">
+              <div className="flex gap-4 md:gap-6">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand/10 font-black text-brand">1</div>
                 <div>
-                  <h4 className="font-black text-slate-900 uppercase tracking-wide text-sm mb-2">Prepare your CSV</h4>
-                  <p className="text-sm text-slate-500 leading-relaxed font-medium">Your file must be a <span className="text-slate-900 font-bold">.CSV</span> or <span className="text-slate-900 font-bold">.XLSX</span>. The first row must contain column headers.</p>
+                  <h4 className="mb-2 text-sm font-black uppercase tracking-wide text-slate-900">Prepare your CSV</h4>
+                  <p className="text-sm font-medium leading-relaxed text-slate-500">Your file must be a <span className="font-bold text-slate-900">.CSV</span> or <span className="font-bold text-slate-900">.XLSX</span>. The first row must contain column headers.</p>
                 </div>
               </div>
-              <div className="flex gap-6">
-                <div className="w-10 h-10 rounded-2xl bg-brand/10 text-brand flex-shrink-0 flex items-center justify-center font-black">2</div>
+              <div className="flex gap-4 md:gap-6">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand/10 font-black text-brand">2</div>
                 <div className="flex-1">
-                  <h4 className="font-black text-slate-900 uppercase tracking-wide text-sm mb-2">Required Columns</h4>
-                  <p className="text-sm text-slate-500 leading-relaxed font-medium mb-4">We automatically scan for these column names (case-insensitive):</p>
-                  <div className="grid grid-cols-3 gap-3">
+                  <h4 className="mb-2 text-sm font-black uppercase tracking-wide text-slate-900">Required Columns</h4>
+                  <p className="mb-4 text-sm font-medium leading-relaxed text-slate-500">We automatically scan for these column names (case-insensitive):</p>
+                  <div className="grid grid-cols-3 gap-2 md:gap-3">
                     {['Name', 'Email', 'Phone'].map(header => (
-                      <div key={header} className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-center">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Header</p>
+                      <div key={header} className="rounded-xl border border-slate-100 bg-slate-50 p-2 text-center md:p-3">
+                        <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Header</p>
                         <p className="text-xs font-bold text-slate-900">{header}</p>
                       </div>
                     ))}
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-4 font-bold italic">* You must have at least "Name" or "Email" for the row to be valid.</p>
+                  <p className="mt-4 text-[10px] font-bold italic text-slate-400">* You must have at least "Name" or "Email" for the row to be valid.</p>
                 </div>
               </div>
-              <div className="flex gap-6">
-                <div className="w-10 h-10 rounded-2xl bg-brand/10 text-brand flex-shrink-0 flex items-center justify-center font-black">3</div>
-                <div>
-                  <h4 className="font-black text-slate-900 uppercase tracking-wide text-sm mb-2">Sample Format</h4>
-                  <div className="bg-slate-900 rounded-2xl p-4 font-mono text-[11px] text-slate-300 leading-relaxed overflow-x-auto">name, email, phone<br/>John Doe, john@example.com, 555-0123<br/>Jane Smith, jane@example.com, 555-0124</div>
-                  <button onClick={() => downloadCSV(true)} className="mt-4 text-[10px] font-black text-brand uppercase tracking-widest flex items-center gap-2 hover:underline"><span>⬇</span> Download Template</button>
+              <div className="flex gap-4 md:gap-6">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand/10 font-black text-brand">3</div>
+                <div className="min-w-0">
+                  <h4 className="mb-2 text-sm font-black uppercase tracking-wide text-slate-900">Sample Format</h4>
+                  <div className="overflow-x-auto rounded-2xl bg-slate-900 p-4 font-mono text-[11px] leading-relaxed text-slate-300">name, email, phone<br/>John Doe, john@example.com, 555-0123<br/>Jane Smith, jane@example.com, 555-0124</div>
+                  <button onClick={() => downloadCSV(true)} className="mt-4 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand hover:underline"><span>⬇</span> Download Template</button>
                 </div>
               </div>
-              <div className="bg-brand/5 border border-brand/10 rounded-3xl p-6">
-                <h4 className="font-black text-brand uppercase tracking-widest text-[10px] mb-3 flex items-center gap-2"><span>💡</span> Pro Tip</h4>
-                <p className="text-xs text-brand/80 font-medium leading-relaxed">Export your customers from <Link href="/integrations/square" className="font-bold underline cursor-pointer">Square</Link>, <span className="font-bold underline">Shopify</span>, or <span className="font-bold underline">Clover</span> as a CSV. Our system is designed to intelligently pick up those standard headers automatically.</p>
+              <div className="rounded-3xl border border-brand/10 bg-brand/5 p-5 md:p-6">
+                <h4 className="mb-3 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-brand"><span>💡</span> Pro Tip</h4>
+                <p className="text-xs font-medium leading-relaxed text-brand/80">Export your customers from <Link href="/integrations/square" className="cursor-pointer font-bold underline">Square</Link>, <span className="font-bold underline">Shopify</span>, or <span className="font-bold underline">Clover</span> as a CSV. Our system is designed to intelligently pick up those standard headers automatically.</p>
               </div>
             </div>
-            <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end">
-              <button onClick={() => setShowGuide(false)} className="h-12 px-8 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-slate-200">Got it, let's go</button>
-            </div>
+            <footer className="shrink-0 border-t border-slate-100 bg-slate-50 p-4 pb-[max(16px,env(safe-area-inset-bottom))] md:p-8 md:pb-8">
+              <button onClick={() => setShowGuide(false)} className="flex h-12 w-full items-center justify-center rounded-2xl bg-slate-900 px-8 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-slate-200 transition-all hover:scale-[1.02] active:scale-[0.98] md:w-auto md:float-right">Got it, let's go</button>
+            </footer>
           </div>
         </div>
       )}
