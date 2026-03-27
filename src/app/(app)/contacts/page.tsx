@@ -182,7 +182,13 @@ function ContactsPageContent() {
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                   Email
                 </button>
-                <button disabled className="h-9 sm:h-11 px-3 sm:px-6 bg-surface-container-low text-on-surface-variant/60 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-2 flex-1 sm:flex-none justify-center cursor-not-allowed opacity-60" title="SMS coming soon">
+                <button
+                  type="button"
+                  onClick={() => handleBulkContact('sms')}
+                  disabled={!contacts.some((c) => selectedIds.has(c.id) && !!c.phone)}
+                  className="h-9 sm:h-11 px-3 sm:px-6 bg-brand/5 text-brand text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/10 transition-colors flex items-center gap-2 flex-1 sm:flex-none justify-center disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-surface-container-low disabled:text-on-surface-variant/60"
+                  title={contacts.some((c) => selectedIds.has(c.id) && !!c.phone) ? 'Send SMS to selected contacts' : 'Select at least one contact with a phone number'}
+                >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
                   SMS
                 </button>
@@ -268,7 +274,12 @@ function ContactsPageContent() {
                             </button>
                           )}
                           {contact.phone && (
-                            <button disabled className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-surface-container-low text-on-surface-variant/60 flex items-center justify-center cursor-not-allowed opacity-60" title="SMS coming soon">
+                            <button
+                              type="button"
+                              onClick={() => handleIndividualContact(contact, 'sms')}
+                              className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-brand/5 text-brand flex items-center justify-center hover:bg-brand/10 transition-colors"
+                              title="Send SMS"
+                            >
                               <svg className="w-3.5 h-3.5 sm:w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
                             </button>
                           )}

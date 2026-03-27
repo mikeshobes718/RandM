@@ -194,8 +194,8 @@ export default function HowItWorks() {
           <div className="bg-primary-container p-8 rounded-3xl text-on-primary-container flex flex-col justify-between">
             <div>
               <span className="material-symbols-outlined text-4xl mb-4">auto_awesome</span>
-              <h4 className="display-font text-2xl font-bold mb-2">Auto-Pilot Marketing</h4>
-              <p className="opacity-80 text-sm">Let the system handle the heavy lifting while you focus on the customer experience.</p>
+              <h4 className="display-font text-2xl font-bold mb-2">Follow-Up on Autopilot</h4>
+              <p className="opacity-80 text-sm">Let the system handle reminders and review requests while you focus on the customer experience.</p>
             </div>
             <Link href="/features" className="mt-8 py-3 px-6 bg-white text-primary font-bold rounded-xl hover:bg-slate-50 transition-colors inline-block text-center">
               Explore Automation

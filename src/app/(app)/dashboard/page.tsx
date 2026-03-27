@@ -250,12 +250,13 @@ function DashboardContent() {
             </p>
           </div>
         </div>
-        <div className="flex gap-2 p-1 bg-surface-container-low rounded-xl">
+        <div className="flex w-full md:w-auto gap-1 p-1 bg-surface-container-low rounded-xl">
           {(["overview", "toolkit", "sequences"] as const).map((tab) => (
             <button
               key={tab}
+              type="button"
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg text-sm font-bold capitalize transition-all ${
+              className={`flex-1 min-w-0 md:flex-initial px-2 sm:px-3 md:px-4 py-2 rounded-lg text-center text-xs sm:text-sm font-bold leading-tight transition-all ${
                 activeTab === tab ? "bg-white text-primary shadow-sm" : "text-on-surface-variant hover:bg-white/50"
               }`}
             >
