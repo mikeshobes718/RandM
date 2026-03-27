@@ -47,15 +47,27 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="flex items-center gap-4 pt-6">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-10 h-10 rounded-full border-2 border-white/50 overflow-hidden bg-surface-container flex items-center justify-center text-xs font-bold text-primary">
-                      {String.fromCharCode(64 + i)}
+            <div className="flex items-center gap-4 pt-6">
+                <div className="flex -space-x-3">
+                  {[
+                    { name: "Sarah J.", img: "https://i.pravatar.cc/150?u=sarah" },
+                    { name: "Mike D.", img: "https://i.pravatar.cc/150?u=mike" },
+                    { name: "Elena R.", img: "https://i.pravatar.cc/150?u=elena" },
+                    { name: "David K.", img: "https://i.pravatar.cc/150?u=david" }
+                  ].map((user, i) => (
+                    <div key={i} className="w-10 h-10 rounded-full border-2 border-white/30 overflow-hidden bg-white/10 backdrop-blur-md">
+                      <img src={user.img} alt={user.name} className="w-full h-full object-cover opacity-90" />
                     </div>
                   ))}
                 </div>
-                <p className="text-sm font-semibold text-white/80">Trusted by 2,000+ service businesses</p>
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <span key={s} className="material-symbols-outlined text-yellow-400 text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+                    ))}
+                  </div>
+                  <p className="text-sm font-semibold text-white/90">Trusted by 2,000+ service businesses</p>
+                </div>
               </div>
             </div>
 
