@@ -92,35 +92,35 @@ export default function TemplatesPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-on-surface">Message Templates</h1>
-          <p className="text-on-surface-variant font-medium mt-2">Choose a high-converting template or create your own.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-on-surface">Message Templates</h1>
+          <p className="text-on-surface-variant font-medium mt-1 text-sm">Choose a high-converting template or create your own.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="h-12 px-6 border-2 border-outline-variant/20 text-on-surface-variant/60 text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-surface-container-lowest transition-all flex items-center">
-            Back to Dashboard
+          <Link href="/dashboard" className="h-10 px-5 border border-outline-variant/20 text-on-surface-variant text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-surface-container-lowest transition-all flex items-center">
+            Dashboard
           </Link>
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="h-12 px-8 bg-inverse-surface text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:scale-[1.05] active:scale-[0.95] transition-all shadow-xl shadow-outline-variant/20"
+            className="h-10 px-6 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2"
           >
-            ➕ New Template
+            <span className="material-symbols-outlined text-sm">add</span> New Template
           </button>
         </div>
       </div>
 
       {/* Filter Tabs & Helper */}
-      <div className="flex flex-col lg:flex-row gap-8 mb-12">
+      <div className="flex flex-col lg:flex-row gap-6 mb-8">
         <div className="flex-1">
-          <div className="flex p-1.5 bg-surface-container-low rounded-2xl w-fit">
+          <div className="flex p-1 bg-surface-container-low rounded-xl w-fit">
             {(['All', 'SMS', 'Email'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setFilter(tab)}
-                className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                className={`px-6 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${
                   filter === tab 
-                    ? 'bg-surface text-on-surface shadow-sm' 
+                    ? 'bg-surface-container-lowest text-on-surface shadow-sm' 
                     : 'text-on-surface-variant/60 hover:text-on-surface-variant'
                 }`}
               >
@@ -130,27 +130,25 @@ export default function TemplatesPage() {
           </div>
         </div>
 
-        <div className="bg-brand/5 border border-brand/10 rounded-2xl px-6 py-4 flex items-center gap-6">
+        <div className="bg-primary-fixed/30 border border-primary/10 rounded-xl px-5 py-3 flex items-center gap-5">
           <div className="hidden sm:flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
-            <span className="text-[10px] font-black text-brand uppercase tracking-[0.2em]">Smart Variables</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Variables</span>
           </div>
-          <div className="flex flex-wrap gap-4">
-            <div className="flex items-center gap-2">
-              <code className="text-[10px] bg-surface border border-brand/20 px-2 py-1 rounded-lg text-brand font-bold">{"{{business_name}}"}</code>
-              <span className="text-[10px] text-on-surface-variant/60 font-bold uppercase">Business Name</span>
+          <div className="flex flex-wrap gap-3">
+            <div className="flex items-center gap-1.5">
+              <code className="text-[10px] bg-surface-container-lowest border border-primary/15 px-2 py-0.5 rounded text-primary font-semibold">{"{{business_name}}"}</code>
             </div>
-            <div className="flex items-center gap-2">
-              <code className="text-[10px] bg-surface border border-brand/20 px-2 py-1 rounded-lg text-brand font-bold">{"{{link}}"}</code>
-              <span className="text-[10px] text-on-surface-variant/60 font-bold uppercase">Review Link</span>
+            <div className="flex items-center gap-1.5">
+              <code className="text-[10px] bg-surface-container-lowest border border-primary/15 px-2 py-0.5 rounded text-primary font-semibold">{"{{link}}"}</code>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredTemplates.map((t: any) => (
-          <div key={t.id} className="group surface-card p-8 rounded-[48px] bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20 flex flex-col hover:border-brand/20 transition-all">
+          <div key={t.id} className="group bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 shadow-sm flex flex-col hover:border-primary/20 transition-all">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <div className="flex items-center gap-3 mb-2">
@@ -210,7 +208,7 @@ export default function TemplatesPage() {
 
             <button 
               onClick={() => handleUseTemplate(t)}
-              className="mt-10 primary-button w-full h-14 rounded-2xl shadow-xl shadow-brand/20 group-hover:scale-[1.02] transition-all"
+              className="mt-8 h-12 w-full bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-sm"
             >
               Use This Template
             </button>
@@ -219,20 +217,18 @@ export default function TemplatesPage() {
 
         <div 
           onClick={() => setIsModalOpen(true)}
-          className="group p-8 rounded-[48px] border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center text-center hover:border-brand/30 hover:bg-brand/5 transition-all cursor-pointer min-h-[400px]"
+          className="group p-6 rounded-xl border-2 border-dashed border-outline-variant/20 flex flex-col items-center justify-center text-center hover:border-primary/30 hover:bg-primary-fixed/10 transition-all cursor-pointer min-h-[400px]"
         >
-          <div className="w-20 h-20 rounded-[32px] bg-surface-container-lowest flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-inner">
-            <span className="text-4xl">➕</span>
-          </div>
-          <h3 className="text-xl font-black text-on-surface mb-2 uppercase tracking-tight">Custom Template</h3>
-          <p className="text-xs text-on-surface-variant/60 font-medium max-w-[220px] leading-relaxed">Design your own message with smart variables and custom formatting.</p>
+          <span className="material-symbols-outlined text-4xl text-on-surface-variant/40 mb-4 group-hover:text-primary transition-colors">add_circle</span>
+          <h3 className="text-lg font-bold text-on-surface mb-1">Custom Template</h3>
+          <p className="text-xs text-on-surface-variant max-w-[220px] leading-relaxed">Design your own message with smart variables.</p>
         </div>
       </div>
 
       {/* Custom Template Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-inverse-surface/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-surface rounded-[40px] p-10 max-w-lg w-full shadow-2xl relative">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-inverse-surface/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-surface-container-lowest rounded-2xl p-8 max-w-lg w-full shadow-2xl relative border border-outline-variant/15">
             <button 
               onClick={() => setIsModalOpen(false)}
               className="absolute top-6 right-6 p-2 text-on-surface-variant/60 hover:text-on-surface transition-colors"
@@ -295,7 +291,7 @@ export default function TemplatesPage() {
               <button 
                 onClick={handleCreateCustom}
                 disabled={!customBody}
-                className="primary-button w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-brand/20 disabled:opacity-50 disabled:grayscale"
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-sm disabled:opacity-50 disabled:grayscale"
               >
                 Create & Use
               </button>

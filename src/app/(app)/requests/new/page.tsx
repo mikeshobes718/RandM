@@ -108,9 +108,9 @@ function NewRequestContent() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 pt-6 pb-24 sm:pt-10 sm:pb-32 space-y-8 animate-fade-in">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-black text-on-surface tracking-tight">Send New Requests</h1>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-24 sm:pt-10 sm:pb-32 space-y-8 animate-fade-in">
+      <div className="space-y-1">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight">Send New Requests</h1>
         <p className="text-on-surface-variant text-sm font-medium">Send SMS or Email invitations to your customers.</p>
       </div>
 
@@ -133,8 +133,8 @@ function NewRequestContent() {
       )}
 
       <div className="grid lg:grid-cols-2 gap-8">
-        <div className="surface-card p-8 rounded-[40px] bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20">
-          <h2 className="text-xl font-black text-on-surface mb-6">Campaign Setup</h2>
+        <div className="bg-surface-container-lowest p-6 sm:p-8 rounded-xl border border-outline-variant/15 shadow-sm">
+          <h2 className="text-lg font-bold text-on-surface mb-6">Campaign Setup</h2>
 
           <div className="space-y-8">
             <div>
@@ -214,7 +214,7 @@ function NewRequestContent() {
             </div>
 
             <button
-              className="primary-button w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl shadow-brand/20 disabled:opacity-50 disabled:grayscale"
+              className="w-full h-12 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all shadow-sm disabled:opacity-50 disabled:grayscale"
               disabled={!body || !name || sending}
               onClick={handleStartCampaign}
             >
@@ -276,8 +276,8 @@ export default function NewRequestPage() {
   return (
     <Suspense fallback={
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full mb-4"></div>
-        <p className="text-muted text-sm font-medium uppercase tracking-widest">Loading campaign... </p>
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
+        <p className="text-on-surface-variant text-sm font-medium uppercase tracking-widest">Loading campaign...</p>
       </div>
     }>
       <NewRequestContent />

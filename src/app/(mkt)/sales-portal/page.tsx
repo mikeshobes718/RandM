@@ -364,11 +364,11 @@ export default function SalesPortalPage() {
     <AdminGuard allowReps={true}>
       <main className="min-h-screen bg-surface-container-lowest">
         {/* Sales Header */}
-        <div className="bg-surface border-b border-outline-variant/20 sticky top-0 z-40 shadow-sm">
-          <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <div className="flex items-center gap-8">
+        <div className="bg-surface-container-lowest border-b border-outline-variant/15 sticky top-0 z-40 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-6">
               <div className="flex items-center gap-3">
-                <Link href="/" className="text-xl font-black text-brand tracking-tighter">R&M SALES</Link>
+                <Link href="/" className="text-lg font-extrabold text-primary tracking-tight">R&M Sales</Link>
                 {userRepId && (
                   <div className="px-3 py-1 bg-inverse-surface rounded-lg shadow-sm border border-outline-variant">
                     <span className="text-[10px] font-black text-white uppercase tracking-widest">ID: {userRepId}</span>

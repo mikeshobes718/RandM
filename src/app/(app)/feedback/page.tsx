@@ -1,10 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState, Suspense } from 'react';
 import { formatPhone } from '@/lib/phone';
-import { inputClass, primaryButtonClass, secondaryButtonClass, premiumCardClass } from '@/lib/styles';
 import Link from 'next/link';
-import { MiniHowItWorks } from '@/components/MiniHowItWorks';
-import { MessageSquare, QrCode, ShieldAlert, Mail } from 'lucide-react';
 
 type Item = {
   id: string;
@@ -192,46 +189,38 @@ function FeedbackContent({ business }: { business: any }) {
   if (loading && items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full mb-4"></div>
-        <p className="text-muted text-sm font-medium">Loading feedback...</p>
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
+        <p className="text-on-surface-variant text-sm font-medium tracking-widest uppercase">Loading feedback...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-        <div className="flex items-center gap-5">
-          {business?.google_photo_url && (
-            <div className="hidden sm:block w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-2xl flex-shrink-0 group relative cursor-pointer">
-              <img src={business.google_photo_url} alt={business.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
-            </div>
-          )}
-          <div>
-            <h1 className="text-3xl font-black tracking-tight mb-2">Customer Feedback</h1>
-            <p className="text-muted text-sm font-medium flex items-center gap-2">
-              Connected to {business?.name}
-              {business?.address && (
-                <span className="text-on-surface-variant/60 font-normal border-l border-outline-variant/30 pl-2 ml-1">
-                  {business.address.split(',')[0]}
-                </span>
-              )}
-            </p>
-          </div>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-on-surface">Customer Feedback</h1>
+          <p className="text-on-surface-variant text-sm font-medium mt-1 flex items-center gap-2">
+            Connected to {business?.name}
+            {business?.address && (
+              <span className="text-on-surface-variant/60 font-normal border-l border-outline-variant/30 pl-2 ml-1 hidden sm:inline">
+                {business.address.split(',')[0]}
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex gap-3">
           <button 
             onClick={() => setShowArchived(!showArchived)}
-            className={`secondary-button !h-10 px-4 text-xs ${showArchived ? 'bg-surface-container-low border-outline-variant/40' : ''}`}
+            className={`h-10 px-4 text-[10px] font-bold uppercase tracking-widest rounded-xl border transition-all ${showArchived ? 'bg-surface-container-low border-outline-variant/40 text-on-surface' : 'border-outline-variant/20 text-on-surface-variant hover:bg-surface-container-lowest'}`}
           >
             {showArchived ? 'View Active' : 'View Archived'}
           </button>
           <button 
             onClick={exportCsv}
             disabled={filtered.length === 0}
-            className="secondary-button !h-10 px-4 text-xs disabled:opacity-50"
+            className="h-10 px-4 text-[10px] font-bold uppercase tracking-widest rounded-xl border border-outline-variant/20 text-on-surface-variant hover:bg-surface-container-lowest transition-all disabled:opacity-50"
           >
             Export CSV
           </button>
@@ -239,46 +228,46 @@ function FeedbackContent({ business }: { business: any }) {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="surface-card p-6 rounded-2xl">
-          <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Average Feedback</div>
-          <div className="flex items-end gap-3">
-            <div className="text-4xl font-black">{avgRating}</div>
-            <div className="flex mb-1.5 text-amber-400">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.05 2.93c.3-.92 1.6-.92 1.9 0l1.08 3.33a1 1 0 00.96.7h3.4c.96 0 1.36 1.23.58 1.79l-2.75 1.99a1 1 0 00-.36 1.11l1.08-3.33c.3.92-.76 1.68-1.54 1.11l-2.75-1.99a1 1 0 00-1.18 0l-2.75 1.99c-.78.57-1.84-.19-1.54-1.11l1.08-3.33a1 1 0 00-.36-1.11L2.99 8.78c-.78-.56-.38-1.79.58-1.79h3.4a1 1 0 00.96-.7l1.08-3.33z" />
-                </svg>
-            </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 shadow-sm">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Avg Rating</p>
+          <div className="flex items-end gap-2 mt-1">
+            <p className="text-2xl font-extrabold text-primary">{avgRating}</p>
+            <span className="material-symbols-outlined text-amber-400 text-lg mb-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
           </div>
         </div>
-        <div className="surface-card p-6 rounded-2xl">
-          <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Total Responses</div>
-          <div className="text-4xl font-black">{items.length}</div>
+        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 shadow-sm">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Total</p>
+          <p className="text-2xl font-extrabold text-primary mt-1">{items.length}</p>
         </div>
-        <div className="surface-card p-6 rounded-2xl">
-          <div className="text-xs font-bold text-muted uppercase tracking-wider mb-4">Filtered Count</div>
-          <div className="text-4xl font-black">{filtered.length}</div>
+        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 shadow-sm">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Filtered</p>
+          <p className="text-2xl font-extrabold text-primary mt-1">{filtered.length}</p>
+        </div>
+        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 shadow-sm">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">5-Star Rate</p>
+          <p className="text-2xl font-extrabold text-secondary mt-1">{items.length > 0 ? `${((items.filter(i => i.rating === 5).length / items.length) * 100).toFixed(0)}%` : '0%'}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="surface-card p-6 rounded-3xl mb-12">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/15 shadow-sm p-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <div>
-            <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1 mb-2 block">Search</label>
+            <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest ml-1 mb-1.5 block">Search</label>
             <input 
               value={q} 
               onChange={e => setQ(e.target.value)} 
               placeholder="Name, email..." 
-              className={inputClass + " !h-10 !text-xs"} 
+              className="h-10 w-full rounded-lg bg-surface-container-low border-none px-3 text-xs text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1 mb-2 block">Source</label>
+            <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest ml-1 mb-1.5 block">Source</label>
             <select 
               value={typeFilter} 
               onChange={e => setTypeFilter(e.target.value as any)}
-              className={inputClass + " !h-10 !text-xs appearance-none"}
+              className="h-10 w-full rounded-lg bg-surface-container-low border-none px-3 text-xs text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="all">All Sources</option>
               <option value="google">Google Reviews</option>
@@ -288,11 +277,11 @@ function FeedbackContent({ business }: { business: any }) {
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1 mb-2 block">Rating</label>
+            <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest ml-1 mb-1.5 block">Rating</label>
             <select 
               value={ratingFilter} 
               onChange={e => setRatingFilter(e.target.value as any)}
-              className={inputClass + " !h-10 !text-xs appearance-none"}
+              className="h-10 w-full rounded-lg bg-surface-container-low border-none px-3 text-xs text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="all">All Ratings</option>
               <option value="5">5 Stars</option>
@@ -302,11 +291,11 @@ function FeedbackContent({ business }: { business: any }) {
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1 mb-2 block">Timeframe</label>
+            <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest ml-1 mb-1.5 block">Timeframe</label>
             <select 
               value={dateRange} 
               onChange={e => setDateRange(e.target.value as any)}
-              className={inputClass + " !h-10 !text-xs appearance-none"}
+              className="h-10 w-full rounded-lg bg-surface-container-low border-none px-3 text-xs text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="all">All Time</option>
               <option value="7">Last 7 Days</option>
@@ -315,11 +304,11 @@ function FeedbackContent({ business }: { business: any }) {
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1 mb-2 block">Sort</label>
+            <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest ml-1 mb-1.5 block">Sort</label>
             <select 
               value={sortBy} 
               onChange={e => setSortBy(e.target.value as any)}
-              className={inputClass + " !h-10 !text-xs appearance-none"}
+              className="h-10 w-full rounded-lg bg-surface-container-low border-none px-3 text-xs text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -331,176 +320,106 @@ function FeedbackContent({ business }: { business: any }) {
       </div>
 
       {/* Results */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         {error && (
-          <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-sm text-red-600 font-medium">
+          <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 font-medium">
             {error}
           </div>
         )}
 
         {paginatedItems.length === 0 ? (
-          <div className="surface-card p-20 rounded-[40px] text-center bg-accent/20 border-dashed">
-            <div className="w-16 h-16 bg-surface border border-border rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                <svg className="w-8 h-8 text-on-surface-variant/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                </svg>
-            </div>
-            <h2 className="text-xl font-bold mb-2">No feedback found</h2>
-            <p className="text-sm text-muted max-w-xs mx-auto">Try adjusting your filters or share your review link to get more responses.</p>
+          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/15 shadow-sm p-16 text-center">
+            <span className="material-symbols-outlined text-4xl text-on-surface-variant/30 mb-4 block">inbox</span>
+            <h2 className="text-lg font-bold text-on-surface mb-1">No feedback found</h2>
+            <p className="text-sm text-on-surface-variant max-w-xs mx-auto">Try adjusting your filters or share your review link to get more responses.</p>
           </div>
         ) : (
-          <div className="grid gap-6">
+          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/15 shadow-sm overflow-hidden divide-y divide-outline-variant/10">
             {paginatedItems.map((f) => {
               const isEvent = f.type === 'event';
               
               return (
-                <div key={f.id} className={premiumCardClass + ` p-6 rounded-3xl ${isEvent ? 'bg-surface-container-lowest/50 border-outline-variant/20' : 'p-8'}`}>
-                  <div className="flex flex-col md:flex-row gap-6">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-4">
+                <div key={f.id} className={`p-5 hover:bg-surface-container-low/30 transition-colors ${isEvent ? 'bg-surface/50' : ''}`}>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2.5 mb-2 flex-wrap">
                         {!isEvent && (
-                          <div className={`px-2.5 py-1 rounded-lg text-sm font-black flex items-center gap-1.5 ${
+                          <span className={`px-2 py-0.5 rounded-md text-xs font-bold ${
                             f.rating >= 4 ? 'bg-emerald-50 text-emerald-600' : 
                             f.rating === 3 ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600'
                           }`}>
-                            {f.rating}★
-                          </div>
+                            {f.rating}<span className="material-symbols-outlined text-xs align-middle ml-0.5" style={{ fontVariationSettings: "'FILL' 1", fontSize: '12px' }}>star</span>
+                          </span>
                         )}
                         
                         {isEvent ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-2.21 5.39-7.84 5.39-4.84 0-8.79-4.01-8.79-8.92s3.95-8.92 8.79-8.92c2.75 0 4.59 1.17 5.64 2.21l2.59-2.5c-1.66-1.55-3.82-2.5-8.23-2.5-6.62 0-12 5.38-12 12s5.38 12 12 12c6.92 0 11.52-4.87 11.52-11.72 0-.78-.08-1.38-.24-1.97h-11.28z"/></svg>
-                            </div>
-                            <h3 className="font-bold text-on-surface-variant italic">Verified Google Redirect</h3>
-                          </div>
+                          <span className="font-semibold text-sm text-on-surface-variant">Verified Google Redirect</span>
                         ) : (
-                          <h3 className="font-bold text-lg">{f.name || (f.type === 'google' ? 'Google Reviewer' : 'Anonymous Customer')}</h3>
+                          <span className="font-semibold text-sm text-on-surface">{f.name || (f.type === 'google' ? 'Google Reviewer' : 'Anonymous Customer')}</span>
                         )}
                         
-                        <div className="flex items-center gap-2 ml-4">
-                          {f.type === 'google' && (
-                            <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-blue-100 flex items-center gap-1">
-                              Google Review
-                            </span>
-                          )}
-                          {f.type === 'feedback' && (
-                            <span className="px-2 py-0.5 bg-purple-50 text-purple-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-purple-100 flex items-center gap-1">
-                              Private Feedback
-                            </span>
-                          )}
-                          {f.type === 'contact' && (
-                            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-widest rounded-full border border-emerald-100 flex items-center gap-1">
-                              Contact Lead
-                            </span>
-                          )}
-                          {isEvent && (
-                            <span className="px-2 py-0.5 bg-surface-container-low text-on-surface-variant text-[9px] font-black uppercase tracking-widest rounded-full border border-outline-variant/30">
-                              System Log
-                            </span>
-                          )}
-                        </div>
+                        {f.type === 'google' && <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-bold uppercase tracking-wider rounded-full">Google</span>}
+                        {f.type === 'feedback' && <span className="px-2 py-0.5 bg-purple-50 text-purple-600 text-[9px] font-bold uppercase tracking-wider rounded-full">Private</span>}
+                        {f.type === 'contact' && <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold uppercase tracking-wider rounded-full">Lead</span>}
+                        {isEvent && <span className="px-2 py-0.5 bg-surface-container-low text-on-surface-variant text-[9px] font-bold uppercase tracking-wider rounded-full">System</span>}
 
-                        <span className="text-xs text-muted font-medium ml-auto">
+                        <span className="text-xs text-on-surface-variant/60 font-medium ml-auto flex-shrink-0">
                           {new Date(f.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
                       </div>
 
-                      <div className="space-y-4">
-                          {isEvent ? (
-                            <p className="text-xs text-on-surface-variant/60 font-medium">
-                              A customer scanned your QR code and was successfully routed to your Google Business Profile to leave a review.
-                            </p>
-                          ) : (
-                            <p className="text-sm text-on-surface-variant leading-relaxed italic">
-                                "{f.comment || 'No specific comment provided.'}"
-                            </p>
-                          )}
+                      {isEvent ? (
+                        <p className="text-xs text-on-surface-variant/60">Customer routed to Google Business Profile via QR code.</p>
+                      ) : (
+                        <p className="text-sm text-on-surface-variant leading-relaxed">
+                            {f.comment ? `"${f.comment}"` : 'No comment provided.'}
+                        </p>
+                      )}
                           
-                          <div className="flex flex-wrap gap-x-6 gap-y-2">
-                              {f.email && (
-                                  <a 
-                                      href={`mailto:${f.email}?subject=Follow-up from ${business?.name || 'our business'}`}
-                                      className="flex items-center gap-2 text-[10px] font-bold text-muted uppercase tracking-widest hover:text-brand transition-colors"
-                                  >
-                                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                                      {f.email}
-                                  </a>
-                              )}
-                              {f.phone && (
-                                  <a 
-                                      href={`sms:${f.phone}`}
-                                      className="flex items-center gap-2 text-[10px] font-bold text-muted uppercase tracking-widest hover:text-brand transition-colors"
-                                  >
-                                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                                      {formatPhone(f.phone)}
-                                  </a>
-                              )}
-                              {!isEvent && (
-                                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
-                                    {f.marketing_consent ? (
-                                        <span className="text-emerald-600 flex items-center gap-1.5">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                            Follow-up Permitted
-                                        </span>
-                                    ) : f.type !== 'google' && (
-                                        <span className="text-on-surface-variant/60">No Follow-up</span>
-                                    )}
-                                </div>
-                              )}
-                          </div>
+                      <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-2.5">
+                        {f.email && (
+                          <a href={`mailto:${f.email}?subject=Follow-up from ${business?.name || 'our business'}`} className="flex items-center gap-1.5 text-[10px] font-semibold text-on-surface-variant hover:text-primary transition-colors">
+                            <span className="material-symbols-outlined text-sm">mail</span>{f.email}
+                          </a>
+                        )}
+                        {f.phone && (
+                          <a href={`sms:${f.phone}`} className="flex items-center gap-1.5 text-[10px] font-semibold text-on-surface-variant hover:text-primary transition-colors">
+                            <span className="material-symbols-outlined text-sm">sms</span>{formatPhone(f.phone)}
+                          </a>
+                        )}
+                        {!isEvent && f.marketing_consent && (
+                          <span className="text-emerald-600 flex items-center gap-1 text-[10px] font-semibold">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Follow-up OK
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex md:flex-col gap-2 justify-end md:w-40 border-t md:border-t-0 md:border-l border-border pt-4 md:pt-0 md:pl-6">
+                    <div className="flex md:flex-col gap-2 justify-end flex-shrink-0">
                       {f.type === 'google' ? (
-                        <a 
-                          href={business?.review_link || `https://www.google.com/search?q=${encodeURIComponent(business?.name || '')}+reviews`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={primaryButtonClass + " !h-10 !px-0 w-full text-xs flex items-center justify-center gap-2"}
-                        >
-                          View on Google
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        <a href={business?.review_link || `https://www.google.com/search?q=${encodeURIComponent(business?.name || '')}+reviews`} target="_blank" rel="noopener noreferrer"
+                          className="h-9 px-4 bg-primary hover:bg-primary/90 text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5">
+                          View on Google <span className="material-symbols-outlined text-sm">open_in_new</span>
                         </a>
                       ) : isEvent ? (
-                        <div className="flex flex-col items-center justify-center h-full">
-                          <span className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-widest mb-1">Status</span>
-                          <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-2 py-1 bg-blue-50 rounded">Verified</span>
-                        </div>
+                        <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider px-3 py-1.5 bg-blue-50 rounded-lg">Verified</span>
                       ) : (
-                        <div className="flex flex-col gap-2 w-full">
+                        <div className="flex gap-2">
                           {f.email && (
-                            <a 
-                              href={`mailto:${f.email}?subject=Follow-up from ${business?.name || 'our business'}`}
-                              className="px-4 h-10 bg-inverse-surface hover:bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all w-full flex items-center justify-center gap-2 shadow-sm"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                              Email
-                            </a>
-                          )}
-                          {f.phone && (
-                            <a 
-                              href={`sms:${f.phone}`}
-                              className="px-4 h-10 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all w-full flex items-center justify-center gap-2 shadow-sm"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                              Text
+                            <a href={`mailto:${f.email}?subject=Follow-up from ${business?.name || 'our business'}`}
+                              className="h-9 px-3 bg-inverse-surface hover:bg-black text-white rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-sm">mail</span>Email
                             </a>
                           )}
                           {!isEvent && f.type !== 'google' && (
-                            <button
-                              onClick={(e) => handleCopyLink(e, f.id)}
-                              className="px-4 h-10 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all w-full flex items-center justify-center gap-2 shadow-sm border border-blue-100"
-                            >
-                              {copiedId === f.id ? 'Copied!' : 'Copy Review Link'}
+                            <button onClick={(e) => handleCopyLink(e, f.id)}
+                              className="h-9 px-3 bg-primary-fixed text-primary rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 hover:bg-primary-fixed-dim">
+                              {copiedId === f.id ? 'Copied!' : 'Copy Link'}
                             </button>
                           )}
-                          <button 
-                            onClick={() => toggleArchive(f.id, f.archived)}
-                            className={secondaryButtonClass + " !h-10 !px-0 w-full text-[10px]"}
-                          >
-                            {f.archived ? 'Unarchive' : 'Archive'}
+                          <button onClick={() => toggleArchive(f.id, f.archived)}
+                            className="h-9 px-3 border border-outline-variant/20 rounded-lg text-[10px] font-bold uppercase tracking-wider text-on-surface-variant hover:bg-surface-container-low transition-all">
+                            {f.archived ? 'Restore' : 'Archive'}
                           </button>
                         </div>
                       )}
@@ -515,38 +434,20 @@ function FeedbackContent({ business }: { business: any }) {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-12 flex items-center justify-center gap-4">
-          <button
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className="secondary-button !h-10 !px-6 text-xs disabled:opacity-50"
-          >
+        <div className="mt-8 flex items-center justify-center gap-4">
+          <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1}
+            className="h-9 px-5 border border-outline-variant/20 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-low transition-all disabled:opacity-50">
             Previous
           </button>
-          <span className="text-xs font-bold text-muted uppercase tracking-widest">
+          <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
             Page {currentPage} of {totalPages}
           </span>
-          <button
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
-            className="secondary-button !h-10 !px-6 text-xs disabled:opacity-50"
-          >
+          <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages}
+            className="h-9 px-5 border border-outline-variant/20 rounded-lg text-xs font-bold text-on-surface-variant hover:bg-surface-container-low transition-all disabled:opacity-50">
             Next
           </button>
         </div>
       )}
-
-      {/* How it works visual */}
-      <MiniHowItWorks 
-        className="mt-16"
-        title="How Private Feedback Works"
-        steps={[
-          { icon: MessageSquare, title: "1. Customer Issue", desc: "A customer has a less-than-perfect experience." },
-          { icon: QrCode, title: "2. Scans QR", desc: "They scan your QR code and select 1 to 4 stars." },
-          { icon: ShieldAlert, title: "3. Private Capture", desc: "They are routed to a private form instead of Google." },
-          { icon: Mail, title: "4. You Resolve It", desc: "You get their contact info to make it right privately." }
-        ]}
-      />
     </div>
   );
 }

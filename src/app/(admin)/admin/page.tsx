@@ -65,8 +65,8 @@ export default function AdminOverview() {
   if (loading) return (
     <div className="min-h-[400px] flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-brand/20 border-t-brand rounded-full animate-spin"></div>
-        <p className="text-sm font-black text-on-surface-variant/60 uppercase tracking-[0.2em]">Loading Intelligence...</p>
+        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+        <p className="text-sm font-bold text-on-surface-variant/60 uppercase tracking-widest">Loading Intelligence...</p>
       </div>
     </div>
   );
@@ -76,8 +76,8 @@ export default function AdminOverview() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-on-surface tracking-tight">Business Overview</h1>
-          <p className="text-on-surface-variant font-medium mt-1">Welcome back, Mike. Here's what's happening today.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-on-surface tracking-tight">Business Overview</h1>
+          <p className="text-on-surface-variant font-medium mt-1 text-sm">Welcome back. Here is what is happening today.</p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-2xl border border-emerald-100">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -86,14 +86,11 @@ export default function AdminOverview() {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map((stat) => (
-          <div key={stat.label} className="bg-surface p-6 rounded-[32px] border border-outline-variant/20 shadow-xl shadow-outline-variant/20 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-surface-container-lowest rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-150 duration-500"></div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60 mb-1 relative z-10">{stat.label}</p>
-            <div className="flex items-end gap-2 relative z-10">
-              <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
-            </div>
+          <div key={stat.label} className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/15 shadow-sm">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-1">{stat.label}</p>
+            <p className={`text-2xl font-extrabold ${stat.color}`}>{stat.value}</p>
           </div>
         ))}
       </div>
@@ -101,22 +98,22 @@ export default function AdminOverview() {
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           {/* Lead Database Health */}
-          <div className="bg-surface p-8 rounded-[40px] border border-outline-variant/20 shadow-xl shadow-outline-variant/20 relative overflow-hidden group">
-            <div className="flex items-center justify-between mb-8">
+          <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-xl font-black text-on-surface">Lead Database Health</h3>
-                <p className="text-sm text-on-surface-variant/60 font-medium">Coverage across {breakdown?.totalStates || 0} states</p>
+                <h3 className="text-lg font-bold text-on-surface">Lead Database Health</h3>
+                <p className="text-sm text-on-surface-variant font-medium">Coverage across {breakdown?.totalStates || 0} states</p>
               </div>
-              <div className="px-4 py-2 bg-brand/5 rounded-2xl text-brand text-[10px] font-black uppercase tracking-widest">
-                Factual Data
-              </div>
+              <span className="px-3 py-1 bg-primary-fixed/30 rounded-lg text-primary text-[10px] font-bold uppercase tracking-wider">
+                Live Data
+              </span>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
               {(breakdown?.breakdown || []).slice(0, 4).map((item: any) => (
-                <div key={item.state} className="p-4 bg-surface-container-lowest rounded-2xl border border-outline-variant/20">
-                  <p className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest mb-1">{item.state || 'Unknown'}</p>
-                  <p className="text-xl font-black text-on-surface">{item.count.toLocaleString()}</p>
+                <div key={item.state} className="p-3 bg-surface-container-low rounded-lg">
+                  <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-0.5">{item.state || 'Unknown'}</p>
+                  <p className="text-lg font-extrabold text-on-surface">{item.count.toLocaleString()}</p>
                 </div>
               ))}
             </div>
@@ -147,11 +144,11 @@ export default function AdminOverview() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Quick Portals Links */}
-            <div className="bg-surface p-8 rounded-[40px] border border-outline-variant/20 shadow-xl shadow-outline-variant/20">
-              <h4 className="text-xs font-black text-on-surface mb-6 uppercase tracking-[0.2em] flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand"></span>
+            <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 shadow-sm">
+              <h4 className="text-xs font-bold text-on-surface mb-5 uppercase tracking-wider flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
                 Operational Portals
               </h4>
               <div className="space-y-3">
@@ -178,8 +175,8 @@ export default function AdminOverview() {
             </div>
 
             {/* Sales Conversion */}
-            <div className="bg-surface p-8 rounded-[40px] border border-outline-variant/20 shadow-xl shadow-outline-variant/20 flex flex-col items-center justify-center">
-              <h4 className="text-xs font-black text-on-surface mb-6 uppercase tracking-[0.2em] w-full text-left flex items-center gap-2">
+            <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/15 shadow-sm flex flex-col items-center justify-center">
+              <h4 className="text-xs font-bold text-on-surface mb-5 uppercase tracking-wider w-full text-left flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                 Lead Conversion
               </h4>
@@ -199,7 +196,7 @@ export default function AdminOverview() {
         </div>
 
         {/* Activity Feed */}
-        <div className="bg-inverse-surface rounded-[40px] p-8 text-white relative overflow-hidden flex flex-col shadow-2xl shadow-outline-variant/20">
+        <div className="bg-inverse-surface rounded-xl p-6 text-white relative overflow-hidden flex flex-col shadow-sm">
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.05),transparent)] pointer-events-none"></div>
           <h3 className="text-xl font-black mb-10 relative z-10 flex items-center justify-between">
             Recent Activity
@@ -235,7 +232,7 @@ export default function AdminOverview() {
               ))
             )}
           </div>
-          <Link href="/admin/calls" className="w-full mt-10 py-4 rounded-2xl bg-surface/5 border border-white/10 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-surface/10 hover:border-white/20 transition-all text-white/60 hover:text-white flex items-center justify-center">
+          <Link href="/admin/calls" className="w-full mt-8 py-3 rounded-lg bg-surface/5 border border-white/10 text-[10px] font-bold uppercase tracking-widest hover:bg-surface/10 hover:border-white/20 transition-all text-white/60 hover:text-white flex items-center justify-center">
             View All Activity
           </Link>
         </div>
