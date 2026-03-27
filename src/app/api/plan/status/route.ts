@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { requireUid, verifyIdTokenViaRest } from '@/lib/authServer';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
+import { isInternalTestProEmail } from '@/lib/internalTestAccounts';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,10 +44,17 @@ export async function GET(request: Request) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  // Co-founder override
-  const coFounders = ['bladespindler@gmail.com', 'volurer295@ovbest.com'];
-  if (email && coFounders.includes(email.toLowerCase())) {
-    console.log('[API/PLAN/STATUS] Override triggered for:', email);
+  if (!email) {
+    try {
+      const { data: row } = await getSupabaseAdmin().from('users').select('email').eq('uid', uid).maybeSingle();
+      email = row?.email || '';
+    } catch {
+      /* ignore */
+    }
+  }
+
+  if (email && isInternalTestProEmail(email)) {
+    console.log('[API/PLAN/STATUS] Internal test Pro override for:', email);
     return NextResponse.json({ status: 'active', plan: 'pro' });
   }
 

@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { isInternalTestProEmail } from '@/lib/internalTestAccounts';
 
 export interface PlanInfo {
   isPro: boolean;
@@ -14,6 +15,17 @@ export async function resolvePlan(uid: string): Promise<PlanInfo> {
   let subscriptionData: { status: string; plan_id: string | null } | null = null;
   let ownerEmail: string | null = null;
 
+  const { data: userRow } = await supa.from('users').select('email').eq('uid', uid).maybeSingle();
+  ownerEmail = userRow?.email || null;
+  if (isInternalTestProEmail(ownerEmail)) {
+    return {
+      isPro: true,
+      planStatus: 'active',
+      ownerEmail,
+      subscriptionData: { status: 'active', plan_id: 'internal_pro' },
+    };
+  }
+
   const { data: subscription } = await supa
     .from('subscriptions')
     .select('status, plan_id')
@@ -23,9 +35,6 @@ export async function resolvePlan(uid: string): Promise<PlanInfo> {
     .maybeSingle();
 
   subscriptionData = subscription;
-
-  const { data: userData } = await supa.from('users').select('email').eq('uid', uid).maybeSingle();
-  ownerEmail = userData?.email || null;
 
   if (subscription) {
     planStatus = subscription.status.toLowerCase();
