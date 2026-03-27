@@ -230,11 +230,21 @@ function DashboardContent() {
     <div className="max-w-full">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-on-surface">Business Overview</h1>
-          <p className="text-on-surface-variant">
-            Welcome back — here&apos;s what&apos;s happening with {business.name}.
-          </p>
+        <div className="flex items-center gap-4">
+          {business.google_photo_url && (
+            <div 
+              className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-white shadow-sm cursor-pointer hover:scale-105 transition-transform flex-shrink-0"
+              onClick={() => setIsPhotoModalOpen(true)}
+            >
+              <img src={business.google_photo_url} alt={business.name} className="w-full h-full object-cover" />
+            </div>
+          )}
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-on-surface">Business Overview</h1>
+            <p className="text-on-surface-variant">
+              Welcome back — here&apos;s what&apos;s happening with {business.name}.
+            </p>
+          </div>
         </div>
         <div className="flex gap-2 p-1 bg-surface-container-low rounded-xl">
           {(["overview", "toolkit", "sequences"] as const).map((tab) => (

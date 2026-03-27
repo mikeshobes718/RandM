@@ -19,6 +19,7 @@ export default function AppSidebar() {
   const router = useRouter();
   const [businessName, setBusinessName] = useState("My Business");
   const [planLabel, setPlanLabel] = useState("Free Plan");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("businessData");
@@ -26,6 +27,7 @@ export default function AppSidebar() {
       try {
         const biz = JSON.parse(stored);
         if (biz.name) setBusinessName(biz.name);
+        if (biz.google_photo_url) setPhotoUrl(biz.google_photo_url);
       } catch {}
     }
     const plan = localStorage.getItem("selectedPlan");
@@ -42,6 +44,7 @@ export default function AppSidebar() {
             const data = await res.json();
             if (data.business?.name) {
               setBusinessName(data.business.name);
+              if (data.business.google_photo_url) setPhotoUrl(data.business.google_photo_url);
               localStorage.setItem("businessData", JSON.stringify(data.business));
             }
             if (data.plan) {
@@ -75,8 +78,12 @@ export default function AppSidebar() {
     <aside className="hidden md:flex h-screen w-64 fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant/15 flex-col p-4 z-40">
       <div className="px-2 py-4 mb-2">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center">
-            <span className="material-symbols-outlined text-primary text-lg">business_center</span>
+          <div className="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center overflow-hidden border border-outline-variant/10">
+            {photoUrl ? (
+              <img src={photoUrl} alt={businessName} className="w-full h-full object-cover" />
+            ) : (
+              <span className="material-symbols-outlined text-primary text-lg">business_center</span>
+            )}
           </div>
           <div className="min-w-0">
             <div className="text-sm font-extrabold text-primary truncate">{businessName}</div>
