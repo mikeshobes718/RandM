@@ -411,23 +411,32 @@ function SettingsContent() {
     try {
       setError(null);
       const tok = localStorage.getItem('idToken');
-      const headers: any = { 'Content-Type': 'application/json' };
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (tok) headers.Authorization = `Bearer ${tok}`;
 
       const res = await fetch('/api/stripe/portal', {
         method: 'POST',
         headers,
         credentials: 'include',
-        body: JSON.stringify({ idToken: tok || undefined })
+        body: JSON.stringify({ idToken: tok || undefined }),
       });
-      const j = await res.json();
+      const raw = await res.text();
+      let j: { url?: string; error?: string } = {};
+      try {
+        j = raw ? (JSON.parse(raw) as typeof j) : {};
+      } catch {
+        throw new Error(raw?.slice(0, 200) || `Billing portal failed (${res.status})`);
+      }
+      if (!res.ok) {
+        throw new Error(j.error || `Billing portal failed (${res.status})`);
+      }
       if (j?.url) {
         window.location.href = j.url;
       } else {
         throw new Error(j.error || 'Unable to open billing portal');
       }
-    } catch (e: any) {
-      setError(e.message || 'Unable to open billing portal');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Unable to open billing portal');
     }
   }
 
