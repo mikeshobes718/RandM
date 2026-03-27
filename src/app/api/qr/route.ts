@@ -43,6 +43,11 @@ export async function GET(req: Request) {
       const baseDataUrl = data.split('?')[0];
       let isAllowed = allowed.has(data) || allowed.has(baseDataUrl);
       
+      // Always allow the how-it-works simulation QR code
+      if (data.includes('how-it-works')) {
+        isAllowed = true;
+      }
+      
       if (!isAllowed) {
         return new NextResponse('Starter plan allows QR only for your saved review link.', { status: 403 });
       }

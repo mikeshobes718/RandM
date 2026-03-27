@@ -8,6 +8,7 @@ const ClientAuthSync = dynamic(() => import('./ClientAuthSync'), { ssr: false })
 const TawkMessenger = dynamic(() => import('./TawkMessenger'), { ssr: false });
 const ExitIntentPopup = dynamic(() => import('./ExitIntentPopup'), { ssr: false });
 const AccessibilityChecker = dynamic(() => import('./AccessibilityChecker'), { ssr: false });
+const JumpToTop = dynamic(() => import('./JumpToTop'), { ssr: false });
 
 function isAuthPath(pathname: string | null) {
   if (!pathname) return false;
@@ -28,6 +29,7 @@ export default function ClientWidgets() {
         />
       ) : null}
       {/* <ExitIntentPopup delay={5000} cookieExpiry={7} /> */}
+      <JumpToTop />
       {process.env.NODE_ENV === 'development' && <AccessibilityChecker />}
     </>
   );

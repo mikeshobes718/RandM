@@ -22,8 +22,13 @@ export default function AppTopBar() {
   return (
     <header className="sticky top-0 z-30 w-full h-14 bg-surface-container-lowest/90 backdrop-blur-xl border-b border-outline-variant/10 flex items-center justify-between px-4 md:px-8">
       <div className="flex items-center gap-3">
-        <Link href="/" className="text-lg font-bold tracking-tight text-on-surface">
-          R&M
+        <Link href="/" className="inline-flex items-center gap-2.5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
+            <span className="text-xs font-extrabold text-white">R</span>
+          </div>
+          <span className="text-lg font-bold tracking-tight text-on-surface">
+            R&M
+          </span>
         </Link>
       </div>
 

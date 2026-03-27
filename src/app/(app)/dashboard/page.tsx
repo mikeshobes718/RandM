@@ -294,37 +294,6 @@ function DashboardContent() {
                 planStatus={planStatus}
               />
 
-              {/* Performance Chart Placeholder */}
-              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/15">
-                <div className="flex justify-between items-center mb-6">
-                  <h4 className="text-lg font-bold">Performance Overview</h4>
-                  <span className="text-xs text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-lg">Last 30 Days</span>
-                </div>
-                <div className="h-48 flex items-end justify-between gap-1 px-2">
-                  {(analytics?.history || []).slice(-14).map((d, i) => (
-                    <div key={i} className="flex-1 flex items-end gap-0.5">
-                      <div className="flex-1 bg-primary/20 rounded-t-sm" style={{ height: `${Math.min(100, (d.scans / 50) * 100)}%` }} />
-                      <div className="flex-1 bg-primary rounded-t-sm" style={{ height: `${Math.min(100, (d.reviews / 20) * 100)}%` }} />
-                    </div>
-                  ))}
-                  {(!analytics?.history || analytics.history.length === 0) && (
-                    <div className="w-full flex items-center justify-center text-on-surface-variant text-sm">
-                      No data yet
-                    </div>
-                  )}
-                </div>
-                <div className="flex justify-center gap-6 mt-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-primary rounded-full" />
-                    <span className="text-xs text-on-surface-variant">Reviews</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-primary/20 rounded-full" />
-                    <span className="text-xs text-on-surface-variant">QR Scans</span>
-                  </div>
-                </div>
-              </div>
-
               {/* Feedback Inbox */}
               <FeedbackInbox initialItems={recentFeedback} businessId={business.id!} />
 
