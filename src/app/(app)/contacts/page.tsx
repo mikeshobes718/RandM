@@ -77,20 +77,6 @@ function ContactsPageContent() {
     }
   }, [searchQuery, contacts]);
 
-  const modalOpen = showAddModal || showContactModal || historyContact !== null || showGuide;
-  useEffect(() => {
-    if (!modalOpen) return;
-    
-    // On iOS, body scroll locking often breaks internal modal scrolling.
-    // Instead of locking the body, we let the fixed overlay capture touches.
-    // We only add a class to the body if we need to style it, but we avoid overflow: hidden.
-    document.body.classList.add('modal-open');
-    
-    return () => {
-      document.body.classList.remove('modal-open');
-    };
-  }, [modalOpen]);
-
   const onManualAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     setAddingManual(true);

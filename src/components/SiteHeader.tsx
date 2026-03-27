@@ -70,7 +70,7 @@ export default function SiteHeader() {
   if (isAuthPage || isLandingPage || isAdminPage) return null;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[#f1f5f9] bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-[#f1f5f9] bg-background/95 md:bg-background/80 md:backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
         <div className="flex items-center gap-2 md:gap-8">
           <Link href="/" className="flex items-center space-x-2 mr-2">
@@ -90,7 +90,7 @@ export default function SiteHeader() {
                 <svg className="w-3.5 h-3.5 md:w-4 md:h-4 relative z-10" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
-                <span className="absolute inset-0 bg-brand/20 rounded-full animate-ping opacity-40"></span>
+                <span className="absolute inset-0 hidden rounded-full bg-brand/20 opacity-40 md:block md:animate-ping" aria-hidden />
               </div>
               <span className="uppercase tracking-tight">How it works</span>
             </Link>
