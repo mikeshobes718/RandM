@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     google_maps_write_review_uri?: string | null;
     review_link?: string | null;
     google_rating?: number | null;
+    google_photo_url?: string | null;
     address?: string | null;
     contact_phone?: string | null;
     idToken?: string;
@@ -137,6 +138,7 @@ export async function POST(req: Request) {
   maybeAssign('google_maps_write_review_uri', 'google_maps_write_review_uri');
   maybeAssign('review_link', 'review_link');
   maybeAssign('google_rating', 'google_rating');
+  maybeAssign('google_photo_url', 'google_photo_url');
   maybeAssign('address', 'address');
   maybeAssign('contact_phone', 'contact_phone');
   let error: PostgrestError | null = null;
@@ -240,7 +242,7 @@ export async function POST(req: Request) {
   try {
     const { data: business, error: fetchError } = await supabaseAdmin
       .from('businesses')
-      .select('id,name,review_link,google_maps_write_review_uri,contact_phone,google_rating,google_place_id')
+      .select('id,name,review_link,google_maps_write_review_uri,contact_phone,google_rating,google_place_id,google_photo_url')
       .eq('owner_uid', uid!)
       .maybeSingle();
     

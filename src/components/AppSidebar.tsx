@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { clientAuth } from "@/lib/firebaseClient";
 import { onAuthStateChanged } from "firebase/auth";
 import { isAdminEmail } from "@/lib/adminEmails";
@@ -28,14 +28,47 @@ export default function AppSidebar() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [showAdminNav, setShowAdminNav] = useState(false);
 
+  const refreshBusinessHeader = useCallback(async () => {
+    const user = clientAuth.currentUser;
+    if (!user) return;
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch("/api/dashboard/summary", {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.business?.name) {
+        setBusinessName(data.business.name);
+        setPhotoUrl(data.business.google_photo_url ?? null);
+        localStorage.setItem("businessData", JSON.stringify(data.business));
+      }
+      const planName = data.plan || data.planUsage?.planName;
+      if (planName) {
+        const label =
+          typeof planName === "string" ? `${planName} Plan` : "Plan";
+        setPlanLabel(label);
+        localStorage.setItem("selectedPlan", String(planName).toLowerCase());
+      } else if (data.isPro) {
+        setPlanLabel("Unlimited Plan");
+        localStorage.setItem("selectedPlan", "unlimited");
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   useEffect(() => {
     const stored = localStorage.getItem("businessData");
     if (stored) {
       try {
         const biz = JSON.parse(stored);
         if (biz.name) setBusinessName(biz.name);
-        if (biz.google_photo_url) setPhotoUrl(biz.google_photo_url);
-      } catch {}
+        setPhotoUrl(biz.google_photo_url ?? null);
+      } catch {
+        /* ignore */
+      }
     }
     const unsub = onAuthStateChanged(clientAuth, async (user) => {
       if (user) {
@@ -48,37 +81,29 @@ export default function AppSidebar() {
             const me = await meRes.json();
             setShowAdminNav(isAdminEmail(me.email) || me.role === "admin");
           }
-          const res = await fetch("/api/dashboard/summary", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.business?.name) {
-              setBusinessName(data.business.name);
-              if (data.business.google_photo_url) setPhotoUrl(data.business.google_photo_url);
-              localStorage.setItem("businessData", JSON.stringify(data.business));
-            }
-            const planName = data.plan || data.planUsage?.planName;
-            if (planName) {
-              const label =
-                typeof planName === "string"
-                  ? `${planName} Plan`
-                  : "Plan";
-              setPlanLabel(label);
-              localStorage.setItem("selectedPlan", String(planName).toLowerCase());
-            } else if (data.isPro) {
-              setPlanLabel("Unlimited Plan");
-              localStorage.setItem("selectedPlan", "unlimited");
-            }
-          }
-        } catch (e) {}
+          await refreshBusinessHeader();
+        } catch {
+          /* ignore */
+        }
       } else {
         setShowAdminNav(false);
       }
     });
 
     return () => unsub();
-  }, []);
+  }, [refreshBusinessHeader]);
+
+  useEffect(() => {
+    void refreshBusinessHeader();
+  }, [pathname, refreshBusinessHeader]);
+
+  useEffect(() => {
+    const onUpdate = () => {
+      void refreshBusinessHeader();
+    };
+    window.addEventListener("businessProfileUpdated", onUpdate);
+    return () => window.removeEventListener("businessProfileUpdated", onUpdate);
+  }, [refreshBusinessHeader]);
 
   const handleLogout = async () => {
     try {

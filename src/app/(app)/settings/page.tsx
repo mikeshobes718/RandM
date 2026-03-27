@@ -8,7 +8,7 @@ import InfoTip from '@/components/InfoTip';
 
 type Member = { uid: string; email: string; role: string; added_at: string };
 type Invite = { email: string; role: string; invited_at: string; token: string };
-type Business = { id: string; name: string; contact_phone?: string; review_link?: string; google_rating?: number | null };
+type Business = { id: string; name: string; contact_phone?: string; review_link?: string; google_rating?: number | null; google_photo_url?: string | null };
 
 function SettingsContent() {
   const router = useRouter();
@@ -302,7 +302,7 @@ function SettingsContent() {
       const headers: any = { 'Content-Type': 'application/json' };
       if (tok) headers.Authorization = `Bearer ${tok}`;
 
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         name: businessName.trim(),
         contact_phone: normalizePhone(contactPhone),
         review_link: (reviewLink || '').trim() || null,
@@ -314,6 +314,13 @@ function SettingsContent() {
         if (selectedPlace.googleMapsUri) payload.google_maps_place_uri = selectedPlace.googleMapsUri;
         if (selectedPlace.writeAReviewUri) payload.google_maps_write_review_uri = selectedPlace.writeAReviewUri;
         if (selectedPlace.rating) payload.google_rating = selectedPlace.rating;
+        payload.google_photo_url = selectedPlace.photoUrl ?? null;
+      } else if (
+        businessName.trim() !== initialBusinessValues.name.trim() ||
+        (reviewLink || '').trim() !== (initialBusinessValues.link || '').trim()
+      ) {
+        // Identity fields edited without picking a new listing — drop stale Google storefront image
+        payload.google_photo_url = null;
       }
 
       const response = await fetch('/api/businesses/upsert', {
@@ -322,6 +329,19 @@ function SettingsContent() {
         body: JSON.stringify(payload),
       });
       if (response.ok) {
+        const data = await response.json().catch(() => ({}));
+        if (data?.business) {
+          try {
+            const prev = JSON.parse(localStorage.getItem('businessData') || '{}');
+            localStorage.setItem(
+              'businessData',
+              JSON.stringify({ ...prev, ...data.business })
+            );
+          } catch {
+            localStorage.setItem('businessData', JSON.stringify(data.business));
+          }
+          window.dispatchEvent(new CustomEvent('businessProfileUpdated'));
+        }
         setSuccess('Settings saved successfully');
         setInitialBusinessValues({ 
           name: businessName.trim(), 
@@ -336,6 +356,52 @@ function SettingsContent() {
       }
     } catch (e) {
       setError('Failed to save settings');
+    } finally {
+      setSavingBusiness(false);
+    }
+  }
+
+  async function clearStorefrontPhoto() {
+    if (!businessName.trim() || !contactPhone.trim()) {
+      setError('Business name and contact phone are required');
+      return;
+    }
+    setSavingBusiness(true);
+    setError(null);
+    try {
+      const tok = localStorage.getItem('idToken');
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (tok) headers.Authorization = `Bearer ${tok}`;
+      const response = await fetch('/api/businesses/upsert', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          name: businessName.trim(),
+          contact_phone: normalizePhone(contactPhone),
+          review_link: (reviewLink || '').trim() || null,
+          google_photo_url: null,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json().catch(() => ({}));
+        if (data?.business) {
+          try {
+            const prev = JSON.parse(localStorage.getItem('businessData') || '{}');
+            localStorage.setItem('businessData', JSON.stringify({ ...prev, ...data.business }));
+          } catch {
+            localStorage.setItem('businessData', JSON.stringify(data.business));
+          }
+          window.dispatchEvent(new CustomEvent('businessProfileUpdated'));
+        }
+        setBusiness((b) => (b ? { ...b, google_photo_url: null } : null));
+        setSuccess('Storefront photo removed');
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        setError(errData.error || 'Failed to update');
+      }
+    } catch {
+      setError('Failed to update');
     } finally {
       setSavingBusiness(false);
     }
@@ -532,6 +598,22 @@ function SettingsContent() {
                       />
                       <p className="text-[10px] text-muted ml-1">This link opens the Google review dialog directly.</p>
                     </div>
+
+                    {business?.google_photo_url ? (
+                      <div className="rounded-2xl border border-border bg-surface-container-lowest/80 px-4 py-3">
+                        <p className="text-xs text-muted mb-2">
+                          The photo in the sidebar and dashboard comes from Google. If you changed your business name but still see an old storefront, remove it here or pick your listing again from the name search above.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={clearStorefrontPhoto}
+                          disabled={savingBusiness}
+                          className="text-xs font-bold text-brand hover:underline disabled:opacity-50"
+                        >
+                          Remove storefront photo
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
                 
