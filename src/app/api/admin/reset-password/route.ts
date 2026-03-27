@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
+import { isAdminEmail } from '@/lib/adminEmails';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,12 +19,9 @@ async function requireAdmin(req: Request) {
     const uid = decodedToken.uid;
     const userRecord = await auth.getUser(uid);
     
-    // Check admin status
-    const isAdmin = userRecord.customClaims?.admin === true;
-    const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-    const userEmail = userRecord.email?.toLowerCase();
-    
-    if (!isAdmin && !adminEmails.includes(userEmail || '')) {
+    const isAdmin =
+      userRecord.customClaims?.admin === true || isAdminEmail(userRecord.email);
+    if (!isAdmin) {
       return { error: 'Forbidden', status: 403 };
     }
 

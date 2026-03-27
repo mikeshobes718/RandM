@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
+import { isAdminEmail } from '@/lib/adminEmails';
 
 export async function GET(req: Request) {
   try {
@@ -19,8 +20,10 @@ export async function GET(req: Request) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-    if (adminEmails.length > 0 && !adminEmails.includes(decodedToken.email?.toLowerCase() || '')) {
+    const userRecord = await authAdmin.getUser(decodedToken.uid);
+    const isAdmin =
+      userRecord.customClaims?.admin === true || isAdminEmail(userRecord.email);
+    if (!isAdmin) {
       return new NextResponse('Forbidden', { status: 403 });
     }
 

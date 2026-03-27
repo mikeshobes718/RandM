@@ -2,10 +2,7 @@
 
 import { useEffect, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-
-const HARDCODED_ADMINS = ["mikeshobes718@yahoo.com", "volurer295@ovbest.com"];
-const ENV_ADMINS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || "").split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-const ADMIN_EMAILS = Array.from(new Set([...HARDCODED_ADMINS, ...ENV_ADMINS]));
+import { getAdminEmails } from "@/lib/adminEmails";
 
 export default function AdminGuard({ children, allowReps = false }: { children: ReactNode, allowReps?: boolean }) {
   const router = useRouter();
@@ -26,7 +23,8 @@ export default function AdminGuard({ children, allowReps = false }: { children: 
         console.log('[AdminGuard] User logged in as:', user?.email, 'Role:', user?.role);
         
         const userEmail = user?.email?.toLowerCase();
-        const isAdmin = userEmail && ADMIN_EMAILS.includes(userEmail);
+        const adminSet = new Set(getAdminEmails());
+        const isAdmin = !!(userEmail && adminSet.has(userEmail));
         const isRep = user?.role === 'sales_rep';
 
         if (isAdmin || (allowReps && isRep)) {

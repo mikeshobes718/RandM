@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { cookies } from 'next/headers';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { isAdminEmail } from '@/lib/adminEmails';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -83,11 +84,14 @@ export async function GET(req: Request) {
       }
     }
 
+    let role = dbUser?.role || 'customer';
+    if (isAdminEmail(email)) role = 'admin';
+
     return NextResponse.json({ 
       uid, 
       email, 
       emailVerified,
-      role: dbUser?.role || 'customer',
+      role,
       rep_id: dbUser?.rep_id || null
     });
 

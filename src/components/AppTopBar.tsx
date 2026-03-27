@@ -4,23 +4,40 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { clientAuth } from "@/lib/firebaseClient";
 import { onAuthStateChanged } from "firebase/auth";
+import { isAdminEmail } from "@/lib/adminEmails";
 
 export default function AppTopBar() {
   const [initials, setInitials] = useState("U");
   const [email, setEmail] = useState("");
+  const [showAdminNav, setShowAdminNav] = useState(false);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(clientAuth, (user) => {
+    const unsub = onAuthStateChanged(clientAuth, async (user) => {
       if (user?.email) {
         setEmail(user.email);
         setInitials(user.email.charAt(0).toUpperCase());
+        try {
+          const token = await user.getIdToken();
+          const meRes = await fetch("/api/auth/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (meRes.ok) {
+            const me = await meRes.json();
+            setShowAdminNav(isAdminEmail(me.email) || me.role === "admin");
+          }
+        } catch {
+          setShowAdminNav(false);
+        }
+      } else {
+        setShowAdminNav(false);
       }
     });
     return () => unsub();
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 w-full h-14 bg-surface-container-lowest/90 backdrop-blur-xl border-b border-outline-variant/10 flex items-center justify-between px-4 md:px-8">
+    <header className="sticky top-0 z-30 w-full bg-surface-container-lowest/90 backdrop-blur-xl border-b border-outline-variant/10">
+      <div className="h-14 flex items-center justify-between px-4 md:px-8">
       <div className="flex items-center gap-3">
         <Link href="/" className="inline-flex items-center gap-2.5">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
@@ -55,6 +72,24 @@ export default function AppTopBar() {
           {initials}
         </Link>
       </div>
+      </div>
+
+      {showAdminNav && (
+        <div className="md:hidden flex gap-2 px-4 pb-2 border-t border-outline-variant/5 bg-surface-container-low/40">
+          <Link
+            href="/admin"
+            className="flex-1 text-center text-xs font-bold py-2 rounded-lg bg-primary/10 text-primary border border-primary/20"
+          >
+            Admin
+          </Link>
+          <Link
+            href="/sales-portal"
+            className="flex-1 text-center text-xs font-bold py-2 rounded-lg bg-primary/10 text-primary border border-primary/20"
+          >
+            Sales portal
+          </Link>
+        </div>
+      )}
     </header>
   );
 }

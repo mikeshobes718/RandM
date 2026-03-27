@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { clientAuth } from "@/lib/firebaseClient";
 import { onAuthStateChanged } from "firebase/auth";
+import { isAdminEmail } from "@/lib/adminEmails";
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/dashboard", icon: "dashboard", description: "KPIs, inbox, outreach, and analytics for your business." },
@@ -14,12 +15,18 @@ const NAV_ITEMS = [
   { name: "Settings", href: "/settings", icon: "settings", description: "Account, business profile, team, and integrations." },
 ];
 
+const ADMIN_NAV_ITEMS = [
+  { name: "Admin", href: "/admin", icon: "admin_panel_settings", description: "Internal admin dashboard and tools." },
+  { name: "Sales portal", href: "/sales-portal", icon: "storefront", description: "Lead finder, scripts, and rep tools." },
+];
+
 export default function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [businessName, setBusinessName] = useState("My Business");
   const [planLabel, setPlanLabel] = useState("Free Plan");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [showAdminNav, setShowAdminNav] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("businessData");
@@ -37,6 +44,13 @@ export default function AppSidebar() {
       if (user) {
         try {
           const token = await user.getIdToken();
+          const meRes = await fetch("/api/auth/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (meRes.ok) {
+            const me = await meRes.json();
+            setShowAdminNav(isAdminEmail(me.email) || me.role === "admin");
+          }
           const res = await fetch("/api/dashboard/summary", {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -53,6 +67,8 @@ export default function AppSidebar() {
             }
           }
         } catch (e) {}
+      } else {
+        setShowAdminNav(false);
       }
     });
 
@@ -116,6 +132,40 @@ export default function AppSidebar() {
             </Link>
           );
         })}
+
+        {showAdminNav && (
+          <div className="mt-8 border-t border-outline-variant/15 pt-4 flex flex-col gap-0.5">
+            <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/70">
+              Team
+            </p>
+            {ADMIN_NAV_ITEMS.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (pathname?.startsWith(`${item.href}/`) ?? false);
+
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  title={`${item.name} — ${item.description}`}
+                  className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                    isActive
+                      ? "bg-primary-fixed/40 text-primary font-semibold"
+                      : "text-on-surface-variant hover:bg-surface-container-low hover:translate-x-0.5"
+                  }`}
+                >
+                  <span
+                    className="material-symbols-outlined text-xl"
+                    style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                  >
+                    {item.icon}
+                  </span>
+                  {item.name}
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </nav>
 
       <div className="mt-auto border-t border-outline-variant/15 pt-4 flex flex-col gap-1">
