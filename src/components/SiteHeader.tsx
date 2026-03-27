@@ -63,7 +63,8 @@ export default function SiteHeader() {
   const isAuthPage = pathname === '/login' || pathname === '/register';
   const isLandingPage = pathname?.startsWith('/r/');
   const isAdminPage = pathname?.startsWith('/admin');
-  if (isAuthPage || isLandingPage || isAdminPage) return null;
+  const isAppPage = pathname?.startsWith('/dashboard') || pathname?.startsWith('/contacts') || pathname?.startsWith('/feedback') || pathname?.startsWith('/settings') || pathname?.startsWith('/templates') || pathname?.startsWith('/campaigns') || pathname?.startsWith('/requests') || pathname?.startsWith('/onboarding') || pathname?.startsWith('/integrations');
+  if (isAuthPage || isLandingPage || isAdminPage || isAppPage) return null;
 
   const navLinks = [
     { href: '/how-it-works', label: 'How It Works' },

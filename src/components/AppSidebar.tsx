@@ -1,0 +1,113 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { clientAuth } from "@/lib/firebaseClient";
+import { onAuthStateChanged } from "firebase/auth";
+
+const NAV_ITEMS = [
+  { name: "Dashboard", href: "/dashboard", icon: "dashboard" },
+  { name: "Feedback", href: "/feedback", icon: "reviews" },
+  { name: "Campaigns", href: "/templates", icon: "campaign" },
+  { name: "Contacts", href: "/contacts", icon: "group" },
+  { name: "Settings", href: "/settings", icon: "settings" },
+];
+
+export default function AppSidebar() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [businessName, setBusinessName] = useState("My Business");
+  const [planLabel, setPlanLabel] = useState("Free Plan");
+
+  useEffect(() => {
+    const stored = localStorage.getItem("businessData");
+    if (stored) {
+      try {
+        const biz = JSON.parse(stored);
+        if (biz.name) setBusinessName(biz.name);
+      } catch {}
+    }
+    const plan = localStorage.getItem("selectedPlan");
+    if (plan) setPlanLabel(plan.charAt(0).toUpperCase() + plan.slice(1) + " Plan");
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await clientAuth.signOut();
+      await fetch("/api/auth/logout", { method: "POST" });
+      localStorage.removeItem("idToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("selectedPlan");
+      localStorage.removeItem("businessData");
+      router.push("/login?signed_out=1");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
+
+  return (
+    <aside className="hidden md:flex h-screen w-64 fixed left-0 top-0 bg-slate-50 border-r border-slate-200/50 flex-col p-4 z-40 font-[family-name:var(--font-inter)]">
+      <div className="px-2 py-4 mb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center">
+            <span className="material-symbols-outlined text-primary text-lg">business_center</span>
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm font-extrabold text-primary truncate">{businessName}</div>
+            <div className="text-[10px] text-slate-500 uppercase tracking-widest">{planLabel}</div>
+          </div>
+        </div>
+      </div>
+
+      <nav className="flex-1 flex flex-col gap-1">
+        {NAV_ITEMS.map((item) => {
+          const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname?.startsWith(item.href));
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all ${
+                isActive
+                  ? "bg-white text-primary shadow-sm"
+                  : "text-slate-500 hover:bg-slate-200/50 hover:translate-x-0.5"
+              }`}
+            >
+              <span
+                className="material-symbols-outlined text-xl"
+                style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
+              >
+                {item.icon}
+              </span>
+              {item.name}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="mt-auto border-t border-slate-100 pt-4 flex flex-col gap-1">
+        <Link
+          href="/requests/new"
+          className="w-full mb-4 primary-gradient text-white py-2.5 rounded-lg font-semibold shadow-lg active:scale-95 transition-all text-xs text-center block"
+        >
+          New Campaign
+        </Link>
+        <Link
+          href="/support"
+          className="flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-slate-900 transition-colors text-sm"
+        >
+          <span className="material-symbols-outlined text-xl">help</span>
+          Help Center
+        </Link>
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-3 py-2 text-slate-500 hover:text-error transition-colors text-sm w-full"
+        >
+          <span className="material-symbols-outlined text-xl">logout</span>
+          Log Out
+        </button>
+      </div>
+    </aside>
+  );
+}
