@@ -94,7 +94,7 @@ export default function ReviewRequestsModule({
 
   return (
     <div className="surface-card p-8 rounded-[32px] bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20 relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 mb-10">
+        <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-8 mb-10">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-2xl bg-brand/10 text-brand flex items-center justify-center text-lg">🚀</div>
@@ -122,25 +122,27 @@ export default function ReviewRequestsModule({
             </Link>
           </div>
         </div>
-        <div className="lg:w-[300px] p-6 bg-inverse-surface rounded-[24px] text-white relative overflow-hidden shadow-2xl">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        <div className="min-w-0 w-full lg:w-[min(100%,300px)] lg:shrink-0 p-6 bg-inverse-surface rounded-[24px] text-white relative overflow-hidden shadow-2xl">
+          <div className="pointer-events-none absolute right-2 top-2 z-0 opacity-[0.06] select-none" aria-hidden>
+            <svg className="h-10 w-10 sm:h-12 sm:w-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
           </div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-brand mb-4">Quick Stats</p>
-          <div className="grid grid-cols-2 gap-4 relative z-10">
-            <div>
-              <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mb-1">Total Sent</p>
-              <p className="text-xl font-black">{used}</p>
+          <div className="relative z-10 min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-widest text-brand mb-4 pr-8">Quick Stats</p>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:gap-4">
+              <div className="min-w-0">
+                <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mb-1 truncate">Total Sent</p>
+                <p className="text-xl font-black tabular-nums">{used}</p>
+              </div>
+              <div className="min-w-0">
+                <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mb-1 truncate">Click Rate</p>
+                <p className="text-xl font-black tabular-nums text-emerald-400">{clickRate}%</p>
+              </div>
             </div>
-            <div>
-              <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mb-1">Click Rate</p>
-              <p className="text-xl font-black text-emerald-400">{clickRate}%</p>
+            <div className="mt-6 pt-4 border-t border-white/10">
+              <p className="text-[9px] text-white/50 font-medium leading-relaxed">
+                SMS and Email outreach includes all manual and automated campaigns.
+              </p>
             </div>
-          </div>
-          <div className="mt-6 pt-4 border-t border-white/10">
-            <p className="text-[9px] text-white/50 font-medium leading-relaxed">
-              SMS and Email outreach includes all manual and automated campaigns.
-            </p>
           </div>
         </div>
       </div>

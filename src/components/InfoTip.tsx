@@ -111,7 +111,7 @@ export default function InfoTip({ text, compact, align = "start" }: InfoTipProps
   }, [open, reposition]);
 
   return (
-    <span ref={rootRef} className="relative inline-flex align-middle">
+    <span ref={rootRef} className="relative inline-flex shrink-0 align-middle">
       <button
         type="button"
         className={`inline-flex shrink-0 items-center justify-center rounded-full text-on-surface-variant/70 transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${compact ? "p-0.5" : "p-1"}`}
