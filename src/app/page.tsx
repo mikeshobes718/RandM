@@ -1,7 +1,9 @@
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import PricingSection from "@/components/PricingSection";
 import ClientCTA from "@/components/ClientCTA";
+import NewsletterSignup from "../components/NewsletterSignup";
 
 export default function Home() {
   return (
