@@ -37,9 +37,6 @@ export default function AppSidebar() {
         if (biz.google_photo_url) setPhotoUrl(biz.google_photo_url);
       } catch {}
     }
-    const plan = localStorage.getItem("selectedPlan");
-    if (plan) setPlanLabel(plan.charAt(0).toUpperCase() + plan.slice(1) + " Plan");
-
     const unsub = onAuthStateChanged(clientAuth, async (user) => {
       if (user) {
         try {
@@ -61,9 +58,17 @@ export default function AppSidebar() {
               if (data.business.google_photo_url) setPhotoUrl(data.business.google_photo_url);
               localStorage.setItem("businessData", JSON.stringify(data.business));
             }
-            if (data.plan) {
-              setPlanLabel(data.plan.charAt(0).toUpperCase() + data.plan.slice(1) + " Plan");
-              localStorage.setItem("selectedPlan", data.plan);
+            const planName = data.plan || data.planUsage?.planName;
+            if (planName) {
+              const label =
+                typeof planName === "string"
+                  ? `${planName} Plan`
+                  : "Plan";
+              setPlanLabel(label);
+              localStorage.setItem("selectedPlan", String(planName).toLowerCase());
+            } else if (data.isPro) {
+              setPlanLabel("Unlimited Plan");
+              localStorage.setItem("selectedPlan", "unlimited");
             }
           }
         } catch (e) {}

@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
     if (!uid) return new NextResponse('Unauthorized', { status: 401 });
 
     const { isPro, planStatus, ownerEmail, subscriptionData } = await resolvePlan(uid);
+    const planUsageBase = resolvePlanUsage(subscriptionData, planStatus);
 
     let biz: Record<string, unknown> | null = null;
     try {
@@ -58,6 +59,15 @@ export async function GET(req: NextRequest) {
         stats: { reviewsThisMonth: 0, shareLinkScans: 0, averageRating: null },
         isPro,
         planStatus,
+        plan: planUsageBase.planName,
+        planUsage: {
+          used: 0,
+          limit: planUsageBase.requestsLimit,
+          qrScans: 0,
+          isUnlimited: planUsageBase.requestsLimit > 1000,
+          planName: planUsageBase.planName,
+          contactsCount: 0,
+        },
       });
     }
 
@@ -151,7 +161,7 @@ export async function GET(req: NextRequest) {
       return { delivered: 0, click: 0, optOut: 0 };
     });
 
-    const { requestsLimit, planName } = resolvePlanUsage(subscriptionData, planStatus);
+    const { requestsLimit, planName } = planUsageBase;
 
     return NextResponse.json({
       business: { ...biz, contact_phone: biz.contact_phone ? formatPhone(biz.contact_phone as string) : null },
@@ -160,6 +170,7 @@ export async function GET(req: NextRequest) {
       isPro,
       planStatus,
       ownerEmail,
+      plan: planName,
       analytics,
       squareConnection,
       activityFeed,

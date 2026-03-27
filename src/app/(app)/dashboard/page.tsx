@@ -250,17 +250,29 @@ function DashboardContent() {
             </p>
           </div>
         </div>
-        <div className="flex w-full md:w-auto gap-1 p-1 bg-surface-container-low rounded-xl">
+        <div className="flex w-full min-w-0 max-w-full gap-1 overflow-x-auto overflow-y-visible p-1 bg-surface-container-low rounded-xl [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden xl:max-w-none xl:overflow-visible">
           {(["overview", "toolkit", "sequences"] as const).map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 min-w-0 md:flex-initial px-2 sm:px-3 md:px-4 py-2 rounded-lg text-center text-xs sm:text-sm font-bold leading-tight transition-all ${
+              className={`shrink-0 whitespace-nowrap px-2.5 sm:px-3 md:px-4 py-2 rounded-lg text-center text-[11px] sm:text-xs md:text-sm font-bold leading-none transition-all ${
                 activeTab === tab ? "bg-white text-primary shadow-sm" : "text-on-surface-variant hover:bg-white/50"
               }`}
             >
-              {tab === "overview" ? "Review Requests" : tab === "toolkit" ? "QR Tools" : "Sequences"}
+              {tab === "overview" ? (
+                <>
+                  <span className="xl:hidden">Reviews</span>
+                  <span className="hidden xl:inline">Review Requests</span>
+                </>
+              ) : tab === "toolkit" ? (
+                <>
+                  <span className="xl:hidden">QR</span>
+                  <span className="hidden xl:inline">QR Tools</span>
+                </>
+              ) : (
+                "Sequences"
+              )}
             </button>
           ))}
         </div>
