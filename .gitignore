@@ -26,6 +26,9 @@ yarn-error.log*
 *.tgz
 *.bak
 
+# Python vision automation (browser-use venv — do not commit)
+automation/.venv/
+
 # Local deploy scratch
 direct-deploy/
 simple-deploy/
