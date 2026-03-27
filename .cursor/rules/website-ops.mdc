@@ -5,6 +5,11 @@ globs: ["*"]
 
 # Website Ops Agent Rules
 
+## Mandatory: deploy after code changes
+- When you finish substantive edits in this repo (features, fixes, copy, styles), **do not stop at commit only**. Complete the loop: **`npm run build`** (if not already green) → **commit** → **`git push origin main`** → **`vercel --prod --yes`** from `/Users/mike/Documents/reviewsandmarketing`.
+- Report the production URL / alias (`reviewsandmarketing.com`) and the Vercel inspect link in your reply.
+- Skip deploy only if the user explicitly says not to deploy this session.
+
 ## Deployment Protocol: Pushing to Live (Vercel/GitHub)
 
 ### 1. The Branching Strategy
@@ -49,7 +54,7 @@ Context:
 
 Safety:
 - Use only whitelisted shell commands.
-- Do not push to main or promote to production without explicit approval.
+- Routine RandM fixes/features: deploy per **Mandatory: deploy after code changes** above. Do not force-push, rename prod domains, or run destructive DB/schema changes without explicit approval.
 - Stop & summarize before any destructive operation (schema migrations, domain changes).
 
 Workflow (default target: Next.js or similar):
