@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <main className="min-h-screen selection:bg-primary/20 overflow-x-hidden bg-surface text-on-surface antialiased">
       {/* ── Hero (Animated Mesh Gradient) ── */}
-      <header className="relative pt-8 pb-12 sm:pt-16 sm:pb-16 md:pt-24 md:pb-20 lg:pt-28 xl:pt-32 overflow-hidden hero-animated-bg">
+      <header className="relative pt-8 pb-12 sm:pt-16 sm:pb-16 md:pt-24 md:pb-20 lg:pt-20 xl:pt-24 overflow-hidden hero-animated-bg">
         <div className="spotlight" />
         <div className="absolute top-20 left-10 w-64 h-64 rounded-full glass-panel blur-2xl opacity-40 animate-float pulse-glow" />
         <div className="absolute bottom-10 right-20 w-80 h-40 rounded-3xl glass-panel rotate-12 blur-xl opacity-30 animate-float-delayed" />
