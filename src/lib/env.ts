@@ -50,6 +50,28 @@ const ServerEnvSchema = z.object({
 
   // Admin portal configuration
   ADMIN_TOKEN: z.string().min(1).optional(),
+
+  // Twilio SMS — must be listed here or Zod strips them from process.env in getEnv()
+  TWILIO_ACCOUNT_SID: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().min(1).optional()
+  ),
+  TWILIO_AUTH_TOKEN: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().min(1).optional()
+  ),
+  TWILIO_PHONE_NUMBER: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().min(1).optional()
+  ),
+  TWILIO_API_KEY_SID: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().min(1).optional()
+  ),
+  TWILIO_API_KEY_SECRET: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().min(1).optional()
+  ),
 });
 
 type ServerEnv = z.infer<typeof ServerEnvSchema>;
