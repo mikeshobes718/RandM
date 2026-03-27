@@ -102,7 +102,14 @@ export async function POST(req: Request) {
 
     if (!customerId) {
       return NextResponse.json(
-        { error: 'Stripe customer not found. Complete a subscription checkout first, or contact support.' },
+        {
+          code: 'no_stripe_customer',
+          message:
+            'There’s no Stripe billing profile for this account yet. Subscribe to a paid plan to manage payment methods and invoices in Stripe.',
+          actionHref: '/pricing',
+          actionLabel: 'View plans & pricing',
+          error: 'No Stripe customer',
+        },
         { status: 404 }
       );
     }

@@ -101,6 +101,12 @@ function SettingsContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  /** Friendly billing hint (e.g. no Stripe customer yet) — not a hard error */
+  const [billingPortalNotice, setBillingPortalNotice] = useState<{
+    message: string;
+    actionHref?: string;
+    actionLabel?: string;
+  } | null>(null);
   const [businessId, setBusinessId] = useState<string>('');
   const [business, setBusiness] = useState<Business | null>(null);
   const [pro, setPro] = useState<boolean | null>(null);
@@ -167,6 +173,10 @@ function SettingsContent() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'billing') setBillingPortalNotice(null);
+  }, [activeTab]);
 
   useEffect(() => {
     (async () => {
@@ -410,6 +420,7 @@ function SettingsContent() {
   async function openBillingPortal() {
     try {
       setError(null);
+      setBillingPortalNotice(null);
       const tok = localStorage.getItem('idToken');
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (tok) headers.Authorization = `Bearer ${tok}`;
@@ -421,14 +432,29 @@ function SettingsContent() {
         body: JSON.stringify({ idToken: tok || undefined }),
       });
       const raw = await res.text();
-      let j: { url?: string; error?: string } = {};
+      let j: {
+        url?: string;
+        error?: string;
+        code?: string;
+        message?: string;
+        actionHref?: string;
+        actionLabel?: string;
+      } = {};
       try {
         j = raw ? (JSON.parse(raw) as typeof j) : {};
       } catch {
         throw new Error(raw?.slice(0, 200) || `Billing portal failed (${res.status})`);
       }
       if (!res.ok) {
-        throw new Error(j.error || `Billing portal failed (${res.status})`);
+        if (res.status === 404 && j.code === 'no_stripe_customer' && j.message) {
+          setBillingPortalNotice({
+            message: j.message,
+            actionHref: j.actionHref || '/pricing',
+            actionLabel: j.actionLabel || 'View plans & pricing',
+          });
+          return;
+        }
+        throw new Error(j.error || j.message || `Billing portal failed (${res.status})`);
       }
       if (j?.url) {
         window.location.href = j.url;
@@ -509,6 +535,19 @@ function SettingsContent() {
             {error && (
               <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl text-sm text-red-600 font-medium animate-fade-in">
                 {error}
+              </div>
+            )}
+            {billingPortalNotice && (
+              <div className="mb-8 p-4 bg-brand/5 border border-brand/15 rounded-2xl text-sm text-on-surface animate-fade-in">
+                <p className="font-medium leading-relaxed">{billingPortalNotice.message}</p>
+                {billingPortalNotice.actionHref && (
+                  <Link
+                    href={billingPortalNotice.actionHref}
+                    className="mt-3 inline-flex items-center font-bold text-brand hover:underline underline-offset-4"
+                  >
+                    {billingPortalNotice.actionLabel || 'Learn more'}
+                  </Link>
+                )}
               </div>
             )}
             {success && (
