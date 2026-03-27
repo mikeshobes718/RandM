@@ -1,1 +1,90 @@
----\ndescription: Website Ops Agent – build, test, and deploy via MCP\nglobs: ["*"]\n---\n\n# Website Ops Agent Rules\n\nContext:\n- Project root is the workspace folder.\n- Profile is implicit (no PII needed).\n- The site is deployed on Vercel; use CLI for local + deploy.\n\nSafety:\n- Use only whitelisted shell commands.\n- Do not push to main or promote to production without explicit approval.\n- Stop & summarize before any destructive operation (schema migrations, domain changes).\n\nWorkflow (default target: Next.js or similar):\n1) Read project info:\n   - Parse package.json, next.config.*, vercel.json if present.\n   - Detect package manager by lockfile (pnpm-lock.yaml|yarn.lock|package-lock.json).\n2) Prepare dev:\n   - shell: install deps (pnpm i | yarn | npm i).\n   - For envs: run `vercel env pull` if needed; never print secrets.\n3) Launch local server:\n   - Prefer `vercel dev --listen 3000` if configured; else `npm run dev`.\n   - Wait for http://localhost:3000 to respond with 200.\n4) Browser QA (Playwright MCP):\n   - Navigate key routes: /, /pricing, /contact, /login.\n   - Verify no console errors, broken links, or 404s.\n   - If a contact/lead form exists, fill with dummy data and confirm validation.\n   - Take notes on lighthouse-like issues (img sizes, missing alt, meta/OG tags).\n5) Code quality pass:\n   - shell: run `next lint` and `tsc --noEmit` (if TS). Fix any autofixable issues.\n6) Lighthouse check:\n   - shell: run `npx lighthouse http://localhost:3000 --output=json --output-path ./kb/lh-report.json --chrome-flags="--headless"`\n   - Produce a summary with Perf/Accessibility/Best Practices/SEO scores and prioritized fixes.\n7) Implement fixes:\n   - Make incremental file edits. After each set, re-run quick checks (build or page reload).\n8) Build + Preview:\n   - shell: run `next build` (or framework equivalent).\n   - shell: run `vercel` for a preview deployment; return the preview URL.\n9) Approval Gate:\n   - Summarize changes, lints, types, lighthouse scores, and preview URL.\n   - On explicit approval, proceed.\n10) Release:\n   - If using Git: create branch, commit, open PR (or push to main only on approval).\n   - Promote to production via `vercel promote <preview-url>` or `vercel --prod`, based on instruction.\n   - Report production URL and post-deploy checks.\n\nIf anything fails:\n- Provide the exact error, your hypothesis, and the next action.\n- Ask once for missing info; remember answers for this session.
+---
+description: Website Ops Agent – build, test, and deploy via MCP
+globs: ["*"]
+---
+
+# Website Ops Agent Rules
+
+## Deployment Protocol: Pushing to Live (Vercel/GitHub)
+
+### 1. The Branching Strategy
+- **dev branch**: All active development happens here.
+- **main branch**: This is the Production branch. Pushing to `main` triggers an automatic build and deployment on Vercel for reviewsandmarketing.com.
+
+### 2. The Safe Push Workflow
+Before pushing to live, always follow this 3-step sequence to avoid breaking the production site:
+
+1. **Local Build Check**: Run `npm run build` locally. If this fails, Vercel will fail. Fix all TypeScript or "missing import" errors before committing.
+2. **Commit to dev first**:
+   ```bash
+   git checkout dev
+   git add .
+   git commit -m "feat/fix: descriptive message"
+   git push origin dev
+   ```
+3. **Merge to main for Production**:
+   ```bash
+   git checkout main
+   git pull origin main
+   git merge dev -m "Merge dev: [summary of changes]"
+   git push origin main
+   ```
+
+### 3. Post-Deployment Verification
+- **Vercel Dashboard**: Monitor the build at [vercel.com](https://vercel.com). Ensure the status turns green (Ready).
+- **Schema Check**: If you added new database columns in `db/*.sql`, you must manually run that SQL in the Supabase SQL Editor for the production project immediately after the Vercel build finishes (until the Supabase CLI automation is finished).
+- **Live Smoke Test**: Open [reviewsandmarketing.com](https://reviewsandmarketing.com) on a mobile device and verify the specific area you changed (e.g., the Contacts outreach modal).
+
+### 4. Critical Safety Rules
+- **No Force Pushing**: Never `git push --force` to `main`.
+- **Secret Safety**: Never commit `.env`, `.env.local`, or `service-account.json`. All production secrets must be managed in the Vercel Project Settings → Environment Variables.
+- **GUI Preservation**: This is a final product. Do not change colors, spacing, or branding without explicit user approval.
+
+---
+
+Context:
+- Project root is the workspace folder.
+- Profile is implicit (no PII needed).
+- The site is deployed on Vercel; use CLI for local + deploy.
+
+Safety:
+- Use only whitelisted shell commands.
+- Do not push to main or promote to production without explicit approval.
+- Stop & summarize before any destructive operation (schema migrations, domain changes).
+
+Workflow (default target: Next.js or similar):
+1) Read project info:
+   - Parse package.json, next.config.*, vercel.json if present.
+   - Detect package manager by lockfile (pnpm-lock.yaml|yarn.lock|package-lock.json).
+2) Prepare dev:
+   - shell: install deps (pnpm i | yarn | npm i).
+   - For envs: run `vercel env pull` if needed; never print secrets.
+3) Launch local server:
+   - Prefer `vercel dev --listen 3000` if configured; else `npm run dev`.
+   - Wait for http://localhost:3000 to respond with 200.
+4) Browser QA (Playwright MCP):
+   - Navigate key routes: /, /pricing, /contact, /login.
+   - Verify no console errors, broken links, or 404s.
+   - If a contact/lead form exists, fill with dummy data and confirm validation.
+   - Take notes on lighthouse-like issues (img sizes, missing alt, meta/OG tags).
+5) Code quality pass:
+   - shell: run `next lint` and `tsc --noEmit` (if TS). Fix any autofixable issues.
+6) Lighthouse check:
+   - shell: run `npx lighthouse http://localhost:3000 --output=json --output-path ./kb/lh-report.json --chrome-flags="--headless"`
+   - Produce a summary with Perf/Accessibility/Best Practices/SEO scores and prioritized fixes.
+7) Implement fixes:
+   - Make incremental file edits. After each set, re-run quick checks (build or page reload).
+8) Build + Preview:
+   - shell: run `next build` (or framework equivalent).
+   - shell: run `vercel` for a preview deployment; return the preview URL.
+9) Approval Gate:
+   - Summarize changes, lints, types, lighthouse scores, and preview URL.
+   - On explicit approval, proceed.
+10) Release:
+   - If using Git: create branch, commit, open PR (or push to main only on approval).
+   - Promote to production via `vercel promote <preview-url>` or `vercel --prod`, based on instruction.
+   - Report production URL and post-deploy checks.
+
+If anything fails:
+- Provide the exact error, your hypothesis, and the next action.
+- Ask once for missing info; remember answers for this session.

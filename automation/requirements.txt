@@ -1,0 +1,6 @@
+# Python 3.12+ (Homebrew: /opt/homebrew/bin/python3.12)
+# venv: python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
+# Browsers: .venv/bin/playwright install chromium
+
+browser-use[cli]==0.12.5
+playwright==1.58.0
