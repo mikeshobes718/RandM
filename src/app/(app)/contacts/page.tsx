@@ -291,36 +291,40 @@ function ContactsPageContent() {
         </div>
       </div>
 
-      {/* Add Contact Modal — standard flex-col with internal scroll for iOS stability */}
+      {/* Add Contact: full-screen sheet on mobile, centered modal on md+ */}
       {showAddModal && (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div 
-            className="absolute inset-0" 
+        <div className="fixed inset-0 z-[100000] flex flex-col bg-white animate-in fade-in duration-200 md:items-center md:justify-center md:bg-transparent md:p-6">
+          <div
+            className="absolute inset-0 hidden bg-slate-900/60 backdrop-blur-sm md:block"
+            aria-hidden
             onClick={() => setShowAddModal(false)}
           />
-          <div className="relative bg-white rounded-[40px] w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90dvh]">
-            <div className="flex-shrink-0 p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+          <div className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full min-h-0 flex-col overflow-hidden bg-white md:h-auto md:max-h-[90dvh] md:max-w-md md:flex-none md:rounded-[40px] md:shadow-2xl animate-in zoom-in-95 duration-200">
+            <header className="flex shrink-0 items-center justify-between border-b border-slate-50 bg-slate-50/50 px-4 pb-4 pt-[max(12px,env(safe-area-inset-top))] md:p-8">
               <div>
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Add Contact</h3>
-                <p className="text-xs text-slate-400 font-medium mt-1 uppercase tracking-widest">Manual Entry</p>
+                <h3 className="text-lg font-black uppercase tracking-tight text-slate-900 md:text-xl">Add contact</h3>
+                <p className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-slate-400 md:text-xs">Manual entry</p>
               </div>
-              <button onClick={() => setShowAddModal(false)} className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              <button type="button" onClick={() => setShowAddModal(false)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:text-slate-600 min-h-[44px] min-w-[44px] md:h-10 md:w-10 md:min-h-0 md:min-w-0">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
-            </div>
-            <form onSubmit={onManualAdd} className="p-8 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
+            </header>
+            <form
+              onSubmit={onManualAdd}
+              className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-y-contain px-4 py-5 pb-[max(20px,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch] md:space-y-6 md:p-8 md:pb-10"
+            >
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Full Name</label>
-                <input type="text" placeholder="e.g. John Smith" value={manualContact.name} onChange={(e) => setManualContact({ ...manualContact, name: e.target.value })} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all" />
+                <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Full name</label>
+                <input type="text" placeholder="e.g. John Smith" value={manualContact.name} onChange={(e) => setManualContact({ ...manualContact, name: e.target.value })} className="h-12 w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
               </div>
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Email Address</label>
-                <input type="email" placeholder="john@example.com" value={manualContact.email} onChange={(e) => setManualContact({ ...manualContact, email: e.target.value })} className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all" />
+                <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Email</label>
+                <input type="email" placeholder="john@example.com" inputMode="email" autoComplete="email" value={manualContact.email} onChange={(e) => setManualContact({ ...manualContact, email: e.target.value })} className="h-12 w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
               </div>
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Phone Number</label>
+                <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Phone</label>
                 <div className="flex gap-2">
-                  <select value={manualContact.country} onChange={(e) => { const c = e.target.value; const f = new AsYouType(c as CountryCode); setManualContact({ ...manualContact, country: c, phone: f.input(manualContact.phone) }); }} className="w-24 h-12 bg-slate-50 border border-slate-100 rounded-2xl px-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all">
+                  <select value={manualContact.country} onChange={(e) => { const c = e.target.value; const f = new AsYouType(c as CountryCode); setManualContact({ ...manualContact, country: c, phone: f.input(manualContact.phone) }); }} className="h-12 w-24 shrink-0 rounded-2xl border border-slate-100 bg-slate-50 px-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20">
                     <option value="US">🇺🇸 +1</option>
                     <option value="CA">🇨🇦 +1</option>
                     <option value="GB">🇬🇧 +44</option>
@@ -328,106 +332,135 @@ function ContactsPageContent() {
                     <option value="IE">🇮🇪 +353</option>
                     <option value="NZ">🇳🇿 +64</option>
                   </select>
-                  <input type="tel" placeholder="(555) 000-0000" value={manualContact.phone} onChange={(e) => { const v = e.target.value; if (v.length < manualContact.phone.length) { setManualContact({ ...manualContact, phone: v }); } else { const f = new AsYouType(manualContact.country as CountryCode); setManualContact({ ...manualContact, phone: f.input(v) }); } }} className="flex-1 h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all" />
+                  <input type="tel" placeholder="(555) 000-0000" inputMode="tel" autoComplete="tel" value={manualContact.phone} onChange={(e) => { const v = e.target.value; if (v.length < manualContact.phone.length) { setManualContact({ ...manualContact, phone: v }); } else { const f = new AsYouType(manualContact.country as CountryCode); setManualContact({ ...manualContact, phone: f.input(v) }); } }} className="h-12 min-w-0 flex-1 rounded-2xl border border-slate-100 bg-slate-50 px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
                 </div>
-                <p className="text-[9px] text-slate-400 font-medium mt-2 ml-1">We'll format this automatically for SMS delivery.</p>
+                <p className="ml-1 mt-2 text-[9px] font-medium text-slate-400">We format this for SMS automatically.</p>
               </div>
-              <div className="pt-4">
-                <button type="submit" disabled={addingManual || (!manualContact.email && !manualContact.phone)} className="primary-button w-full h-14 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand/20 disabled:opacity-50 transition-all">{addingManual ? 'Saving...' : 'Save Contact'}</button>
+              <div className="pt-2">
+                <button type="submit" disabled={addingManual || (!manualContact.email && !manualContact.phone)} className="primary-button h-14 w-full rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand/20 transition-all disabled:opacity-50 min-h-[48px]">{addingManual ? 'Saving...' : 'Save contact'}</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Outreach Modal — standard flex-col with internal scroll for iOS stability */}
+      {/* Outreach: full-screen sheet on mobile, centered modal on md+ */}
       {showContactModal && (
         <div
-          className="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+          className="fixed inset-0 z-[100000] flex flex-col bg-white animate-in fade-in duration-200 md:items-center md:justify-center md:bg-transparent md:p-6"
           role="dialog"
           aria-modal="true"
           aria-labelledby="outreach-modal-title"
         >
-          <div 
-            className="absolute inset-0" 
+          <div
+            className="absolute inset-0 hidden bg-slate-900/60 backdrop-blur-sm md:block"
+            aria-hidden
             onClick={() => { setShowContactModal(false); setRecipientSearch(''); }}
           />
-          <div className="relative bg-white rounded-[40px] w-full max-w-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90dvh]">
-            <div className="flex-shrink-0 p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-              <div>
-                <h3 id="outreach-modal-title" className="text-xl font-black text-slate-900 uppercase tracking-tight">Send {contactType === 'email' ? 'Email' : 'SMS'} Outreach</h3>
-                <p className="text-xs text-slate-400 font-medium mt-1 uppercase tracking-widest">To {selectedIds.size} selected contact{selectedIds.size > 1 ? 's' : ''}</p>
+          <div className="relative z-10 flex h-[100dvh] max-h-[100dvh] w-full min-h-0 flex-col overflow-hidden bg-white md:h-auto md:max-h-[90dvh] md:max-w-xl md:flex-none md:rounded-[40px] md:shadow-2xl animate-in zoom-in-95 duration-200">
+            <header className="flex shrink-0 items-center justify-between border-b border-slate-50 bg-slate-50/50 px-4 pb-4 pt-[max(12px,env(safe-area-inset-top))] md:p-8">
+              <div className="min-w-0 pr-2">
+                <h3 id="outreach-modal-title" className="text-lg font-black uppercase tracking-tight text-slate-900 md:text-xl">
+                  Send {contactType === 'email' ? 'email' : 'SMS'} outreach
+                </h3>
+                <p className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-slate-400 md:text-xs">
+                  {selectedIds.size} selected
+                </p>
               </div>
-              <button onClick={() => { setShowContactModal(false); setRecipientSearch(''); }} className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              <button
+                type="button"
+                onClick={() => { setShowContactModal(false); setRecipientSearch(''); }}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:text-slate-600 min-h-[44px] min-w-[44px] md:h-10 md:w-10 md:min-h-0 md:min-w-0"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
-            </div>
-            <form onSubmit={onSendOutreach} className="p-8 space-y-6 pb-10 overflow-y-auto flex-1 custom-scrollbar">
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recipients{selectedIds.size > 0 && <span className="ml-2 px-1.5 py-0.5 bg-brand text-white rounded-md text-[9px]">{selectedIds.size}</span>}</p>
-                  {selectedIds.size > 0 && <button type="button" onClick={() => setSelectedIds(new Set())} className="text-[9px] font-black text-slate-400 hover:text-red-400 uppercase tracking-widest transition-colors">Clear all</button>}
+            </header>
+            <form
+              onSubmit={onSendOutreach}
+              className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-y-contain px-4 py-5 pb-[max(20px,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch] md:space-y-6 md:p-8 md:pb-10"
+            >
+              <section className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Recipients
+                    {selectedIds.size > 0 && (
+                      <span className="ml-2 inline rounded-md bg-brand px-1.5 py-0.5 text-[9px] text-white">{selectedIds.size}</span>
+                    )}
+                  </p>
+                  {selectedIds.size > 0 && (
+                    <button type="button" onClick={() => setSelectedIds(new Set())} className="shrink-0 text-[9px] font-black uppercase tracking-widest text-slate-400 transition-colors hover:text-red-400 min-h-[44px] px-1 md:min-h-0">
+                      Clear all
+                    </button>
+                  )}
                 </div>
                 <div className="relative mb-2">
-                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                  <input type="text" placeholder="Search contacts to add..." value={recipientSearch} onChange={(e) => setRecipientSearch(e.target.value)} className="w-full h-9 bg-white border border-slate-200 rounded-xl pl-8 pr-3 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all" />
+                  <svg className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  <input
+                    type="search"
+                    enterKeyHint="search"
+                    placeholder="Add more contacts…"
+                    value={recipientSearch}
+                    onChange={(e) => setRecipientSearch(e.target.value)}
+                    className="h-11 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 md:h-9 md:text-xs"
+                  />
                 </div>
                 {recipientSearch.trim().length > 0 && (
-                  <div className="bg-white border border-slate-200 rounded-xl overflow-hidden mb-2 max-h-40 overflow-y-auto shadow-sm">
+                  <div className="mb-2 max-h-36 overflow-y-auto overscroll-y-contain rounded-xl border border-slate-200 bg-white shadow-sm [-webkit-overflow-scrolling:touch] md:max-h-40">
                     {contacts.filter(c => { const q = recipientSearch.toLowerCase(); return (c.name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q) || (c.phone || '').includes(q); }).slice(0, 8).map(c => (
-                      <button key={c.id} type="button" onClick={() => setSelectedIds(prev => { const n = new Set(prev); if (n.has(c.id)) n.delete(c.id); else n.add(c.id); return n; })} className={`w-full flex items-center justify-between px-3 py-2 text-left hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 ${selectedIds.has(c.id) ? 'bg-brand/5' : ''}`}>
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-[11px] font-black text-slate-800 truncate">{c.name || 'Unnamed'}</span>
-                          <span className="text-[9px] text-slate-400 truncate">{c.email || formatPhoneDisplay(c.phone || '')}</span>
+                      <button key={c.id} type="button" onClick={() => setSelectedIds(prev => { const n = new Set(prev); if (n.has(c.id)) n.delete(c.id); else n.add(c.id); return n; })} className={`flex w-full items-center justify-between border-b border-slate-50 px-3 py-3 text-left transition-colors last:border-0 hover:bg-slate-50 min-h-[48px] md:py-2 md:min-h-0 ${selectedIds.has(c.id) ? 'bg-brand/5' : ''}`}>
+                        <div className="min-w-0 flex flex-col">
+                          <span className="truncate text-sm font-black text-slate-800 md:text-[11px]">{c.name || 'Unnamed'}</span>
+                          <span className="truncate text-xs text-slate-400 md:text-[9px]">{c.email || formatPhoneDisplay(c.phone || '')}</span>
                         </div>
-                        {selectedIds.has(c.id) && <svg className="w-4 h-4 text-brand flex-shrink-0 ml-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>}
+                        {selectedIds.has(c.id) && <svg className="ml-2 h-4 w-4 shrink-0 text-brand" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>}
                       </button>
                     ))}
-                    {contacts.filter(c => { const q = recipientSearch.toLowerCase(); return (c.name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q) || (c.phone || '').includes(q); }).length === 0 && <p className="text-[10px] text-slate-400 font-medium text-center py-3">No contacts found</p>}
+                    {contacts.filter(c => { const q = recipientSearch.toLowerCase(); return (c.name || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q) || (c.phone || '').includes(q); }).length === 0 && <p className="py-4 text-center text-sm text-slate-400 md:text-[10px]">No contacts found</p>}
                   </div>
                 )}
                 {selectedIds.size > 0 ? (
-                  <div className="flex flex-wrap gap-1.5 mt-1">
-                    {contacts.filter(c => selectedIds.has(c.id)).slice(0, 6).map(c => (
-                      <span key={c.id} className="flex items-center gap-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600">
-                        {c.name || c.email || c.phone}
-                        <button type="button" onClick={() => setSelectedIds(prev => { const n = new Set(prev); n.delete(c.id); return n; })} className="text-slate-300 hover:text-red-400 transition-colors ml-0.5">×</button>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {contacts.filter(c => selectedIds.has(c.id)).slice(0, 8).map(c => (
+                      <span key={c.id} className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-bold text-slate-600 md:text-[10px]">
+                        <span className="max-w-[140px] truncate md:max-w-none">{c.name || c.email || c.phone}</span>
+                        <button type="button" onClick={() => setSelectedIds(prev => { const n = new Set(prev); n.delete(c.id); return n; })} className="ml-0.5 text-slate-300 transition-colors hover:text-red-400 min-h-[32px] min-w-[32px] md:min-h-0 md:min-w-0">×</button>
                       </span>
                     ))}
-                    {selectedIds.size > 6 && <span className="px-2 py-1 bg-brand/5 border border-brand/10 rounded-lg text-[10px] font-black text-brand">+{selectedIds.size - 6} more</span>}
+                    {selectedIds.size > 8 && <span className="rounded-lg border border-brand/10 bg-brand/5 px-2 py-1.5 text-xs font-black text-brand">+{selectedIds.size - 8} more</span>}
                   </div>
                 ) : (
-                  <p className="text-[10px] text-slate-400 font-medium text-center py-2">Search above to add recipients, or select contacts from the list first.</p>
+                  <p className="py-2 text-center text-xs text-slate-400 md:text-[10px]">Search to add recipients or select from the list below.</p>
                 )}
-              </div>
+              </section>
               {contactType === 'email' && (
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 px-1">Subject Line</label>
-                  <input type="text" placeholder="e.g. A quick question about your visit" value={contactSubject} onChange={(e) => setContactSubject(e.target.value)} required className="w-full h-12 bg-slate-50 border border-slate-100 rounded-2xl px-4 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all" />
+                  <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-slate-400">Subject</label>
+                  <input type="text" placeholder="e.g. A quick question about your visit" value={contactSubject} onChange={(e) => setContactSubject(e.target.value)} required className="h-12 w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
                 </div>
               )}
               <div>
-                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between mb-2 px-1">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block shrink-0">Message Content</label>
+                <div className="mb-2 flex flex-col gap-1 px-1 sm:flex-row sm:items-center sm:justify-between">
+                  <label className="shrink-0 text-[10px] font-black uppercase tracking-widest text-slate-400">Message</label>
                   {contactType === 'email' && (
-                    <span className="text-[9px] font-medium text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100 sm:max-w-[55%] sm:text-right sm:truncate">
-                      Replies will go to: {ownerEmail || 'your email'}
+                    <span className="text-xs font-medium text-slate-400 md:max-w-[55%] md:truncate md:text-right md:text-[9px]">
+                      Replies: {ownerEmail || 'your email'}
                     </span>
                   )}
                 </div>
                 <textarea
-                  placeholder={contactType === 'email' ? 'Write your email message here...' : 'Write your SMS message here...'}
+                  placeholder={contactType === 'email' ? 'Write your email…' : 'Write your SMS…'}
                   value={contactMessage}
                   onChange={(e) => setContactMessage(e.target.value)}
                   required
                   autoComplete="off"
-                  className="w-full min-h-[160px] bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-base sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 transition-all resize-none"
+                  rows={6}
+                  className="min-h-[180px] w-full resize-none rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-base font-medium focus:outline-none focus:ring-2 focus:ring-brand/20 md:min-h-[160px] md:text-sm"
                 />
-                <p className="text-[9px] text-slate-400 font-medium mt-2 ml-1">{contactType === 'sms' ? "Keep it short for best results. Standard SMS rates apply." : "Your brand name will be included in the footer."}</p>
+                <p className="ml-1 mt-2 text-[9px] font-medium text-slate-400">{contactType === 'sms' ? 'Keep it short. SMS rates apply.' : 'Your brand name goes in the footer.'}</p>
               </div>
-              <div className="pt-4">
-                <button type="submit" disabled={isSending || selectedIds.size === 0 || !contactMessage || (contactType === 'email' && !contactSubject)} className="primary-button w-full h-14 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand/20 disabled:opacity-50 transition-all flex items-center justify-center gap-3">
-                  {isSending ? (<><div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>Sending...</>) : (<><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>Send {contactType.toUpperCase()} Outreach</>)}
+              <div className="pt-2">
+                <button type="submit" disabled={isSending || selectedIds.size === 0 || !contactMessage || (contactType === 'email' && !contactSubject)} className="primary-button flex min-h-[48px] h-14 w-full items-center justify-center gap-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-brand/20 transition-all disabled:opacity-50">
+                  {isSending ? (<><div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />Sending…</>) : (<><svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>Send {contactType.toUpperCase()} outreach</>)}
                 </button>
               </div>
             </form>
