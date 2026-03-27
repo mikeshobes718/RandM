@@ -4,7 +4,21 @@ import { useState, useEffect, Suspense } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useSearchParams } from 'next/navigation';
-import { AsYouType, CountryCode } from 'libphonenumber-js';
+import { AsYouType, CountryCode, validatePhoneNumberLength } from 'libphonenumber-js';
+
+/** National-format input only; caps digit count to the selected country's maximum. */
+function capNationalPhoneInput(raw: string, country: CountryCode): string {
+  let digits = raw.replace(/\D/g, '');
+  while (digits.length > 0) {
+    const f = new AsYouType(country);
+    const formatted = f.input(digits);
+    if (validatePhoneNumberLength(formatted, country) !== 'TOO_LONG') {
+      return formatted;
+    }
+    digits = digits.slice(0, -1);
+  }
+  return '';
+}
 import { useContacts, formatPhoneDisplay, type Contact } from '@/hooks/useContacts';
 import InfoTip from '@/components/InfoTip';
 
@@ -353,7 +367,7 @@ function ContactsPageContent() {
                       <div>
                         <label className="mb-2 block px-1 text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">Phone</label>
                         <div className="flex gap-2">
-                          <select value={manualContact.country} onChange={(e) => { const c = e.target.value; const f = new AsYouType(c as CountryCode); setManualContact({ ...manualContact, country: c, phone: f.input(manualContact.phone) }); }} className="h-12 w-24 shrink-0 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20">
+                          <select value={manualContact.country} onChange={(e) => { const c = e.target.value as CountryCode; setManualContact({ ...manualContact, country: c, phone: capNationalPhoneInput(manualContact.phone, c) }); }} className="h-12 w-24 shrink-0 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand/20">
                             <option value="US">🇺🇸 +1</option>
                             <option value="CA">🇨🇦 +1</option>
                             <option value="GB">🇬🇧 +44</option>
@@ -361,7 +375,7 @@ function ContactsPageContent() {
                             <option value="IE">🇮🇪 +353</option>
                             <option value="NZ">🇳🇿 +64</option>
                           </select>
-                          <input type="tel" placeholder="(555) 000-0000" inputMode="tel" autoComplete="tel" value={manualContact.phone} onChange={(e) => { const v = e.target.value; if (v.length < manualContact.phone.length) { setManualContact({ ...manualContact, phone: v }); } else { const f = new AsYouType(manualContact.country as CountryCode); setManualContact({ ...manualContact, phone: f.input(v) }); } }} className="h-12 min-w-0 flex-1 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
+                          <input type="tel" placeholder="(555) 000-0000" inputMode="tel" autoComplete="tel" value={manualContact.phone} onChange={(e) => { const v = e.target.value; if (v.length < manualContact.phone.length) { setManualContact({ ...manualContact, phone: v }); } else { setManualContact({ ...manualContact, phone: capNationalPhoneInput(v, manualContact.country as CountryCode) }); } }} className="h-12 min-w-0 flex-1 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 text-base font-bold focus:outline-none focus:ring-2 focus:ring-brand/20 md:text-sm" />
                         </div>
                         <p className="ml-1 mt-2 text-[9px] font-medium text-on-surface-variant/60">We format this for SMS automatically.</p>
                       </div>

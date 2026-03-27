@@ -250,29 +250,17 @@ function DashboardContent() {
             </p>
           </div>
         </div>
-        <div className="flex w-full min-w-0 max-w-full gap-1 overflow-x-auto overflow-y-visible p-1 bg-surface-container-low rounded-xl [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden xl:max-w-none xl:overflow-visible">
+        <div className="flex w-full min-w-0 max-w-full gap-1 p-1 bg-surface-container-low rounded-2xl">
           {(["overview", "toolkit", "sequences"] as const).map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`shrink-0 whitespace-nowrap px-2.5 sm:px-3 md:px-4 py-2 rounded-lg text-center text-[11px] sm:text-xs md:text-sm font-bold leading-none transition-all ${
+              className={`flex-1 min-w-0 px-2 sm:px-4 py-2.5 rounded-xl text-center text-xs sm:text-sm font-bold leading-tight transition-all ${
                 activeTab === tab ? "bg-white text-primary shadow-sm" : "text-on-surface-variant hover:bg-white/50"
               }`}
             >
-              {tab === "overview" ? (
-                <>
-                  <span className="xl:hidden">Reviews</span>
-                  <span className="hidden xl:inline">Review Requests</span>
-                </>
-              ) : tab === "toolkit" ? (
-                <>
-                  <span className="xl:hidden">QR</span>
-                  <span className="hidden xl:inline">QR Tools</span>
-                </>
-              ) : (
-                "Sequences"
-              )}
+              {tab === "overview" ? "Reviews" : tab === "toolkit" ? "QR" : "Sequences"}
             </button>
           ))}
         </div>

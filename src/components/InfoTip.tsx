@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 
 type InfoTipProps = {
   text: string;
@@ -27,6 +28,12 @@ function clampTooltipPosition(
   const gap = 6;
 
   let left = align === "end" ? trigger.right - tipW : trigger.left;
+  
+  // If it's a small screen, center it relative to the trigger as a fallback
+  if (vw < 640) {
+    left = trigger.left + (trigger.width / 2) - (tipW / 2);
+  }
+
   left = Math.max(margin, Math.min(left, vw - tipW - margin));
 
   let top = trigger.bottom + gap;
@@ -40,6 +47,7 @@ function clampTooltipPosition(
 
 export default function InfoTip({ text, compact, align = "start" }: InfoTipProps) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const [ready, setReady] = useState(false);
   const rootRef = useRef<HTMLSpanElement>(null);
@@ -73,6 +81,8 @@ export default function InfoTip({ text, compact, align = "start" }: InfoTipProps
       return;
     }
     measureAndPlace();
+    const rafId = requestAnimationFrame(() => measureAndPlace());
+    return () => cancelAnimationFrame(rafId);
   }, [open, align, text, measureAndPlace]);
 
   useEffect(() => {
@@ -84,10 +94,19 @@ export default function InfoTip({ text, compact, align = "start" }: InfoTipProps
   }, [open, reposition, text]);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
     const onDoc = (e: PointerEvent) => {
       const t = e.target as Node | null;
-      if (t && rootRef.current?.contains(t)) return;
+      if (
+        t &&
+        (rootRef.current?.contains(t) || tipRef.current?.contains(t))
+      ) {
+        return;
+      }
       setOpen(false);
     };
     document.addEventListener("pointerdown", onDoc, true);
@@ -128,25 +147,28 @@ export default function InfoTip({ text, compact, align = "start" }: InfoTipProps
           info
         </span>
       </button>
-      {open ? (
-        <span
-          id={tipId}
-          ref={tipRef}
-          role="tooltip"
-          style={{
-            position: "fixed",
-            top: pos.top,
-            left: pos.left,
-            zIndex: 99999,
-          }}
-          className={`mt-0 max-w-[min(18rem,calc(100vw-1.25rem))] rounded-lg bg-slate-900 px-3 py-2 text-left text-[11px] font-medium leading-snug text-white shadow-xl transition-opacity duration-75 ${
-            ready ? "opacity-100" : "pointer-events-none opacity-0"
-          }`}
-          onPointerDown={(e) => e.stopPropagation()}
-        >
-          {text}
-        </span>
-      ) : null}
+      {open && mounted
+        ? createPortal(
+            <span
+              id={tipId}
+              ref={tipRef}
+              role="tooltip"
+              style={{
+                position: "fixed",
+                top: pos.top,
+                left: pos.left,
+                zIndex: 1000000,
+              }}
+              className={`mt-0 max-w-[min(18rem,calc(100vw-1.25rem))] rounded-lg bg-slate-900 px-3 py-2 text-left text-[11px] font-medium leading-snug text-white shadow-xl transition-opacity duration-75 ${
+                ready ? "opacity-100" : "pointer-events-none opacity-0"
+              }`}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              {text}
+            </span>,
+            document.body
+          )
+        : null}
     </span>
   );
 }
