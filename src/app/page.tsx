@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <main className="min-h-screen selection:bg-primary/20 overflow-x-hidden bg-surface text-on-surface antialiased">
       {/* ── Hero (Animated Mesh Gradient) ── */}
-      <header className="relative pt-32 pb-20 overflow-hidden hero-animated-bg">
+      <header className="relative pt-8 pb-12 sm:pt-16 sm:pb-16 md:pt-24 md:pb-20 lg:pt-28 xl:pt-32 overflow-hidden hero-animated-bg">
         <div className="spotlight" />
         <div className="absolute top-20 left-10 w-64 h-64 rounded-full glass-panel blur-2xl opacity-40 animate-float pulse-glow" />
         <div className="absolute bottom-10 right-20 w-80 h-40 rounded-3xl glass-panel rotate-12 blur-xl opacity-30 animate-float-delayed" />
@@ -18,7 +18,7 @@ export default function Home() {
 
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
+            <div className="space-y-5 sm:space-y-6 md:space-y-8">
               <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold tracking-wider uppercase border border-white/20">
                 Modern Reputation Management
               </span>
@@ -42,14 +42,14 @@ export default function Home() {
                 The sophisticated way to curate your online reputation. Route 5-star experiences to Google Maps and handle 1-4 star feedback privately before they hit the public web.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 sm:pt-4">
                 <ClientCTA className="primary-gradient text-on-primary px-8 py-4 rounded-lg font-bold text-lg shadow-xl hover:scale-105 transition-transform text-center" />
                 <Link href="/how-it-works" className="bg-white/40 backdrop-blur-md border border-white/40 px-8 py-4 rounded-lg font-bold text-lg text-on-background hover:bg-white/60 transition-colors text-center">
                   Watch Demo
                 </Link>
               </div>
 
-            <div className="flex items-center gap-4 pt-6">
+            <div className="flex items-center gap-3 sm:gap-4 pt-3 sm:pt-6">
                 <div className="flex -space-x-3">
                   {[
                     { name: "Sarah J.", img: "https://i.pravatar.cc/150?u=sarah" },
