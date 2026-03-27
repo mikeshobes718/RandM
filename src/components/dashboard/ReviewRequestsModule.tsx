@@ -93,7 +93,7 @@ export default function ReviewRequestsModule({
   };
 
   return (
-    <div className="surface-card p-8 rounded-[32px] bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20 relative overflow-hidden h-full">
+    <div className="surface-card p-8 rounded-[32px] bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20 relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 mb-10">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-3">

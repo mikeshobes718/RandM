@@ -99,6 +99,7 @@ export default function AppSidebar() {
             <Link
               key={item.name}
               href={item.href}
+              title={item.name}
               className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all ${
                 isActive
                   ? "bg-primary-fixed/40 text-primary font-semibold"

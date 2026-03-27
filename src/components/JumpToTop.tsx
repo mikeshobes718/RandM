@@ -29,7 +29,7 @@ export default function JumpToTop() {
   return (
     <button
       onClick={scrollToTop}
-      className="fixed bottom-24 md:bottom-6 left-6 z-50 p-3 bg-primary text-white rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center animate-fade-in"
+      className="fixed bottom-24 md:bottom-6 right-6 z-50 p-3 bg-primary text-white rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center animate-fade-in"
       aria-label="Jump to top"
     >
       <span className="material-symbols-outlined">arrow_upward</span>

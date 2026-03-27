@@ -23,6 +23,7 @@ export default function BottomTabBar() {
             <Link
               key={tab.name}
               href={tab.href}
+              title={tab.name}
               className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
                 isActive ? "text-primary" : "text-on-surface-variant/50"
               }`}

@@ -94,7 +94,7 @@ export default function ActivationWidget({ business, stats, recentFeedbackCount,
 
 
   return (
-    <div className="surface-card p-6 rounded-3xl bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20">
+    <div className="surface-card p-6 rounded-3xl bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20 h-full">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-black text-on-surface flex items-center gap-2">
