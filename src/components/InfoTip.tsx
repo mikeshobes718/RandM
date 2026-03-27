@@ -47,25 +47,33 @@ export default function InfoTip({ text, compact, align = "start" }: InfoTipProps
   const id = useId();
   const tipId = `${id}-tip`;
 
-  const reposition = useCallback(() => {
+  const measureAndPlace = useCallback(() => {
     const root = rootRef.current;
     const tip = tipRef.current;
-    if (!open || !root || !tip) return;
+    if (!root || !tip) return;
+    void tip.offsetHeight;
     const trigger = root.getBoundingClientRect();
-    const w = tip.offsetWidth;
-    const h = tip.offsetHeight;
-    if (w === 0 || h === 0) return;
+    const rect = tip.getBoundingClientRect();
+    let w = rect.width || tip.scrollWidth;
+    let h = rect.height || tip.scrollHeight;
+    if (w < 2) w = Math.min(288, window.innerWidth - 20);
+    if (h < 2) h = 48;
     setPos(clampTooltipPosition(trigger, w, h, align));
     setReady(true);
-  }, [open, align]);
+  }, [align]);
+
+  const reposition = useCallback(() => {
+    if (!open) return;
+    measureAndPlace();
+  }, [open, measureAndPlace]);
 
   useLayoutEffect(() => {
     if (!open) {
       setReady(false);
       return;
     }
-    reposition();
-  }, [open, align, text, reposition]);
+    measureAndPlace();
+  }, [open, align, text, measureAndPlace]);
 
   useEffect(() => {
     if (!open || !tipRef.current) return;
@@ -77,11 +85,13 @@ export default function InfoTip({ text, compact, align = "start" }: InfoTipProps
 
   useEffect(() => {
     if (!open) return;
-    const onDoc = (e: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
+    const onDoc = (e: PointerEvent) => {
+      const t = e.target as Node | null;
+      if (t && rootRef.current?.contains(t)) return;
+      setOpen(false);
     };
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
+    document.addEventListener("pointerdown", onDoc, true);
+    return () => document.removeEventListener("pointerdown", onDoc, true);
   }, [open]);
 
   useEffect(() => {
@@ -108,7 +118,11 @@ export default function InfoTip({ text, compact, align = "start" }: InfoTipProps
         aria-label="More information"
         aria-expanded={open}
         aria-controls={open ? tipId : undefined}
-        onClick={() => setOpen((v) => !v)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <span className={`material-symbols-outlined leading-none ${compact ? "text-[14px]" : "text-[18px]"}`}>
           info
@@ -125,9 +139,10 @@ export default function InfoTip({ text, compact, align = "start" }: InfoTipProps
             left: pos.left,
             zIndex: 99999,
           }}
-          className={`mt-0 w-[min(18rem,calc(100vw-1.25rem))] rounded-lg bg-slate-900 px-3 py-2 text-left text-[11px] font-medium leading-snug text-white shadow-xl transition-opacity duration-75 ${
+          className={`mt-0 max-w-[min(18rem,calc(100vw-1.25rem))] rounded-lg bg-slate-900 px-3 py-2 text-left text-[11px] font-medium leading-snug text-white shadow-xl transition-opacity duration-75 ${
             ready ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
+          onPointerDown={(e) => e.stopPropagation()}
         >
           {text}
         </span>
