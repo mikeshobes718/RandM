@@ -33,8 +33,6 @@ type Business = {
   landing_subheading?: string | null;
 };
 
-
-
 type Stats = {
   reviewsThisMonth: number;
   shareLinkScans: number;
@@ -99,10 +97,8 @@ function DashboardContent() {
   const [recentCampaigns, setRecentCampaigns] = useState<Campaign[]>([]);
   const [rates, setRates] = useState({ delivered: 0, click: 0, optOut: 0 });
   const [isActivated, setIsActivated] = useState(false);
-  const [activeTab, setActiveTab] = useState<'review-toolkit' | 'sequences' | 'analytics'>('review-toolkit');
+  const [activeTab, setActiveTab] = useState<'overview' | 'toolkit' | 'sequences'>('overview');
   const [isUpdatingContent, setIsUpdatingContent] = useState(false);
-
-
 
   const handleUpdateContent = async (key: string, value: string) => {
     if (!business?.id || isUpdatingContent) return;
@@ -126,7 +122,6 @@ function DashboardContent() {
   const landingUrl = useMemo(() => {
     if (!business?.id) return '';
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.reviewsandmarketing.com';
-    // Use DB slug if available, else derive from name, else fallback to id
     const computedSlug = business.name
       ? business.name.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').replace(/-+/g, '-').slice(0, 50)
       : null;
@@ -145,7 +140,6 @@ function DashboardContent() {
       setLoading(true);
       try {
         const headers: Record<string, string> = {};
-
         if (user) {
           const tok = await user.getIdToken();
           headers['Authorization'] = `Bearer ${tok}`;
@@ -170,16 +164,11 @@ function DashboardContent() {
         setRecentCampaigns(data.recentCampaigns ?? []);
         setRates(data.rates ?? { delivered: 0, click: 0, optOut: 0 });
 
-        // Only redirect to onboarding if there is genuinely no business.
-        // NEVER redirect to /select-plan from the dashboard.
         if (!data.business) {
           window.location.replace('/onboarding/business');
           return;
         }
-
       } catch (err: any) {
-        // If the dashboard API fails, use resolveRoute to send the user
-        // to the correct place instead of showing a dead-end error.
         if (user) {
           try {
             const tok = await user.getIdToken();
@@ -199,7 +188,6 @@ function DashboardContent() {
     return () => unsubscribe();
   }, []);
 
-
   const handleCopyLink = () => {
     if (!landingUrl) return;
     navigator.clipboard.writeText(landingUrl);
@@ -210,8 +198,8 @@ function DashboardContent() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full mb-4"></div>
-        <p className="text-muted text-sm font-medium">Loading your dashboard...</p>
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mb-4" />
+        <p className="text-on-surface-variant text-sm font-medium">Loading your dashboard...</p>
       </div>
     );
   }
@@ -219,282 +207,320 @@ function DashboardContent() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
-        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mb-6">
-          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
+        <div className="w-16 h-16 bg-error-container text-error rounded-2xl flex items-center justify-center mb-6">
+          <span className="material-symbols-outlined text-3xl">warning</span>
         </div>
         <h2 className="text-xl font-bold mb-2">Failed to load dashboard</h2>
-        <p className="text-muted text-sm max-w-xs mb-8">{error}</p>
-        <button onClick={() => window.location.reload()} className="primary-button !h-11 px-8">
-          Try again
-        </button>
+        <p className="text-on-surface-variant text-sm max-w-xs mb-8">{error}</p>
+        <button onClick={() => window.location.reload()} className="primary-button !h-11 px-8">Try again</button>
       </div>
     );
   }
 
-  if (!business || !business.id) {
-    return null; // The useEffect will handle redirecting to /onboarding/business
-  }
+  if (!business || !business.id) return null;
+
+  const kpis = [
+    { icon: "mail", label: "Total Requests", value: stats.reviewsThisMonth, change: analytics?.growth ? `+${analytics.growth}%` : null, color: "primary" },
+    { icon: "qr_code_2", label: "QR Scans", value: stats.shareLinkScans, change: null, color: "secondary" },
+    { icon: "ads_click", label: "Click Rate", value: rates.click > 0 ? `${rates.click}%` : "—", change: null, color: "tertiary" },
+    { icon: "star", label: "Avg Rating", value: stats.averageRating ?? "—", change: null, color: "error" },
+  ];
 
   return (
-    <div className="max-w-6xl mx-auto px-6 pt-24 pb-12 sm:pt-32" data-deployment="jan19-final-v4">
+    <div className="max-w-full">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-        <div className="flex items-center gap-5">
-          {business.google_photo_url && (
-            <div
-              onClick={() => setIsPhotoModalOpen(true)}
-              className="hidden sm:block w-20 h-20 rounded-2xl overflow-hidden border-4 border-white shadow-2xl flex-shrink-0 group relative cursor-pointer"
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-on-surface">Business Overview</h1>
+          <p className="text-on-surface-variant">
+            Welcome back — here&apos;s what&apos;s happening with {business.name}.
+          </p>
+        </div>
+        <div className="flex gap-2 p-1 bg-surface-container-low rounded-xl">
+          {(["overview", "toolkit", "sequences"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 rounded-lg text-sm font-bold capitalize transition-all ${
+                activeTab === tab ? "bg-white text-primary shadow-sm" : "text-on-surface-variant hover:bg-white/50"
+              }`}
             >
-              <img src={business.google_photo_url} alt={business.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                </svg>
-              </div>
-            </div>
-          )}
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                Dashboard
-                <span className="text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-widest bg-surface-container-lowest px-2 py-1 rounded-md border border-outline-variant/20">Live v2.1</span>
-              </h1>
-              <div className="flex items-center gap-2 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">System Normal</span>
-              </div>
-            </div>
-            <p className="text-muted text-sm font-medium flex items-center gap-2">
-              Connected to {business.name}
-              {business.address && (
-                <span className="text-on-surface-variant/60 font-normal border-l border-outline-variant/30 pl-2 ml-1">
-                  {business.address.split(',')[0]}
-                </span>
+              {tab === "overview" ? "Review Requests" : tab === "toolkit" ? "QR Tools" : "Sequences"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* KPI Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {kpis.map((kpi) => (
+          <div key={kpi.label} className="bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant/15">
+            <div className="flex justify-between items-start mb-3">
+              <span className={`p-2 bg-${kpi.color}/10 text-${kpi.color} rounded-lg material-symbols-outlined`}>{kpi.icon}</span>
+              {kpi.change && (
+                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">{kpi.change}</span>
               )}
-            </p>
+            </div>
+            <p className="text-xs font-medium text-on-surface-variant uppercase tracking-wider">{kpi.label}</p>
+            <h3 className="text-3xl font-bold text-primary mt-1">{kpi.value}</h3>
           </div>
-        </div>
-        <div className="flex flex-wrap gap-2 items-center lg:flex-nowrap">
-          <Link href="/contacts" className="inline-flex items-center gap-2 px-4 h-10 bg-brand text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all hover:bg-brand/90 hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-brand/20">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-            Contacts
-          </Link>
-          <Link href="/onboarding/business?edit=1" className="inline-flex items-center gap-2 px-4 h-10 bg-surface text-on-surface-variant border border-outline-variant/30 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all hover:bg-surface-container-lowest hover:border-outline-variant/40 hover:scale-[1.02] active:scale-[0.98] shadow-sm">
-            <svg className="w-3.5 h-3.5 text-on-surface-variant/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 21V5a2 2 0 00-2-2H5a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-            Business
-          </Link>
-          <Link href="/settings" className="inline-flex items-center gap-2 px-4 h-10 bg-surface text-on-surface-variant border border-outline-variant/30 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all hover:bg-surface-container-lowest hover:border-outline-variant/40 hover:scale-[1.02] active:scale-[0.98] shadow-sm">
-            <svg className="w-3.5 h-3.5 text-on-surface-variant/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            Settings
-          </Link>
-        </div>
+        ))}
       </div>
 
-      {/* Top Row: Plan Usage (Horizontal) */}
-      <div className="mb-8">
-        <PlanUsageCard
-          planName={planUsage.planName}
-          requestsUsed={planUsage.used}
-          requestsLimit={planUsage.limit}
-          qrScans={planUsage.qrScans}
-          isUnlimited={planUsage.isUnlimited}
-          isPro={isPro}
-          planStatus={planStatus}
-        />
-      </div>
-
-      {/* Feedback Inbox */}
-      <div className="mb-12">
-        <FeedbackInbox initialItems={recentFeedback} businessId={business.id!} />
-      </div>
-
-      {/* Tabs Navigation */}
-      <div className="flex items-center gap-1 mb-8 p-1 bg-surface-container-low rounded-2xl w-fit">
-        <button
-          onClick={() => setActiveTab('review-toolkit')}
-          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'review-toolkit' ? 'bg-surface text-on-surface shadow-sm' : 'text-on-surface-variant/60 hover:text-on-surface-variant'
-            }`}
-        >
-          Review Toolkit
-        </button>
-        <button
-          onClick={() => setActiveTab('sequences')}
-          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'sequences' ? 'bg-surface text-on-surface shadow-sm' : 'text-on-surface-variant/60 hover:text-on-surface-variant'
-            }`}
-        >
-          Sequences
-        </button>
-      </div>
-
-      {activeTab === 'review-toolkit' && (
+      {activeTab === "overview" && (
         <div className="animate-fade-in">
-          <div className="mb-12">
-            <section className="surface-card p-8 rounded-3xl overflow-hidden relative group bg-surface border border-outline-variant/20 shadow-xl shadow-outline-variant/20">
-              <h2 className="text-xl font-bold mb-2">Review Toolkit</h2>
-              <p className="text-sm text-muted mb-8 font-medium">Your core tools for collecting customer reviews.</p>
+          {/* Main Grid: 8 + 4 */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Column (8) */}
+            <div className="lg:col-span-8 space-y-6">
+              {/* Plan Usage */}
+              <PlanUsageCard
+                planName={planUsage.planName}
+                requestsUsed={planUsage.used}
+                requestsLimit={planUsage.limit}
+                qrScans={planUsage.qrScans}
+                isUnlimited={planUsage.isUnlimited}
+                isPro={isPro}
+                planStatus={planStatus}
+              />
 
-              <div className="space-y-8">
-                <div className="relative group/copy">
-                  <label className="text-[10px] font-black text-muted uppercase tracking-widest block mb-2">Main QR Tracking Link</label>
-                  <div className="flex gap-2 p-1 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl">
-                    <div className="flex-1 h-11 bg-surface rounded-xl px-4 flex items-center text-sm font-mono truncate text-on-surface-variant border border-outline-variant/20 shadow-sm">
-                      {landingUrl}
+              {/* Performance Chart Placeholder */}
+              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/15">
+                <div className="flex justify-between items-center mb-6">
+                  <h4 className="text-lg font-bold">Performance Overview</h4>
+                  <span className="text-xs text-on-surface-variant bg-surface-container-low px-3 py-1 rounded-lg">Last 30 Days</span>
+                </div>
+                <div className="h-48 flex items-end justify-between gap-1 px-2">
+                  {(analytics?.history || []).slice(-14).map((d, i) => (
+                    <div key={i} className="flex-1 flex items-end gap-0.5">
+                      <div className="flex-1 bg-primary/20 rounded-t-sm" style={{ height: `${Math.min(100, (d.scans / 50) * 100)}%` }} />
+                      <div className="flex-1 bg-primary rounded-t-sm" style={{ height: `${Math.min(100, (d.reviews / 20) * 100)}%` }} />
                     </div>
-                    <button onClick={handleCopyLink} className={`primary-button !h-11 px-8 text-xs font-black uppercase tracking-widest transition-all ${copyState === 'copied' ? '!bg-emerald-500 !shadow-emerald-100' : ''}`}>
-                      {copyState === 'copied' ? (
-                        <span className="flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                          Copied
-                        </span>
-                      ) : 'Copy Link'}
+                  ))}
+                  {(!analytics?.history || analytics.history.length === 0) && (
+                    <div className="w-full flex items-center justify-center text-on-surface-variant text-sm">
+                      No data yet
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-center gap-6 mt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-primary rounded-full" />
+                    <span className="text-xs text-on-surface-variant">Reviews</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-primary/20 rounded-full" />
+                    <span className="text-xs text-on-surface-variant">QR Scans</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Feedback Inbox */}
+              <FeedbackInbox initialItems={recentFeedback} businessId={business.id!} />
+
+              {/* Review Requests Module */}
+              <ReviewRequestsModule
+                used={planUsage.used}
+                limit={planUsage.limit}
+                recentCampaigns={recentCampaigns}
+                isPro={isPro}
+                deliveredRate={rates.delivered}
+                clickRate={rates.click}
+                optOutRate={rates.optOut}
+              />
+            </div>
+
+            {/* Right Column (4) */}
+            <div className="lg:col-span-4 space-y-6">
+              {/* Setup Progress */}
+              {!isActivated && (
+                <ActivationWidget
+                  business={business}
+                  stats={stats}
+                  recentFeedbackCount={recentFeedback.length}
+                  isPro={isPro}
+                  onStatusChange={setIsActivated}
+                />
+              )}
+
+              {/* QR Toolkit Mini */}
+              <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/15">
+                <h4 className="font-bold mb-4">Review Toolkit</h4>
+                <div className="bg-surface p-4 rounded-lg border border-dashed border-outline-variant flex flex-col items-center">
+                  <div className="bg-white p-3 rounded-lg shadow-sm mb-3">
+                    <img
+                      src={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=6`}
+                      alt="QR Code"
+                      className="w-24 h-24"
+                    />
+                  </div>
+                  <p className="text-center font-bold text-sm mb-1">Smart QR Engine</p>
+                  <p className="text-center text-xs text-on-surface-variant mb-4">Dynamic redirect based on sentiment</p>
+                  <div className="flex gap-2 w-full">
+                    <a
+                      href={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=12`}
+                      download={`${business.name.replace(/\s+/g, '-').toLowerCase()}-qr.png`}
+                      className="flex-1 py-2 bg-surface-container-high text-xs font-bold rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-sm">download</span> Save
+                    </a>
+                    <button
+                      onClick={handleCopyLink}
+                      className="flex-1 py-2 bg-surface-container-high text-xs font-bold rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
+                    >
+                      <span className="material-symbols-outlined text-sm">{copyState === 'copied' ? 'check' : 'content_copy'}</span>
+                      {copyState === 'copied' ? 'Copied!' : 'Link'}
                     </button>
                   </div>
-                  <div className="absolute inset-x-0 -top-10 opacity-0 group-hover/copy:opacity-100 transition-opacity pointer-events-none z-20 px-2">
-                    <div className="bg-inverse-surface text-white text-[9px] py-1.5 px-2 rounded-lg shadow-xl text-center font-bold uppercase tracking-widest leading-tight">
-                      The smart link that routes reviews to the right place.
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col lg:flex-row gap-8 items-stretch pt-8 border-t border-outline-variant/20">
-                  {/* Left: The QR Code itself */}
-                  <div className="lg:w-1/3 flex flex-col items-center justify-between gap-4 bg-surface-container-lowest p-6 rounded-3xl border border-outline-variant/20">
-                    <div className="bg-surface p-4 border-4 border-outline-variant/20 rounded-[32px] shadow-2xl shadow-outline-variant/20 group-hover:scale-[1.02] transition-transform w-full max-w-[220px] mx-auto">
-                      <img
-                        src={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=8`}
-                        alt="QR Code"
-                        className="w-full aspect-square"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-2 w-full mt-4">
-                      <a
-                        href={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=12`}
-                        download={`${business.name.replace(/\s+/g, '-').toLowerCase()}-qr.png`}
-                        className="primary-button !h-11 w-full text-xs font-black uppercase tracking-widest shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        Download Asset
-                      </a>
-                      <button
-                        onClick={() => {
-                          const printWindow = window.open('', '_blank');
-                          if (printWindow) {
-                            const qrUrl = `/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=12`;
-                            printWindow.document.write(`
-                          <html>
-                            <head>
-                              <title>Print QR Code - ${business.name}</title>
-                              <style>
-                                body { 
-                                  margin: 0; 
-                                  padding: 40px; 
-                                  display: flex; 
-                                  flex-direction: column; 
-                                  align-items: center; 
-                                  justify-content: center; 
-                                  min-height: 100vh;
-                                  font-family: system-ui, -apple-system, sans-serif;
-                                }
-                                img { max-width: 100%; height: auto; }
-                                h1 { margin-top: 20px; font-size: 24px; color: #1e293b; }
-                                p { margin-top: 10px; color: #64748b; font-size: 14px; }
-                              </style>
-                            </head>
-                            <body>
-                              <img src="${qrUrl}" alt="QR Code" />
-                              <h1>${business.name}</h1>
-                              <p>Scan to leave a review</p>
-                              <script>
-                                window.onload = function() {
-                                  window.print();
-                                  window.onafterprint = function() {
-                                    window.close();
-                                  };
-                                };
-                              </script>
-                            </body>
-                          </html>
-                        `);
-                            printWindow.document.close();
-                          } else {
-                            window.print();
-                          }
-                        }}
-                        className="secondary-button !h-11 w-full text-xs font-black text-on-surface-variant uppercase tracking-widest bg-surface border border-outline-variant/30 transition-colors"
-                      >
-                        Print QR Code
-                      </button>
-                      <a
-                        href="/One_Page_Overview.pdf"
-                        target="_blank"
-                        className="text-[10px] font-black text-brand uppercase tracking-widest text-center mt-2 hover:underline inline-flex items-center justify-center gap-1.5"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        Download Print Assets
-                      </a>
-                    </div>
-                  </div>
-
-                  {/* Right: The Sequence Explanation */}
-                  <div className="lg:w-2/3 flex flex-col justify-between">
-                    <MiniHowItWorks 
-                      className="mt-0 mb-8 flex-1"
-                      title="Smart QR Engine"
-                      steps={[
-                        { icon: QrCode, title: "1. Print QR", desc: "Place your QR code on receipts, tables, or counters." },
-                        { icon: Smartphone, title: "2. Customer Scans", desc: "They scan the code with their phone camera." },
-                        { icon: GitFork, title: "3. Smart Filter", desc: "5-stars go to Google. 1-4 stars go to your inbox." },
-                        { icon: TrendingUp, title: "4. Grow", desc: "Watch your public rating climb automatically." }
-                      ]}
-                    />
-
-                    {/* Pro Tips */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-auto">
-                      <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100/50">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1 flex items-center gap-1.5"><span className="text-sm">💡</span> Best Placement</h4>
-                        <p className="text-xs text-amber-800/80 font-medium">Add to checkout counters, receipts, dining tables, business cards, mailers, and front doors to increase scans. You need to nicely design it and put it around your store. You can do it yourself or have us design it. Be creative!</p>
-                      </div>
-                      <div className="p-4 bg-inverse-surface rounded-2xl border border-outline-variant/30">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-inverse-on-surface/70 mb-1 flex items-center gap-1.5"><span className="text-sm">🎨</span> Need a Design?</h4>
-                        <p className="text-xs text-inverse-on-surface/80 font-medium mb-3">We design custom printed QR assets for your store.</p>
-                        <a href="mailto:hello@reviewsandmarketing.com?subject=Custom Design Request" className="inline-flex items-center justify-center h-8 text-[9px] font-black text-on-surface bg-surface hover:bg-surface-container-low px-4 rounded-lg transition-colors uppercase tracking-widest shadow-sm">Request Design</a>
-                      </div>
-                    </div>
-
-                  </div>
                 </div>
               </div>
-            </section>
+
+              {/* Activation Guide */}
+              <div className="bg-primary text-white p-6 rounded-xl shadow-lg signature-gradient">
+                <h4 className="font-bold mb-4">Quick Actions</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { icon: "person_add", label: "Import", href: "/contacts" },
+                    { icon: "qr_code", label: "QR Tools", href: "#", action: () => setActiveTab("toolkit") },
+                    { icon: "campaign", label: "Campaign", href: "/requests/new" },
+                    { icon: "rocket_launch", label: "Go Live", href: "/templates" },
+                  ].map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      onClick={item.action}
+                      className="bg-white/10 p-3 rounded-lg flex flex-col items-center hover:bg-white/20 transition-colors"
+                    >
+                      <span className="material-symbols-outlined mb-1">{item.icon}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-tight">{item.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Primary Action: Review Requests */}
-          <div className="mb-12">
-            <ReviewRequestsModule
-              used={planUsage.used}
-              limit={planUsage.limit}
-              recentCampaigns={recentCampaigns}
-              isPro={isPro}
-              deliveredRate={rates.delivered}
-              clickRate={rates.click}
-              optOutRate={rates.optOut}
-            />
+          {/* Pro Analytics */}
+          <div className="mt-8 relative">
+            {!isPro && (
+              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-white/40 backdrop-blur-[6px] rounded-2xl border-2 border-dashed border-primary/20">
+                <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center mb-4 shadow-xl">
+                  <span className="material-symbols-outlined text-3xl">lock</span>
+                </div>
+                <h2 className="text-2xl font-extrabold mb-2">Unlock Business Intelligence</h2>
+                <p className="text-on-surface-variant max-w-md mb-6 text-sm">
+                  Upgrade to see daily trends, lead sources, and customer sentiment analytics.
+                </p>
+                <Link href="/pricing" className="primary-button h-12 px-8 shadow-lg">Upgrade Now</Link>
+              </div>
+            )}
+            <div className={!isPro ? "opacity-40 grayscale pointer-events-none select-none" : ""}>
+              <ProAnalytics data={analytics || {
+                history: Array.from({ length: 30 }, (_, i) => ({
+                  date: new Date(Date.now() - (30 - i) * 86400000).toISOString(),
+                  reviews: Math.floor(Math.random() * 10) + 2,
+                  scans: Math.floor(Math.random() * 30) + 10
+                })),
+                sentiment: { positive: 85, neutral: 10, negative: 5 },
+                ratingDistribution: { 1: 2, 2: 3, 3: 5, 4: 15, 5: 75 },
+                funnel: { scans: 450, selections: 320, completions: 180 },
+                sources: { "Main QR": 120, "Receipt": 45, "Instagram": 15 },
+                growth: 24
+              }} />
+            </div>
           </div>
-
-          {/* QR Best Practices & Helpful Tip (removed from bottom as moved up) */}
         </div>
       )}
 
-      {activeTab === 'sequences' && business && (
-        <div className="animate-fade-in space-y-12 mb-12">
+      {activeTab === "toolkit" && (
+        <div className="animate-fade-in">
+          <section className="bg-surface-container-lowest p-8 rounded-2xl overflow-hidden relative border border-outline-variant/15 shadow-sm">
+            <h2 className="text-xl font-bold mb-2">Review Toolkit</h2>
+            <p className="text-sm text-on-surface-variant mb-8 font-medium">Your core tools for collecting customer reviews.</p>
+
+            <div className="space-y-8">
+              <div className="relative group/copy">
+                <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest block mb-2">Main QR Tracking Link</label>
+                <div className="flex gap-2 p-1 bg-surface-container-lowest border border-outline-variant/30 rounded-2xl">
+                  <div className="flex-1 h-11 bg-surface rounded-xl px-4 flex items-center text-sm font-mono truncate text-on-surface-variant border border-outline-variant/20 shadow-sm">
+                    {landingUrl}
+                  </div>
+                  <button onClick={handleCopyLink} className={`primary-button !h-11 px-8 text-xs font-black uppercase tracking-widest transition-all ${copyState === 'copied' ? '!bg-emerald-500 !shadow-emerald-100' : ''}`}>
+                    {copyState === 'copied' ? 'Copied!' : 'Copy Link'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col lg:flex-row gap-8 items-stretch pt-8 border-t border-outline-variant/20">
+                <div className="lg:w-1/3 flex flex-col items-center justify-between gap-4 bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/20">
+                  <div className="bg-surface p-4 border-4 border-outline-variant/20 rounded-[32px] shadow-2xl w-full max-w-[220px] mx-auto">
+                    <img
+                      src={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=8`}
+                      alt="QR Code"
+                      className="w-full aspect-square"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2 w-full mt-4">
+                    <a
+                      href={`/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=12`}
+                      download={`${business.name.replace(/\s+/g, '-').toLowerCase()}-qr.png`}
+                      className="primary-button !h-11 w-full text-xs font-black uppercase tracking-widest"
+                    >
+                      <span className="material-symbols-outlined text-sm mr-2">download</span>
+                      Download Asset
+                    </a>
+                    <button
+                      onClick={() => {
+                        const printWindow = window.open('', '_blank');
+                        if (printWindow) {
+                          const qrUrl = `/api/qr?data=${encodeURIComponent(landingUrl || '')}&format=png&scale=12`;
+                          printWindow.document.write(`<html><head><title>Print QR - ${business.name}</title><style>body{margin:0;padding:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:system-ui}img{max-width:100%;height:auto}h1{margin-top:20px;font-size:24px}p{margin-top:10px;color:#64748b;font-size:14px}</style></head><body><img src="${qrUrl}" alt="QR Code"/><h1>${business.name}</h1><p>Scan to leave a review</p><script>window.onload=function(){window.print();window.onafterprint=function(){window.close()}};</script></body></html>`);
+                          printWindow.document.close();
+                        }
+                      }}
+                      className="secondary-button !h-11 w-full text-xs font-black uppercase tracking-widest"
+                    >
+                      Print QR Code
+                    </button>
+                  </div>
+                </div>
+
+                <div className="lg:w-2/3 flex flex-col justify-between">
+                  <MiniHowItWorks
+                    className="mt-0 mb-8 flex-1"
+                    title="Smart QR Engine"
+                    steps={[
+                      { icon: QrCode, title: "1. Print QR", desc: "Place your QR code on receipts, tables, or counters." },
+                      { icon: Smartphone, title: "2. Customer Scans", desc: "They scan the code with their phone camera." },
+                      { icon: GitFork, title: "3. Smart Filter", desc: "5-stars go to Google. 1-4 stars go to your inbox." },
+                      { icon: TrendingUp, title: "4. Grow", desc: "Watch your public rating climb automatically." }
+                    ]}
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-auto">
+                    <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100/50">
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1">Best Placement</h4>
+                      <p className="text-xs text-amber-800/80 font-medium">Add to checkout counters, receipts, dining tables, business cards, and front doors.</p>
+                    </div>
+                    <div className="p-4 bg-inverse-surface rounded-2xl">
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-inverse-on-surface/70 mb-1">Need a Design?</h4>
+                      <p className="text-xs text-inverse-on-surface/80 font-medium mb-3">We design custom printed QR assets for your store.</p>
+                      <a href="mailto:hello@reviewsandmarketing.com?subject=Custom Design Request" className="inline-flex items-center h-8 text-[9px] font-black text-on-surface bg-surface px-4 rounded-lg uppercase tracking-widest">Request Design</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {activeTab === "sequences" && business && (
+        <div className="animate-fade-in space-y-12">
           <div className="max-w-3xl mx-auto">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold">Review Sequences</h2>
-                <p className="text-sm text-muted font-medium">How your customers experience the review process.</p>
+                <p className="text-sm text-on-surface-variant font-medium">How your customers experience the review process.</p>
               </div>
             </div>
             <SequencePreview
@@ -506,146 +532,6 @@ function DashboardContent() {
         </div>
       )}
 
-
-      {/* Moved Checklist (if finished) */}
-      {isActivated && (
-        <div className="mt-24 pt-12 border-t border-outline-variant/20">
-          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/50 text-center mb-8">Onboarding Completed</h4>
-          <div className="max-w-4xl mx-auto opacity-60 hover:opacity-100 transition-opacity">
-            <ActivationWidget
-              business={business}
-              stats={stats}
-              recentFeedbackCount={recentFeedback.length}
-              isPro={isPro}
-              onStatusChange={setIsActivated}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Legend Section */}
-      <section className="mt-24 pt-12 border-t border-outline-variant/30">
-        {/* Advanced Analytics & Insights Section (always visible at bottom for perceived value) */}
-        <div className="mt-12 relative mb-12">
-          {!isPro && (
-            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-6 text-center bg-white/40 backdrop-blur-[6px] rounded-[40px] border-2 border-dashed border-brand/20">
-              <div className="w-20 h-20 bg-brand text-white rounded-3xl flex items-center justify-center mb-6 shadow-2xl shadow-brand/40 animate-bounce">
-                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h2 className="text-3xl font-black text-on-surface mb-3 tracking-tight">Unlock Your Business Intelligence</h2>
-              <p className="text-on-surface-variant max-w-md mb-8 font-medium leading-relaxed">
-                You're currently seeing <strong>less than 20%</strong> of your available data. Upgrade to Unlimited to track daily trends, see where every lead comes from, and analyze customer sentiment.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 items-center">
-                <Link href="/pricing" className="primary-button h-14 px-10 text-lg shadow-xl shadow-brand/20">
-                  🚀 Upgrade Now
-                </Link>
-                <div className="text-[10px] font-black text-brand uppercase tracking-widest bg-brand/5 px-3 py-1.5 rounded-full border border-brand/10">
-                  Join 500+ Top Rated Businesses
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* This renders real data for Pro, or dummy "blurred" layout for Free users */}
-          <div className={!isPro ? "opacity-40 grayscale pointer-events-none select-none" : ""}>
-            <ProAnalytics data={analytics || {
-              history: Array.from({ length: 30 }, (_, i) => ({
-                date: new Date(Date.now() - (30 - i) * 86400000).toISOString(),
-                reviews: Math.floor(Math.random() * 10) + 2,
-                scans: Math.floor(Math.random() * 30) + 10
-              })),
-              sentiment: { positive: 85, neutral: 10, negative: 5 },
-              ratingDistribution: { 1: 2, 2: 3, 3: 5, 4: 15, 5: 75 },
-              funnel: { scans: 450, selections: 320, completions: 180 },
-              sources: { "Main QR": 120, "Receipt": 45, "Instagram": 15 },
-              growth: 24
-            }} />
-          </div>
-        </div>
-
-        {!isActivated && (
-          <div className="mb-12">
-            <ActivationWidget
-              business={business}
-              stats={stats}
-              recentFeedbackCount={recentFeedback.length}
-              isPro={isPro}
-              onStatusChange={setIsActivated}
-            />
-          </div>
-        )}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-          <div>
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Metric Definitions</h4>
-            <ul className="space-y-3">
-              <li className="text-xs text-muted flex flex-col gap-1">
-                <strong className="text-on-surface">Google Rating</strong>
-                The current average star rating of your business on Google Maps.
-              </li>
-              <li className="text-xs text-muted flex flex-col gap-1">
-                <strong className="text-on-surface">Total Scans</strong>
-                Every time your unique QR code is scanned or the link is clicked.
-              </li>
-              <li className="text-xs text-muted flex flex-col gap-1">
-                <strong className="text-on-surface">Interactions</strong>
-                Customers who took action by clicking a star rating on your landing page.
-              </li>
-              <li className="text-xs text-muted flex flex-col gap-1">
-                <strong className="text-on-surface">Total Leads</strong>
-                The number of successful outcomes (Google redirects + private messages).
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Event Icons</h4>
-            <ul className="space-y-3">
-              <li className="text-xs text-muted flex items-center gap-3">
-                <span className="w-6 h-6 rounded bg-accent flex items-center justify-center text-sm italic">⭐</span>
-                <span>Customer redirected to your Google Profile</span>
-              </li>
-              <li className="text-xs text-muted flex items-center gap-3">
-                <span className="w-6 h-6 rounded bg-accent flex items-center justify-center text-sm italic">✉️</span>
-                <span>New private feedback or automation message</span>
-              </li>
-              <li className="text-xs text-muted flex items-center gap-3">
-                <span className="w-6 h-6 rounded bg-accent flex items-center justify-center text-sm italic">✨</span>
-                <span>A star rating was selected by a user</span>
-              </li>
-              <li className="text-xs text-muted flex items-center gap-3">
-                <span className="w-6 h-6 rounded bg-accent flex items-center justify-center text-sm italic">🌐</span>
-                <span>The landing page was opened in a browser</span>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted mb-4">Reputation Logic</h4>
-            <ul className="space-y-3">
-              <li className="text-xs text-muted flex flex-col gap-1 text-emerald-600 bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
-                <strong className="text-emerald-700">5-Star Workflow</strong>
-                Happy customers are instantly routed to Google to leave a public review.
-              </li>
-              <li className="text-xs text-muted flex flex-col gap-1 text-on-surface-variant bg-surface-container-lowest p-3 rounded-xl border border-outline-variant/30">
-                <strong className="text-on-surface">1-4 Star Workflow</strong>
-                Critical feedback is captured privately, giving you a chance to fix the issue before it goes public.
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted mb-4">System Status</h4>
-            <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-tight">System Operational</span>
-            </div>
-            <p className="mt-4 text-[10px] text-muted leading-relaxed">
-              All metrics are updated in real-time. Chart data shows performance trends over the last 30 days.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* Photo Modal */}
       {isPhotoModalOpen && business.google_photo_url && (
         <div
@@ -653,18 +539,12 @@ function DashboardContent() {
           onClick={() => setIsPhotoModalOpen(false)}
         >
           <div className="relative max-w-4xl w-full aspect-square sm:aspect-video rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10">
-            <img
-              src={business.google_photo_url}
-              alt={business.name}
-              className="w-full h-full object-contain"
-            />
+            <img src={business.google_photo_url} alt={business.name} className="w-full h-full object-contain" />
             <button
               className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-colors"
               onClick={(e) => { e.stopPropagation(); setIsPhotoModalOpen(false); }}
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <span className="material-symbols-outlined">close</span>
             </button>
           </div>
         </div>
@@ -677,7 +557,7 @@ export default function Dashboard() {
   return (
     <Suspense fallback={
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full"></div>
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     }>
       <DashboardContent />
