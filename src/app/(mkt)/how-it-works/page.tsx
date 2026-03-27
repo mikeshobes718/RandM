@@ -1,28 +1,168 @@
 import Link from "next/link";
-import { AnimatedFlow } from "@/components/AnimatedFlow";
 
 export default function HowItWorks() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-surface">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-x-0 top-0 h-[500px] bg-gradient-to-b from-primary/3 to-transparent" />
-      </div>
-
-      <section className="container mx-auto px-6 pt-28 pb-20 max-w-5xl">
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-semibold mb-6">
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>play_circle</span>
-            Process Overview
+    <main className="relative min-h-screen overflow-hidden bg-surface pt-28 pb-20 px-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Hero Header */}
+        <header className="text-center mb-24 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold tracking-widest uppercase mb-6">
+            <span className="relative flex h-2 w-2">
+              <span className="md:animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary" />
+            </span>
+            Live Simulation
           </div>
-          <h1 className="tracking-tight mb-5">
-            How Reviews & Marketing Works
+          <h1 className="display-font text-5xl md:text-6xl font-extrabold tracking-tighter text-on-surface mb-6">
+            How Reviews &amp; Marketing Works
           </h1>
-          <p className="text-lg text-on-surface-variant max-w-2xl mx-auto">
-            A simple, compliant system designed to recover unhappy customers privately and amplify your best experiences.
+          <p className="text-on-surface-variant text-lg leading-relaxed">
+            Experience the seamless bridge between physical customer interaction and digital reputation growth.
+            Our automated engine captures sentiment in real-time.
           </p>
+        </header>
+
+        {/* Process Flow Container */}
+        <div className="relative bg-surface-container-low p-8 md:p-16 rounded-[2rem] overflow-hidden mb-20">
+          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-primary-fixed/30 rounded-full blur-3xl" />
+
+          {/* 4-Step Horizontal Process */}
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-4 items-start">
+            {[
+              { icon: "qr_code", color: "text-primary", bg: "bg-surface-container-lowest", title: "1. Connect", desc: "Profile Linked and ready for customer scans." },
+              { icon: "star", color: "text-secondary", bg: "bg-surface-container-lowest", title: "2. Capture", desc: "5-Star Rating Captured instantly at point of sale.", fill: true },
+              { icon: "account_tree", color: "text-tertiary", bg: "bg-surface-container-lowest", title: "3. Route", desc: "Analyzing sentiment and directing feedback." },
+              { icon: "trending_up", color: "text-on-primary", bg: "bg-primary", title: "4. Grow", desc: "Waiting for review to publish and boost SEO." },
+            ].map((step, i) => (
+              <div key={step.title} className="flex flex-col items-center text-center group">
+                <div className="relative mb-6">
+                  <div className={`w-16 h-16 rounded-2xl ${step.bg} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500`}>
+                    <span
+                      className={`material-symbols-outlined ${step.color} text-3xl`}
+                      style={step.fill ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                    >
+                      {step.icon}
+                    </span>
+                  </div>
+                  {i < 3 && (
+                    <div className="hidden md:block absolute top-1/2 left-full w-full h-[2px] bg-outline-variant/30 -translate-y-1/2 z-0">
+                      {i === 0 && <div className="h-full bg-primary w-1/2 rounded-full" />}
+                    </div>
+                  )}
+                </div>
+                <h3 className="display-font text-lg font-bold mb-2">{step.title}</h3>
+                <p className="text-on-surface-variant text-sm px-4">{step.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* System Event Log */}
+          <div className="mt-20">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="display-font text-xl font-extrabold flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">terminal</span>
+                System Event Log
+              </h2>
+              <span className="text-[10px] font-mono text-on-surface-variant/60 uppercase tracking-widest">
+                Live Feed &bull; Node_082
+              </span>
+            </div>
+            <div className="bg-on-surface rounded-xl overflow-hidden shadow-2xl">
+              <div className="flex items-center gap-2 px-4 py-2 bg-on-surface-variant/20 border-b border-white/5">
+                <div className="w-2.5 h-2.5 rounded-full bg-error" />
+                <div className="w-2.5 h-2.5 rounded-full bg-secondary-fixed" />
+                <div className="w-2.5 h-2.5 rounded-full bg-primary-fixed" />
+              </div>
+              <div className="p-6 font-mono text-sm space-y-3">
+                <div className="flex gap-4">
+                  <span className="text-white/30">[14:20:01]</span>
+                  <span className="text-secondary-fixed-dim">SUCCESS:</span>
+                  <span className="text-white/80">Smart QR Code generated for business_id_492</span>
+                </div>
+                <div className="flex gap-4">
+                  <span className="text-white/30">[14:21:45]</span>
+                  <span className="text-primary-fixed-dim">EVENT:</span>
+                  <span className="text-white/80">Scanned QR code at Table 4 (Session: XP-292)</span>
+                </div>
+                <div className="flex gap-4">
+                  <span className="text-white/30">[14:22:12]</span>
+                  <span className="text-tertiary-fixed">SIGNAL:</span>
+                  <span className="text-white/80">5-star rating detected - Routing to Google Reviews</span>
+                </div>
+                <div className="flex gap-4 animate-pulse">
+                  <span className="text-white/30">[14:23:05]</span>
+                  <span className="text-secondary">PUSH:</span>
+                  <span className="text-white font-bold">New 5-star review published! Total reach +2.4k</span>
+                </div>
+                <div className="flex gap-4 pt-2">
+                  <span className="text-white/30">[14:23:06]</span>
+                  <span className="text-white/40 italic">Waiting for next interaction...</span>
+                  <span className="w-2 h-4 bg-white/40 animate-blink" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <AnimatedFlow />
+        {/* Bento Grid Info Section */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+          <div className="md:col-span-2 bg-surface-container-lowest p-8 rounded-3xl shadow-sm border border-outline-variant/10">
+            <h4 className="display-font text-2xl font-bold mb-4">Precision Sentiment Routing</h4>
+            <p className="text-on-surface-variant mb-6 leading-relaxed">
+              Our system doesn&apos;t just collect data; it understands intent. High-value promoters are fast-tracked to public platforms, while constructive feedback is routed to your private dashboard for immediate resolution.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 rounded-2xl bg-secondary-container/20 flex items-center gap-4">
+                <span className="material-symbols-outlined text-secondary">check_circle</span>
+                <span className="text-sm font-semibold">99.2% Accuracy</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-primary-container/10 flex items-center gap-4">
+                <span className="material-symbols-outlined text-primary">speed</span>
+                <span className="text-sm font-semibold">&lt; 200ms Latency</span>
+              </div>
+            </div>
+          </div>
+          <div className="bg-primary-container p-8 rounded-3xl text-on-primary-container flex flex-col justify-between">
+            <div>
+              <span className="material-symbols-outlined text-4xl mb-4">auto_awesome</span>
+              <h4 className="display-font text-2xl font-bold mb-2">Auto-Pilot Marketing</h4>
+              <p className="opacity-80 text-sm">Let the system handle the heavy lifting while you focus on the customer experience.</p>
+            </div>
+            <Link href="/features" className="mt-8 py-3 px-6 bg-white text-primary font-bold rounded-xl hover:bg-slate-50 transition-colors inline-block text-center">
+              Explore Automation
+            </Link>
+          </div>
+        </section>
+
+        {/* Smart QR Advantage */}
+        <section className="flex flex-col md:flex-row items-center gap-12 mb-20">
+          <div className="flex-1">
+            <h2 className="display-font text-4xl font-extrabold mb-6 tracking-tight">The Smart QR Advantage</h2>
+            <p className="text-on-surface-variant text-lg mb-8">
+              Each QR code is unique to the table, employee, or location. Gain granular insights into where your best experiences are happening.
+            </p>
+            <ul className="space-y-4">
+              {[
+                "No app download required for customers",
+                "Dynamic destination updates (Google, Yelp, Facebook)",
+                "Detailed scanning heatmaps and peak hour analytics",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-primary mt-1">task_alt</span>
+                  <span className="font-medium">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex-1 w-full flex justify-center">
+            <div className="w-full max-w-md aspect-square rounded-[3rem] overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700 bg-surface-container-high flex items-center justify-center">
+              <div className="text-center p-8">
+                <span className="material-symbols-outlined text-primary text-[100px]">qr_code_2</span>
+                <p className="mt-4 text-sm text-on-surface-variant font-medium">Scan to experience the flow</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Video */}
         <div className="max-w-5xl mx-auto mb-20">
@@ -35,59 +175,24 @@ export default function HowItWorks() {
               allowFullScreen
             />
           </div>
-          <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 px-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/8 flex items-center justify-center text-primary">
-                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>play_circle</span>
-              </div>
-              <div>
-                <h4 className="font-bold text-on-surface text-sm">Watch the Walkthrough</h4>
-                <p className="text-xs text-on-surface-variant">See how we build authentic reputations.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Explainer image */}
-        <div className="relative mb-20 rounded-2xl overflow-hidden shadow-xl bg-surface-container-low">
-          <img
-            src="/assets/detailed.png"
-            alt="Visual Explainer of how R&M works"
-            className="w-full h-auto object-cover"
-          />
-        </div>
-
-        {/* Steps breakdown */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-          {[
-            { num: 1, title: 'Connect', icon: 'link', text: 'Link your Google Profile and POS system in seconds. We generate custom QR codes and enable automatic follow-up texts or emails for every visit.' },
-            { num: 2, title: 'Capture', icon: 'smartphone', text: 'Customers scan in-store or receive an automatic text via POS integration. We capture contact info and route them to the perfect feedback experience.' },
-            { num: 3, title: 'Route', icon: 'call_split', text: 'Happy customers are guided to Google to share their experience. Those with concerns are routed to a private channel so you can resolve issues before they become public.' },
-            { num: 4, title: 'Grow', icon: 'trending_up', text: 'Watch your public rating climb while building a powerful customer database. Use these insights to improve operations and drive repeat business.' },
-          ].map((step) => (
-            <div key={step.num} className="surface-card p-6">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/8 text-primary mb-4">
-                <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{step.icon}</span>
-              </div>
-              <h3 className="text-lg font-bold text-on-surface mb-2">{step.title}</h3>
-              <p className="text-on-surface-variant text-sm leading-relaxed">{step.text}</p>
-            </div>
-          ))}
         </div>
 
         {/* CTA */}
-        <div className="p-10 primary-gradient rounded-2xl text-center text-on-primary relative overflow-hidden">
-          <h2 className="text-2xl font-bold text-on-primary mb-5">Ready to start building your reputation?</h2>
+        <div className="p-12 primary-gradient rounded-2xl text-center text-on-primary relative overflow-hidden">
+          <h2 className="text-3xl font-extrabold text-on-primary mb-5">Ready to start building your reputation?</h2>
+          <p className="text-on-primary/70 mb-8 max-w-xl mx-auto">
+            Join thousands of businesses using Reviews &amp; Marketing to grow their online presence the compliant way.
+          </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/register" className="h-12 px-8 bg-white text-primary rounded-lg font-semibold text-sm inline-flex items-center justify-center hover:bg-white/90 transition-colors">
               Get Started For Free
             </Link>
             <Link href="/pricing" className="text-sm font-medium text-on-primary/80 hover:text-on-primary transition-colors">
-              View Plans & Pricing &rarr;
+              View Plans &amp; Pricing &rarr;
             </Link>
           </div>
         </div>
-      </section>
+      </div>
     </main>
   );
 }
