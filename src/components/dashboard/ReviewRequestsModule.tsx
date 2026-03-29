@@ -27,6 +27,8 @@ interface ReviewRequestsModuleProps {
   deliveredRate?: number;
   clickRate?: number;
   optOutRate?: number;
+  /** Account address that receives customer replies to email outreach (Reply-To). */
+  replyToEmail?: string | null;
 }
 
 export default function ReviewRequestsModule({ 
@@ -36,7 +38,8 @@ export default function ReviewRequestsModule({
   isPro,
   deliveredRate = 98.4,
   clickRate = 0,
-  optOutRate = 0.8
+  optOutRate = 0.8,
+  replyToEmail = null,
 }: ReviewRequestsModuleProps) {
 
   const [resending, setResending] = useState<string | null>(null);
@@ -261,8 +264,8 @@ export default function ReviewRequestsModule({
                         <div className="space-y-1.5 max-h-40 overflow-y-auto pr-2">
                           {c.recipients.map((r, idx) => (
                             <div key={idx} className={`flex flex-col gap-0.5 text-[11px] p-2 rounded-lg ${r.status === 'failed' ? 'bg-red-50/60' : 'bg-surface-container-lowest/60'}`}>
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
                                   <span className="text-on-surface-variant font-medium truncate">{r.contact}</span>
                                   <Link 
                                     href={`/contacts?search=${encodeURIComponent(r.contact)}`}
@@ -275,6 +278,11 @@ export default function ReviewRequestsModule({
                                   {r.status === 'sent' ? 'Delivered' : 'Failed'}
                                 </span>
                               </div>
+                              {replyToEmail && c.type?.toLowerCase() !== 'sms' && (
+                                <p className="text-[8px] font-medium text-on-surface-variant/55 truncate" title={replyToEmail}>
+                                  Reply-To: {replyToEmail}
+                                </p>
+                              )}
                               {r.status === 'failed' && r.error && (
                                 <p className="text-[10px] text-red-400 mt-0.5">{r.error}</p>
                               )}

@@ -96,6 +96,7 @@ function DashboardContent() {
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [planUsage, setPlanUsage] = useState({ used: 0, limit: 100, qrScans: 0, isUnlimited: false, planName: 'Small Business', contactsCount: 0 });
   const [recentCampaigns, setRecentCampaigns] = useState<Campaign[]>([]);
+  const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [rates, setRates] = useState({ delivered: 0, click: 0, optOut: 0 });
   const [isActivated, setIsActivated] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'toolkit' | 'sequences'>('overview');
@@ -163,6 +164,7 @@ function DashboardContent() {
         setSquareStatus(data.squareConnection ?? null);
         setPlanUsage(data.planUsage ?? { used: 0, limit: 100, qrScans: 0, isUnlimited: false });
         setRecentCampaigns(data.recentCampaigns ?? []);
+        setOwnerEmail(typeof data.ownerEmail === 'string' ? data.ownerEmail : null);
         setRates(data.rates ?? { delivered: 0, click: 0, optOut: 0 });
 
         if (!data.business) {
@@ -314,6 +316,7 @@ function DashboardContent() {
                 deliveredRate={rates.delivered}
                 clickRate={rates.click}
                 optOutRate={rates.optOut}
+                replyToEmail={ownerEmail ?? clientAuth.currentUser?.email ?? null}
               />
             </div>
 

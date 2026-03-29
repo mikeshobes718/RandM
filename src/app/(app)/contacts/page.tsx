@@ -539,6 +539,12 @@ function ContactsPageContent() {
                       <p className="mt-0.5 truncate text-[10px] font-medium text-on-surface-variant/60 md:text-xs">
                         {historyContact.name || 'Unnamed'} • {historyContact.email || formatPhoneDisplay(historyContact.phone || '')}
                       </p>
+                      {replyToEmail && (
+                        <p className="mt-1.5 text-[9px] font-medium text-on-surface-variant/70 md:text-[10px]">
+                          Email replies go to{' '}
+                          <span className="break-all font-bold text-on-surface-variant">{replyToEmail}</span>
+                        </p>
+                      )}
                     </div>
                     <div className="flex shrink-0 items-center gap-2 md:gap-3">
                       <button
