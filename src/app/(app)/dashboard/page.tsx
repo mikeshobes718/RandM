@@ -244,7 +244,10 @@ function DashboardContent() {
           )}
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-3xl font-extrabold tracking-tight text-on-surface">Business Overview</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-on-surface inline-flex flex-nowrap items-baseline gap-2">
+                <span>Business</span>
+                <span>Overview</span>
+              </h1>
               <InfoTip text="Your home base for review activity, customer messages, outreach, and (on Pro) full analytics." />
             </div>
             <p className="text-on-surface-variant">
