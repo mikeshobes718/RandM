@@ -242,16 +242,15 @@ function DashboardContent() {
               <img src={business.google_photo_url} alt={business.name} className="w-full h-full object-cover" />
             </div>
           )}
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-on-surface inline-flex flex-nowrap items-baseline gap-2">
-                <span>Business</span>
-                <span>Overview</span>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-on-surface whitespace-nowrap">
+                Business Overview
               </h1>
               <InfoTip text="Your home base for review activity, customer messages, outreach, and (on Pro) full analytics." />
             </div>
-            <p className="text-on-surface-variant">
-              Welcome back — here&apos;s what&apos;s happening with {business.name}.
+            <p className="text-on-surface-variant text-sm sm:text-base leading-snug">
+              Welcome back — here&apos;s what&apos;s happening with <span className="font-bold text-on-surface">{business.name}</span>.
             </p>
           </div>
         </div>
