@@ -372,8 +372,13 @@ function SettingsContent() {
         businessName.trim() !== initialBusinessValues.name.trim() ||
         (reviewLink || '').trim() !== (initialBusinessValues.link || '').trim()
       ) {
-        // Identity fields edited without picking a new listing — drop stale Google storefront image
+        // Edited without picking a new Google listing — remove stale Place linkage so the dashboard
+        // cannot re-download the old storefront photo from the previous google_place_id.
         payload.google_photo_url = null;
+        payload.google_place_id = null;
+        payload.google_maps_place_uri = null;
+        payload.google_maps_write_review_uri = null;
+        payload.google_rating = null;
       }
 
       const response = await fetch('/api/businesses/upsert', {
@@ -433,6 +438,10 @@ function SettingsContent() {
           contact_phone: normalizePhone(contactPhone),
           review_link: (reviewLink || '').trim() || null,
           google_photo_url: null,
+          google_place_id: null,
+          google_maps_place_uri: null,
+          google_maps_write_review_uri: null,
+          google_rating: null,
         }),
       });
       if (response.ok) {

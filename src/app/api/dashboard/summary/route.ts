@@ -13,6 +13,22 @@ import { fetchRecentFeedback, fetchActivityFeed } from '@/lib/dashboard/activity
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+function extractPlaceDisplayName(details: unknown): string {
+  const d = details as { displayName?: { text?: string }; name?: string };
+  return (d.displayName?.text || d.name || '').trim();
+}
+
+/** True if at least one significant token (>2 chars) appears in both names. */
+function googleListingNamesMatch(placeName: string, businessName: string): boolean {
+  const tokenize = (s: string) =>
+    new Set(s.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2));
+  const a = tokenize(placeName);
+  const b = tokenize(businessName);
+  if (a.size === 0 || b.size === 0) return true;
+  for (const w of a) if (b.has(w)) return true;
+  return false;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const uid = await resolveUid(req);
@@ -89,36 +105,58 @@ export async function GET(req: NextRequest) {
       fetchRecentCampaigns(businessId).catch(e => { console.error('[DASHBOARD] Campaigns error:', e); return []; }),
     ]);
 
-    // Google data enrichment (non-blocking)
+    // Google Place: detect stale linkage (e.g. name changed to "Apple" but place_id still Home Depot)
     const needsGoogleData =
-      ((normalizedRating === null || normalizedRating === 0) || !biz.google_photo_url || !biz.address || !biz.business_type)
-      && biz.google_place_id;
+      ((normalizedRating === null || normalizedRating === 0) || !biz.google_photo_url || !biz.address || !biz.business_type) &&
+      Boolean(biz.google_place_id);
 
-    if (needsGoogleData) {
+    if (biz.google_place_id) {
       try {
         const details = await getPlaceDetails(biz.google_place_id as string);
-        const updateData: Record<string, unknown> = {};
+        const placeTitle = extractPlaceDisplayName(details);
+        const bizName = String(biz.name || '').trim();
 
-        if (details?.rating != null && (normalizedRating === null || normalizedRating === 0)) {
-          normalizedRating = details.rating;
-          updateData.google_rating = details.rating;
-        }
-        if (!biz.google_photo_url && details?.photoUrl) {
-          updateData.google_photo_url = details.photoUrl;
-          biz.google_photo_url = details.photoUrl;
-        }
-        if (!biz.address && details?.formattedAddress) {
-          updateData.address = details.formattedAddress;
-          biz.address = details.formattedAddress;
-        }
-        if (!biz.business_type && details?.businessType) {
-          updateData.business_type = details.businessType;
-          biz.business_type = details.businessType;
-        }
-
-        if (Object.keys(updateData).length > 0) {
+        if (placeTitle && bizName && !googleListingNamesMatch(placeTitle, bizName)) {
           const supa = getSupabaseAdmin();
-          await supa.from('businesses').update(updateData).eq('id', businessId);
+          await supa
+            .from('businesses')
+            .update({
+              google_place_id: null,
+              google_photo_url: null,
+              google_maps_place_uri: null,
+              google_maps_write_review_uri: null,
+              google_rating: null,
+            })
+            .eq('id', businessId);
+          biz.google_photo_url = null;
+          biz.google_place_id = null;
+          biz.google_rating = null;
+          normalizedRating = null;
+          console.warn('[DASHBOARD] Cleared mismatched Google listing', { placeTitle, bizName });
+        } else if (needsGoogleData) {
+          const updateData: Record<string, unknown> = {};
+
+          if (details?.rating != null && (normalizedRating === null || normalizedRating === 0)) {
+            normalizedRating = details.rating;
+            updateData.google_rating = details.rating;
+          }
+          if (!biz.google_photo_url && details?.photoUrl) {
+            updateData.google_photo_url = details.photoUrl;
+            biz.google_photo_url = details.photoUrl;
+          }
+          if (!biz.address && details?.formattedAddress) {
+            updateData.address = details.formattedAddress;
+            biz.address = details.formattedAddress;
+          }
+          if (!biz.business_type && details?.businessType) {
+            updateData.business_type = details.businessType;
+            biz.business_type = details.businessType;
+          }
+
+          if (Object.keys(updateData).length > 0) {
+            const supa = getSupabaseAdmin();
+            await supa.from('businesses').update(updateData).eq('id', businessId);
+          }
         }
       } catch (e) {
         console.error('[DASHBOARD] Google data sync error:', e);
