@@ -73,18 +73,30 @@ export async function POST(req: NextRequest) {
     let sentCount = 0;
     let failedCount = 0;
     let lastError: string | null = null;
-    const recipientDetails: { contact: string; status: 'sent' | 'failed'; error?: string }[] = [];
+    const recipientDetails: {
+      contact: string;
+      status: 'sent' | 'failed';
+      error?: string;
+      twilioSid?: string;
+      /** Twilio initial status (e.g. queued); delivery is async — check Console if not received */
+      twilioStatus?: string | null;
+    }[] = [];
 
     for (const phone of recipients) {
       try {
         const toFormatted = formatToE164(phone);
-        await twilioClient.messages.create({
+        const created = await twilioClient.messages.create({
           body: finalMessage,
           from: fromNumber,
           to: toFormatted,
         });
         sentCount++;
-        recipientDetails.push({ contact: phone, status: 'sent' });
+        recipientDetails.push({
+          contact: phone,
+          status: 'sent',
+          twilioSid: created.sid,
+          twilioStatus: created.status ?? null,
+        });
       } catch (e: unknown) {
         const detail = formatTwilioRestError(e);
         console.error(`[send-sms] Failed for ${phone}:`, detail);
@@ -130,7 +142,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Failed to send SMS. ${lastError || 'Check phone numbers.'}` }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, sent: sentCount, failed: failedCount });
+    return NextResponse.json({
+      success: true,
+      sent: sentCount,
+      failed: failedCount,
+      /** Per-recipient Twilio state — "sent" in UI means accepted by Twilio, not necessarily delivered to handset */
+      recipients: recipientDetails,
+    });
   } catch (err: any) {
     console.error('[send-sms] Error:', err);
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });

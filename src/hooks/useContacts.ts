@@ -298,7 +298,23 @@ export function useContacts() {
         throw new Error(errData.error || `Failed to send ${type.toUpperCase()}`);
       }
 
-      setSuccessMsg(`Successfully sent ${type.toUpperCase()} outreach to ${recipients.length} contact${recipients.length > 1 ? 's' : ''}!`);
+      const data = (await res.json().catch(() => ({}))) as {
+        recipients?: { twilioStatus?: string | null }[];
+      };
+
+      if (type === 'sms') {
+        const n = recipients.length;
+        const queued = data.recipients?.some(
+          (r) => (r.twilioStatus || '').toLowerCase() === 'queued' || (r.twilioStatus || '').toLowerCase() === 'accepted'
+        );
+        setSuccessMsg(
+          queued
+            ? `Twilio accepted SMS to ${n} contact${n > 1 ? 's' : ''} (queued). Delivery is not instant — check the phone in a few minutes. If nothing arrives, open Twilio → Monitor → Logs → Messaging and look for errors (US numbers often need A2P 10DLC registration).`
+            : `Twilio accepted SMS to ${n} contact${n > 1 ? 's' : ''}. If the message does not show up, check Twilio Messaging logs for delivery status.`
+        );
+      } else {
+        setSuccessMsg(`Successfully sent ${type.toUpperCase()} outreach to ${recipients.length} contact${recipients.length > 1 ? 's' : ''}!`);
+      }
       setSelectedIds(new Set());
       return true;
     } catch (err: unknown) {
