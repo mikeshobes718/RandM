@@ -52,6 +52,8 @@ function ContactsPageContent() {
     downloadCSV,
   } = useContacts();
 
+  const replyToEmail = ownerEmail ?? user?.email ?? null;
+
   const [showGuide, setShowGuide] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [manualContact, setManualContact] = useState({ name: '', email: '', phone: '', country: 'US' });
@@ -179,6 +181,17 @@ function ContactsPageContent() {
         </div>
       </div>
 
+      {replyToEmail && (
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 sm:px-5">
+          <span className="material-symbols-outlined text-brand text-xl shrink-0" aria-hidden>alternate_email</span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">Reply-to for outreach emails</p>
+            <p className="font-bold text-on-surface truncate" title={replyToEmail}>{replyToEmail}</p>
+          </div>
+          <InfoTip text="When customers reply to your review outreach, their message is sent to this address (same as the Reply-To on sent emails)." />
+        </div>
+      )}
+
       {contacts.length > 0 && (
         <div className="flex flex-col gap-4 bg-surface p-4 sm:p-6 rounded-[24px] sm:rounded-[32px] border border-outline-variant/20 shadow-sm">
           <div className="relative w-full">
@@ -189,7 +202,7 @@ function ContactsPageContent() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in slide-in-from-top-2">
               <div className="flex items-center gap-3">
                 <span className="text-[10px] font-black text-on-surface-variant/60 uppercase tracking-widest">{selectedIds.size} Selected</span>
-                <span className="text-[9px] font-medium text-on-surface-variant/60 bg-surface-container-lowest px-2 py-0.5 rounded-md border border-outline-variant/20 hidden sm:inline-block">Replies will go to: {ownerEmail || 'your email'}</span>
+                <span className="text-[9px] font-medium text-on-surface-variant/60 bg-surface-container-lowest px-2 py-0.5 rounded-md border border-outline-variant/20 hidden sm:inline-block">Replies will go to: {replyToEmail || 'your email'}</span>
               </div>
               <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <button onClick={() => handleBulkContact('email')} className="h-9 sm:h-11 px-3 sm:px-6 bg-brand/5 text-brand text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand/10 transition-colors flex items-center gap-2 flex-1 sm:flex-none justify-center">
@@ -485,7 +498,7 @@ function ContactsPageContent() {
                           <label className="shrink-0 text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">Message</label>
                           {contactType === 'email' && (
                             <span className="text-xs font-medium text-on-surface-variant/60 md:max-w-[55%] md:truncate md:text-right md:text-[9px]">
-                              Replies: {ownerEmail || 'your email'}
+                              Replies: {replyToEmail || 'your email'}
                             </span>
                           )}
                         </div>

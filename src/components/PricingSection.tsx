@@ -89,7 +89,7 @@ export default function PricingSection() {
   );
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto px-5 sm:px-6">
       <div className="text-center mb-14">
         <h2 className="text-4xl font-extrabold mb-4 text-on-surface">Simple Pricing</h2>
         <p className="text-on-surface-variant text-lg max-w-xl mx-auto">
@@ -268,7 +268,7 @@ export default function PricingSection() {
       )}
 
       {/* FAQ */}
-      <div className="grid md:grid-cols-3 gap-10 pt-16 border-t border-outline-variant/15">
+      <div className="grid md:grid-cols-3 gap-10 sm:gap-8 md:gap-10 pt-16 border-t border-outline-variant/15">
         <div>
           <h4 className="text-sm font-bold mb-3 text-on-surface">Cancel anytime?</h4>
           <p className="text-sm text-on-surface-variant leading-relaxed">Yes, no long-term contracts. You can cancel your subscription with a single click in settings.</p>
