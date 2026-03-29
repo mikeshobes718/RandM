@@ -6,6 +6,7 @@ import { reviewRequestEmail } from '@/lib/emailTemplates';
 import { getEnv } from '@/lib/env';
 import { formatToE164 } from '@/lib/phone';
 import { getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
+import { getEffectiveReplyTo } from '@/lib/replyToEmail';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
 
     const supa = getSupabaseAdmin();
     const env = getEnv();
+    const replyToAddress = await getEffectiveReplyTo(supa, uid);
 
     // 1. Fetch the original campaign
     const { data: original, error: fetchErr } = await supa
@@ -117,7 +119,7 @@ export async function POST(req: NextRequest) {
             .replace(/\{\{link\}\}/g, campaignLink);
 
           const { subject, html, text } = reviewRequestEmail(contact.name || undefined, personalizedBody, biz.name, campaignLink);
-          const result = await sendEmail({ to: contact.email!, subject, html, text });
+          const result = await sendEmail({ to: contact.email!, subject, html, text, replyTo: replyToAddress });
           if (result.success) sentCount++;
           else { failedCount++; lastError = result.error || 'Email failed'; }
         } catch (e: any) { failedCount++; lastError = e.message; }

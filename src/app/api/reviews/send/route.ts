@@ -6,6 +6,7 @@ import { hasActivePro } from '@/lib/entitlements';
 import { makeGoogleReviewLinkFromWriteUri } from '@/lib/googlePlaces';
 import { getEnv } from '@/lib/env';
 import { reviewRequestEmail } from '@/lib/emailTemplates';
+import { getEffectiveReplyTo } from '@/lib/replyToEmail';
 
 export async function POST(req: Request) {
   const uid = await requireUid().catch(() => null);
@@ -36,7 +37,16 @@ export async function POST(req: Request) {
 
   const link = reviewLink || makeGoogleReviewLinkFromWriteUri(undefined, placeId);
   const tpl = reviewRequestEmail(customerName, link);
-  const result = await postmark.sendEmail({ From: EMAIL_FROM, To: toEmail, Subject: tpl.subject, HtmlBody: tpl.html, TextBody: tpl.text, MessageStream: 'outbound' });
+  const replyTo = await getEffectiveReplyTo(supabaseAdmin, uid);
+  const result = await postmark.sendEmail({
+    From: EMAIL_FROM,
+    To: toEmail,
+    Subject: tpl.subject,
+    HtmlBody: tpl.html,
+    TextBody: tpl.text,
+    MessageStream: 'outbound',
+    ...(replyTo ? { ReplyTo: replyTo } : {}),
+  });
 
   await supabaseAdmin.from('review_requests').insert({
     business_id: businessId,

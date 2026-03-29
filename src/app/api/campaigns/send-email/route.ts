@@ -4,6 +4,7 @@ import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { getEnv } from '@/lib/env';
 import { sendEmail } from '@/lib/emailService';
 import { directOutreachEmail } from '@/lib/emailTemplates';
+import { getEffectiveReplyTo } from '@/lib/replyToEmail';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,18 +32,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No business found' }, { status: 400 });
     }
 
-    // Fetch owner's email for Reply-To
-    let ownerEmail: string | undefined;
-    try {
-      const { data: userData } = await supa
-        .from('users')
-        .select('email')
-        .eq('uid', biz.owner_uid)
-        .single();
-      ownerEmail = userData?.email;
-    } catch (e) {
-      console.error('[send-email] Failed to fetch owner email:', e);
-    }
+    const ownerEmail = await getEffectiveReplyTo(supa, biz.owner_uid);
 
     const body = await req.json();
     const { recipients, subject, message } = body;

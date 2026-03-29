@@ -97,6 +97,9 @@ function SettingsContent() {
     setTimeout(() => setSuccess(null), 3000);
   }
   const [email, setEmail] = useState('');
+  /** Stored Reply-To override; empty string = use sign-in email */
+  const [replyToDraft, setReplyToDraft] = useState('');
+  const [savingReplyTo, setSavingReplyTo] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -126,7 +129,45 @@ function SettingsContent() {
 
   // Account form fields
   const [userName, setUserName] = useState('');
-  const BUILD_VERSION = '2026-01-01-v13-settings-facelift';
+  const BUILD_VERSION = '2026-03-29-v14-reply-to-email';
+
+  async function saveReplyTo() {
+    const tok = localStorage.getItem('idToken');
+    if (!tok) {
+      setError('Not signed in');
+      return;
+    }
+    setSavingReplyTo(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/account/reply-to', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${tok}`,
+        },
+        body: JSON.stringify({
+          replyToEmail: replyToDraft.trim() === '' ? null : replyToDraft.trim(),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || 'Could not save reply address');
+        return;
+      }
+      if (typeof data.replyToEmail === 'string' && data.replyToEmail.trim()) {
+        setReplyToDraft(data.replyToEmail.trim());
+      } else {
+        setReplyToDraft('');
+      }
+      setSuccess('Reply address saved');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch {
+      setError('Could not save reply address');
+    } finally {
+      setSavingReplyTo(false);
+    }
+  }
 
   // Google Places Autocomplete state
   const [placeSuggestions, setPlaceSuggestions] = useState<any[]>([]);
@@ -198,6 +239,8 @@ function SettingsContent() {
             const user = userData?.user || userData;
             setEmail(user.email || '');
             setUserName(user.displayName || '');
+            const raw = user.replyToEmail;
+            setReplyToDraft(typeof raw === 'string' && raw.trim() ? raw.trim() : '');
           }
         } catch (e) {
           console.error('Error fetching user data:', e);
@@ -562,9 +605,36 @@ function SettingsContent() {
                   <h2 className="text-xl font-bold mb-6">Personal Details</h2>
                   <div className="space-y-6">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1">Email Address</label>
+                      <label className="text-[10px] font-bold text-muted uppercase tracking-widest ml-1">Sign-in email</label>
                       <input value={email} disabled className={`${inputClass} opacity-60 bg-accent/50 cursor-not-allowed`} />
-                      <p className="text-[10px] text-muted ml-1 italic">Email cannot be changed manually. Contact support for help.</p>
+                      <p className="text-[10px] text-muted ml-1 italic">Used to log in and reset your password. To change it, contact support.</p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-2 ml-1">
+                        <label className="text-[10px] font-bold text-muted uppercase tracking-widest">Customer replies (Reply-To)</label>
+                        <InfoTip text="When customers hit Reply on your review or outreach emails, their message goes to this address. Leave blank to use your sign-in email." />
+                      </div>
+                      <input
+                        type="email"
+                        value={replyToDraft}
+                        onChange={(e) => setReplyToDraft(e.target.value)}
+                        className={inputClass}
+                        placeholder={email ? `Default: ${email}` : 'same as sign-in email'}
+                        autoComplete="email"
+                      />
+                      <p className="text-[10px] text-muted ml-1">
+                        {replyToDraft.trim() === ''
+                          ? `Replies will go to your sign-in address (${email || '—'}) unless you set a different one.`
+                          : 'Replies will go to the address above.'}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => void saveReplyTo()}
+                        disabled={savingReplyTo}
+                        className={`${primaryButtonClass} mt-2 !h-11 px-6 text-xs font-bold`}
+                      >
+                        {savingReplyTo ? 'Saving…' : 'Save reply address'}
+                      </button>
                     </div>
                   </div>
                 </div>

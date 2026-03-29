@@ -5,6 +5,7 @@ import { sendEmail } from '@/lib/emailService';
 import { reviewRequestEmail } from '@/lib/emailTemplates';
 import { getEnv } from '@/lib/env';
 import { getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
+import { getEffectiveReplyTo } from '@/lib/replyToEmail';
 
 export const dynamic = 'force-dynamic';
 
@@ -135,6 +136,8 @@ export async function POST(req: NextRequest) {
     let failedCount = 0;
     let lastError: string | null = null;
 
+    const replyToAddress = await getEffectiveReplyTo(supa, uid);
+
     // Process sending
     if (type === 'Email') {
       const emailContacts = filteredContacts.filter(c => c.email);
@@ -163,7 +166,8 @@ export async function POST(req: NextRequest) {
             to: contact.email!,
             subject: subject,
             html,
-            text: text
+            text: text,
+            replyTo: replyToAddress,
           });
 
           if (result.success) {

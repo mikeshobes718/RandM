@@ -58,7 +58,7 @@ export async function GET(req: Request) {
     const supa = getSupabaseAdmin();
     let dbUser = await supa
       .from('users')
-      .select('role, rep_id')
+      .select('role, rep_id, reply_to_email')
       .eq('uid', uid)
       .maybeSingle()
       .then(res => res.data);
@@ -76,23 +76,28 @@ export async function GET(req: Request) {
           onConflict: 'uid',
           ignoreDuplicates: false
         });
-        dbUser = { role: 'customer', rep_id: null };
+        dbUser = { role: 'customer', rep_id: null, reply_to_email: null };
       } catch (upsertError) {
         console.error('[AUTH ME] Failed to create user record:', upsertError);
         // Continue with default values
-        dbUser = { role: 'customer', rep_id: null };
+        dbUser = { role: 'customer', rep_id: null, reply_to_email: null };
       }
     }
 
     let role = dbUser?.role || 'customer';
     if (isAdminEmail(email)) role = 'admin';
 
+    const replyToEmailRaw =
+      (dbUser as { reply_to_email?: string | null } | null)?.reply_to_email ?? null;
+
     return NextResponse.json({ 
       uid, 
       email, 
       emailVerified,
       role,
-      rep_id: dbUser?.rep_id || null
+      rep_id: dbUser?.rep_id || null,
+      /** Stored override; null/empty means use sign-in email for Reply-To. */
+      replyToEmail: replyToEmailRaw,
     });
 
   } catch (error) {
