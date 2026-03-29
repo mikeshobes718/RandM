@@ -25,12 +25,14 @@ export function getTwilioRestClient(env: TwilioEnv): TwilioClientResult {
     return { ok: false, error: 'TWILIO_ACCOUNT_SID is missing.' };
   }
 
-  if (apiKeySid && apiKeySecret) {
-    return { ok: true, client: twilio(apiKeySid, apiKeySecret, { accountSid: sid }) };
-  }
-
+  // Prefer Account SID + Auth Token when set — avoids stale API key vars in env
+  // shadowing updated tokens (Twilio returns 401 "Authenticate" for bad API keys).
   if (authToken) {
     return { ok: true, client: twilio(sid, authToken) };
+  }
+
+  if (apiKeySid && apiKeySecret) {
+    return { ok: true, client: twilio(apiKeySid, apiKeySecret, { accountSid: sid }) };
   }
 
   return {
