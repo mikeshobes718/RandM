@@ -182,13 +182,21 @@ function ContactsPageContent() {
       </div>
 
       {replyToEmail && (
-        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 sm:px-5">
-          <span className="material-symbols-outlined text-brand text-xl shrink-0" aria-hidden>alternate_email</span>
+        <div className="flex flex-wrap items-start gap-3 rounded-2xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-3 sm:px-5">
+          <span className="material-symbols-outlined text-brand text-xl shrink-0 mt-0.5" aria-hidden>alternate_email</span>
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/60">Reply-to for outreach emails</p>
             <p className="font-bold text-on-surface truncate" title={replyToEmail}>{replyToEmail}</p>
+            <p className="text-[9px] sm:text-[10px] font-medium text-on-surface-variant/75 mt-2 leading-snug">
+              To use a different address, go to{' '}
+              <Link href="/settings?tab=account" className="font-bold text-brand hover:underline underline-offset-2">
+                Settings → Account
+              </Link>
+              {' '}and edit{' '}
+              <span className="font-semibold text-on-surface-variant">Customer replies (Reply-To)</span>, then save.
+            </p>
           </div>
-          <InfoTip text="When customers reply to your review outreach, their message is sent to this address (same as the Reply-To on sent emails)." />
+          <InfoTip text="When customers reply to your outreach, their message goes here. Change it anytime in Settings → Account → Customer replies (Reply-To). Your sign-in email is separate." />
         </div>
       )}
 
