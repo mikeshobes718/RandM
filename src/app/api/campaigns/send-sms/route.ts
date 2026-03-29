@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { getEnv } from '@/lib/env';
-import twilio from 'twilio';
+import { getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,19 +50,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Message content is required' }, { status: 400 });
     }
 
-    const sid = env.TWILIO_ACCOUNT_SID;
-    const authToken = env.TWILIO_AUTH_TOKEN;
-    const fromNumber = env.TWILIO_PHONE_NUMBER;
+    const fromRaw = env.TWILIO_PHONE_NUMBER;
+    const fromNumber = normalizeTwilioFrom(fromRaw);
 
-    if (!sid || !authToken) {
-      return NextResponse.json({ error: 'SMS service not configured. Please contact support.' }, { status: 400 });
+    const twilioResult = getTwilioRestClient(env);
+    if (!twilioResult.ok) {
+      return NextResponse.json({ error: `SMS service not configured. ${twilioResult.error}` }, { status: 400 });
     }
 
     if (!fromNumber) {
       return NextResponse.json({ error: 'Sending phone number not configured.' }, { status: 400 });
     }
 
-    const twilioClient = twilio(sid, authToken);
+    const twilioClient = twilioResult.client;
 
     // Auto-prefix business name
     let finalMessage = message;

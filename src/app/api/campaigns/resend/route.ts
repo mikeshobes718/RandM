@@ -5,7 +5,7 @@ import { sendEmail } from '@/lib/emailService';
 import { reviewRequestEmail } from '@/lib/emailTemplates';
 import { getEnv } from '@/lib/env';
 import { formatToE164 } from '@/lib/phone';
-import twilio from 'twilio';
+import { getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -124,16 +124,17 @@ export async function POST(req: NextRequest) {
       }
     } else if (type === 'SMS') {
       const smsContacts = filteredContacts.filter(c => c.phone);
-      const sid = env.TWILIO_ACCOUNT_SID;
-      const token = env.TWILIO_AUTH_TOKEN || env.TWILIO_API_KEY_SECRET;
-      const apiKeySid = env.TWILIO_API_KEY_SID;
-      const fromNumber = env.TWILIO_PHONE_NUMBER;
+      const fromNumber = normalizeTwilioFrom(env.TWILIO_PHONE_NUMBER);
 
-      if (!sid || (!token && !apiKeySid) || !fromNumber) {
-        return NextResponse.json({ error: 'Twilio is not configured' }, { status: 400 });
+      const twilioResult = getTwilioRestClient(env);
+      if (!twilioResult.ok || !fromNumber) {
+        return NextResponse.json(
+          { error: twilioResult.ok ? 'Twilio phone number is not configured.' : twilioResult.error },
+          { status: 400 }
+        );
       }
 
-      const twilioClient = twilio(apiKeySid || sid, token, { accountSid: sid });
+      const twilioClient = twilioResult.client;
       for (const contact of smsContacts) {
         try {
           const campaignLink = `https://reviewsandmarketing.com/r/${biz.id}?source=sms-resend`;

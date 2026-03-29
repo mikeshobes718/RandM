@@ -4,7 +4,7 @@ import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { sendEmail } from '@/lib/emailService';
 import { reviewRequestEmail } from '@/lib/emailTemplates';
 import { getEnv } from '@/lib/env';
-import twilio from 'twilio';
+import { getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -184,26 +184,23 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'No remaining contacts with phone numbers found.' }, { status: 400 });
       }
 
-      const sid = env.TWILIO_ACCOUNT_SID;
-      const token = env.TWILIO_AUTH_TOKEN;
-      const apiKeySid = env.TWILIO_API_KEY_SID;
-      const apiKeySecret = env.TWILIO_API_KEY_SECRET;
-      const fromNumber = env.TWILIO_PHONE_NUMBER;
+      const fromNumber = normalizeTwilioFrom(env.TWILIO_PHONE_NUMBER);
 
-      const hasDirectAuth = sid && token;
-      const hasApiKeyAuth = sid && apiKeySid && apiKeySecret;
-
-      if (!hasDirectAuth && !hasApiKeyAuth) {
-        return NextResponse.json({ 
-          error: 'Twilio SMS is not fully configured. Please add your Twilio credentials (SID and Auth Token or API Keys) to your environment variables.' 
-        }, { status: 400 });
+      const twilioResult = getTwilioRestClient(env);
+      if (!twilioResult.ok) {
+        return NextResponse.json(
+          {
+            error: `Twilio SMS is not fully configured. ${twilioResult.error}`,
+          },
+          { status: 400 }
+        );
       }
 
       if (!fromNumber) {
         return NextResponse.json({ error: 'Twilio phone number is missing in environment variables.' }, { status: 400 });
       }
 
-      const twilioClient = twilio(sid, token);
+      const twilioClient = twilioResult.client;
 
       for (const contact of smsContacts) {
         try {
