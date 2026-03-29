@@ -42,6 +42,33 @@ export function getTwilioRestClient(env: TwilioEnv): TwilioClientResult {
   };
 }
 
+/** Twilio RestException → user-visible string (includes code for support). */
+export function formatTwilioRestError(err: unknown): string {
+  const e = err as {
+    message?: string;
+    code?: number;
+    status?: number;
+    moreInfo?: string;
+  };
+  const code = e.code;
+  let msg = (e.message || 'Unknown Twilio error').trim();
+  if (typeof code === 'number') {
+    msg = `${msg} (Twilio ${code})`;
+  }
+  if (code === 21660 || code === 21206) {
+    msg +=
+      ' Use an SMS-capable number that belongs to this Twilio account (Console → Phone Numbers → Manage → Active numbers).';
+  }
+  if (code === 21608) {
+    msg +=
+      ' Trial accounts can only message verified numbers — add the destination under Phone Numbers → Verified Caller IDs, or upgrade the account.';
+  }
+  if (e.moreInfo && !msg.includes(e.moreInfo)) {
+    msg += ` ${e.moreInfo}`;
+  }
+  return msg;
+}
+
 /** Normalize env From number for Twilio (E.164, no spaces). */
 export function normalizeTwilioFrom(raw: string | undefined): string {
   if (!raw) return '';

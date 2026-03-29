@@ -5,7 +5,7 @@ import { sendEmail } from '@/lib/emailService';
 import { reviewRequestEmail } from '@/lib/emailTemplates';
 import { getEnv } from '@/lib/env';
 import { formatToE164 } from '@/lib/phone';
-import { getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
+import { formatTwilioRestError, getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
 import { getEffectiveReplyTo } from '@/lib/replyToEmail';
 
 export const dynamic = 'force-dynamic';
@@ -147,7 +147,10 @@ export async function POST(req: NextRequest) {
 
           await twilioClient.messages.create({ body: personalizedBody, from: fromNumber, to: formatToE164(contact.phone!) });
           sentCount++;
-        } catch (e: any) { failedCount++; lastError = e.message; }
+        } catch (e: unknown) {
+          failedCount++;
+          lastError = formatTwilioRestError(e);
+        }
       }
     }
 

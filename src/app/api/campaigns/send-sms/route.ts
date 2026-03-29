@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { getEnv } from '@/lib/env';
-import { getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
+import { formatTwilioRestError, getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,10 +85,11 @@ export async function POST(req: NextRequest) {
         });
         sentCount++;
         recipientDetails.push({ contact: phone, status: 'sent' });
-      } catch (e: any) {
-        console.error(`[send-sms] Failed for ${phone}:`, e.message);
+      } catch (e: unknown) {
+        const detail = formatTwilioRestError(e);
+        console.error(`[send-sms] Failed for ${phone}:`, detail);
         failedCount++;
-        lastError = e.message;
+        lastError = detail;
         recipientDetails.push({ contact: phone, status: 'failed', error: lastError });
       }
     }

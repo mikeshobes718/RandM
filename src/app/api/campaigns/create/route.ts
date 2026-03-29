@@ -4,7 +4,7 @@ import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { sendEmail } from '@/lib/emailService';
 import { reviewRequestEmail } from '@/lib/emailTemplates';
 import { getEnv } from '@/lib/env';
-import { getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
+import { formatTwilioRestError, getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
 import { getEffectiveReplyTo } from '@/lib/replyToEmail';
 
 export const dynamic = 'force-dynamic';
@@ -229,10 +229,11 @@ export async function POST(req: NextRequest) {
             to: toFormatted
           });
           sentCount++;
-        } catch (e: any) {
-          console.error(`[CAMPAIGNS CREATE] SMS failed for ${contact.phone}:`, e.message, e.code, e.status);
+        } catch (e: unknown) {
+          const detail = formatTwilioRestError(e);
+          console.error(`[CAMPAIGNS CREATE] SMS failed for ${contact.phone}:`, detail);
           failedCount++;
-          lastError = e.message;
+          lastError = detail;
         }
       }
     }
