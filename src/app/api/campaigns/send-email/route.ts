@@ -5,6 +5,7 @@ import { getEnv } from '@/lib/env';
 import { sendEmail } from '@/lib/emailService';
 import { directOutreachEmail } from '@/lib/emailTemplates';
 import { getEffectiveReplyTo } from '@/lib/replyToEmail';
+import { checkReviewRequestQuota } from '@/lib/entitlements';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +44,11 @@ export async function POST(req: NextRequest) {
 
     if (!message || !subject) {
       return NextResponse.json({ error: 'Subject and message content are required' }, { status: 400 });
+    }
+
+    const quota = await checkReviewRequestQuota(uid, biz.id, recipients.length);
+    if (!quota.allowed) {
+      return NextResponse.json({ error: quota.reason }, { status: 403 });
     }
 
     let sentCount = 0;

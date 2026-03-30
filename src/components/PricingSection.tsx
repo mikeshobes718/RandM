@@ -136,7 +136,11 @@ export default function PricingSection() {
             disabled={midLoading || currentTier !== "none"}
             className="w-full h-12 rounded-xl border-2 border-outline-variant/30 text-on-surface font-bold hover:bg-surface-container-low transition-colors disabled:opacity-50 text-sm"
           >
-            {currentTier === "starter" ? "Current Plan" : (currentTier !== "none" ? "Included" : "Get Started Free")}
+            {currentTier === "starter"
+              ? "Current Plan"
+              : currentTier === "mid" || currentTier === "pro"
+                ? "Not applicable"
+                : "Get Started Free"}
           </button>
         </div>
 

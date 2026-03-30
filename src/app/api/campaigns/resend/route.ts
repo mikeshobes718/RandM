@@ -7,6 +7,7 @@ import { getEnv } from '@/lib/env';
 import { formatToE164 } from '@/lib/phone';
 import { formatTwilioRestError, getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
 import { getEffectiveReplyTo } from '@/lib/replyToEmail';
+import { checkReviewRequestQuota } from '@/lib/entitlements';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,6 +97,15 @@ export async function POST(req: NextRequest) {
 
     if (filteredContacts.length === 0) {
       return NextResponse.json({ error: 'All contacts have already provided feedback or left a review.' }, { status: 400 });
+    }
+
+    const pendingSends =
+      original.type === 'Email'
+        ? filteredContacts.filter((c) => c.email).length
+        : filteredContacts.filter((c) => c.phone).length;
+    const quota = await checkReviewRequestQuota(uid, biz.id, pendingSends);
+    if (!quota.allowed) {
+      return NextResponse.json({ error: quota.reason }, { status: 403 });
     }
 
     let sentCount = 0;

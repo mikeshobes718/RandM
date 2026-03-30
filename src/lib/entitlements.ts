@@ -4,6 +4,7 @@ import { getStripeClient } from './stripe';
 
 import { PLANS, getPlanFromId } from './plans';
 import { getAccountEmailForPlan, isInternalTestProEmail } from './internalTestAccounts';
+import { fetchUsageCounts } from './dashboard/stats';
 
 export async function hasActivePro(uid: string): Promise<boolean> {
   try {
@@ -47,6 +48,34 @@ export async function getPlanLimits(uid: string) {
 
   const tier = getPlanFromId(sub?.plan_id || (sub?.status === 'starter' ? 'starter' : null));
   return PLANS[tier];
+}
+
+/**
+ * Enforces the same monthly "review request" usage as the dashboard:
+ * `review_requests` rows this month + sum of `campaigns.sent_count` for campaigns created this month.
+ * Unlimited tier (`pro`) skips the cap.
+ */
+export async function checkReviewRequestQuota(
+  uid: string,
+  businessId: string,
+  additionalSends: number
+): Promise<{ allowed: boolean; reason?: string; used: number; limit: number }> {
+  const limits = await getPlanLimits(uid);
+  const { requestsUsed } = await fetchUsageCounts(businessId);
+  const used = requestsUsed;
+  const limit = limits.reviewLimit;
+  if (limits.id === 'pro') {
+    return { allowed: true, used, limit };
+  }
+  if (used + additionalSends > limit) {
+    return {
+      allowed: false,
+      reason: `Monthly review request limit of ${limit} reached (${used} used). Upgrade your plan to send more.`,
+      used,
+      limit,
+    };
+  }
+  return { allowed: true, used, limit };
 }
 
 export async function checkPlanLimit(businessId: string): Promise<{ allowed: boolean; reason?: string }> {

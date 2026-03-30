@@ -223,7 +223,7 @@ function DashboardContent() {
   if (!business || !business.id) return null;
 
   const kpis = [
-    { icon: "mail", label: "Total Requests", value: stats.reviewsThisMonth, change: analytics?.growth ? `+${analytics.growth}%` : null, color: "primary", tip: "Review requests or outreach sends counted this billing period." },
+    { icon: "mail", label: "Total Requests", value: planUsage.used, change: analytics?.growth ? `+${analytics.growth}%` : null, color: "primary", tip: "Review requests and campaign sends this month (same count as Current Plan usage)." },
     { icon: "qr_code_2", label: "QR Scans", value: stats.shareLinkScans, change: null, color: "secondary", tip: "Times customers opened your main review link or scanned your QR code." },
     { icon: "ads_click", label: "Click Rate", value: rates.click > 0 ? `${rates.click}%` : "—", change: null, color: "tertiary", tip: "Percentage of delivered messages where the customer tapped your review link." },
     { icon: "star", label: "Avg Rating", value: stats.averageRating ?? "—", change: null, color: "error", tip: "Average Google rating we last synced for your business profile." },

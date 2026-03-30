@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getPostmarkClient } from '@/lib/postmark';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { requireUid } from '@/lib/authServer';
-import { hasActivePro } from '@/lib/entitlements';
+import { checkReviewRequestQuota } from '@/lib/entitlements';
 import { makeGoogleReviewLinkFromWriteUri } from '@/lib/googlePlaces';
 import { getEnv } from '@/lib/env';
 import { reviewRequestEmail } from '@/lib/emailTemplates';
@@ -20,19 +20,9 @@ export async function POST(req: Request) {
   const { data: biz } = await supabaseAdmin.from('businesses').select('id,owner_uid').eq('id', businessId).maybeSingle();
   if (!biz || biz.owner_uid !== uid) return new NextResponse('Forbidden', { status: 403 });
 
-  // Starter plan limit: 5 review requests per month per business
-  const pro = await hasActivePro(uid);
-  if (!pro) {
-    const start = new Date();
-    start.setUTCDate(1); start.setUTCHours(0,0,0,0);
-    const { count } = await supabaseAdmin
-      .from('review_requests')
-      .select('id', { count: 'exact', head: true })
-      .eq('business_id', businessId)
-      .gte('created_at', start.toISOString());
-    if ((count || 0) >= 5) {
-      return new NextResponse('Starter limit reached (5 review requests per month). Upgrade to Pro.', { status: 403 });
-    }
+  const quota = await checkReviewRequestQuota(uid, businessId, 1);
+  if (!quota.allowed) {
+    return new NextResponse(quota.reason || 'Plan limit reached.', { status: 403 });
   }
 
   const link = reviewLink || makeGoogleReviewLinkFromWriteUri(undefined, placeId);

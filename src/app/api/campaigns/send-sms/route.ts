@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { getAuthAdmin } from '@/lib/firebaseAdmin';
 import { getEnv } from '@/lib/env';
 import { formatTwilioRestError, getTwilioRestClient, normalizeTwilioFrom } from '@/lib/twilioClient';
+import { checkReviewRequestQuota } from '@/lib/entitlements';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,6 +49,11 @@ export async function POST(req: NextRequest) {
 
     if (!message) {
       return NextResponse.json({ error: 'Message content is required' }, { status: 400 });
+    }
+
+    const quota = await checkReviewRequestQuota(uid, biz.id, recipients.length);
+    if (!quota.allowed) {
+      return NextResponse.json({ error: quota.reason }, { status: 403 });
     }
 
     const fromRaw = env.TWILIO_PHONE_NUMBER;
