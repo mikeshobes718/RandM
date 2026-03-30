@@ -20,7 +20,12 @@ const ADMIN_NAV_ITEMS = [
   { name: "Sales portal", href: "/sales-portal", icon: "storefront", description: "Lead finder, scripts, and rep tools." },
 ];
 
-export default function AppSidebar() {
+type AppSidebarProps = {
+  collapsed: boolean;
+  onToggle: () => void;
+};
+
+export default function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [businessName, setBusinessName] = useState("My Business");
@@ -120,25 +125,50 @@ export default function AppSidebar() {
     }
   };
 
+  const navLinkClass = (isActive: boolean, iconOnly: boolean) =>
+    `flex items-center rounded-lg transition-all text-sm font-medium ${
+      iconOnly ? "justify-center px-0 py-2.5" : "gap-3 px-3 py-2.5"
+    } ${
+      isActive
+        ? "bg-primary-fixed/40 text-primary font-semibold"
+        : "text-on-surface-variant hover:bg-surface-container-low hover:translate-x-0.5"
+    }`;
+
   return (
-    <aside className="hidden md:flex h-screen w-64 fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant/15 flex-col p-4 z-40">
-      <div className="px-2 py-4 mb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center overflow-hidden border border-outline-variant/10">
+    <aside
+      className={`hidden md:flex h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant/15 flex-col z-40 overflow-hidden transition-[width] duration-200 ease-out ${
+        collapsed ? "w-[4.5rem] p-2" : "w-64 p-4"
+      }`}
+    >
+      <div className={`mb-2 shrink-0 ${collapsed ? "flex flex-col items-center gap-2" : "px-2 py-4"}`}>
+        <div className={`flex w-full items-center ${collapsed ? "flex-col gap-2" : "gap-3"}`}>
+          <div className="w-8 h-8 shrink-0 rounded-lg bg-primary-fixed flex items-center justify-center overflow-hidden border border-outline-variant/10">
             {photoUrl ? (
-              <img src={photoUrl} alt={businessName} className="w-full h-full object-cover" />
+              <img src={photoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
               <span className="material-symbols-outlined text-primary text-lg">business_center</span>
             )}
           </div>
-          <div className="min-w-0">
-            <div className="text-sm font-extrabold text-primary truncate">{businessName}</div>
-            <div className="text-[10px] text-on-surface-variant uppercase tracking-widest">{planLabel}</div>
-          </div>
+          {!collapsed && (
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-extrabold text-primary truncate">{businessName}</div>
+              <div className="text-[10px] text-on-surface-variant uppercase tracking-widest truncate">{planLabel}</div>
+            </div>
+          )}
         </div>
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-outline-variant/20 bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <span className="material-symbols-outlined text-xl">{collapsed ? "chevron_right" : "chevron_left"}</span>
+        </button>
       </div>
 
-      <nav className="flex-1 flex flex-col gap-0.5">
+      <nav className="flex-1 flex flex-col gap-0.5 min-h-0 overflow-y-auto overflow-x-hidden">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname?.startsWith(item.href));
           return (
@@ -146,51 +176,46 @@ export default function AppSidebar() {
               key={item.name}
               href={item.href}
               title={`${item.name} — ${item.description}`}
-              className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all ${
-                isActive
-                  ? "bg-primary-fixed/40 text-primary font-semibold"
-                  : "text-on-surface-variant hover:bg-surface-container-low hover:translate-x-0.5"
-              }`}
+              className={navLinkClass(isActive, collapsed)}
             >
               <span
-                className="material-symbols-outlined text-xl"
+                className="material-symbols-outlined text-xl shrink-0"
                 style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
               >
                 {item.icon}
               </span>
-              {item.name}
+              {!collapsed && item.name}
             </Link>
           );
         })}
 
         {showAdminNav && (
-          <div className="mt-8 border-t border-outline-variant/15 pt-4 flex flex-col gap-0.5">
-            <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/70">
-              Team
-            </p>
+          <div
+            className={`mt-8 border-t border-outline-variant/15 pt-4 flex flex-col gap-0.5 ${
+              collapsed ? "items-center" : ""
+            }`}
+          >
+            {!collapsed && (
+              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/70">Team</p>
+            )}
             {ADMIN_NAV_ITEMS.map((item) => {
               const isActive =
-                pathname === item.href ||
-                (pathname?.startsWith(`${item.href}/`) ?? false);
+                pathname === item.href || (pathname?.startsWith(`${item.href}/`) ?? false);
 
               return (
                 <Link
                   key={item.name}
                   href={item.href}
                   title={`${item.name} — ${item.description}`}
-                  className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all ${
-                    isActive
-                      ? "bg-primary-fixed/40 text-primary font-semibold"
-                      : "text-on-surface-variant hover:bg-surface-container-low hover:translate-x-0.5"
-                  }`}
+                  className={navLinkClass(isActive, collapsed)}
                 >
                   <span
-                    className="material-symbols-outlined text-xl"
+                    className="material-symbols-outlined text-xl shrink-0"
                     style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
                   >
                     {item.icon}
                   </span>
-                  {item.name}
+                  {!collapsed && item.name}
                 </Link>
               );
             })}
@@ -198,26 +223,40 @@ export default function AppSidebar() {
         )}
       </nav>
 
-      <div className="mt-auto border-t border-outline-variant/15 pt-4 flex flex-col gap-1">
+      <div className={`mt-auto border-t border-outline-variant/15 flex flex-col gap-1 shrink-0 ${collapsed ? "pt-3" : "pt-4"}`}>
         <Link
           href="/requests/new"
-          className="w-full mb-3 bg-primary hover:bg-primary/90 text-white py-2.5 rounded-lg font-semibold shadow-sm transition-all text-xs text-center block"
+          title="New Campaign"
+          className={`mb-3 flex items-center justify-center rounded-lg bg-primary font-semibold text-white shadow-sm transition-all hover:bg-primary/90 ${
+            collapsed ? "h-10 w-10 p-0 mx-auto" : "w-full py-2.5 text-xs text-center"
+          }`}
         >
-          New Campaign
+          {collapsed ? (
+            <span className="material-symbols-outlined text-xl">add_circle</span>
+          ) : (
+            "New Campaign"
+          )}
         </Link>
         <Link
           href="/support"
-          className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface transition-colors text-sm"
+          title="Help Center"
+          className={`flex items-center text-on-surface-variant hover:text-on-surface transition-colors text-sm ${
+            collapsed ? "justify-center px-0 py-2" : "gap-3 px-3 py-2"
+          }`}
         >
-          <span className="material-symbols-outlined text-xl">help</span>
-          Help Center
+          <span className="material-symbols-outlined text-xl shrink-0">help</span>
+          {!collapsed && "Help Center"}
         </Link>
         <button
+          type="button"
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-error transition-colors text-sm w-full"
+          title="Log out"
+          className={`flex items-center text-on-surface-variant hover:text-error transition-colors text-sm w-full ${
+            collapsed ? "justify-center px-0 py-2" : "gap-3 px-3 py-2"
+          }`}
         >
-          <span className="material-symbols-outlined text-xl">logout</span>
-          Log Out
+          <span className="material-symbols-outlined text-xl shrink-0">logout</span>
+          {!collapsed && "Log Out"}
         </button>
       </div>
     </aside>
