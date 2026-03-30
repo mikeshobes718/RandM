@@ -1,5 +1,5 @@
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
-import { isInternalTestProEmail } from '@/lib/internalTestAccounts';
+import { getAccountEmailForPlan, isInternalTestProEmail } from '@/lib/internalTestAccounts';
 import { effectiveReplyFromUserRow } from '@/lib/replyToEmail';
 
 export interface PlanInfo {
@@ -21,7 +21,7 @@ export async function resolvePlan(uid: string): Promise<PlanInfo> {
     .select('email, reply_to_email')
     .eq('uid', uid)
     .maybeSingle();
-  const accountEmail = userRow?.email || null;
+  const accountEmail = await getAccountEmailForPlan(uid, userRow?.email as string | null);
   ownerEmail = effectiveReplyFromUserRow(userRow);
   if (isInternalTestProEmail(accountEmail)) {
     return {

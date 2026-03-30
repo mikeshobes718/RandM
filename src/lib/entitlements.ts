@@ -3,13 +3,14 @@ import { getEnv } from './env';
 import { getStripeClient } from './stripe';
 
 import { PLANS, getPlanFromId } from './plans';
-import { isInternalTestProEmail } from './internalTestAccounts';
+import { getAccountEmailForPlan, isInternalTestProEmail } from './internalTestAccounts';
 
 export async function hasActivePro(uid: string): Promise<boolean> {
   try {
     const supa = getSupabaseAdmin();
     const { data: u } = await supa.from('users').select('email').eq('uid', uid).maybeSingle();
-    if (isInternalTestProEmail(u?.email)) return true;
+    const accountEmail = await getAccountEmailForPlan(uid, u?.email);
+    if (isInternalTestProEmail(accountEmail)) return true;
 
     const { data } = await supa
       .from('subscriptions')
@@ -32,7 +33,8 @@ export async function hasActivePro(uid: string): Promise<boolean> {
 export async function getPlanLimits(uid: string) {
   const supa = getSupabaseAdmin();
   const { data: u } = await supa.from('users').select('email').eq('uid', uid).maybeSingle();
-  if (isInternalTestProEmail(u?.email)) return PLANS.pro;
+  const accountEmail = await getAccountEmailForPlan(uid, u?.email);
+  if (isInternalTestProEmail(accountEmail)) return PLANS.pro;
 
   const { data: sub } = await supa
     .from('subscriptions')
